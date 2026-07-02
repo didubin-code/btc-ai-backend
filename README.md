@@ -1,54 +1,76 @@
-# BTC Signal AI Copilot Backend v63
+# BTC Signal AI Copilot Backend v64
 
-This is the Render-ready backend for the BTC Signal AI Copilot panel.
+Render-ready backend for the BTC Signal AI Copilot.
 
-## What it does
+## What changed in v64
 
-- Keeps your OpenAI API key off GitHub Pages.
-- Provides `GET /health` for testing.
-- Provides `POST /analyze` for dashboard snapshots.
-- Returns structured AI advisory JSON.
-- Includes basic CORS, security headers, validation, and rate limiting.
+- Fixes the frontend/backend JSON mismatch that caused the dashboard to show `UNKNOWN — No explanation returned`.
+- Returns AI fields at the top level, exactly as the dashboard expects:
+  - `health`
+  - `trade_read`
+  - `reason`
+  - `main_blocker`
+  - `max_price`
+  - `anomaly_warning`
+  - `confidence`
+- Keeps nested `ai` output too, so old and new dashboard versions both work.
+- Supports both endpoints:
+  - `POST /analyze`
+  - `POST /api/ai-review`
+- Accepts the current dashboard's nested snapshot payload.
 
 ## Render settings
 
-Use these if Render asks:
+Build command:
 
-- Runtime: Node
-- Build Command: `npm install`
-- Start Command: `npm start`
-- Root Directory: leave blank
+```bash
+npm install
+```
 
-Environment variables:
+Start command:
 
-- `OPENAI_API_KEY` = paste your new OpenAI API key directly into Render, never into GitHub or ChatGPT.
-- `OPENAI_MODEL` = `gpt-4o-mini` unless you want to change models.
-- `RATE_LIMIT_PER_MIN` = `30`
+```bash
+npm start
+```
+
+Environment variable:
+
+```bash
+OPENAI_API_KEY=your_key_here
+```
+
+Optional:
+
+```bash
+OPENAI_MODEL=gpt-4o-mini
+RATE_LIMIT_PER_MIN=30
+ALLOWED_ORIGINS=*
+```
 
 ## Test locally
 
 ```bash
 npm install
 npm test
-OPENAI_API_KEY=your_key_here npm start
+npm start
 ```
 
-Open:
+Then open:
 
 ```text
 http://localhost:3000/health
 ```
 
-## Dashboard connection
+## Dashboard URL
 
-After Render deploys, copy your Render URL, for example:
+Use either:
 
 ```text
-https://btc-ai-backend-xxxx.onrender.com
+https://YOUR-RENDER-URL.onrender.com/analyze
 ```
 
-Paste that into the AI Copilot backend URL field in the v61/v62 dashboard.
+or:
 
-## Important
-
-This backend provides advisory analysis only. It must not override hard safety gates or execute trades automatically.
+```text
+https://YOUR-RENDER-URL.onrender.com/api/ai-review
+```
