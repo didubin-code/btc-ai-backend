@@ -1,10 +1,12 @@
 {
   "name": "btc-ai-copilot-backend",
   "version": "1.1.0",
-  "description": "v69.0 Independent AI backend for BTC Signal dashboard.",
+  "description": "Raw-market-first independent AI backend for BTC Signal v69.1.",
   "type": "module",
   "main": "server.js",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node server.js",
     "test": "node test.js"
