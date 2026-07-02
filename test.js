@@ -4,20 +4,23 @@ const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
 const required = [
   "app.post('/analyze'",
   "app.post('/api/ai-review'",
+  'v78-ai-priority-continuous-stream',
   'computeRawIndependentModel',
+  'applyEvidenceCalibration',
+  'extractCalibrationContext',
+  'fetchServerMarket',
+  'enrichSnapshotWithServerMarket',
+  'validateAiSchema',
   'independentPolicy',
   'AI_ACT_ENGINE_CONSERVATIVE',
   'OPPOSITE_DIRECTION_STAND_DOWN',
-  'DO_NOT_CHASE',
-  'expected_value',
-  'dataTier',
-  'CONSENSUS_FALLBACK',
-  'SERIES_FALLBACK',
-  'buildRawFallbackAi',
+  'SERVER_VALIDATED_FALLBACK',
+  'openai_degraded_local_ev_fallback',
   'compactSnapshotForOpenAI',
   'callOpenAIJsonWithRetry',
-  'openai_degraded_local_ev_fallback',
-  'v76-openai-resilient-ai'
+  'lastGoodAiBySession',
+  'openai_degraded_recent_ai_hold',
+  'aiDataStream'
 ];
 const missing = required.filter(s => !server.includes(s));
 if (missing.length) {
@@ -28,4 +31,4 @@ if (!pkg.scripts?.start || !pkg.scripts?.test) {
   console.error('package.json scripts missing');
   process.exit(1);
 }
-console.log('v76 OpenAI-resilient AI backend static tests passed');
+console.log('v78 AI-priority continuous stream backend static tests passed');

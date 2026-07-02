@@ -1,10 +1,12 @@
-# BTC AI Backend v76 — OpenAI-Resilient AI Feed
+# BTC AI Backend v78 — AI-Priority Continuous Stream
 
-Changes from v75:
-- Prevents a temporary OpenAI/API failure from killing the AI panel.
-- Uses a compact current-market packet to reduce latency and token size.
-- Adds OpenAI timeout/retry handling.
-- Falls back to a fresh local EV model from the same current snapshot if OpenAI is temporarily unavailable.
-- Keeps data-tier fallback logic from v75.
+Adds v73-style AI-priority independent execution on top of v77 evidence calibration.
 
-Deploy by uploading these unzipped files to the Render-connected GitHub backend repo, then Manual Deploy latest commit.
+Key changes:
+- Rolling AI data stream payload support from frontend.
+- Backend preserves last clean AI read per browser session and can hold it briefly during temporary OpenAI failures if the current market stream has not materially changed.
+- Longer OpenAI timeout and extra retry.
+- Local EV fallback remains available, but it no longer needlessly interrupts a recent valid AI read.
+- Engine conservatism remains a warning, not an automatic veto, unless data is unusable or there is true opposite-direction conflict.
+
+Deploy to Render with OPENAI_API_KEY set.

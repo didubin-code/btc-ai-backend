@@ -6,9 +6,12 @@ import OpenAI from 'openai';
 
 const PORT = Number(process.env.PORT || 3000);
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const BACKEND_VERSION = 'v78-ai-priority-continuous-stream';
+const SERVER_MARKET_VALIDATE = String(process.env.SERVER_MARKET_VALIDATE || '1') !== '0';
+const SERVER_MARKET_TIMEOUT_MS = Number(process.env.SERVER_MARKET_TIMEOUT_MS || 1400);
 const API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS || 12000);
-const OPENAI_MAX_RETRIES = Number(process.env.OPENAI_MAX_RETRIES || 1);
+const OPENAI_TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS || 16000);
+const OPENAI_MAX_RETRIES = Number(process.env.OPENAI_MAX_RETRIES || 2);
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*').split(',').map(s => s.trim()).filter(Boolean);
 
 if (!API_KEY) {
@@ -21,7 +24,22 @@ const app = express();
 app.set('trust proxy', 1);
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(cors({ origin(origin, cb) { if (!origin || ALLOWED_ORIGINS.includes('*') || ALLOWED_ORIGINS.includes(origin)) return cb(null, true); return cb(new Error('CORS origin blocked')); }}));
-app.use(express.json({ limit: '900kb' }));
+app.use(express.json({ limit: '1100kb' }));
+
+// v78 continuity cache: OpenAI is not a true persistent stream, so the backend preserves the
+// most recent clean AI result per browser session and can hold it briefly through one temporary
+// OpenAI timeout if the current live stream has not materially changed. This keeps the AI read
+// continuous without pretending a stale signal is fresh.
+const lastGoodAiBySession = new Map();
+const AI_HOLD_MAX_MS = Number(process.env.AI_HOLD_MAX_MS || 18000);
+const AI_HOLD_MAX_MOVE_BPS = Number(process.env.AI_HOLD_MAX_MOVE_BPS || 7);
+const CACHE_MAX_SESSIONS = Number(process.env.CACHE_MAX_SESSIONS || 200);
+function compactSessionId(x){ return String(x || 'default').replace(/[^a-zA-Z0-9_.:-]/g,'').slice(0,80) || 'default'; }
+function pruneAiCache(){
+  const now = Date.now();
+  for (const [k,v] of lastGoodAiBySession) if (!v || now - Number(v.t||0) > 5*60_000) lastGoodAiBySession.delete(k);
+  while (lastGoodAiBySession.size > CACHE_MAX_SESSIONS) lastGoodAiBySession.delete(lastGoodAiBySession.keys().next().value);
+}
 
 const buckets = new Map();
 function rateLimit(req, res, next) {
@@ -269,12 +287,175 @@ function calcFeatures(raw={}) {
     rawMarketSample: { venues: venues.slice(0,10), recentSeries: series.slice(-120), summary: rm.summary || null, consensus: consensusObj, brtiGuard: rm.brtiGuard || null }
   };
 }
+
+function extractCalibrationContext(raw={}){
+  const c = raw.calibrationSummary || raw.calibration || {};
+  const num = (x)=>Number.isFinite(Number(x)) ? Number(x) : null;
+  const ctx = {
+    n: num(c.n) ?? 0,
+    hitRate: num(c.hitRate),
+    brier: num(c.brier),
+    highN: num(c.highN) ?? 0,
+    highWinRate: num(c.highWinRate),
+    lowN: num(c.lowN) ?? 0,
+    lowYesRate: num(c.lowYesRate),
+    verdict: String(c.verdict || c.state || 'GATHERING').slice(0,60),
+    recentActionN: num(c.recentActionN) ?? 0,
+    recentBlockedN: num(c.recentBlockedN) ?? 0
+  };
+  return ctx;
+}
+function applyEvidenceCalibration(rawModel, features={}, calibration={}){
+  const m = rawModel && typeof rawModel === 'object' ? {...rawModel} : {};
+  const n = Number(calibration.n || 0);
+  const brier = Number(calibration.brier);
+  const highN = Number(calibration.highN || 0);
+  const highWin = Number(calibration.highWinRate);
+  const lowN = Number(calibration.lowN || 0);
+  const lowYes = Number(calibration.lowYesRate);
+  let shrink = 0, penalty = 0, bonus = 0;
+  const notes = [];
+  if(n < 8){ shrink += 0.02; penalty += 2; notes.push('calibration sample still small; probabilities lightly de-risked'); }
+  else if(Number.isFinite(brier) && brier > 0.285){ shrink += 0.22; penalty += 16; notes.push(`poor recent calibration Brier ${brier.toFixed(3)}; probability shrunk toward 50%`); }
+  else if(Number.isFinite(brier) && brier > 0.255){ shrink += 0.13; penalty += 9; notes.push(`weak recent calibration Brier ${brier.toFixed(3)}; confidence reduced`); }
+  else if(Number.isFinite(brier) && brier < 0.215 && n >= 18){ shrink -= 0.025; bonus += 3; notes.push(`recent calibration Brier ${brier.toFixed(3)} supports modest confidence bonus`); }
+  if(highN >= 5 && Number.isFinite(highWin) && highWin < 0.58){ shrink += 0.10; penalty += 8; notes.push(`high-probability calls underperforming (${Math.round(highWin*100)}% win rate, n=${highN})`); }
+  if(lowN >= 5 && Number.isFinite(lowYes) && lowYes > 0.42){ shrink += 0.10; penalty += 8; notes.push(`low-probability side has been flipping too often (${Math.round(lowYes*100)}% yes rate, n=${lowN})`); }
+  if(String(m.regime || '').toUpperCase().includes('CHOP')){ shrink += n >= 8 ? 0.06 : 0.035; penalty += 4; notes.push('chop regime de-risk: reduces AI override aggressiveness'); }
+  shrink = Math.max(0, Math.min(0.35, shrink));
+  const pA0 = Number.isFinite(Number(m.prob_above)) ? Number(m.prob_above) : null;
+  if(pA0 != null){
+    const pA = 50 + (pA0 - 50) * (1 - shrink);
+    m.prob_above_uncalibrated = Number(pA0.toFixed(1));
+    m.prob_below_uncalibrated = Number((100-pA0).toFixed(1));
+    m.prob_above = Number(pA.toFixed(1));
+    m.prob_below = Number((100-pA).toFixed(1));
+  }
+  const pAbove = (Number(m.prob_above || 50))/100;
+  const pBelow = 1 - pAbove;
+  const upCost = Number.isFinite(Number(features.upCost)) ? Number(features.upCost) : null;
+  const downCost = Number.isFinite(Number(features.downCost)) ? Number(features.downCost) : null;
+  const edgeAbove = upCost == null ? pAbove - 0.5 : pAbove - upCost;
+  const edgeBelow = downCost == null ? pBelow - 0.5 : pBelow - downCost;
+  const bestSide = pAbove >= pBelow ? 'ABOVE' : 'BELOW';
+  const bestProb = Math.max(pAbove, pBelow);
+  const bestEdge = bestSide === 'ABOVE' ? edgeAbove : edgeBelow;
+  const bestEv = bestSide === 'ABOVE' ? (upCost == null ? null : edgeAbove) : (downCost == null ? null : edgeBelow);
+  m.best_side = bestSide;
+  m.best_probability = pct01(bestProb);
+  m.best_edge = Number(bestEdge.toFixed(4));
+  m.expected_value = bestEv == null ? null : Number(bestEv.toFixed(4));
+  m.fair_max_above = Number(Math.max(0.01, Math.min(0.99, pAbove - 0.025)).toFixed(2));
+  m.fair_max_below = Number(Math.max(0.01, Math.min(0.99, pBelow - 0.025)).toFixed(2));
+  m.confidence = Math.max(0, Math.min(100, Number(m.confidence || 0) - penalty + bonus));
+  // Re-stage if calibration materially weakened the edge. This prevents AI override when recent evidence says the probability scale is too hot.
+  if(m.decision !== 'FIX_DATA'){
+    const strong = bestProb >= 0.76 && bestEdge > 0.025 && m.confidence >= 58;
+    const prep = bestProb >= 0.66 && bestEdge > 0.012 && m.confidence >= 52;
+    const wait = bestProb >= 0.58 && bestEdge > 0.004;
+    if(strong){ m.decision = bestSide; m.practical_action = 'ACT_NOW'; if(m.blocker && m.blocker !== 'none') m.blocker = notes.length ? 'evidence-calibrated but positive EV remains' : 'none'; }
+    else if(prep){ m.decision = bestSide; m.practical_action = 'PREPARE'; m.blocker = notes.length ? 'evidence calibration requires cleaner confirmation' : 'edge forming; wait for cleaner confirmation'; }
+    else if(wait){ m.decision = bestSide; m.practical_action = 'WAIT'; m.blocker = notes.length ? 'evidence calibration reduced edge below act-now threshold' : 'weak positive edge; not enough to enter yet'; }
+    else { m.decision = 'SIT_OUT'; m.practical_action = 'SIT_OUT'; m.blocker = notes.length ? 'evidence calibration neutralized the raw edge' : 'no positive EV edge after calibration'; }
+  }
+  m.calibration = { n, brier: Number.isFinite(brier)?Number(brier.toFixed(4)):null, shrink: Number(shrink.toFixed(3)), penalty, notes };
+  m.reasons = Array.isArray(m.reasons) ? m.reasons.slice(0,6) : [];
+  if(notes.length) m.reasons.push(...notes.slice(0,3));
+  m.hidden_risks = Array.isArray(m.hidden_risks) ? m.hidden_risks.slice(0,5) : [];
+  if(notes.length) m.hidden_risks.unshift('evidence calibration is actively de-risking this read');
+  return m;
+}
+function median(nums){ const a=nums.filter(Number.isFinite).sort((x,y)=>x-y); if(!a.length) return null; const mid=Math.floor(a.length/2); return a.length%2?a[mid]:(a[mid-1]+a[mid])/2; }
+async function fetchJsonTimed(name, url, parse, timeoutMs=SERVER_MARKET_TIMEOUT_MS){
+  const ctl = new AbortController();
+  const to = setTimeout(()=>ctl.abort(), timeoutMs);
+  try{
+    const r = await fetch(url, {cache:'no-store', signal:ctl.signal, headers:{'accept':'application/json'}});
+    if(!r.ok) throw new Error(`${name} HTTP ${r.status}`);
+    const j = await r.json();
+    const q = parse(j) || {};
+    const bid = finite(q.bid), ask = finite(q.ask), last = finite(q.last ?? q.price);
+    const mid = bid && ask ? (bid+ask)/2 : last;
+    if(!Number.isFinite(mid) || mid <= 0) throw new Error(`${name} no price`);
+    return {name, ok:true, price:mid, bid, ask, last, spreadBps:(bid&&ask&&mid)?((ask-bid)/mid*10000):null};
+  }catch(err){ return {name, ok:false, error:String(err?.message || err).slice(0,140)}; }
+  finally{ clearTimeout(to); }
+}
+async function fetchServerMarket(){
+  if(!SERVER_MARKET_VALIDATE) return {ok:false, disabled:true, venues:[], reason:'server market validation disabled'};
+  const jobs = [
+    fetchJsonTimed('Coinbase', 'https://api.exchange.coinbase.com/products/BTC-USD/ticker', j=>({last:j.price, bid:j.bid, ask:j.ask})),
+    fetchJsonTimed('Kraken', 'https://api.kraken.com/0/public/Ticker?pair=XBTUSD', j=>{const d=j?.result?.XXBTZUSD||j?.result?.XBTUSD; return {last:d?.c?.[0], bid:d?.b?.[0], ask:d?.a?.[0]};}),
+    fetchJsonTimed('Bitstamp', 'https://www.bitstamp.net/api/v2/ticker/btcusd/', j=>({last:j.last, bid:j.bid, ask:j.ask})),
+    fetchJsonTimed('Gemini', 'https://api.gemini.com/v1/pubticker/btcusd', j=>({last:j.last, bid:j.bid, ask:j.ask}))
+  ];
+  const settled = await Promise.allSettled(jobs);
+  const venues = settled.map(x=>x.status==='fulfilled'?x.value:{ok:false,error:String(x.reason||'rejected')});
+  const good = venues.filter(v=>v.ok && Number.isFinite(v.price));
+  const price = median(good.map(v=>v.price));
+  const dispersion = good.length > 1 ? Math.max(...good.map(v=>v.price))-Math.min(...good.map(v=>v.price)) : null;
+  const avgSpread = mean(good.map(v=>v.spreadBps).filter(Number.isFinite));
+  return {ok:good.length>=2 && Number.isFinite(price), price, count:good.length, dispersion, avgSpreadBps:avgSpread, venues};
+}
+async function enrichSnapshotWithServerMarket(snapshot){
+  const sm = await fetchServerMarket();
+  snapshot.serverMarket = sm;
+  const f = snapshot.independentFeatures || {};
+  if(sm && sm.ok){
+    const diff = Number.isFinite(Number(f.lastPrice)) ? Math.abs(Number(sm.price)-Number(f.lastPrice)) : null;
+    f.serverMarket = {ok:true, price:sm.price, count:sm.count, dispersion:sm.dispersion, avgSpreadBps:sm.avgSpreadBps, diffFromBrowser:diff};
+    f.dataWarnings = Array.isArray(f.dataWarnings) ? f.dataWarnings.slice(0,6) : [];
+    if(diff != null && diff <= 25) f.dataWarnings.push(`server market confirmed browser price (diff $${diff.toFixed(2)})`);
+    else if((diff == null || diff > 45) && sm.dispersion != null && sm.dispersion <= 45){
+      f.dataWarnings.push(`server market override: browser price differed by ${diff == null ? 'n/a' : '$'+diff.toFixed(2)}`);
+      f.lastPrice = sm.price;
+      f.venueDispersionDollars = sm.dispersion;
+      f.avgSpreadBps = f.avgSpreadBps ?? sm.avgSpreadBps;
+      f.dataTier = f.dataTier === 'CORE_MISSING' || f.dataTier === 'CORE_ONLY_INSUFFICIENT' ? 'SERVER_VALIDATED_FALLBACK' : f.dataTier;
+      f.dataUsable = Number.isFinite(Number(f.target)) && Number.isFinite(Number(f.timerMinutesLeft)) && Number(f.timerMinutesLeft) > 0;
+      f.hardDataBad = !f.dataUsable;
+    } else if(diff != null && diff > 45){
+      f.dataWarnings.push(`server/browser price mismatch $${diff.toFixed(2)} — AI confidence reduced`);
+      f.serverMismatch = true;
+    }
+    snapshot.independentFeatures = f;
+    const base = computeRawIndependentModel(f);
+    snapshot.rawIndependentModel = applyEvidenceCalibration(base, f, snapshot.calibrationContext || {});
+  } else {
+    f.serverMarket = {ok:false, reason:sm?.reason || 'server validation unavailable', count:sm?.count || 0};
+    f.dataWarnings = Array.isArray(f.dataWarnings) ? f.dataWarnings.slice(0,6) : [];
+    f.dataWarnings.push('server market validation unavailable; using browser packet');
+    snapshot.independentFeatures = f;
+  }
+  return snapshot;
+}
+function validateAiSchema(ai={}){
+  const allowedActions = new Set(['ACT_NOW','PREPARE','WAIT','SIT_OUT','DO_NOT_CHASE','FIX_DATA','NO_READ']);
+  const allowedDirections = new Set(['ABOVE','BELOW','SIT_OUT','FIX_DATA','UNKNOWN','NO_READ']);
+  if(!ai.independent_ai || typeof ai.independent_ai !== 'object') ai.independent_ai = {};
+  if(!ai.engine_read || typeof ai.engine_read !== 'object') ai.engine_read = {};
+  if(!ai.consensus || typeof ai.consensus !== 'object') ai.consensus = {};
+  ai.independent_ai.decision = String(ai.independent_ai.decision || 'NO_READ').toUpperCase();
+  if(!allowedDirections.has(ai.independent_ai.decision)) ai.independent_ai.decision = 'NO_READ';
+  ai.trade_read = String(ai.trade_read || ai.consensus.final_read || ai.independent_ai.trade_action || 'NO_READ').toUpperCase();
+  if(!allowedActions.has(ai.trade_read)) ai.trade_read = 'NO_READ';
+  ai.independent_ai.trade_action = String(ai.independent_ai.trade_action || ai.trade_read).toUpperCase();
+  if(!allowedActions.has(ai.independent_ai.trade_action)) ai.independent_ai.trade_action = ai.trade_read;
+  ai.independent_ai.confidence = clamp(ai.independent_ai.confidence,0,100,0);
+  ai.confidence = clamp(ai.confidence ?? ai.independent_ai.confidence,0,100,ai.independent_ai.confidence);
+  ['reasons','hidden_risks'].forEach(k=>{ if(!Array.isArray(ai.independent_ai[k])) ai.independent_ai[k] = []; ai.independent_ai[k]=ai.independent_ai[k].slice(0,5).map(x=>String(x).slice(0,220)); });
+  return ai;
+}
+
 function normalizeSnapshot(input) {
   const raw = input?.snapshot || input || {};
   const features = calcFeatures(raw);
-  const rawIndependentModel = computeRawIndependentModel(features);
+  const calibrationContext = extractCalibrationContext(raw);
+  const rawIndependentModelBase = computeRawIndependentModel(features);
+  const rawIndependentModel = applyEvidenceCalibration(rawIndependentModelBase, features, calibrationContext);
   const engineDecision = sideFromEngine(raw.engineRead || {});
   return {
+    clientSessionId: compactSessionId(raw.clientSessionId || raw.sessionId || raw.tabId || raw.snapshotMeta?.tabId || raw.snapshotMeta?.clientSessionId),
     timestamp: raw.timestamp || raw.ts || new Date().toISOString(),
     version: raw.version || 'unknown',
     trigger: raw.reason || 'manual',
@@ -286,10 +467,14 @@ function normalizeSnapshot(input) {
     decision: raw.decision || {},
     risk: raw.risk || {},
     rawMarket: raw.rawMarket || {},
+    aiDataStream: raw.aiDataStream || {},
+    previousAi: raw.previousAi || null,
     engineRead: raw.engineRead || {},
     evidenceTail: Array.isArray(raw.evidenceTail) ? raw.evidenceTail.slice(-20) : [],
     independentFeatures: features,
     rawIndependentModel,
+    calibrationContext,
+    serverMarket:null,
     engineExtracted: { decision: engineDecision, confidenceHint: Math.max(parsePercent(raw.engineRead?.chanceUp)||0, parsePercent(raw.engineRead?.chanceDown)||0) || null }
   };
 }
@@ -372,6 +557,40 @@ function independentPolicy(ai, snapshot){
   return out;
 }
 
+
+function marketMoveBpsFromCached(snapshot, cached){
+  const p0 = Number(cached?.lastPrice);
+  const p1 = Number(snapshot?.independentFeatures?.lastPrice);
+  if(!Number.isFinite(p0) || !Number.isFinite(p1) || p0 <= 0 || p1 <= 0) return Infinity;
+  return Math.abs((p1/p0 - 1) * 10000);
+}
+function cacheFreshEnoughForHold(snapshot, cached){
+  if(!cached || !cached.front || !cached.rawModel) return false;
+  const ageMs = Date.now() - Number(cached.t || 0);
+  if(!Number.isFinite(ageMs) || ageMs < 0 || ageMs > AI_HOLD_MAX_MS) return false;
+  const moveBps = marketMoveBpsFromCached(snapshot, cached);
+  if(moveBps > AI_HOLD_MAX_MOVE_BPS) return false;
+  const curDir = String(snapshot?.rawIndependentModel?.decision || '').toUpperCase();
+  const oldDir = String(cached.rawModel?.decision || '').toUpperCase();
+  const oldTrade = String(cached.front?.trade_read || '').toUpperCase();
+  if ((oldTrade === 'ACT_NOW' || oldTrade === 'PREPARE') && (curDir === 'ABOVE' || curDir === 'BELOW') && (oldDir === 'ABOVE' || oldDir === 'BELOW') && curDir !== oldDir) return false;
+  if (String(snapshot?.rawIndependentModel?.decision || '').toUpperCase() === 'FIX_DATA') return false;
+  return true;
+}
+function buildCachedAiHold(snapshot, cached){
+  const held = JSON.parse(JSON.stringify(cached.front));
+  const ageSec = Math.max(0, Math.round((Date.now() - Number(cached.t || 0))/1000));
+  const moveBps = marketMoveBpsFromCached(snapshot, cached);
+  held.health = 'DEGRADED';
+  held.reason = `OpenAI temporarily unavailable; holding last clean AI read from ${ageSec}s ago because current stream has not materially changed (${Number.isFinite(moveBps)?moveBps.toFixed(1):'n/a'} bps). Revalidate on the next successful AI cycle.`;
+  held.anomaly_warning = 'openai_degraded_recent_ai_hold';
+  held.main_blocker = held.main_blocker && held.main_blocker !== '—' ? held.main_blocker : 'temporary OpenAI delay; last clean AI read held';
+  held.confidence = Math.max(0, Math.min(100, Number(held.confidence || 0) - 5));
+  if(held.independent_ai) held.independent_ai.confidence = Math.max(0, Math.min(100, Number(held.independent_ai.confidence || held.confidence || 0) - 5));
+  if(held.consensus) { held.consensus.reason = held.reason; held.consensus.label = String(held.consensus.label || '') + '_HELD'; held.consensus.confidence = held.confidence; }
+  return held;
+}
+
 function normalizeAiForFrontend(obj, snapshot = {}) {
   const independent = obj?.independent_ai && typeof obj.independent_ai === 'object' ? obj.independent_ai : {};
   const engine = obj?.engine_read && typeof obj.engine_read === 'object' ? obj.engine_read : {};
@@ -444,6 +663,10 @@ function compactSnapshotForOpenAI(snapshot){
   const recentSeries = Array.isArray(sample.recentSeries) ? sample.recentSeries.slice(-80) : [];
   return {
     rawIndependentModel: raw,
+    aiDataStream: snapshot?.aiDataStream || {},
+    previousAi: snapshot?.previousAi || null,
+    calibrationContext: snapshot?.calibrationContext || {},
+    serverMarket: snapshot?.serverMarket || f.serverMarket || null,
     independentFeatures: {
       dataTier: f.dataTier, dataUsable: f.dataUsable, dataWarnings: f.dataWarnings,
       lastPrice: f.lastPrice, target: f.target, timerMinutesLeft: f.timerMinutesLeft,
@@ -451,7 +674,8 @@ function compactSnapshotForOpenAI(snapshot){
       venueDispersionDollars: f.venueDispersionDollars, avgSpreadBps: f.avgSpreadBps,
       freshVenueCount: f.freshVenueCount, quotedVenueCount: f.quotedVenueCount,
       softFreshVenueCount: f.softFreshVenueCount, softQuotedVenueCount: f.softQuotedVenueCount,
-      consensusAgeMs: f.consensusAgeMs, lastSeriesAgeSec: f.lastSeriesAgeSec, seriesCoverageSec: f.seriesCoverageSec
+      consensusAgeMs: f.consensusAgeMs, lastSeriesAgeSec: f.lastSeriesAgeSec, seriesCoverageSec: f.seriesCoverageSec,
+      serverMarket: f.serverMarket || null, serverMismatch: !!f.serverMismatch
     },
     marketPacket: {
       venues,
@@ -497,18 +721,19 @@ async function callOpenAIJsonWithRetry(messages){
   throw lastErr;
 }
 
-app.get('/', (_req,res)=>res.json({ok:true,service:'btc-ai-copilot-backend',version:'v76-openai-resilient-ai',endpoints:['/health','/analyze','/api/ai-review'],model:MODEL}));
-app.get('/health', (_req,res)=>res.json({ok:true,status:'healthy',version:'v76-openai-resilient-ai',time:new Date().toISOString(),model:MODEL}));
+app.get('/', (_req,res)=>res.json({ok:true,service:'btc-ai-copilot-backend',version:BACKEND_VERSION,endpoints:['/health','/analyze','/api/ai-review'],model:MODEL,server_market_validate:SERVER_MARKET_VALIDATE}));
+app.get('/health', (_req,res)=>res.json({ok:true,status:'healthy',version:BACKEND_VERSION,time:new Date().toISOString(),model:MODEL,server_market_validate:SERVER_MARKET_VALIDATE}));
 
 async function handleAnalyze(req,res){
   let snapshot;
   try { snapshot = normalizeSnapshot(req.body); } catch (err) { return res.status(400).json({ ok:false, health:'BROKEN', trade_read:'NO_READ', reason:'Invalid dashboard snapshot: '+err.message, main_blocker:'invalid_snapshot', max_price:null, anomaly_warning:'frontend_payload_mismatch', confidence:0 }); }
-  const system = `You are a professional raw-market-first AI analyst for BTC 15-minute prediction contracts. You are not a financial adviser and must not guarantee profit. Optimize for practical expected-value entries, not waiting for 99% certainty at the end. IMPORTANT: You are an independent execution analyst, not a narrator of the dashboard engine. CRITICAL ORDER: (1) Make your own independent direction AND trade action from rawIndependentModel, independentFeatures, rawMarket, setup costs, timer, volatility, target distance, and recent path only. Do not use the deterministic engine in this step. (2) Separate DIRECTION from TRADE ACTION: direction can be ABOVE/BELOW while trade action can be ACT_NOW/PREPARE/WAIT/SIT_OUT/DO_NOT_CHASE. (3) Use EV: a lower probability with a cheap contract can be a better trade than 99% at a 94c price. (4) ACT_NOW may be appropriate before 90-99% when probability, cost, EV edge, timing, and data are good. PREPARE means edge is forming but not clean enough to click. DO_NOT_CHASE means direction is likely but contract is overpriced or too late. (5) Only after your independent action is complete, compare with engineExtracted/engineRead. Engine disagreement is an alert, not an automatic veto. If the engine is merely conservative but your raw-market EV read is valid and same-direction, keep ACT_NOW or PREPARE and label engine caution separately. Only stand down automatically for true core-data failure or true opposite-direction conflict. Use FIX_DATA only when live price, target, timer, and recent venue/consensus/series fallbacks are not sufficient; do not use FIX_DATA merely because one venue is stale if a valid consensus or recent price path is present. (6) Return JSON only. No prose outside JSON.`;
+  try { snapshot = await enrichSnapshotWithServerMarket(snapshot); } catch (err) { console.error('[SERVER_MARKET_VALIDATION_ERROR]', err?.message || err); }
+  const system = `You are a professional AI-priority, v73-style independent raw-market analyst for BTC 15-minute prediction contracts. You receive a rolling live market tape plus server validation each cycle. You are not a financial adviser and must not guarantee profit. Optimize for practical expected-value entries, not waiting for 99% certainty at the end. IMPORTANT: You are an independent execution analyst, not a narrator of the dashboard engine. CRITICAL ORDER: (1) Make your own independent direction AND trade action from rawIndependentModel, independentFeatures, rawMarket, setup costs, timer, volatility, target distance, and recent path only. Do not use the deterministic engine in this step. (2) Separate DIRECTION from TRADE ACTION: direction can be ABOVE/BELOW while trade action can be ACT_NOW/PREPARE/WAIT/SIT_OUT/DO_NOT_CHASE. (3) Use EV: a lower probability with a cheap contract can be a better trade than 99% at a 94c price. (4) ACT_NOW may be appropriate before 90-99% when probability, cost, EV edge, timing, and data are good. PREPARE means edge is forming but not clean enough to click. DO_NOT_CHASE means direction is likely but contract is overpriced or too late. (5) Only after your independent action is complete, compare with engineExtracted/engineRead. Engine disagreement is an alert, not an automatic veto. If the engine is merely conservative but your raw-market EV read is valid and same-direction, keep ACT_NOW or PREPARE and label engine caution separately. Only stand down automatically for true core-data failure or true opposite-direction conflict. Use FIX_DATA only when live price, target, timer, and recent venue/consensus/series fallbacks are not sufficient; do not use FIX_DATA merely because one venue is stale if a valid consensus or recent price path is present. (6) Evidence calibration is a guardrail, not the boss: if calibrationContext says recent probabilities are clearly overconfident, shrink confidence/action aggressiveness; if sample is small, do not overreact. Preserve the independent AI-first read when the current raw market tape and EV are strong. (7) If serverMarket confirms browser price, trust the packet more; if server/browser disagree materially, reduce confidence or FIX_DATA only if core price is unusable. (8) Use aiDataStream/recentSeries as the continuous tape. Do not return FIX_DATA if the stream has fresh consensus/series fallback and target/timer/costs are present. Return JSON only. No prose outside JSON.`;
   const compactInput = compactSnapshotForOpenAI(snapshot);
-  const user = `RAW-MARKET-FIRST ANALYSIS INPUT. This is a compact but complete fresh packet. Use rawIndependentModel as quantitative baseline, marketPacket to confirm/override, and engineComparison only after independent decision:
+  const user = `RAW-MARKET-FIRST ANALYSIS INPUT. This is a compact but complete fresh packet. Use rawIndependentModel as quantitative baseline, calibrationContext to de-risk overconfident probabilities, serverMarket to verify browser data when present, marketPacket to confirm/override, and engineComparison only after independent decision:
 ${JSON.stringify(compactInput, null, 2)}
 
-Return exactly this JSON shape:
+Return JSON matching this schema; missing or malformed fields will be rejected/coerced by the backend:
 {
   "health":"OK|WATCH|DEGRADED|BROKEN",
   "independent_ai":{"decision":"ABOVE|BELOW|SIT_OUT|FIX_DATA","trade_action":"ACT_NOW|PREPARE|WAIT|SIT_OUT|DO_NOT_CHASE|FIX_DATA","confidence":0-100,"prob_above":0-100,"prob_below":0-100,"trend":"UP|DOWN|FLAT|MIXED","regime":"TREND|VOLATILE_TREND|RANGE|QUIET_RANGE|CHOP|UNKNOWN","volatility":"LOW|MEDIUM|HIGH|UNKNOWN","fair_max_above":number|null,"fair_max_below":number|null,"reason":"raw-market-only reason","blocker":"main raw-market blocker or none","max_price":number|null,"reasons":["up to five raw-market reasons"],"hidden_risks":["up to five risks the engine may miss"]},
@@ -525,17 +750,29 @@ Return exactly this JSON shape:
     const completion = await callOpenAIJsonWithRetry([{role:'system',content:system},{role:'user',content:user}]);
     let ai; const out = completion.choices?.[0]?.message?.content || '{}';
     try { ai = JSON.parse(out); } catch { ai = {health:'BROKEN',trade_read:'NO_READ',reason:out,main_blocker:'ai_json_parse',max_price:null,anomaly_warning:'AI returned non-JSON',confidence:0}; }
+    ai = validateAiSchema(ai);
     ai = independentPolicy(ai, snapshot);
     const front = normalizeAiForFrontend(ai, snapshot);
-    res.json({ ...front, ai:front, snapshotSummary:{ independentFeatures:snapshot.independentFeatures, rawIndependentModel:snapshot.rawIndependentModel, engineExtracted:snapshot.engineExtracted }, model:MODEL, time:new Date().toISOString(), backend_version:'v76-openai-resilient-ai' });
+    const sid = snapshot.clientSessionId || 'default';
+    if(front && front.trade_read !== 'NO_READ' && front.trade_read !== 'FIX_DATA'){
+      lastGoodAiBySession.set(sid, {t:Date.now(), front, rawModel:snapshot.rawIndependentModel, lastPrice:snapshot.independentFeatures?.lastPrice});
+      pruneAiCache();
+    }
+    res.json({ ...front, ai:front, snapshotSummary:{ independentFeatures:snapshot.independentFeatures, rawIndependentModel:snapshot.rawIndependentModel, engineExtracted:snapshot.engineExtracted, aiDataStream:snapshot.aiDataStream }, model:MODEL, time:new Date().toISOString(), backend_version:BACKEND_VERSION });
   } catch (err) {
     const msg = err?.message || String(err); console.error('[AI_ERROR]', msg);
+    const sid = snapshot.clientSessionId || 'default';
+    const cached = lastGoodAiBySession.get(sid);
+    if(cacheFreshEnoughForHold(snapshot, cached)){
+      const held = buildCachedAiHold(snapshot, cached);
+      return res.status(200).json({ ...held, ai:held, snapshotSummary:{ independentFeatures:snapshot.independentFeatures, rawIndependentModel:snapshot.rawIndependentModel, engineExtracted:snapshot.engineExtracted, aiDataStream:snapshot.aiDataStream }, model:MODEL, time:new Date().toISOString(), backend_version:BACKEND_VERSION, warning:'OpenAI temporarily unavailable; last clean AI read held against current stream.', error:'openai_degraded_recent_ai_hold' });
+    }
     const fallback = buildRawFallbackAi(snapshot, 'openai_degraded_local_ev_fallback');
     const front = normalizeAiForFrontend(fallback, snapshot);
-    res.status(200).json({ ...front, ai:front, snapshotSummary:{ independentFeatures:snapshot.independentFeatures, rawIndependentModel:snapshot.rawIndependentModel, engineExtracted:snapshot.engineExtracted }, model:MODEL, time:new Date().toISOString(), backend_version:'v76-openai-resilient-ai', warning:'OpenAI temporarily unavailable; fresh local EV fallback returned.', error:'openai_degraded_local_fallback' });
+    res.status(200).json({ ...front, ai:front, snapshotSummary:{ independentFeatures:snapshot.independentFeatures, rawIndependentModel:snapshot.rawIndependentModel, engineExtracted:snapshot.engineExtracted, aiDataStream:snapshot.aiDataStream }, model:MODEL, time:new Date().toISOString(), backend_version:BACKEND_VERSION, warning:'OpenAI temporarily unavailable; fresh local EV fallback returned.', error:'openai_degraded_local_fallback' });
   }
 }
 app.post('/analyze', rateLimit, handleAnalyze);
 app.post('/api/ai-review', rateLimit, handleAnalyze);
 app.use((err,_req,res,_next)=>{ console.error('[SERVER_ERROR]', err?.message || err); res.status(500).json({ok:false,health:'BROKEN',trade_read:'NO_READ',reason:err?.message||'Server error',main_blocker:'server_error',max_price:null,anomaly_warning:'backend_server_error',confidence:0}); });
-app.listen(PORT, () => console.log(`BTC AI backend v76 listening on port ${PORT}`));
+app.listen(PORT, () => console.log(`BTC AI backend ${BACKEND_VERSION} listening on port ${PORT}`));
