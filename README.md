@@ -1,29 +1,54 @@
-# BTC Signal v61 AI Copilot Backend
+# BTC Signal AI Copilot Backend v63
 
-This backend keeps your OpenAI API key off GitHub Pages. The dashboard sends live snapshots to this server, and the server returns advisory JSON for the AI Copilot panel.
+This is the Render-ready backend for the BTC Signal AI Copilot panel.
 
-## Setup
+## What it does
+
+- Keeps your OpenAI API key off GitHub Pages.
+- Provides `GET /health` for testing.
+- Provides `POST /analyze` for dashboard snapshots.
+- Returns structured AI advisory JSON.
+- Includes basic CORS, security headers, validation, and rate limiting.
+
+## Render settings
+
+Use these if Render asks:
+
+- Runtime: Node
+- Build Command: `npm install`
+- Start Command: `npm start`
+- Root Directory: leave blank
+
+Environment variables:
+
+- `OPENAI_API_KEY` = paste your new OpenAI API key directly into Render, never into GitHub or ChatGPT.
+- `OPENAI_MODEL` = `gpt-4o-mini` unless you want to change models.
+- `RATE_LIMIT_PER_MIN` = `30`
+
+## Test locally
 
 ```bash
-cd v61_ai_backend
-cp .env.example .env
-# edit .env and set OPENAI_API_KEY and OPENAI_MODEL
 npm install
-npm start
+npm test
+OPENAI_API_KEY=your_key_here npm start
 ```
 
-Then open the v61 HTML file and leave the backend URL as:
+Open:
 
 ```text
-http://localhost:8787/api/ai-review
+http://localhost:3000/health
 ```
 
-Click **AI local test** first, then **Start AI monitor**.
+## Dashboard connection
 
-## Safety rules
+After Render deploys, copy your Render URL, for example:
 
-The AI is advisory only. It does not execute trades, does not change thresholds, and does not override hard gates. During live trading it should flag problems and explain the dashboard state, not rewrite code.
+```text
+https://btc-ai-backend-xxxx.onrender.com
+```
 
-## Deployment
+Paste that into the AI Copilot backend URL field in the v61/v62 dashboard.
 
-For non-local use, deploy this backend on a server you control and set `ALLOWED_ORIGIN` to your GitHub Pages domain. Never put `OPENAI_API_KEY` in the HTML file.
+## Important
+
+This backend provides advisory analysis only. It must not override hard safety gates or execute trades automatically.
