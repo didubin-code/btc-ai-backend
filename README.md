@@ -1,12 +1,9 @@
-# BTC AI Backend v78 — AI-Priority Continuous Stream
+# BTC AI Backend v73 — Independent Execution AI
 
-Adds v73-style AI-priority independent execution on top of v77 evidence calibration.
+This version separates **direction** from **trade action**.
 
-Key changes:
-- Rolling AI data stream payload support from frontend.
-- Backend preserves last clean AI read per browser session and can hold it briefly during temporary OpenAI failures if the current market stream has not materially changed.
-- Longer OpenAI timeout and extra retry.
-- Local EV fallback remains available, but it no longer needlessly interrupts a recent valid AI read.
-- Engine conservatism remains a warning, not an automatic veto, unless data is unusable or there is true opposite-direction conflict.
-
-Deploy to Render with OPENAI_API_KEY set.
+- AI analyzes raw market data first.
+- AI returns direction: ABOVE / BELOW / SIT_OUT.
+- AI returns trade action: ACT_NOW / PREPARE / WAIT / DO_NOT_CHASE / SIT_OUT / FIX_DATA.
+- Engine comparison is advisory unless there is unusable data or true opposite-direction conflict.
+- If the engine is merely more conservative, the AI can still show ACT_NOW/PREPARE with a warning instead of being forced to SIT_OUT.
