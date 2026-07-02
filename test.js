@@ -4,11 +4,12 @@ const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
 const required = [
   "app.post('/analyze'",
   "app.post('/api/ai-review'",
-  'normalizeAiForFrontend',
-  'trade_read',
-  'anomaly_warning',
-  'snapshotSummary',
-  'v64-frontend-compatible'
+  'computeRawIndependentModel',
+  'practical_action',
+  'ACT_NOW',
+  'PREPARE',
+  'expected_value',
+  'v72-practical-entry-ai'
 ];
 const missing = required.filter(s => !server.includes(s));
 if (missing.length) {
@@ -19,4 +20,4 @@ if (!pkg.scripts?.start || !pkg.scripts?.test) {
   console.error('package.json scripts missing');
   process.exit(1);
 }
-console.log('v64 backend static tests passed');
+console.log('v72 practical entry backend static tests passed');

@@ -1,14 +1,17 @@
-# BTC AI Backend v71 — Full Independent AI
+# BTC AI Backend v72 — Practical Entry Independent AI
 
-This backend performs a raw-market-first independent analysis before comparing against the deterministic dashboard engine.
+This backend keeps the raw-market-first independent AI architecture but changes the goal from "wait for near-certainty" to practical expected-value entries.
 
-## v71 changes
-- Computes a server-side `rawIndependentModel` from venue mids, spreads, freshness, target distance, recent price path, volatility, timer, and costs.
-- Sends the AI raw market state plus the raw independent model first.
-- Engine output is provided only for the comparison stage.
-- Returns independent AI probabilities, trend/regime/volatility, fair max prices, hidden risks, and Engine vs AI consensus.
+## v72 changes
+
+- Independent model produces staged instructions: WAIT, PREPARE, ACT_NOW, SIT_OUT, FIX_DATA.
+- It uses raw probabilities, contract costs, EV edge, volatility, target cushion, venue freshness, and time remaining.
+- It no longer requires 99% certainty before becoming useful.
+- It still stands down on severe data risk, late fragile entries, or engine/AI conflict.
+- No real quantum computing is used; this is an advanced deterministic + AI ensemble approach.
 
 ## Render
+
 Build command: `npm install`
 Start command: `npm start`
-Environment variable: `OPENAI_API_KEY`
+Required env: `OPENAI_API_KEY`
