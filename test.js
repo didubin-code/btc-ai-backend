@@ -14,7 +14,10 @@ const required = [
   'CONSENSUS_FALLBACK',
   'SERIES_FALLBACK',
   'buildRawFallbackAi',
-  'v75-data-hardened-ai'
+  'compactSnapshotForOpenAI',
+  'callOpenAIJsonWithRetry',
+  'openai_degraded_local_ev_fallback',
+  'v76-openai-resilient-ai'
 ];
 const missing = required.filter(s => !server.includes(s));
 if (missing.length) {
@@ -25,4 +28,4 @@ if (!pkg.scripts?.start || !pkg.scripts?.test) {
   console.error('package.json scripts missing');
   process.exit(1);
 }
-console.log('v75 data-hardened AI backend static tests passed');
+console.log('v76 OpenAI-resilient AI backend static tests passed');

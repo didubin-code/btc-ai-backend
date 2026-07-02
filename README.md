@@ -1,19 +1,10 @@
-# BTC AI Backend v75 — Data-Hardened AI Feed
+# BTC AI Backend v76 — OpenAI-Resilient AI Feed
 
-Deploy on Render with Node 20+.
+Changes from v75:
+- Prevents a temporary OpenAI/API failure from killing the AI panel.
+- Uses a compact current-market packet to reduce latency and token size.
+- Adds OpenAI timeout/retry handling.
+- Falls back to a fresh local EV model from the same current snapshot if OpenAI is temporarily unavailable.
+- Keeps data-tier fallback logic from v75.
 
-## Required environment variables
-- `OPENAI_API_KEY`
-
-## Optional environment variables
-- `OPENAI_MODEL` default `gpt-4o-mini`
-- `ALLOWED_ORIGINS` default `*`
-- `RATE_LIMIT_PER_MIN` default `30`
-
-## Endpoints
-- `GET /health`
-- `POST /analyze`
-- `POST /api/ai-review`
-
-## v75 purpose
-Reduces false `FIX_DATA` outcomes by sending and using a tiered data packet: strict live venue mids, soft freshness fallback, consensus/BRTI packet, recent price-path fallback, timer, target, costs, and data diagnostics.
+Deploy by uploading these unzipped files to the Render-connected GitHub backend repo, then Manual Deploy latest commit.
