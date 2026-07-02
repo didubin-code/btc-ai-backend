@@ -8,7 +8,9 @@ const required = [
   'trade_read',
   'anomaly_warning',
   'snapshotSummary',
-  'v64-frontend-compatible'
+  'independent_ai',
+  'consensus',
+  'v69.0-independent-ai'
 ];
 const missing = required.filter(s => !server.includes(s));
 if (missing.length) {
@@ -19,4 +21,4 @@ if (!pkg.scripts?.start || !pkg.scripts?.test) {
   console.error('package.json scripts missing');
   process.exit(1);
 }
-console.log('v64 backend static tests passed');
+console.log('v69.0 backend static tests passed');
