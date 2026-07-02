@@ -1,9 +1,19 @@
-# BTC AI Backend v73 — Independent Execution AI
+# BTC AI Backend v75 — Data-Hardened AI Feed
 
-This version separates **direction** from **trade action**.
+Deploy on Render with Node 20+.
 
-- AI analyzes raw market data first.
-- AI returns direction: ABOVE / BELOW / SIT_OUT.
-- AI returns trade action: ACT_NOW / PREPARE / WAIT / DO_NOT_CHASE / SIT_OUT / FIX_DATA.
-- Engine comparison is advisory unless there is unusable data or true opposite-direction conflict.
-- If the engine is merely more conservative, the AI can still show ACT_NOW/PREPARE with a warning instead of being forced to SIT_OUT.
+## Required environment variables
+- `OPENAI_API_KEY`
+
+## Optional environment variables
+- `OPENAI_MODEL` default `gpt-4o-mini`
+- `ALLOWED_ORIGINS` default `*`
+- `RATE_LIMIT_PER_MIN` default `30`
+
+## Endpoints
+- `GET /health`
+- `POST /analyze`
+- `POST /api/ai-review`
+
+## v75 purpose
+Reduces false `FIX_DATA` outcomes by sending and using a tiered data packet: strict live venue mids, soft freshness fallback, consensus/BRTI packet, recent price-path fallback, timer, target, costs, and data diagnostics.

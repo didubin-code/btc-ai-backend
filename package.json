@@ -1,7 +1,7 @@
 {
   "name": "btc-ai-copilot-backend",
-  "version": "1.4.0",
-  "description": "Independent execution AI backend for BTC Signal v73.",
+  "version": "1.5.0",
+  "description": "Data-hardened AI backend for BTC Signal v75.",
   "type": "module",
   "main": "server.js",
   "engines": { "node": ">=20" },
