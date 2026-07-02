@@ -5,11 +5,12 @@ const required = [
   "app.post('/analyze'",
   "app.post('/api/ai-review'",
   'computeRawIndependentModel',
-  'practical_action',
-  'ACT_NOW',
-  'PREPARE',
+  'independentPolicy',
+  'AI_ACT_ENGINE_CONSERVATIVE',
+  'OPPOSITE_DIRECTION_STAND_DOWN',
+  'DO_NOT_CHASE',
   'expected_value',
-  'v72-practical-entry-ai'
+  'v73-independent-execution-ai'
 ];
 const missing = required.filter(s => !server.includes(s));
 if (missing.length) {
@@ -20,4 +21,4 @@ if (!pkg.scripts?.start || !pkg.scripts?.test) {
   console.error('package.json scripts missing');
   process.exit(1);
 }
-console.log('v72 practical entry backend static tests passed');
+console.log('v73 independent execution backend static tests passed');
