@@ -6,6 +6,7 @@ import OpenAI from 'openai';
 
 const PORT = Number(process.env.PORT || 3000);
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const OPENAI_TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS || 8000);
 const API_KEY = process.env.OPENAI_API_KEY;
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*').split(',').map(s => s.trim()).filter(Boolean);
 
@@ -337,8 +338,8 @@ function normalizeAiForFrontend(obj, snapshot = {}) {
   };
 }
 
-app.get('/', (_req,res)=>res.json({ok:true,service:'btc-ai-copilot-backend',version:'v73.1-data-guard-ai',endpoints:['/health','/analyze','/api/ai-review'],model:MODEL}));
-app.get('/health', (_req,res)=>res.json({ok:true,status:'healthy',version:'v73.1-data-guard-ai',time:new Date().toISOString(),model:MODEL}));
+app.get('/', (_req,res)=>res.json({ok:true,service:'btc-ai-copilot-backend',version:'v73.2-ai-watchdog',endpoints:['/health','/analyze','/api/ai-review'],model:MODEL}));
+app.get('/health', (_req,res)=>res.json({ok:true,status:'healthy',version:'v73.2-ai-watchdog',time:new Date().toISOString(),model:MODEL}));
 
 async function handleAnalyze(req,res){
   let snapshot;
@@ -346,12 +347,12 @@ async function handleAnalyze(req,res){
   const system = `You are a professional raw-market-first AI analyst for BTC 15-minute prediction contracts. You are not a financial adviser and must not guarantee profit. Optimize for practical expected-value entries, not waiting for 99% certainty at the end. IMPORTANT: You are an independent execution analyst, not a narrator of the dashboard engine. CRITICAL ORDER: (1) Make your own independent direction AND trade action from rawIndependentModel, independentFeatures, rawMarket, setup costs, timer, volatility, target distance, and recent path only. Do not use the deterministic engine in this step. (2) Separate DIRECTION from TRADE ACTION: direction can be ABOVE/BELOW while trade action can be ACT_NOW/PREPARE/WAIT/SIT_OUT/DO_NOT_CHASE. (3) Use EV: a lower probability with a cheap contract can be a better trade than 99% at a 94c price. (4) ACT_NOW may be appropriate before 90-99% when probability, cost, EV edge, timing, and data are good. PREPARE means edge is forming but not clean enough to click. DO_NOT_CHASE means direction is likely but contract is overpriced or too late. (5) Only after your independent action is complete, compare with engineExtracted/engineRead. Engine disagreement is an alert, not an automatic veto. Only stand down automatically for unusable data or true opposite-direction conflict. If dataTier is LIVE_SOFT, CONSENSUS_FALLBACK, or SERIES_FALLBACK, you may still analyze, but mention reduced data tier as a caution rather than returning FIX_DATA. (6) Return JSON only. No prose outside JSON.`;
   const user = `RAW-MARKET-FIRST ANALYSIS INPUT. Use rawIndependentModel as the non-engine raw quantitative baseline, then use rawMarket to check/override it if warranted:\n${JSON.stringify({ rawIndependentModel:snapshot.rawIndependentModel, independentFeatures:snapshot.independentFeatures, rawMarket:snapshot.rawMarket, setup:snapshot.setup, timer:snapshot.timer }, null, 2)}\n\nENGINE COMPARISON INPUT, USE ONLY AFTER INDEPENDENT DECISION:\n${JSON.stringify({ engineExtracted:snapshot.engineExtracted, engineRead:snapshot.engineRead, dashboardDecision:snapshot.decision, dashboardRisk:snapshot.risk }, null, 2)}\n\nReturn exactly this JSON shape:\n{\n  "health":"OK|WATCH|DEGRADED|BROKEN",\n  "independent_ai":{"decision":"ABOVE|BELOW|SIT_OUT|FIX_DATA","trade_action":"ACT_NOW|PREPARE|WAIT|SIT_OUT|DO_NOT_CHASE|FIX_DATA","confidence":0-100,"prob_above":0-100,"prob_below":0-100,"trend":"UP|DOWN|FLAT|MIXED","regime":"TREND|VOLATILE_TREND|RANGE|QUIET_RANGE|CHOP|UNKNOWN","volatility":"LOW|MEDIUM|HIGH|UNKNOWN","fair_max_above":number|null,"fair_max_below":number|null,"reason":"raw-market-only reason","blocker":"main raw-market blocker or none","max_price":number|null,"reasons":["up to five raw-market reasons"],"hidden_risks":["up to five risks the engine may miss"]},\n  "engine_read":{"decision":"ABOVE|BELOW|SIT_OUT|UNKNOWN","confidence":0-100,"reason":"brief summary of engine after comparison"},\n  "consensus":{"label":"AGREE_STRONG|AGREE_WEAK|AI_MORE_CONSERVATIVE|ENGINE_MORE_CONSERVATIVE|OPPOSITE_DIRECTION_STAND_DOWN|DATA_NOT_USABLE","final_read":"ACT_NOW|PREPARE|WAIT|SIT_OUT|DO_NOT_CHASE|FIX_DATA|NO_READ","confidence":0-100,"reason":"final comparison reason"},\n  "trade_read":"ACT_NOW|PREPARE|WAIT|SIT_OUT|DO_NOT_CHASE|FIX_DATA|NO_READ",\n  "reason":"one-sentence final instruction",\n  "main_blocker":"single biggest blocker",\n  "max_price":number|null,\n  "anomaly_warning":string|null,\n  "confidence":0-100\n}`;
   try {
-    const completion = await openai.chat.completions.create({ model: MODEL, temperature:0.08, response_format:{type:'json_object'}, messages:[{role:'system',content:system},{role:'user',content:user}] });
+    const completion = await openai.chat.completions.create({ model: MODEL, temperature:0.08, response_format:{type:'json_object'}, messages:[{role:'system',content:system},{role:'user',content:user}] }, { timeout: OPENAI_TIMEOUT_MS });
     let ai; const out = completion.choices?.[0]?.message?.content || '{}';
     try { ai = JSON.parse(out); } catch { ai = {health:'BROKEN',trade_read:'NO_READ',reason:out,main_blocker:'ai_json_parse',max_price:null,anomaly_warning:'AI returned non-JSON',confidence:0}; }
     ai = independentPolicy(ai, snapshot);
     const front = normalizeAiForFrontend(ai, snapshot);
-    res.json({ ...front, ai:front, snapshotSummary:{ independentFeatures:snapshot.independentFeatures, rawIndependentModel:snapshot.rawIndependentModel, engineExtracted:snapshot.engineExtracted }, model:MODEL, time:new Date().toISOString(), backend_version:'v73.1-data-guard-ai' });
+    res.json({ ...front, ai:front, snapshotSummary:{ independentFeatures:snapshot.independentFeatures, rawIndependentModel:snapshot.rawIndependentModel, engineExtracted:snapshot.engineExtracted }, model:MODEL, time:new Date().toISOString(), backend_version:'v73.2-ai-watchdog' });
   } catch (err) {
     const msg = err?.message || String(err); console.error('[AI_ERROR]', msg);
     res.status(502).json({ ok:false, health:'BROKEN', trade_read:'NO_READ', reason:msg, main_blocker:'openai_request_failed', max_price:null, anomaly_warning:'backend_openai_error', confidence:0, error:'openai_request_failed' });
@@ -360,4 +361,4 @@ async function handleAnalyze(req,res){
 app.post('/analyze', rateLimit, handleAnalyze);
 app.post('/api/ai-review', rateLimit, handleAnalyze);
 app.use((err,_req,res,_next)=>{ console.error('[SERVER_ERROR]', err?.message || err); res.status(500).json({ok:false,health:'BROKEN',trade_read:'NO_READ',reason:err?.message||'Server error',main_blocker:'server_error',max_price:null,anomaly_warning:'backend_server_error',confidence:0}); });
-app.listen(PORT, () => console.log(`BTC AI backend v73.1 listening on port ${PORT}`));
+app.listen(PORT, () => console.log(`BTC AI backend v73.2 listening on port ${PORT}`));

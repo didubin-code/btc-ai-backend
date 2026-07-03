@@ -10,7 +10,7 @@ const required = [
   'OPPOSITE_DIRECTION_STAND_DOWN',
   'DO_NOT_CHASE',
   'expected_value',
-  'v73.1-data-guard-ai',
+  'v73.2-ai-watchdog',
   'LIVE_SOFT',
   'CONSENSUS_FALLBACK',
   'SERIES_FALLBACK'
@@ -24,4 +24,4 @@ if (!pkg.scripts?.start || !pkg.scripts?.test) {
   console.error('package.json scripts missing');
   process.exit(1);
 }
-console.log('v73.1 data guard backend static tests passed');
+console.log('v73.2 data guard backend static tests passed');

@@ -1,14 +1,14 @@
-# BTC AI Backend v73.1 — Data Guard Independent AI
+# BTC AI Backend v73.2 AI Watchdog
 
-This keeps the v73 AI-first independent execution behavior but fixes repeated false FIX_DATA interruptions.
+Keeps v73/v73.1 independent AI-first behavior while improving reliability at 5-second polling.
 
 Changes:
-- Tiered market data validation: LIVE_STRICT, LIVE_SOFT, CONSENSUS_FALLBACK, SERIES_FALLBACK.
-- FIX_DATA only when there is no usable live consensus or recent price path.
-- Backend accepts soft/stale-but-usable feed packets instead of rejecting them immediately.
-- Keeps engine disagreement advisory unless data is truly unusable or there is true opposite-direction conflict.
-- render.yaml is set to Starter so the backend does not intentionally revert to Free when deployed via blueprint.
+- Adds backend OpenAI request timeout handling.
+- Keeps v73.1 data guard fallback behavior.
+- Version health returns v73.2-ai-watchdog.
 
-Use with frontend: index_v73_1_data_guard_ai.html
-Endpoint: /analyze
-Health: /health
+Deploy:
+1. Upload unzipped files to btc-ai-backend GitHub repo.
+2. Commit.
+3. Render Manual Deploy -> Deploy latest commit.
+4. Check /health.
