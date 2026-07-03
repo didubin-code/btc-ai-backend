@@ -1,0 +1,16 @@
+{
+  "name": "btc-ai-backend-v74-2-1-verified",
+  "version": "74.2.1",
+  "private": true,
+  "description": "BTC Signal backend with CF BRTI settlement-grade market feed and AI review.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test ../tests/*.test.js",
+    "check": "node --check server.js && node --check logic.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
