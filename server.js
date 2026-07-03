@@ -96,12 +96,12 @@ function computeRawIndependentModel(features){
   const bestCost = bestSide === 'ABOVE' ? upCost : downCost;
   const bestEv = bestSide === 'ABOVE' ? evAbove : evBelow;
   const sideTrendOK = (bestSide === 'ABOVE' && (trend === 'UP' || trend === 'FLAT')) || (bestSide === 'BELOW' && (trend === 'DOWN' || trend === 'FLAT')) || trend === 'MIXED';
-  const severeDataRisk = (dispersion || 0) > 45 || (spread || 0) > 12 || (f.freshVenueCount || 0) < 2;
+  const severeDataRisk = (dispersion || 0) > 90 || (spread || 0) > 18 || ((f.freshVenueCount || 0) < 1 && !String(f.dataTier||'').includes('FALLBACK'));
   const lateFragile = secondsLeft < 90 && bestProb < 0.82;
   let decision = 'SIT_OUT';          // directional decision: ABOVE / BELOW / SIT_OUT / FIX_DATA
   let action_stage = 'SIT_OUT';      // practical instruction: ACT_NOW / PREPARE / WAIT / SIT_OUT / FIX_DATA
   let blocker = 'no positive EV edge';
-  if(!dataUsable){ decision = 'FIX_DATA'; action_stage = 'FIX_DATA'; blocker = 'raw market data insufficient'; }
+  if(!dataUsable){ decision = 'FIX_DATA'; action_stage = 'FIX_DATA'; blocker = 'raw market data insufficient — no usable live consensus/series fallback'; }
   else if(severeDataRisk){ decision = 'SIT_OUT'; action_stage = 'SIT_OUT'; blocker = 'raw venue/spread risk too high'; }
   else if(lateFragile){ decision = 'SIT_OUT'; action_stage = 'SIT_OUT'; blocker = 'late entry without enough EV cushion'; }
   else if(bestProb >= 0.78 && bestEdge > 0.025 && confidence >= 60 && (!tooClose || bestEdge > 0.055)){
@@ -126,7 +126,7 @@ function computeRawIndependentModel(features){
     decision, confidence: Math.round(confidence), prob_above: pct01(pAbove), prob_below: pct01(pBelow),
     fair_max_above: Number(fairMaxAbove.toFixed(2)), fair_max_below: Number(fairMaxBelow.toFixed(2)),
     trend, regime, volatility, blocker,
-    raw_stats: { lastPrice:last, target, distanceToTargetBps:dist, move60Bps:move60, move180Bps:move180, volBps60:volBps60 == null ? null : Number(volBps60.toFixed(2)), venueDispersionDollars:dispersion, avgSpreadBps:spread, freshVenueCount:f.freshVenueCount, quotedVenueCount:f.quotedVenueCount, secondsLeft:Math.round(secondsLeft) },
+    raw_stats: { lastPrice:last, target, distanceToTargetBps:dist, move60Bps:move60, move180Bps:move180, volBps60:volBps60 == null ? null : Number(volBps60.toFixed(2)), venueDispersionDollars:dispersion, avgSpreadBps:spread, freshVenueCount:f.freshVenueCount, quotedVenueCount:f.quotedVenueCount, softFreshVenueCount:f.softFreshVenueCount, softQuotedVenueCount:f.softQuotedVenueCount, dataTier:f.dataTier, secondsLeft:Math.round(secondsLeft) },
     hidden_risks: hiddenRisks.slice(0,5),
     practical_action: action_stage,
     best_side: bestSide,
@@ -137,7 +137,7 @@ function computeRawIndependentModel(features){
       `raw probability Above ${pct01(pAbove)}% / Below ${pct01(pBelow)}%`,
       `trend ${trend}, regime ${regime}, volatility ${volatility}`,
       dist == null ? 'target distance unavailable' : `target distance ${Number(dist).toFixed(1)} bps`,
-      `fresh venues ${f.freshVenueCount}, quoted venues ${f.quotedVenueCount}`,
+      `data tier ${f.dataTier || 'UNKNOWN'}; fresh venues ${f.freshVenueCount}, quoted venues ${f.quotedVenueCount}`,
       `best side ${bestSide}, EV edge ${bestEv == null ? 'unknown' : (bestEv*100).toFixed(1)+' pts'}, stage ${action_stage}`,
       `fair max Above $${fairMaxAbove.toFixed(2)} / Below $${fairMaxBelow.toFixed(2)}`
     ]
@@ -156,24 +156,45 @@ function bps(a,b){ return a && b ? ((b/a)-1)*10000 : null; }
 function calcFeatures(raw={}) {
   const rm = raw.rawMarket || {};
   const venues = Array.isArray(rm.venues) ? rm.venues : [];
-  const series = Array.isArray(rm.recentSeries) ? rm.recentSeries.filter(x => Number.isFinite(Number(x.p))).map(x => ({t:Number(x.t), p:Number(x.p)})) : [];
-  const fresh = venues.filter(v => Number(v.ageMs) < 3500 && Number.isFinite(Number(v.price)));
-  const quoted = fresh.filter(v => Number.isFinite(Number(v.mid)));
-  const prices = fresh.map(v => Number(v.mid ?? v.price)).filter(Number.isFinite);
-  const last = series.length ? series[series.length-1].p : finite(raw.live?.price);
+  const series = Array.isArray(rm.recentSeries) ? rm.recentSeries
+    .filter(x => Number.isFinite(Number(x.p)))
+    .map(x => ({t:Number(x.t), p:Number(x.p)})) : [];
+  // v73.1: use a tiered feed model. A single stale venue should not kill AI if the
+  // dashboard has a fresh consensus/price path. Keep strict data preferred, but allow
+  // soft/consensus/series fallback so FIX_DATA only appears when truly unusable.
+  const strictFresh = venues.filter(v => Number(v.ageMs) < 4500 && Number.isFinite(Number(v.price)));
+  const softFresh = venues.filter(v => Number(v.ageMs) < 12000 && Number.isFinite(Number(v.price)));
+  const strictQuoted = strictFresh.filter(v => Number.isFinite(Number(v.mid)) || Number.isFinite(Number(v.price)));
+  const softQuoted = softFresh.filter(v => Number.isFinite(Number(v.mid)) || Number.isFinite(Number(v.price)));
+  const prices = (strictQuoted.length ? strictQuoted : softQuoted).map(v => Number(v.mid ?? v.price)).filter(Number.isFinite);
+  const seriesLast = series.length ? series[series.length-1].p : null;
+  const summaryLast = finite(rm.summary?.priceLast);
+  const livePrice = finite(raw.live?.price);
+  const last = seriesLast ?? livePrice ?? summaryLast;
   const first60 = series.filter(x => Number(x.t) <= 60)[0]?.p ?? series[0]?.p ?? null;
   const first180 = series[0]?.p ?? null;
   const move60Bps = finite(rm.summary?.move60Bps) ?? bps(first60, last);
   const move180Bps = finite(rm.summary?.move180Bps) ?? bps(first180, last);
   const dispersion = prices.length > 1 ? Math.max(...prices)-Math.min(...prices) : null;
-  const avgSpread = fresh.length ? fresh.map(v => finite(v.spreadBps)).filter(x=>x!=null).reduce((a,b)=>a+b,0) / Math.max(1,fresh.map(v => finite(v.spreadBps)).filter(x=>x!=null).length) : null;
+  const spreadVals = (strictFresh.length ? strictFresh : softFresh).map(v => finite(v.spreadBps)).filter(x=>x!=null);
+  const avgSpread = spreadVals.length ? spreadVals.reduce((a,b)=>a+b,0)/spreadVals.length : null;
   const target = finite(raw.setup?.target);
   const distBps = target && last ? ((last/target)-1)*10000 : null;
   const upCost = finite(raw.setup?.upCost), downCost = finite(raw.setup?.downCost);
   const timerMinutesLeft = finite(raw.timer?.minutesLeft);
+  const brtiConfidence = finite(raw.brti?.confidence);
+  const hasSeriesPath = series.length >= 6 && last && target;
+  const hasConsensus = livePrice && target && (brtiConfidence == null || brtiConfidence >= 35);
+  const strictOk = strictQuoted.length >= 2 && hasSeriesPath && (dispersion == null || dispersion <= 45);
+  const softOk = softQuoted.length >= 2 && hasSeriesPath && (dispersion == null || dispersion <= 75);
+  const consensusOk = hasConsensus && hasSeriesPath;
+  const seriesOk = hasSeriesPath && series.length >= 10;
+  const dataTier = strictOk ? 'LIVE_STRICT' : softOk ? 'LIVE_SOFT' : consensusOk ? 'CONSENSUS_FALLBACK' : seriesOk ? 'SERIES_FALLBACK' : 'FIX_DATA';
   return {
-    freshVenueCount: fresh.length,
-    quotedVenueCount: quoted.length,
+    freshVenueCount: strictFresh.length,
+    softFreshVenueCount: softFresh.length,
+    quotedVenueCount: strictQuoted.length,
+    softQuotedVenueCount: softQuoted.length,
     lastPrice: last,
     target,
     distanceToTargetBps: distBps,
@@ -184,8 +205,9 @@ function calcFeatures(raw={}) {
     upCost,
     downCost,
     timerMinutesLeft,
-    dataUsable: fresh.length >= 3 && quoted.length >= 2 && (dispersion == null || dispersion <= 30),
-    rawMarketSample: { venues: venues.slice(0,8), recentSeries: series.slice(-90), summary: rm.summary || null }
+    dataTier,
+    dataUsable: dataTier !== 'FIX_DATA',
+    rawMarketSample: { venues: venues.slice(0,8), recentSeries: series.slice(-120), summary: rm.summary || null }
   };
 }
 function normalizeSnapshot(input) {
@@ -315,13 +337,13 @@ function normalizeAiForFrontend(obj, snapshot = {}) {
   };
 }
 
-app.get('/', (_req,res)=>res.json({ok:true,service:'btc-ai-copilot-backend',version:'v73-independent-execution-ai',endpoints:['/health','/analyze','/api/ai-review'],model:MODEL}));
-app.get('/health', (_req,res)=>res.json({ok:true,status:'healthy',version:'v73-independent-execution-ai',time:new Date().toISOString(),model:MODEL}));
+app.get('/', (_req,res)=>res.json({ok:true,service:'btc-ai-copilot-backend',version:'v73.1-data-guard-ai',endpoints:['/health','/analyze','/api/ai-review'],model:MODEL}));
+app.get('/health', (_req,res)=>res.json({ok:true,status:'healthy',version:'v73.1-data-guard-ai',time:new Date().toISOString(),model:MODEL}));
 
 async function handleAnalyze(req,res){
   let snapshot;
   try { snapshot = normalizeSnapshot(req.body); } catch (err) { return res.status(400).json({ ok:false, health:'BROKEN', trade_read:'NO_READ', reason:'Invalid dashboard snapshot: '+err.message, main_blocker:'invalid_snapshot', max_price:null, anomaly_warning:'frontend_payload_mismatch', confidence:0 }); }
-  const system = `You are a professional raw-market-first AI analyst for BTC 15-minute prediction contracts. You are not a financial adviser and must not guarantee profit. Optimize for practical expected-value entries, not waiting for 99% certainty at the end. IMPORTANT: You are an independent execution analyst, not a narrator of the dashboard engine. CRITICAL ORDER: (1) Make your own independent direction AND trade action from rawIndependentModel, independentFeatures, rawMarket, setup costs, timer, volatility, target distance, and recent path only. Do not use the deterministic engine in this step. (2) Separate DIRECTION from TRADE ACTION: direction can be ABOVE/BELOW while trade action can be ACT_NOW/PREPARE/WAIT/SIT_OUT/DO_NOT_CHASE. (3) Use EV: a lower probability with a cheap contract can be a better trade than 99% at a 94c price. (4) ACT_NOW may be appropriate before 90-99% when probability, cost, EV edge, timing, and data are good. PREPARE means edge is forming but not clean enough to click. DO_NOT_CHASE means direction is likely but contract is overpriced or too late. (5) Only after your independent action is complete, compare with engineExtracted/engineRead. Engine disagreement is an alert, not an automatic veto. Only stand down automatically for unusable data or true opposite-direction conflict. (6) Return JSON only. No prose outside JSON.`;
+  const system = `You are a professional raw-market-first AI analyst for BTC 15-minute prediction contracts. You are not a financial adviser and must not guarantee profit. Optimize for practical expected-value entries, not waiting for 99% certainty at the end. IMPORTANT: You are an independent execution analyst, not a narrator of the dashboard engine. CRITICAL ORDER: (1) Make your own independent direction AND trade action from rawIndependentModel, independentFeatures, rawMarket, setup costs, timer, volatility, target distance, and recent path only. Do not use the deterministic engine in this step. (2) Separate DIRECTION from TRADE ACTION: direction can be ABOVE/BELOW while trade action can be ACT_NOW/PREPARE/WAIT/SIT_OUT/DO_NOT_CHASE. (3) Use EV: a lower probability with a cheap contract can be a better trade than 99% at a 94c price. (4) ACT_NOW may be appropriate before 90-99% when probability, cost, EV edge, timing, and data are good. PREPARE means edge is forming but not clean enough to click. DO_NOT_CHASE means direction is likely but contract is overpriced or too late. (5) Only after your independent action is complete, compare with engineExtracted/engineRead. Engine disagreement is an alert, not an automatic veto. Only stand down automatically for unusable data or true opposite-direction conflict. If dataTier is LIVE_SOFT, CONSENSUS_FALLBACK, or SERIES_FALLBACK, you may still analyze, but mention reduced data tier as a caution rather than returning FIX_DATA. (6) Return JSON only. No prose outside JSON.`;
   const user = `RAW-MARKET-FIRST ANALYSIS INPUT. Use rawIndependentModel as the non-engine raw quantitative baseline, then use rawMarket to check/override it if warranted:\n${JSON.stringify({ rawIndependentModel:snapshot.rawIndependentModel, independentFeatures:snapshot.independentFeatures, rawMarket:snapshot.rawMarket, setup:snapshot.setup, timer:snapshot.timer }, null, 2)}\n\nENGINE COMPARISON INPUT, USE ONLY AFTER INDEPENDENT DECISION:\n${JSON.stringify({ engineExtracted:snapshot.engineExtracted, engineRead:snapshot.engineRead, dashboardDecision:snapshot.decision, dashboardRisk:snapshot.risk }, null, 2)}\n\nReturn exactly this JSON shape:\n{\n  "health":"OK|WATCH|DEGRADED|BROKEN",\n  "independent_ai":{"decision":"ABOVE|BELOW|SIT_OUT|FIX_DATA","trade_action":"ACT_NOW|PREPARE|WAIT|SIT_OUT|DO_NOT_CHASE|FIX_DATA","confidence":0-100,"prob_above":0-100,"prob_below":0-100,"trend":"UP|DOWN|FLAT|MIXED","regime":"TREND|VOLATILE_TREND|RANGE|QUIET_RANGE|CHOP|UNKNOWN","volatility":"LOW|MEDIUM|HIGH|UNKNOWN","fair_max_above":number|null,"fair_max_below":number|null,"reason":"raw-market-only reason","blocker":"main raw-market blocker or none","max_price":number|null,"reasons":["up to five raw-market reasons"],"hidden_risks":["up to five risks the engine may miss"]},\n  "engine_read":{"decision":"ABOVE|BELOW|SIT_OUT|UNKNOWN","confidence":0-100,"reason":"brief summary of engine after comparison"},\n  "consensus":{"label":"AGREE_STRONG|AGREE_WEAK|AI_MORE_CONSERVATIVE|ENGINE_MORE_CONSERVATIVE|OPPOSITE_DIRECTION_STAND_DOWN|DATA_NOT_USABLE","final_read":"ACT_NOW|PREPARE|WAIT|SIT_OUT|DO_NOT_CHASE|FIX_DATA|NO_READ","confidence":0-100,"reason":"final comparison reason"},\n  "trade_read":"ACT_NOW|PREPARE|WAIT|SIT_OUT|DO_NOT_CHASE|FIX_DATA|NO_READ",\n  "reason":"one-sentence final instruction",\n  "main_blocker":"single biggest blocker",\n  "max_price":number|null,\n  "anomaly_warning":string|null,\n  "confidence":0-100\n}`;
   try {
     const completion = await openai.chat.completions.create({ model: MODEL, temperature:0.08, response_format:{type:'json_object'}, messages:[{role:'system',content:system},{role:'user',content:user}] });
@@ -329,7 +351,7 @@ async function handleAnalyze(req,res){
     try { ai = JSON.parse(out); } catch { ai = {health:'BROKEN',trade_read:'NO_READ',reason:out,main_blocker:'ai_json_parse',max_price:null,anomaly_warning:'AI returned non-JSON',confidence:0}; }
     ai = independentPolicy(ai, snapshot);
     const front = normalizeAiForFrontend(ai, snapshot);
-    res.json({ ...front, ai:front, snapshotSummary:{ independentFeatures:snapshot.independentFeatures, rawIndependentModel:snapshot.rawIndependentModel, engineExtracted:snapshot.engineExtracted }, model:MODEL, time:new Date().toISOString(), backend_version:'v73-independent-execution-ai' });
+    res.json({ ...front, ai:front, snapshotSummary:{ independentFeatures:snapshot.independentFeatures, rawIndependentModel:snapshot.rawIndependentModel, engineExtracted:snapshot.engineExtracted }, model:MODEL, time:new Date().toISOString(), backend_version:'v73.1-data-guard-ai' });
   } catch (err) {
     const msg = err?.message || String(err); console.error('[AI_ERROR]', msg);
     res.status(502).json({ ok:false, health:'BROKEN', trade_read:'NO_READ', reason:msg, main_blocker:'openai_request_failed', max_price:null, anomaly_warning:'backend_openai_error', confidence:0, error:'openai_request_failed' });
@@ -338,4 +360,4 @@ async function handleAnalyze(req,res){
 app.post('/analyze', rateLimit, handleAnalyze);
 app.post('/api/ai-review', rateLimit, handleAnalyze);
 app.use((err,_req,res,_next)=>{ console.error('[SERVER_ERROR]', err?.message || err); res.status(500).json({ok:false,health:'BROKEN',trade_read:'NO_READ',reason:err?.message||'Server error',main_blocker:'server_error',max_price:null,anomaly_warning:'backend_server_error',confidence:0}); });
-app.listen(PORT, () => console.log(`BTC AI backend v73 listening on port ${PORT}`));
+app.listen(PORT, () => console.log(`BTC AI backend v73.1 listening on port ${PORT}`));

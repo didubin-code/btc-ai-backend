@@ -1,9 +1,14 @@
-# BTC AI Backend v73 — Independent Execution AI
+# BTC AI Backend v73.1 — Data Guard Independent AI
 
-This version separates **direction** from **trade action**.
+This keeps the v73 AI-first independent execution behavior but fixes repeated false FIX_DATA interruptions.
 
-- AI analyzes raw market data first.
-- AI returns direction: ABOVE / BELOW / SIT_OUT.
-- AI returns trade action: ACT_NOW / PREPARE / WAIT / DO_NOT_CHASE / SIT_OUT / FIX_DATA.
-- Engine comparison is advisory unless there is unusable data or true opposite-direction conflict.
-- If the engine is merely more conservative, the AI can still show ACT_NOW/PREPARE with a warning instead of being forced to SIT_OUT.
+Changes:
+- Tiered market data validation: LIVE_STRICT, LIVE_SOFT, CONSENSUS_FALLBACK, SERIES_FALLBACK.
+- FIX_DATA only when there is no usable live consensus or recent price path.
+- Backend accepts soft/stale-but-usable feed packets instead of rejecting them immediately.
+- Keeps engine disagreement advisory unless data is truly unusable or there is true opposite-direction conflict.
+- render.yaml is set to Starter so the backend does not intentionally revert to Free when deployed via blueprint.
+
+Use with frontend: index_v73_1_data_guard_ai.html
+Endpoint: /analyze
+Health: /health

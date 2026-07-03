@@ -10,7 +10,10 @@ const required = [
   'OPPOSITE_DIRECTION_STAND_DOWN',
   'DO_NOT_CHASE',
   'expected_value',
-  'v73-independent-execution-ai'
+  'v73.1-data-guard-ai',
+  'LIVE_SOFT',
+  'CONSENSUS_FALLBACK',
+  'SERIES_FALLBACK'
 ];
 const missing = required.filter(s => !server.includes(s));
 if (missing.length) {
@@ -21,4 +24,4 @@ if (!pkg.scripts?.start || !pkg.scripts?.test) {
   console.error('package.json scripts missing');
   process.exit(1);
 }
-console.log('v73 independent execution backend static tests passed');
+console.log('v73.1 data guard backend static tests passed');
