@@ -1,0 +1,15 @@
+{
+  "name": "btc-openai-copilot-backend",
+  "version": "1.0.0",
+  "description": "Render backend for BTC Signal OpenAI copilot",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "test": "MOCK_OPENAI=1 PORT=19999 node test_backend.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {}
+}
