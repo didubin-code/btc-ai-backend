@@ -17,6 +17,10 @@ const OPENAI_MODEL = RAW_MODEL.replace('gpt-40', 'gpt-4o'); // protects against 
 
 const KALSHI_BASE = (process.env.KALSHI_BASE || 'https://api.elections.kalshi.com/trade-api/v2').replace(/\/+$/, '');
 const KALSHI_CACHE_MS = Number(process.env.KALSHI_CACHE_MS || 3000);
+const UPSTREAM_TIMEOUT_MS = Number(process.env.UPSTREAM_TIMEOUT_MS || 3200);
+const KALSHI_TIMEOUT_MS = Number(process.env.KALSHI_TIMEOUT_MS || 4500);
+const MARKET_STALE_MS = Number(process.env.MARKET_STALE_MS || 15000);
+let marketCache = { t: 0, data: null };
 let kalshiCache = { t: 0, key: '', data: null };
 
 function parseStrike(m) {
@@ -33,9 +37,7 @@ async function kalshiContext(targetStrike) {
   if (kalshiCache.data && kalshiCache.key === key && nowMs - kalshiCache.t < KALSHI_CACHE_MS) return kalshiCache.data;
   const nowSec = Math.floor(nowMs / 1000);
   const url = KALSHI_BASE + '/markets?status=open&limit=200&min_close_ts=' + nowSec + '&max_close_ts=' + (nowSec + 20 * 60);
-  const mr = await fetch(url, { headers: { accept: 'application/json' } });
-  if (!mr.ok) throw new Error('kalshi markets HTTP ' + mr.status);
-  const mj = await mr.json();
+  const mj = await fetchJson(url, KALSHI_TIMEOUT_MS);
   const all = Array.isArray(mj.markets) ? mj.markets : [];
   const btc = all.filter(m => /BTC/i.test(String(m.ticker || '') + ' ' + String(m.title || '')));
   if (!btc.length) throw new Error('no open BTC markets closing within 20min (' + all.length + ' total)');
@@ -56,8 +58,7 @@ async function kalshiContext(targetStrike) {
   }
   let ob = null;
   try {
-    const or_ = await fetch(KALSHI_BASE + '/markets/' + encodeURIComponent(mkt.ticker) + '/orderbook?depth=10', { headers: { accept: 'application/json' } });
-    if (or_.ok) ob = (await or_.json()).orderbook || null;
+    ob = (await fetchJson(KALSHI_BASE + '/markets/' + encodeURIComponent(mkt.ticker) + '/orderbook?depth=10', KALSHI_TIMEOUT_MS)).orderbook || null;
   } catch (_) {}
   const yesLv = (ob && Array.isArray(ob.yes) ? ob.yes : []).filter(x => Array.isArray(x) && x.length >= 2);
   const noLv = (ob && Array.isArray(ob.no) ? ob.no : []).filter(x => Array.isArray(x) && x.length >= 2);
@@ -121,13 +122,20 @@ function readBody(req) {
   });
 }
 
-async function fetchJson(url, timeoutMs = 3500) {
+async function fetchJson(url, timeoutMs = UPSTREAM_TIMEOUT_MS) {
   const ac = new AbortController();
-  const t = setTimeout(() => ac.abort(), timeoutMs);
+  let timedOut = false;
+  const t = setTimeout(() => {
+    timedOut = true;
+    try { ac.abort(); } catch (_) {}
+  }, timeoutMs);
   try {
-    const r = await fetch(url, { signal: ac.signal, headers: { 'User-Agent': 'btc-ai-backend/1.0' } });
+    const r = await fetch(url, { signal: ac.signal, headers: { 'User-Agent': 'btc-ai-backend/1.0', accept: 'application/json' } });
     if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
     return await r.json();
+  } catch (e) {
+    if (timedOut || e?.name === 'AbortError') throw new Error(`timeout after ${timeoutMs}ms`);
+    throw e;
   } finally {
     clearTimeout(t);
   }
@@ -152,25 +160,40 @@ async function getMarket() {
   ]);
 
   const venues = [];
+  const errors = [];
   for (const s of sources) {
     if (s.status === 'fulfilled' && s.value && Number.isFinite(s.value.price) && s.value.price > 1000) venues.push(s.value);
+    else errors.push(String(s.reason?.message || s.reason || 'bad venue'));
   }
-  if (!venues.length) throw new Error('No live BTC venues returned valid data');
+
+  if (!venues.length) {
+    if (marketCache.data && Date.now() - marketCache.t <= MARKET_STALE_MS) {
+      return { ...marketCache.data, ok: true, stale: true, staleAgeMs: Date.now() - marketCache.t, upstreamError: errors.slice(0, 4).join(' | '), ts: Date.now() };
+    }
+    throw new Error('No live BTC venues returned valid data: ' + errors.slice(0, 4).join(' | '));
+  }
+
   const prices = venues.map(v => v.price);
   const proxy = median(prices);
   const min = Math.min(...prices);
   const max = Math.max(...prices);
   const spreadBps = proxy ? ((max - min) / proxy) * 10000 : null;
   const confidence = Math.max(45, Math.min(100, Math.round(100 - (spreadBps || 0) * 4)));
-  return {
+  const data = {
     ok: true,
     ts: Date.now(),
+    price: proxy,
     proxy,
     confidence,
     spreadBps,
+    venueCount: venues.length,
+    venueNames: venues.map(v => v.venue).join(', '),
+    sources: venues.map(v => v.venue),
     venues,
     source: venues.map(v => v.venue).join(', ')
   };
+  marketCache = { t: Date.now(), data };
+  return data;
 }
 
 function compactSnapshot(s) {
@@ -467,11 +490,9 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && u.pathname === '/kalshi/context') {
       try {
         const data = await kalshiContext(u.searchParams.get('target'));
-        res.writeHead(200, { 'content-type': 'application/json' });
-        return res.end(JSON.stringify(data));
+        return send(res, 200, data);
       } catch (e) {
-        res.writeHead(200, { 'content-type': 'application/json' });
-        return res.end(JSON.stringify({ ok: false, error: String(e.message || e) }));
+        return send(res, 200, { ok: false, error: String(e.message || e), ts: Date.now() });
       }
     }
     if (req.method === 'GET' && (u.pathname === '/market' || u.pathname === '/btc')) {
@@ -490,4 +511,4 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => console.log(`btc-ai-backend listening on ${PORT}, model=${OPENAI_MODEL}`));
 
 // test exports (no effect in production)
-try { module.exports = { parseAiContent, normalizeDecision, normalizeAction, enforceCommitment }; } catch (_) {}
+try { module.exports = { parseAiContent, normalizeDecision, normalizeAction, enforceCommitment, fetchJson, getMarket }; } catch (_) {}
