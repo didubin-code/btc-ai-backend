@@ -1,7 +1,7 @@
 'use strict';
 
 /*
-  BTC v135 Independent AI Copilot Backend
+  BTC v136 Independent AI Copilot Backend
   Purpose: independent second-trader analysis for 15-minute BTC event contracts.
   Endpoints:
     GET  /health
@@ -25,7 +25,7 @@ function envNumber(name, fallback, min = -Infinity) {
 }
 
 const PORT = envNumber('PORT', 10000, 1);
-const SERVER_VERSION = 'v135-independent-ai-copilot';
+const SERVER_VERSION = 'v136-independent-ai-copilot';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const ENABLE_OPENAI = /^(0|false|no)$/i.test(process.env.ENABLE_OPENAI || '') ? false : (/^(1|true|yes)$/i.test(process.env.ENABLE_OPENAI || '') || !!OPENAI_API_KEY);
 const OPENAI_MODEL = String(process.env.OPENAI_MODEL || 'gpt-4o-mini').replace('gpt-40', 'gpt-4o');
@@ -82,13 +82,15 @@ function sideFromAction(a) {
 function normalizeAction(a) {
   const s = rawActionText(a);
   const side = sideFromAction(s);
-  // v134: preserve the side on exit commands when it exists. A bare EXIT is allowed, but
-  // active-position exits should be explicit as EXIT_ABOVE / EXIT_BELOW all the way through.
+  if (s === 'SIT_OUT' || s === 'NO_TRADE' || s === 'STAND_DOWN' || s.includes('SIT_OUT')) return 'SIT_OUT';
+  // v136: final command language is explicit: SIT_OUT when flat, HOLD/EXIT when active.
+  // WAIT is accepted from older AI responses but converted later by reviewDecision.
   if (s === 'EXIT' || s.startsWith('EXIT')) return side ? 'EXIT_' + side : 'EXIT';
   if (side && s.includes('HOLD')) return 'HOLD_' + side;
   if (side && (s.includes('TRADE') || s.includes('ENTER') || s.includes('BUY') || s.includes('TAKE'))) return 'TRADE_' + side;
   return 'WAIT';
 }
+function isFlatStandDownAction(a) { const s = normalizeAction(a); return s === 'WAIT' || s === 'SIT_OUT'; }
 function nowIsoDate() { return new Date().toISOString().slice(0, 10); }
 function resetDailyIfNeeded() {
   const k = nowIsoDate();
@@ -124,7 +126,7 @@ async function fetchJson(url, timeoutMs = MARKET_TIMEOUT_MS) {
   const ac = new AbortController();
   const t = setTimeout(() => { try { ac.abort(); } catch (_) {} }, timeoutMs);
   try {
-    const r = await fetch(url, { signal: ac.signal, headers: { 'User-Agent': 'btc-v135-independent-ai/1.0', accept: 'application/json' } });
+    const r = await fetch(url, { signal: ac.signal, headers: { 'User-Agent': 'btc-v136-independent-ai/1.0', accept: 'application/json' } });
     if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
     return await r.json();
   } finally { clearTimeout(t); }
@@ -459,7 +461,7 @@ function needsAiSecondLook(snapshot, reviewed) {
 }
 function normalizeDecision(d) {
   const obj = d && typeof d === 'object' ? d : {};
-  const action = normalizeAction(obj.action);
+  const action = normalizeAction(obj.action || obj.command || obj.decision || 'SIT_OUT');
   const side = sideFromAction(action) || String(obj.thesis || 'NONE').toUpperCase();
   return {
     action,
@@ -490,7 +492,7 @@ function reviewDecision(snapshot, decision) {
   const localSide = local.thesis;
   const score = Number.isFinite(local.score) ? local.score : opportunityScore(pr, risk);
   if (local.veto === 'NO_DATA_OR_TARGET' || local.veto === 'STALE_MARKET_DATA') {
-    d = { ...d, action: 'WAIT', confidence: 0, pSettle: null, thesis: local.thesis || 'NONE', timing: 'WAIT', why: local.why, risk: local.risk, invalidation: local.invalidation || d.invalidation || '', evidence: local.evidence || [], veto: local.veto, source: local.veto };
+    d = { ...d, action: 'SIT_OUT', confidence: 0, pSettle: null, thesis: local.thesis || 'NONE', timing: 'WAIT', why: local.why, risk: local.risk, invalidation: local.invalidation || d.invalidation || '', evidence: local.evidence || [], veto: local.veto, source: local.veto };
   }
   if (Number.isFinite(pr.pTouchStrike)) d.pTouchStrike = pr.pTouchStrike;
   if (Number.isFinite(pr.pSettleOpposite)) d.pSettleOpposite = pr.pSettleOpposite;
@@ -500,14 +502,17 @@ function reviewDecision(snapshot, decision) {
   if (aiSide === 'ABOVE' && Number.isFinite(pr.pAbove)) d.pSettle = pr.pAbove;
   if (aiSide === 'BELOW' && Number.isFinite(pr.pBelow)) d.pSettle = pr.pBelow;
   if (!(active === 'ABOVE' || active === 'BELOW') && (d.action.startsWith('EXIT') || d.action.startsWith('HOLD'))) {
-    d = { ...d, action: 'WAIT', timing: 'WAIT', thesis: 'NONE', why: 'Flat account: AI produced a position-management command, so it was converted to WAIT. ' + d.why, veto: 'FLAT_POSITION_AI_HOLD_EXIT' };
+    d = { ...d, action: 'SIT_OUT', timing: 'WAIT', thesis: 'NONE', why: 'Flat account: AI produced a position-management command, so it was converted to SIT_OUT. ' + d.why, veto: 'FLAT_POSITION_AI_HOLD_EXIT' };
   }
-  if ((active === 'ABOVE' || active === 'BELOW') && d.action === 'WAIT') {
+  if (!(active === 'ABOVE' || active === 'BELOW') && d.action === 'WAIT') {
+    d = { ...d, action: 'SIT_OUT', timing: 'WAIT', thesis: d.thesis || 'NONE', why: 'Flat account: bare WAIT normalized to explicit SIT_OUT. ' + d.why, veto: d.veto || 'NONE' };
+  }
+  if ((active === 'ABOVE' || active === 'BELOW') && isFlatStandDownAction(d.action)) {
     if (String(local.action || '').startsWith('EXIT')) {
-      d = { ...d, action: 'EXIT_' + active, timing: 'NOW', thesis: active, pSettle: local.pSettle, why: 'Active ' + active + ' position requires HOLD or EXIT, not bare WAIT. Local telemetry says the edge broke, so converted AI WAIT to EXIT_' + active + '/reassess. ' + d.why, veto: 'ACTIVE_POSITION_WAIT_TO_EXIT' };
+      d = { ...d, action: 'EXIT_' + active, timing: 'NOW', thesis: active, pSettle: local.pSettle, why: 'Active ' + active + ' position requires HOLD or EXIT, not bare WAIT/SIT_OUT. Local telemetry says the edge broke, so converted AI WAIT/SIT_OUT to EXIT_' + active + '/reassess. ' + d.why, veto: 'ACTIVE_POSITION_WAIT_TO_EXIT' };
     } else {
       const pWin = active === 'ABOVE' ? pr.pAbove : pr.pBelow;
-      d = { ...d, action: 'HOLD_' + active, timing: 'WAIT', thesis: active, pSettle: Number.isFinite(pWin) ? pWin : d.pSettle, why: 'Active ' + active + ' position requires HOLD or EXIT, not bare WAIT. AI WAIT converted to HOLD because no exit trigger was confirmed. ' + d.why, veto: 'ACTIVE_POSITION_WAIT_TO_HOLD' };
+      d = { ...d, action: 'HOLD_' + active, timing: 'WAIT', thesis: active, pSettle: Number.isFinite(pWin) ? pWin : d.pSettle, why: 'Active ' + active + ' position requires HOLD or EXIT, not bare WAIT/SIT_OUT. AI WAIT/SIT_OUT converted to HOLD because no exit trigger was confirmed. ' + d.why, veto: 'ACTIVE_POSITION_WAIT_TO_HOLD' };
     }
   }
   if ((active === 'ABOVE' || active === 'BELOW') && d.action.startsWith('HOLD') && String(local.action || '').startsWith('EXIT')) {
@@ -543,10 +548,13 @@ function reviewDecision(snapshot, decision) {
       if (impossibleAgainstGeometry) whyBits.push(`AI side ${aiSide} contradicts live price/strike geometry (${pr.gapBps.toFixed(2)}bps ${priceSignSide}) with low touch risk`);
       if (lastMinuteMismatch) whyBits.push('last-minute side mismatch with settlement geometry');
       if (earlyThin && highTouch && !explicitException) whyBits.push(`early thin gap with ${Math.round((pr.pTouchStrike || 0) * 100)}% touch-strike risk`);
-      d = { ...d, action: 'WAIT', timing: 'WAIT', thesis: aiSide || localSide || 'NONE', why: `AI trade rejected by fact-check governor: ${whyBits.join('; ')}.`, risk: 'fact_check_governor', evidence: (d.evidence || []).concat(whyBits.slice(0, 3)), veto: impossibleAgainstGeometry ? 'AI_SIDE_GEOMETRY_MISMATCH' : (earlyThin ? 'EARLY_THIN_TOUCH_RISK' : 'SANITY_GOVERNOR'), pTouchStrike: pr.pTouchStrike, pSettleOpposite: pr.pSettleOpposite };
+      d = { ...d, action: 'SIT_OUT', timing: 'WAIT', thesis: aiSide || localSide || 'NONE', why: `AI trade rejected by fact-check governor: ${whyBits.join('; ')}.`, risk: 'fact_check_governor', evidence: (d.evidence || []).concat(whyBits.slice(0, 3)), veto: impossibleAgainstGeometry ? 'AI_SIDE_GEOMETRY_MISMATCH' : (earlyThin ? 'EARLY_THIN_TOUCH_RISK' : 'SANITY_GOVERNOR'), pTouchStrike: pr.pTouchStrike, pSettleOpposite: pr.pSettleOpposite };
     }
   }
-  // v134: AI remains authority, but impossible-side/stale-telemetry contradictions are blocked.
+  if (!(active === 'ABOVE' || active === 'BELOW') && d.action === 'WAIT') {
+    d = { ...d, action: 'SIT_OUT', timing: 'WAIT', thesis: d.thesis || 'NONE', why: 'Flat account: final bare WAIT normalized to explicit SIT_OUT. ' + d.why };
+  }
+  // v136: AI remains the authority, but final action names are explicit and stable.
   // LocalPracticalDecision is retained for telemetry and sanity review only.
   d.review = { localAction: local.action, localWhy: local.why, dynamicReqP: risk.reqP, dynamicMinGapBps: risk.minGapBps, scoreNeed: risk.scoreNeed, opportunityScore: score, price: pr.price, target: pr.target, signedGapBps: pr.signedGapBps, geometrySide: pr.side, pAbove: pr.pAbove, pBelow: pr.pBelow, pSide: pr.pSide, pTouchStrike: pr.pTouchStrike, pSettleOpposite: pr.pSettleOpposite, pAdverseTail: pr.pAdverseTail, confidenceCeiling: pr.confidenceCeiling, gapBps: pr.gapBps, secondsLeft: pr.secondsLeft, reversalScore: pr.reversalScore, sideMomentum: pr.sideMomentum, rawSource };
   return d;
@@ -585,27 +593,27 @@ function stabilizeDecision(snapshot, decision, st) {
   if (active === 'ABOVE' || active === 'BELOW') { st.pendingWaitSide = null; st.pendingWaitSince = 0; return d; }
   const lastAction = normalizeAction(st.lastAction);
   const lastSide = sideFromAction(lastAction) || st.thesis;
-  if (action === 'WAIT' && lastAction.startsWith('TRADE') && (lastSide === 'ABOVE' || lastSide === 'BELOW')) {
+  if (isFlatStandDownAction(action) && lastAction.startsWith('TRADE') && (lastSide === 'ABOVE' || lastSide === 'BELOW')) {
     const pr = derivePractical(snapshot);
     const risk = dynamicRisk(pr);
     const veto = String(d.veto || 'NONE').toUpperCase();
-    const hardInvalidation = d.invalidation_hit === true || /NO_DATA|STALE|NO_OPENAI|AUTHORITY|AI_ERROR|CAP|DISABLED|OFFLINE|GEOMETRY|TARGET|CROSSED|OPPOSITE|MISMATCH|HARD/.test(veto);
+    const hardInvalidation = d.invalidation_hit === true || /NO_DATA|STALE|NO_OPENAI|AUTHORITY|AI_ERROR|CAP|DISABLED|OFFLINE|GEOMETRY|TARGET|CROSSED|OPPOSITE|MISMATCH|HARD|FLIP|REVERSAL/.test(veto);
+    // v136: single-command state machine. A prior actionable trade thesis stays live until
+    // current facts actually invalidate it; a generic AI SIT_OUT/WAIT cannot create flicker.
     if (!hardInvalidation && currentSupportsSide(pr, lastSide, risk)) {
       if (st.pendingWaitSide !== lastSide || !st.pendingWaitSince) { st.pendingWaitSide = lastSide; st.pendingWaitSince = Date.now(); }
-      const ageMs = Date.now() - st.pendingWaitSince;
-      if (ageMs <= 7500) {
-        const pFor = lastSide === 'ABOVE' ? pr.pAbove : pr.pBelow;
-        return { ...d, action: 'TRADE_' + lastSide, thesis: lastSide, timing: 'NOW', pSettle: Number.isFinite(pFor) ? pFor : d.pSettle, confidence: Math.min(pr.confidenceCeiling || 96, Math.max(55, d.confidence || 0)), why: 'Stability guard: AI returned a single WAIT after a fresh TRADE_' + lastSide + ', but live facts still support that thesis. Holding the signal briefly until WAIT is confirmed or the thesis is invalidated. ' + d.why, veto: 'AI_WAIT_UNCONFIRMED_STABILITY' };
-      }
+      const pFor = lastSide === 'ABOVE' ? pr.pAbove : pr.pBelow;
+      return { ...d, action: 'TRADE_' + lastSide, thesis: lastSide, timing: 'NOW', pSettle: Number.isFinite(pFor) ? pFor : d.pSettle, confidence: Math.min(pr.confidenceCeiling || 96, Math.max(55, d.confidence || 0)), why: 'v136 decision lock: prior AI trade thesis remains supported by current live facts, so generic SIT_OUT/WAIT is ignored until a concrete invalidation occurs. ' + d.why, veto: 'DECISION_LOCK_HELD' };
     }
   } else {
     st.pendingWaitSide = null; st.pendingWaitSince = 0;
   }
+  if (!(active === 'ABOVE' || active === 'BELOW') && d.action === 'WAIT') d = { ...d, action: 'SIT_OUT', timing: 'WAIT' };
   return d;
 }
 
 function aiSystemPrompt(kind) {
-  const base = `You are the independent AI Copilot for 15-minute BTC ABOVE/BELOW event contracts. You are the decision-maker, not a formatter for the local engine. The contract settles ABOVE or BELOW the target/strike, NOT above or below the current BTC price. Current BTC price only measures distance from the strike. Local telemetry is instrument data only, not an order. Decide what a practical human second trader should do NOW: WAIT, TRADE_ABOVE, TRADE_BELOW when flat; HOLD_ABOVE/HOLD_BELOW/EXIT when in a position. Use judgment across time left, distance to strike, P(settle), P(touch strike), P(settle opposite), drift, fresh 2/15/30s tape, venue spread, acceleration, reversal pressure, and contract price if supplied. Do not trade from probability alone. Never present 99% as practical certainty in BTC; last-minute jump/tail risk must cap confidence. Do not wait for perfection when price-vs-strike geometry is decisive and touch/opposite risk is low. Do not alternate TRADE and WAIT tick-to-tick; if the prior thesis remains supported by current facts, maintain it until a concrete invalidation occurs. Ground your conclusion in the facts: do not call a 7+ bps price-to-strike gap "small" unless the computed touch probability and tape justify that; do not call touch risk "notable" when P(touch strike) is low unless you identify a live adverse tape reason. Confidence must be an integer 0-100, not 0-1. Return compact JSON only with keys: action, confidence, pSettle, pTouchStrike, pSettleOpposite, thesis, timing, why, risk, invalidation, invalidation_hit, reasoning_class, evidence.`;
+  const base = `You are the independent AI Copilot for 15-minute BTC ABOVE/BELOW event contracts. You are the decision-maker, not a formatter for the local engine. The contract settles ABOVE or BELOW the target/strike, NOT above or below the current BTC price. Current BTC price only measures distance from the strike. Local telemetry is instrument data only, not an order. Decide what a practical human second trader should do NOW using only these final action families: SIT_OUT, TRADE_ABOVE, TRADE_BELOW when flat; HOLD_ABOVE, HOLD_BELOW, EXIT_ABOVE, EXIT_BELOW when in a position. Do not output bare WAIT when flat; use SIT_OUT. Do not output bare EXIT when active; include the side. Use judgment across time left, distance to strike, P(settle), P(touch strike), P(settle opposite), drift, fresh 2/15/30s tape, venue spread, acceleration, reversal pressure, and contract price if supplied. Do not trade from probability alone. Never present 99% as practical certainty in BTC; last-minute jump/tail risk must cap confidence. Do not wait for perfection when price-vs-strike geometry is decisive and touch/opposite risk is low. Do not alternate TRADE and WAIT tick-to-tick; if the prior thesis remains supported by current facts, maintain it until a concrete invalidation occurs. Ground your conclusion in the facts: do not call a 7+ bps price-to-strike gap "small" unless the computed touch probability and tape justify that; do not call touch risk "notable" when P(touch strike) is low unless you identify a live adverse tape reason. Confidence must be an integer 0-100, not 0-1. Return compact JSON only with keys: action, confidence, pSettle, pTouchStrike, pSettleOpposite, thesis, timing, why, risk, invalidation, invalidation_hit, reasoning_class, evidence. If you are uncertain while flat, action must be SIT_OUT, not WAIT.`;
   if (kind === 'audit') return base + ` You are now doing a second-look audit because the first AI answer may have contradicted the numeric facts. Be independent, but reconcile the facts explicitly. If you still choose WAIT while P(settle side) is very high, P(touch strike) is low, and P(settle opposite) is very low, name the concrete adverse tape/venue/liquidity reason. Otherwise issue the practical trade command.`;
   return base;
 }
@@ -637,7 +645,7 @@ async function openAIJson(messages) {
 }
 async function callOpenAI(snapshot, st) {
   const ctx = practicalContext(snapshot);
-  if (!ENABLE_OPENAI || !OPENAI_API_KEY) return { action: 'WAIT', confidence: 0, pSettle: null, thesis: 'NONE', timing: 'WAIT', why: 'Backend AI is OFF or missing OPENAI_API_KEY; refusing to issue a fake local-engine trade.', risk: 'no_openai_authority', invalidation: 'Set OPENAI_API_KEY on Render and confirm backend health shows AI ON.', evidence: ctx.readable.slice(0, 4), veto: 'NO_OPENAI_AUTHORITY', source: ENABLE_OPENAI ? 'LOCAL_NO_KEY_WAIT' : 'LOCAL_OPENAI_DISABLED_WAIT' };
+  if (!ENABLE_OPENAI || !OPENAI_API_KEY) return { action: 'SIT_OUT', confidence: 0, pSettle: null, thesis: 'NONE', timing: 'WAIT', why: 'Backend AI is OFF or missing OPENAI_API_KEY; refusing to issue a fake local-engine trade.', risk: 'no_openai_authority', invalidation: 'Set OPENAI_API_KEY on Render and confirm backend health shows AI ON.', evidence: ctx.readable.slice(0, 4), veto: 'NO_OPENAI_AUTHORITY', source: ENABLE_OPENAI ? 'LOCAL_NO_KEY_WAIT' : 'LOCAL_OPENAI_DISABLED_WAIT' };
   const user1 = {
     prior_ai_state: sessionForPrompt(st),
     decision_facts: ctx.facts,
@@ -717,10 +725,10 @@ function runSelfTests() {
   const stNoAuth = { thesis: 'BELOW', thesisStartedAt: Date.now(), lastAction: 'TRADE_BELOW', lastConfidence: 92, flips: 0, history: [], pendingWaitSide: null, pendingWaitSince: 0 };
   const dNoAuthNoHold = stabilizeDecision(strong, { action: 'WAIT', confidence: 0, pSettle: null, thesis: 'NONE', why: 'no openai', veto: 'NO_OPENAI_AUTHORITY' }, stNoAuth);
   return [
-    { name: 'early thin high-touch trade rejected by sanity governor', pass: d1.action === 'WAIT' && d1.veto === 'EARLY_THIN_TOUCH_RISK', got: d1.action + ' ' + d1.veto, why: d1.why },
+    { name: 'early thin high-touch trade rejected by sanity governor', pass: d1.action === 'SIT_OUT' && d1.veto === 'EARLY_THIN_TOUCH_RISK', got: d1.action + ' ' + d1.veto, why: d1.why },
     { name: 'strong late below obeys AI trade', pass: d2.action === 'TRADE_BELOW', got: d2.action },
     { name: 'mid-window catch-up obeys AI trade', pass: d3.action === 'TRADE_BELOW', got: d3.action },
-    { name: 'flat EXIT converts to WAIT', pass: flatExit.action === 'WAIT', got: flatExit.action },
+    { name: 'flat EXIT converts to SIT_OUT', pass: flatExit.action === 'SIT_OUT', got: flatExit.action },
     { name: 'v123 bad BELOW while price is above strike is blocked', pass: dBadBelow.action !== 'TRADE_BELOW', got: dBadBelow.action + ' ' + (dBadBelow.veto || 'NONE'), why: dBadBelow.why },
     { name: 'fractional AI confidence 0.99 is parsed as percent, then tail-risk capped rather than shown as 1%', pass: dGoodAboveConf.confidence > 80 && dGoodAboveConf.confidence < 99, got: dGoodAboveConf.confidence },
     { name: 'second-look trigger catches bad AI WAIT on far/low-touch setup', pass: needsAiSecondLook({ target: 61756.60, timer: { secondsLeft: 124 }, market: { price: 61911.32, spreadBps: 1.83 }, derived: { pAbove: .99, pBelow: .01, pTouchStrike: .15, pSettleOpposite: .01, gapBps: 25.05, signedGapBps: 25.05, m2: .04, m15: -1.11, m30: 2.64, driftBpsPerSec: -.069, reversalScore: 25, sideMomentum: 1.10 } }, { action: 'WAIT', confidence: 1, thesis: 'NONE', why: 'small distance to the strike and notable probability of touching the strike' }) === true, got: 'trigger' },
@@ -729,11 +737,11 @@ function runSelfTests() {
     { name: 'wrong-side AI probability cannot overwrite live geometry pSettle', pass: dBadBelow.pSettle < 0.18, got: dBadBelow.pSettle },
     { name: 'AI ABOVE display probability is tied to live geometry', pass: dGoodAboveBadPSettle.pSettle > 0.92 && dGoodAboveBadPSettle.pTouchStrike < 0.25 && dGoodAboveBadPSettle.pSettleOpposite < 0.08, got: { pSettle: dGoodAboveBadPSettle.pSettle, pTouchStrike: dGoodAboveBadPSettle.pTouchStrike, pSettleOpposite: dGoodAboveBadPSettle.pSettleOpposite } },
     { name: 'AI BELOW display probability is tied to live geometry', pass: dGoodBelowBadPSettle.pSettle > 0.90 && dGoodBelowBadPSettle.pTouchStrike < 0.25 && dGoodBelowBadPSettle.pSettleOpposite < 0.12, got: { pSettle: dGoodBelowBadPSettle.pSettle, pTouchStrike: dGoodBelowBadPSettle.pTouchStrike, pSettleOpposite: dGoodBelowBadPSettle.pSettleOpposite } },
-    { name: 'stale market data blocks otherwise strong AI trade', pass: stale.action === 'WAIT' && stale.veto === 'STALE_MARKET_DATA', got: stale.action + ' ' + stale.veto },
-    { name: 'backend stale-cache flag blocks otherwise strong AI trade', pass: staleCache.action === 'WAIT' && staleCache.veto === 'STALE_MARKET_DATA', got: staleCache.action + ' ' + staleCache.veto },
-    { name: 'missing target blocks AI trade instead of treating null/blank as zero', pass: missingTarget.action === 'WAIT' && missingTarget.veto === 'NO_DATA_OR_TARGET', got: missingTarget.action + ' ' + missingTarget.veto },
-    { name: 'blank target blocks AI trade instead of treating empty string as zero', pass: blankTarget.action === 'WAIT' && blankTarget.veto === 'NO_DATA_OR_TARGET', got: blankTarget.action + ' ' + blankTarget.veto },
-    { name: 'zero target blocks AI trade as invalid strike', pass: zeroTarget.action === 'WAIT' && zeroTarget.veto === 'NO_DATA_OR_TARGET', got: zeroTarget.action + ' ' + zeroTarget.veto },
+    { name: 'stale market data blocks otherwise strong AI trade', pass: stale.action === 'SIT_OUT' && stale.veto === 'STALE_MARKET_DATA', got: stale.action + ' ' + stale.veto },
+    { name: 'backend stale-cache flag blocks otherwise strong AI trade', pass: staleCache.action === 'SIT_OUT' && staleCache.veto === 'STALE_MARKET_DATA', got: staleCache.action + ' ' + staleCache.veto },
+    { name: 'missing target blocks AI trade instead of treating null/blank as zero', pass: missingTarget.action === 'SIT_OUT' && missingTarget.veto === 'NO_DATA_OR_TARGET', got: missingTarget.action + ' ' + missingTarget.veto },
+    { name: 'blank target blocks AI trade instead of treating empty string as zero', pass: blankTarget.action === 'SIT_OUT' && blankTarget.veto === 'NO_DATA_OR_TARGET', got: blankTarget.action + ' ' + blankTarget.veto },
+    { name: 'zero target blocks AI trade as invalid strike', pass: zeroTarget.action === 'SIT_OUT' && zeroTarget.veto === 'NO_DATA_OR_TARGET', got: zeroTarget.action + ' ' + zeroTarget.veto },
     { name: 'null AI probability fields do not normalize into fake 0%', pass: waitNullFields.pSettle === null, got: { pSettle: waitNullFields.pSettle, pTouchStrike: waitNullFields.pTouchStrike, pSettleOpposite: waitNullFields.pSettleOpposite } },
     { name: 'active same-side AI trade converts to HOLD, not duplicate entry', pass: activeSame.action === 'HOLD_BELOW' && activeSame.veto === 'ACTIVE_POSITION_TRADE_TO_HOLD', got: activeSame.action + ' ' + activeSame.veto },
     { name: 'active opposite AI trade converts to EXIT, not new entry', pass: activeOpposite.action === 'EXIT_ABOVE' && activeOpposite.veto === 'ACTIVE_POSITION_OPPOSITE_TRADE_EXIT', got: activeOpposite.action + ' ' + activeOpposite.veto },
@@ -742,8 +750,8 @@ function runSelfTests() {
     { name: 'active AI EXIT preserves explicit side', pass: activeAiExitSide.action === 'EXIT_BELOW' && activeAiExitSide.thesis === 'BELOW', got: activeAiExitSide.action + ' ' + activeAiExitSide.thesis },
     { name: 'last-minute large-cushion confidence is tail-risk capped, not displayed as 99%', pass: dTailCap.action === 'TRADE_ABOVE' && dTailCap.confidence < 97 && dTailCap.pSettle < 0.97 && dTailCap.review.pAdverseTail >= 0.03, got: { action: dTailCap.action, confidence: dTailCap.confidence, pSettle: dTailCap.pSettle, tail: dTailCap.review.pAdverseTail } },
     { name: 'active last-minute adverse flip risk exits instead of holding stale 99%', pass: dLastMinuteExit.action === 'EXIT_ABOVE' && dLastMinuteExit.veto === 'LAST_MINUTE_FLIP_RISK', got: { action: dLastMinuteExit.action, veto: dLastMinuteExit.veto, why: dLastMinuteExit.why } },
-    { name: 'v135 stability guard holds one unconfirmed WAIT after trade if live thesis still valid', pass: dStabilityHold.action === 'TRADE_BELOW' && dStabilityHold.veto === 'AI_WAIT_UNCONFIRMED_STABILITY', got: { action: dStabilityHold.action, veto: dStabilityHold.veto } },
-    { name: 'v135 stability guard does not override no-OpenAI/no-authority WAIT', pass: dNoAuthNoHold.action === 'WAIT' && dNoAuthNoHold.veto === 'NO_OPENAI_AUTHORITY', got: { action: dNoAuthNoHold.action, veto: dNoAuthNoHold.veto } }
+    { name: 'v136 decision lock holds supported trade through generic SIT_OUT/WAIT', pass: dStabilityHold.action === 'TRADE_BELOW' && dStabilityHold.veto === 'DECISION_LOCK_HELD', got: { action: dStabilityHold.action, veto: dStabilityHold.veto } },
+    { name: 'v136 decision lock does not override no-OpenAI/no-authority SIT_OUT', pass: dNoAuthNoHold.action === 'SIT_OUT' && dNoAuthNoHold.veto === 'NO_OPENAI_AUTHORITY', got: { action: dNoAuthNoHold.action, veto: dNoAuthNoHold.veto } }
   ];
 }
 
