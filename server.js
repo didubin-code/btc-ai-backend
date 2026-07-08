@@ -1,7 +1,7 @@
 'use strict';
 
 /*
-  BTC v134 Independent AI Copilot Backend
+  BTC v135 Independent AI Copilot Backend
   Purpose: independent second-trader analysis for 15-minute BTC event contracts.
   Endpoints:
     GET  /health
@@ -25,7 +25,7 @@ function envNumber(name, fallback, min = -Infinity) {
 }
 
 const PORT = envNumber('PORT', 10000, 1);
-const SERVER_VERSION = 'v134-independent-ai-copilot';
+const SERVER_VERSION = 'v135-independent-ai-copilot';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const ENABLE_OPENAI = /^(0|false|no)$/i.test(process.env.ENABLE_OPENAI || '') ? false : (/^(1|true|yes)$/i.test(process.env.ENABLE_OPENAI || '') || !!OPENAI_API_KEY);
 const OPENAI_MODEL = String(process.env.OPENAI_MODEL || 'gpt-4o-mini').replace('gpt-40', 'gpt-4o');
@@ -124,7 +124,7 @@ async function fetchJson(url, timeoutMs = MARKET_TIMEOUT_MS) {
   const ac = new AbortController();
   const t = setTimeout(() => { try { ac.abort(); } catch (_) {} }, timeoutMs);
   try {
-    const r = await fetch(url, { signal: ac.signal, headers: { 'User-Agent': 'btc-v134-independent-ai/1.0', accept: 'application/json' } });
+    const r = await fetch(url, { signal: ac.signal, headers: { 'User-Agent': 'btc-v135-independent-ai/1.0', accept: 'application/json' } });
     if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
     return await r.json();
   } finally { clearTimeout(t); }
@@ -177,7 +177,7 @@ async function getMarket() {
 
 function getSession(id) {
   const key = String(id || 'default').slice(0, 80);
-  if (!sessions.has(key)) sessions.set(key, { thesis: 'NONE', thesisStartedAt: 0, lastAction: 'WAIT', lastConfidence: 0, flips: 0, history: [] });
+  if (!sessions.has(key)) sessions.set(key, { thesis: 'NONE', thesisStartedAt: 0, lastAction: 'WAIT', lastConfidence: 0, flips: 0, history: [], pendingWaitSide: null, pendingWaitSince: 0 });
   return sessions.get(key);
 }
 function compactSnapshot(s) {
@@ -565,8 +565,47 @@ function sessionForPrompt(st) {
   return { currentThesis: st.thesis, thesisAgeSec: st.thesisStartedAt ? Math.round((Date.now() - st.thesisStartedAt) / 1000) : 0, lastAction: st.lastAction, lastConfidence: st.lastConfidence, thesisFlips: st.flips, lastDecisions: st.history };
 }
 
+function currentSupportsSide(pr, side, risk) {
+  if (!(side === 'ABOVE' || side === 'BELOW')) return false;
+  if (!Number.isFinite(pr.price) || !Number.isFinite(pr.target) || pr.target <= 0 || pr.marketStaleFlag) return false;
+  const signSide = Number.isFinite(pr.signedGapBps) ? (pr.signedGapBps >= 0 ? 'ABOVE' : 'BELOW') : null;
+  const pFor = side === 'ABOVE' ? pr.pAbove : pr.pBelow;
+  const req = Math.max(0.56, (risk && Number.isFinite(risk.reqP) ? risk.reqP : 0.62) - 0.08);
+  const sameSide = signSide === side;
+  const notHot = !Number.isFinite(pr.reversalScore) || pr.reversalScore < 78;
+  const touchOk = !Number.isFinite(pr.pTouchStrike) || pr.pTouchStrike < (pr.secondsLeft > 720 ? 0.62 : 0.72);
+  return sameSide && Number.isFinite(pFor) && pFor >= req && notHot && touchOk;
+}
+function stabilizeDecision(snapshot, decision, st) {
+  let d = normalizeDecision(decision);
+  const active = String(snapshot.activeTrade || '').toUpperCase();
+  const action = normalizeAction(d.action);
+  const actionSide = sideFromAction(action) || d.thesis;
+  if (action.startsWith('TRADE')) { st.pendingWaitSide = null; st.pendingWaitSince = 0; return d; }
+  if (active === 'ABOVE' || active === 'BELOW') { st.pendingWaitSide = null; st.pendingWaitSince = 0; return d; }
+  const lastAction = normalizeAction(st.lastAction);
+  const lastSide = sideFromAction(lastAction) || st.thesis;
+  if (action === 'WAIT' && lastAction.startsWith('TRADE') && (lastSide === 'ABOVE' || lastSide === 'BELOW')) {
+    const pr = derivePractical(snapshot);
+    const risk = dynamicRisk(pr);
+    const veto = String(d.veto || 'NONE').toUpperCase();
+    const hardInvalidation = d.invalidation_hit === true || /NO_DATA|STALE|NO_OPENAI|AUTHORITY|AI_ERROR|CAP|DISABLED|OFFLINE|GEOMETRY|TARGET|CROSSED|OPPOSITE|MISMATCH|HARD/.test(veto);
+    if (!hardInvalidation && currentSupportsSide(pr, lastSide, risk)) {
+      if (st.pendingWaitSide !== lastSide || !st.pendingWaitSince) { st.pendingWaitSide = lastSide; st.pendingWaitSince = Date.now(); }
+      const ageMs = Date.now() - st.pendingWaitSince;
+      if (ageMs <= 7500) {
+        const pFor = lastSide === 'ABOVE' ? pr.pAbove : pr.pBelow;
+        return { ...d, action: 'TRADE_' + lastSide, thesis: lastSide, timing: 'NOW', pSettle: Number.isFinite(pFor) ? pFor : d.pSettle, confidence: Math.min(pr.confidenceCeiling || 96, Math.max(55, d.confidence || 0)), why: 'Stability guard: AI returned a single WAIT after a fresh TRADE_' + lastSide + ', but live facts still support that thesis. Holding the signal briefly until WAIT is confirmed or the thesis is invalidated. ' + d.why, veto: 'AI_WAIT_UNCONFIRMED_STABILITY' };
+      }
+    }
+  } else {
+    st.pendingWaitSide = null; st.pendingWaitSince = 0;
+  }
+  return d;
+}
+
 function aiSystemPrompt(kind) {
-  const base = `You are the independent AI Copilot for 15-minute BTC ABOVE/BELOW event contracts. You are the decision-maker, not a formatter for the local engine. The contract settles ABOVE or BELOW the target/strike, NOT above or below the current BTC price. Current BTC price only measures distance from the strike. Local telemetry is instrument data only, not an order. Decide what a practical human second trader should do NOW: WAIT, TRADE_ABOVE, TRADE_BELOW when flat; HOLD_ABOVE/HOLD_BELOW/EXIT when in a position. Use judgment across time left, distance to strike, P(settle), P(touch strike), P(settle opposite), drift, fresh 2/15/30s tape, venue spread, acceleration, reversal pressure, and contract price if supplied. Do not trade from probability alone. Never present 99% as practical certainty in BTC; last-minute jump/tail risk must cap confidence. Do not wait for perfection when price-vs-strike geometry is decisive and touch/opposite risk is low. Ground your conclusion in the facts: do not call a 7+ bps price-to-strike gap "small" unless the computed touch probability and tape justify that; do not call touch risk "notable" when P(touch strike) is low unless you identify a live adverse tape reason. Confidence must be an integer 0-100, not 0-1. Return compact JSON only with keys: action, confidence, pSettle, pTouchStrike, pSettleOpposite, thesis, timing, why, risk, invalidation, invalidation_hit, reasoning_class, evidence.`;
+  const base = `You are the independent AI Copilot for 15-minute BTC ABOVE/BELOW event contracts. You are the decision-maker, not a formatter for the local engine. The contract settles ABOVE or BELOW the target/strike, NOT above or below the current BTC price. Current BTC price only measures distance from the strike. Local telemetry is instrument data only, not an order. Decide what a practical human second trader should do NOW: WAIT, TRADE_ABOVE, TRADE_BELOW when flat; HOLD_ABOVE/HOLD_BELOW/EXIT when in a position. Use judgment across time left, distance to strike, P(settle), P(touch strike), P(settle opposite), drift, fresh 2/15/30s tape, venue spread, acceleration, reversal pressure, and contract price if supplied. Do not trade from probability alone. Never present 99% as practical certainty in BTC; last-minute jump/tail risk must cap confidence. Do not wait for perfection when price-vs-strike geometry is decisive and touch/opposite risk is low. Do not alternate TRADE and WAIT tick-to-tick; if the prior thesis remains supported by current facts, maintain it until a concrete invalidation occurs. Ground your conclusion in the facts: do not call a 7+ bps price-to-strike gap "small" unless the computed touch probability and tape justify that; do not call touch risk "notable" when P(touch strike) is low unless you identify a live adverse tape reason. Confidence must be an integer 0-100, not 0-1. Return compact JSON only with keys: action, confidence, pSettle, pTouchStrike, pSettleOpposite, thesis, timing, why, risk, invalidation, invalidation_hit, reasoning_class, evidence.`;
   if (kind === 'audit') return base + ` You are now doing a second-look audit because the first AI answer may have contradicted the numeric facts. Be independent, but reconcile the facts explicitly. If you still choose WAIT while P(settle side) is very high, P(touch strike) is low, and P(settle opposite) is very low, name the concrete adverse tape/venue/liquidity reason. Otherwise issue the practical trade command.`;
   return base;
 }
@@ -633,12 +672,14 @@ async function handleAi(req, res) {
   const started = Date.now();
   try {
     const raw = await callOpenAI(snapshot, st);
-    const decision = reviewDecision(snapshot, raw);
+    let decision = reviewDecision(snapshot, raw);
+    decision = stabilizeDecision(snapshot, decision, st);
     updateSession(st, decision);
     return send(res, 200, { ok: true, version: SERVER_VERSION, openaiEnabled: ENABLE_OPENAI && !!OPENAI_API_KEY, model: raw.modelUsed || raw.source || 'local', dayCalls, cap: AI_MAX_CALLS_PER_DAY, latencyMs: Date.now() - started, decision, aiState: sessionForPrompt(st) });
   } catch (e) {
     const local = localPracticalDecision(snapshot);
-    const fallback = reviewDecision(snapshot, { action: 'WAIT', confidence: 0, thesis: 'NONE', timing: 'WAIT', why: 'AI backend error; refusing to issue a fake local-engine trade. ' + String(e.message || e).slice(0, 200), risk: 'ai_error_no_authority', invalidation: 'Check Render logs / OpenAI billing / model access.', evidence: (local.evidence || []).slice(0, 3), source: 'LOCAL_AFTER_AI_ERROR_WAIT' });
+    let fallback = reviewDecision(snapshot, { action: 'WAIT', confidence: 0, thesis: 'NONE', timing: 'WAIT', why: 'AI backend error; refusing to issue a fake local-engine trade. ' + String(e.message || e).slice(0, 200), risk: 'ai_error_no_authority', invalidation: 'Check Render logs / OpenAI billing / model access.', evidence: (local.evidence || []).slice(0, 3), source: 'LOCAL_AFTER_AI_ERROR_WAIT' });
+    fallback = stabilizeDecision(snapshot, fallback, st);
     updateSession(st, fallback);
     return send(res, 200, { ok: true, version: SERVER_VERSION, openaiEnabled: ENABLE_OPENAI && !!OPENAI_API_KEY, model: fallback.source, warning: String(e.message || e).slice(0, 300), dayCalls, cap: AI_MAX_CALLS_PER_DAY, latencyMs: Date.now() - started, decision: fallback, aiState: sessionForPrompt(st) });
   }
@@ -671,6 +712,10 @@ function runSelfTests() {
   const dTailCap = reviewDecision(lastMinuteLargeCushion, { source: 'OPENAI', action: 'TRADE_ABOVE', confidence: 99, pSettle: .99, thesis: 'ABOVE', why: '99% large cushion' });
   const activeLastMinuteFlip = { ...base, activeTrade: 'ABOVE', timer: { secondsLeft: 55 }, market: { price: 62010, spreadBps: 1.2 }, derived: { pAbove: .93, pBelow: .07, pTouchStrike: .16, pSettleOpposite: .07, gapBps: 16.1, signedGapBps: 16.1, expectedMove: 5.1, m2: -1.8, m15: -3.1, m30: -2.0, driftBpsPerSec: -0.10, reversalScore: 50 } };
   const dLastMinuteExit = reviewDecision(activeLastMinuteFlip, { source: 'OPENAI', action: 'HOLD_ABOVE', confidence: 99, pSettle: .93, thesis: 'ABOVE', why: 'hold 99 despite hard adverse tape' });
+  const stStability = { thesis: 'BELOW', thesisStartedAt: Date.now(), lastAction: 'TRADE_BELOW', lastConfidence: 92, flips: 0, history: [], pendingWaitSide: null, pendingWaitSince: 0 };
+  const dStabilityHold = stabilizeDecision(strong, { action: 'WAIT', confidence: 66, pSettle: .84, thesis: 'BELOW', why: 'single cautious wait', veto: 'NONE' }, stStability);
+  const stNoAuth = { thesis: 'BELOW', thesisStartedAt: Date.now(), lastAction: 'TRADE_BELOW', lastConfidence: 92, flips: 0, history: [], pendingWaitSide: null, pendingWaitSince: 0 };
+  const dNoAuthNoHold = stabilizeDecision(strong, { action: 'WAIT', confidence: 0, pSettle: null, thesis: 'NONE', why: 'no openai', veto: 'NO_OPENAI_AUTHORITY' }, stNoAuth);
   return [
     { name: 'early thin high-touch trade rejected by sanity governor', pass: d1.action === 'WAIT' && d1.veto === 'EARLY_THIN_TOUCH_RISK', got: d1.action + ' ' + d1.veto, why: d1.why },
     { name: 'strong late below obeys AI trade', pass: d2.action === 'TRADE_BELOW', got: d2.action },
@@ -696,7 +741,9 @@ function runSelfTests() {
     { name: 'active bare WAIT converts to EXIT when local edge is broken', pass: activeWaitExit.action === 'EXIT_ABOVE' && activeWaitExit.veto === 'ACTIVE_POSITION_WAIT_TO_EXIT', got: activeWaitExit.action + ' ' + activeWaitExit.veto },
     { name: 'active AI EXIT preserves explicit side', pass: activeAiExitSide.action === 'EXIT_BELOW' && activeAiExitSide.thesis === 'BELOW', got: activeAiExitSide.action + ' ' + activeAiExitSide.thesis },
     { name: 'last-minute large-cushion confidence is tail-risk capped, not displayed as 99%', pass: dTailCap.action === 'TRADE_ABOVE' && dTailCap.confidence < 97 && dTailCap.pSettle < 0.97 && dTailCap.review.pAdverseTail >= 0.03, got: { action: dTailCap.action, confidence: dTailCap.confidence, pSettle: dTailCap.pSettle, tail: dTailCap.review.pAdverseTail } },
-    { name: 'active last-minute adverse flip risk exits instead of holding stale 99%', pass: dLastMinuteExit.action === 'EXIT_ABOVE' && dLastMinuteExit.veto === 'LAST_MINUTE_FLIP_RISK', got: { action: dLastMinuteExit.action, veto: dLastMinuteExit.veto, why: dLastMinuteExit.why } }
+    { name: 'active last-minute adverse flip risk exits instead of holding stale 99%', pass: dLastMinuteExit.action === 'EXIT_ABOVE' && dLastMinuteExit.veto === 'LAST_MINUTE_FLIP_RISK', got: { action: dLastMinuteExit.action, veto: dLastMinuteExit.veto, why: dLastMinuteExit.why } },
+    { name: 'v135 stability guard holds one unconfirmed WAIT after trade if live thesis still valid', pass: dStabilityHold.action === 'TRADE_BELOW' && dStabilityHold.veto === 'AI_WAIT_UNCONFIRMED_STABILITY', got: { action: dStabilityHold.action, veto: dStabilityHold.veto } },
+    { name: 'v135 stability guard does not override no-OpenAI/no-authority WAIT', pass: dNoAuthNoHold.action === 'WAIT' && dNoAuthNoHold.veto === 'NO_OPENAI_AUTHORITY', got: { action: dNoAuthNoHold.action, veto: dNoAuthNoHold.veto } }
   ];
 }
 
