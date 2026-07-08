@@ -26,7 +26,7 @@ function envNumber(name, fallback, min = -Infinity, max = Infinity) {
 }
 
 const PORT = envNumber('PORT', 10000, 1, 65535);
-const SERVER_VERSION = 'btc-copilot-core-1.1-authority-locked';
+const SERVER_VERSION = 'btc-copilot-2.0-ai-brain';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const ENABLE_OPENAI = /^(0|false|no)$/i.test(process.env.ENABLE_OPENAI || '') ? false : (/^(1|true|yes)$/i.test(process.env.ENABLE_OPENAI || '') || !!OPENAI_API_KEY);
 const OPENAI_MODEL = String(process.env.OPENAI_MODEL || 'gpt-4o-mini').replace('gpt-40', 'gpt-4o');
@@ -247,252 +247,358 @@ function buildFeatures(payload){
   return {version:SERVER_VERSION,ts:Date.now(),price,target,secondsLeft,marketTs,responseTs,marketAgeMs,stale,spreadBps:finite(m.spreadBps),venueCount:finite(m.venueCount),source:m.source||'',signedGapBps,gapBps,side,drift:round(drift,5),vol:round(vol,4),move2:round(move2,3),move5:round(move5,3),move10:round(move10,3),move15:round(move15,3),move30:round(move30,3),move60:round(move60,3),move90:round(move90,3),sideMomentum:round(sideMomentum,3),adverse2:round(adverse2,3),adverse5:round(adverse5,3),adverse15:round(adverse15,3),pAbove:round(pAbove,4),pBelow:round(pBelow,4),pSide:round(side==='ABOVE'?pAbove:pBelow,4),pTouchStrike:round(pTouch,4),pSettleOpposite:round(pOpposite,4),pCrossStrike:round(rev.pCrossStrike,4),pHardReverse:round(rev.pHardReverse,4),reversalScore:round(reversalScore,1),reversal,dataQuality:round(dataQuality,1),contractCents:Number.isFinite(contractCents)?contractCents:null,activeSide:activeSide(payload.activePosition || payload.activeTrade),tapeCount:tape.length};
 }
 
-function requirementsFor(f){
-  const t=f.secondsLeft;
-  if(t>720) return {minP:0.88,minGap:5.2,maxTouch:0.18,maxRev:24,label:'very early'};
-  if(t>540) return {minP:0.84,minGap:4.0,maxTouch:0.20,maxRev:28,label:'early'};
-  if(t>360) return {minP:0.79,minGap:2.7,maxTouch:0.24,maxRev:34,label:'mid early'};
-  if(t>180) return {minP:0.73,minGap:1.55,maxTouch:0.30,maxRev:42,label:'mid late'};
-  if(t>75) return {minP:0.68,minGap:0.75,maxTouch:0.38,maxRev:50,label:'late'};
-  if(t>25) return {minP:0.64,minGap:0.35,maxTouch:0.46,maxRev:58,label:'very late'};
-  return {minP:0.70,minGap:0.25,maxTouch:0.42,maxRev:50,label:'last seconds'};
+/* =========================================================================
+   AI BRAIN — the OpenAI model is the analyst and decision-maker.
+   The math above is EVIDENCE handed to the model, not a competing decision.
+   ========================================================================= */
+
+function worryFromFeatures(f, side){
+  // 0-100 worry score for an active position on `side`. Pure math fallback + AI prior.
+  if(!f || !side) return 0;
+  const pOpp = side==='ABOVE' ? f.pBelow : f.pAbove;
+  const pTouch = f.pTouchStrike ?? 0;
+  const pCross = f.pCrossStrike ?? 0;
+  const pHard = f.pHardReverse ?? 0;
+  const rev = f.reversalScore ?? 0;
+  // Settle-opposite dominates (that's the real loss); touch alone is a scare.
+  const w = clamp(pOpp*58 + pCross*20 + pHard*22 + rev*0.28 + pTouch*10, 0, 100);
+  return round(w,0);
+}
+function verdictFromWorry(w){
+  if(w>=62) return 'EXIT NOW';
+  if(w>=34) return 'WATCH';
+  return 'IGNORE';
 }
 
-function candidateDecision(f){
-  const invalid=[];
-  if(!Number.isFinite(f.price) || f.price<=1000) invalid.push('NO_PRICE');
-  if(!Number.isFinite(f.target) || f.target<=0) invalid.push('NO_TARGET');
-  if(!Number.isFinite(f.secondsLeft)) invalid.push('NO_TIMER');
-  if(f.stale) invalid.push('STALE_MARKET_DATA');
-  if(f.dataQuality<35) invalid.push('LOW_DATA_QUALITY');
-  const active=f.activeSide;
-  if(invalid.length){
-    return {command:active?`EXIT_${active}`:'SIT_OUT', side:null, candidateCommand:active?`EXIT_${active}`:'SIT_OUT', blocked:true, veto:invalid.join('|'), score:0, entryQuality:'F', reason:`Cannot issue fresh entry: ${invalid.join(', ')}`, invalidation:'Data/target/timer must be valid and fresh.'};
-  }
-  const side=f.side; const r=requirementsFor(f);
-  const pSide=f.pSide; const pTouch=f.pTouchStrike; const pOpp=f.pSettleOpposite;
-  const rv=f.reversal || {};
-  const gapOk=f.gapBps>=r.minGap || (f.secondsLeft<75 && pSide>=r.minP+0.08 && pTouch<r.maxTouch && rv.call!=='LIKELY_OPPOSITE');
-  const pOk=pSide>=r.minP;
-  const touchOk=pTouch<=r.maxTouch;
-  const revOk=f.reversalScore<=r.maxRev && !['LIKELY_TOUCH','LIKELY_OPPOSITE'].includes(rv.call);
-  const hardReverseRisk=(rv.pHardReverse??0)>0.22 || (rv.pCrossStrike??0)>0.34 || (rv.pSettleOpposite??0)>0.30;
-  const momentumBad=f.sideMomentum < -0.45 || f.adverse2 > Math.max(0.65, f.gapBps*0.26) || f.adverse5 > Math.max(0.95, f.gapBps*0.34) || f.adverse15 > Math.max(1.15, f.gapBps*0.46) || hardReverseRisk;
-  const reversalPenalty=(f.reversalScore*0.42)+(pTouch*26)+((rv.pCrossStrike??0)*22)+((rv.pHardReverse??0)*28)+((rv.call==='WATCH')?5:0)+((rv.call==='LIKELY_TOUCH')?16:0)+((rv.call==='LIKELY_OPPOSITE')?28:0);
-  const score=clamp((pSide-0.5)*112 + Math.min(30,(f.gapBps/r.minGap)*18) + Math.max(-20,Math.min(20,f.sideMomentum*3.3)) - reversalPenalty,0,100);
-  const entryPass=pOk && gapOk && touchOk && revOk && !momentumBad && f.secondsLeft>5;
-  let command='SIT_OUT';
-  if(active){
-    const same=active===side;
-    const exitRisk = rv.call==='LIKELY_OPPOSITE' || rv.call==='LIKELY_TOUCH' || hardReverseRisk || pTouch>0.46 || pOpp>0.34 || f.reversalScore>62 || momentumBad;
-    const holdOk=same && pSide>=Math.max(0.56,r.minP-0.10) && !exitRisk;
-    command=holdOk?`HOLD_${active}`:`EXIT_${active}`;
-  } else if(entryPass) command=`TRADE_${side}`;
-  const entryQuality= score>=84?'A+':score>=74?'A':score>=64?'B':score>=52?'C':'D';
-  const fail=[];
-  if(!pOk) fail.push(`pSide ${pct(pSide)}% < ${Math.round(r.minP*100)}%`);
-  if(!gapOk) fail.push(`gap ${round(f.gapBps,2)}bps < ${round(r.minGap,2)}bps`);
-  if(!touchOk) fail.push(`touch ${pct(pTouch)}% > ${Math.round(r.maxTouch*100)}%`);
-  if(!revOk) fail.push(`reversal ${rv.call||'score'} ${round(f.reversalScore,1)} > ${r.maxRev}`);
-  if(momentumBad) fail.push('adverse/reversal tape');
-  const rvText=`reversal ${rv.call||'NONE'} / touch ${pct(pTouch)} / cross ${pct(rv.pCrossStrike)} / opposite ${pct(pOpp)}`;
-  return {command, side, candidateCommand:command, blocked:false, veto:command==='SIT_OUT'?fail.join(' | ')||'NO_EDGE':'NONE', score:round(score,1), entryQuality, reason: command.startsWith('TRADE')?`${side} thesis passes calibrated ${r.label} requirements: pSide ${pct(pSide)}%, gap ${round(f.gapBps,2)}bps, ${rvText}.`: active?`${command}: active ${active}, live side ${side}, pSide ${pct(pSide)}%, ${rvText}.`:`SIT_OUT: ${fail.join('; ') || 'edge not strong enough'}; ${rvText}.`, invalidation:`Invalidate ${side||'thesis'} if ${rv.direction||'reversal'} moves to WATCH/LIKELY_TOUCH, pTouch rises, pCross rises, data goes stale, or adverse acceleration confirms.`};
+function buildEvidence(f){
+  // Compact, LLM-legible evidence packet — trajectories, not raw ticks.
+  const side = f.side;
+  return {
+    secondsLeft: f.secondsLeft,
+    price: f.price,
+    target: f.target,
+    gapBps: round(f.gapBps,2),
+    signedGapBps: round(f.signedGapBps,2),
+    naturalSide: side,                              // which side price is currently on
+    driftBpsPerSec: f.drift,
+    volBpsPerSqrtSec: f.vol,
+    moves: { s2:f.move2, s5:f.move5, s15:f.move15, s30:f.move30, s60:f.move60, s90:f.move90 },
+    momentumTowardSide: f.sideMomentum,
+    probabilities: {
+      settleAbove: f.pAbove, settleBelow: f.pBelow,
+      touchTarget: f.pTouchStrike, crossTarget: f.pCrossStrike,
+      settleOpposite: f.pSettleOpposite, hardReverse: f.pHardReverse
+    },
+    reversal: {
+      score: f.reversalScore, call: f.reversal?.call, label: f.reversal?.label,
+      etaTouchSec: f.reversal?.etaTouchSec, adverseBurst: f.reversal?.adverseBurst,
+      adverseTrend: f.reversal?.adverseTrend, reasons: f.reversal?.reasons
+    },
+    dataQuality: f.dataQuality,
+    stale: f.stale,
+    activePosition: f.activeSide || null
+  };
 }
 
-function canKeepLockedTrade(prev, f){
-  if(!prev || !prev.command || !prev.command.startsWith('TRADE_')) return false;
-  const side=sideFromCommand(prev.command);
-  const age=Date.now()-(prev.ts||0);
-  if(age>DECISION_LOCK_MS) return false;
-  if(f.stale || f.dataQuality<35 || !Number.isFinite(f.target) || !Number.isFinite(f.price)) return false;
-  if(side!==f.side) return false;
-  if(f.pSide<0.60 || f.pTouchStrike>0.46 || f.pCrossStrike>0.30 || f.pHardReverse>0.20 || f.reversalScore>60 || (f.reversal&&['LIKELY_TOUCH','LIKELY_OPPOSITE'].includes(f.reversal.call))) return false;
-  return true;
+const AI_SYSTEM = [
+  'You are the sole trading brain for 15-minute Bitcoin binary options that settle ABOVE or BELOW a strike price.',
+  'You independently decide the call. The provided math (probabilities, reversal geometry, drift, volatility) is EVIDENCE for your judgment — weigh it, do not merely echo it.',
+  'Your job each call: (1) decide the best action, (2) rate a 0-100 reversal WORRY score for any open position, (3) say plainly whether to hold or abort.',
+  'Actions: SIT_OUT (no clear edge), TRADE_ABOVE, TRADE_BELOW (only when no position is open and you see a real edge), HOLD_ABOVE, HOLD_BELOW (keep an open position), EXIT_ABOVE, EXIT_BELOW (abort an open position now).',
+  'BE PREDICTIVE, not reactive: weight drift, momentum, and the probability trajectory over the raw current gap. Anticipate where price SETTLES in the remaining time, not where it is this second.',
+  'FIRMNESS: once a position is open, bias hard toward HOLD. Only command EXIT on strong, confirmed reversal evidence — settleOpposite probability genuinely rising, a confirmed adverse trend, or hardReverse risk. A brief wobble against the position with settleOpposite still low is NOISE: hold and set worry accordingly. Whipsawing in and out costs money; do not do it.',
+  'WORRY score guide: 0-33 = noise, ignore (position healthy). 34-61 = watch, real but unconfirmed pressure. 62-100 = confirmed reversal, exit. Keep it stable between calls unless evidence materially moves.',
+  'Every TRADE or EXIT must cite at least two concrete evidence values in "evidence" (e.g. "settleOpposite 0.28 rising", "drift -0.05 toward strike", "gap 9bps widening"). Calls without cited evidence are rejected by the system.',
+  'Confidence = your probability the SETTLED side matches your call, 0-100. Do not sandbag or inflate.',
+  'Reply ONLY with compact JSON: {"action","confidence","worry","hold_or_abort","pSettleMySide","reversalRisk":{"tempReverse","settleOpposite"},"why","evidence":[...],"invalidation"}'
+].join(' ');
+
+function aiUserPayload(evidence, session){
+  return JSON.stringify({
+    task: 'Decide the trade, score reversal worry, and give hold/abort guidance.',
+    evidence,
+    yourPriorCall: session?.lastAi ? {
+      action: session.lastAi.action, side: session.lastAi.side,
+      confidence: session.lastAi.confidence, worry: session.lastAi.worry,
+      ageSec: session.lastAi.ts ? Math.round((Date.now()-session.lastAi.ts)/1000) : null
+    } : null,
+    reminder: 'If nothing material changed vs your prior call, keep the same action and a stable worry score. Reverse only with cited evidence.'
+  });
 }
 
-function sanitizeAi(raw){
-  const empty={ok:false,approve:false,preferredCommand:'SIT_OUT',riskLevel:'unknown',reason:'No AI thesis.',redFlags:[]};
-  if(!raw || typeof raw!=='object') return empty;
-  const preferred=cleanCommand(raw.preferredCommand || raw.command || raw.action || 'SIT_OUT');
-  const risk=String(raw.riskLevel || raw.risk || 'medium').toLowerCase();
-  return {ok:true,approve:Boolean(raw.approveCandidate ?? raw.approve ?? raw.supportsEntry ?? false),preferredCommand:preferred,riskLevel:['low','medium','high','critical'].includes(risk)?risk:'medium',reason:String(raw.reason || raw.rationale || '').slice(0,500),redFlags:Array.isArray(raw.redFlags)?raw.redFlags.slice(0,6).map(x=>String(x).slice(0,120)):[]};
-}
-
-
-function aiVetoHasNumericSupport(f, candidate){
-  const side=sideFromCommand(candidate && candidate.command);
-  const r=requirementsFor(f || {});
-  if(!side || !f) return true;
-  if(f.stale || f.dataQuality < 35) return true;
-  if(!Number.isFinite(f.price) || !Number.isFinite(f.target) || f.target <= 0 || !Number.isFinite(f.secondsLeft)) return true;
-  if(side !== f.side) return true;
-  if(f.secondsLeft <= 5) return true;
-  if(f.pSide < Math.max(0.54, r.minP - 0.04)) return true;
-  if(f.gapBps < Math.max(0.20, r.minGap * 0.72)) return true;
-  const rv=f.reversal || {};
-  if(['WATCH','LIKELY_TOUCH','LIKELY_OPPOSITE'].includes(String(rv.call || '').toUpperCase())) return true;
-  if((f.pTouchStrike ?? 0) > Math.max(r.maxTouch + 0.08, 0.32)) return true;
-  if((f.pCrossStrike ?? 0) > 0.18) return true;
-  if((f.pSettleOpposite ?? 0) > 0.22) return true;
-  if((f.pHardReverse ?? 0) > 0.14) return true;
-  if((f.reversalScore ?? 0) > Math.max(r.maxRev + 10, 45)) return true;
-  if((rv.adverseAccelerationBpsPerSec ?? 0) > 0.085 && (rv.towardStrikeBps ?? 0) > Math.max(0.9, f.gapBps * 0.22)) return true;
-  if((f.adverse2 ?? 0) > Math.max(0.75, f.gapBps * 0.30)) return true;
-  if((f.adverse5 ?? 0) > Math.max(1.05, f.gapBps * 0.38)) return true;
-  if((f.adverse15 ?? 0) > Math.max(1.35, f.gapBps * 0.50)) return true;
-  return false;
-}
-
-function strongCandidateWithoutReversal(f, candidate){
-  if(!candidate || !String(candidate.command || '').startsWith('TRADE_')) return false;
-  const rv=f.reversal || {};
-  return ['A+','A'].includes(candidate.entryQuality) &&
-    (candidate.score ?? 0) >= 70 &&
-    (f.dataQuality ?? 0) >= 55 &&
-    !f.stale &&
-    String(rv.call || 'NONE').toUpperCase() === 'NONE' &&
-    (f.pTouchStrike ?? 1) <= 0.18 &&
-    (f.pCrossStrike ?? 1) <= 0.08 &&
-    (f.pSettleOpposite ?? 1) <= 0.16 &&
-    (f.pHardReverse ?? 1) <= 0.08 &&
-    (f.reversalScore ?? 100) <= 25;
-}
-
-async function callOpenAI(f, candidate){
-  resetDailyIfNeeded();
-  if(!ENABLE_OPENAI || !OPENAI_API_KEY) return {ok:false,error:'NO_OPENAI_AUTHORITY'};
-  if(dayCalls>=AI_MAX_CALLS_PER_DAY) return {ok:false,error:'AI_DAILY_CAP'};
-  dayCalls++;
-  const facts={price:f.price,target:f.target,secondsLeft:f.secondsLeft,side:f.side,gapBps:f.gapBps,pAbove:f.pAbove,pBelow:f.pBelow,pTouchStrike:f.pTouchStrike,pCrossStrike:f.pCrossStrike,pSettleOpposite:f.pSettleOpposite,pHardReverse:f.pHardReverse,reversalScore:f.reversalScore,reversal:f.reversal,move2:f.move2,move5:f.move5,move10:f.move10,move15:f.move15,move30:f.move30,move60:f.move60,sideMomentum:f.sideMomentum,adverse2:f.adverse2,adverse5:f.adverse5,adverse15:f.adverse15,dataQuality:f.dataQuality,activeSide:f.activeSide||'NONE'};
-  const system='You are a BTC 15-minute event-contract copilot. You are a reasoning supervisor, not a probability generator. The backend calibrated probabilities and reversal module are authoritative. Your most important job is to audit reversal/touch/opposite risk. Never invent 99% certainty. Return only JSON.';
-  const user={task:'Audit the calibrated candidate decision with special focus on reversal risk. Do NOT veto an A/A+ candidate when reversal.call is NONE, pTouchStrike is low, pCrossStrike is low, pSettleOpposite is low, data is fresh, and the gap/probability pass. No confirmed reversal pressure plus low pTouchStrike supports the candidate; it is not a reason to SIT_OUT. Veto only if you can point to numeric invalidation: stale/low-quality data, high pTouchStrike, high pCrossStrike, high pSettleOpposite, high pHardReverse, reversal.call WATCH/LIKELY_TOUCH/LIKELY_OPPOSITE, strong adverse acceleration, price/strike side conflict, or target/timer mismatch. If active position exists, choose HOLD_SIDE or EXIT_SIDE. No generic WAIT is allowed.',allowedCommands:[...COMMANDS],facts,candidate:{command:candidate.command,score:candidate.score,entryQuality:candidate.entryQuality,reason:candidate.reason},requiredJson:{approveCandidate:'boolean',preferredCommand:'one allowed command',riskLevel:'low|medium|high|critical',reason:'short practical reason referencing numeric facts',redFlags:['short numeric red flags only']}};
+async function callOpenAI(evidence, session){
+  if(!ENABLE_OPENAI || !OPENAI_API_KEY) return { ok:false, error:'NO_OPENAI_AUTHORITY' };
   const ac=new AbortController(); const timer=setTimeout(()=>{try{ac.abort();}catch(_){}} , OPENAI_TIMEOUT_MS);
   try{
-    const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json','Authorization':`Bearer ${OPENAI_API_KEY}`},body:JSON.stringify({model:OPENAI_MODEL,temperature:0.1,max_tokens:OPENAI_MAX_TOKENS,response_format:{type:'json_object'},messages:[{role:'system',content:system},{role:'user',content:JSON.stringify(user)}]})});
-    const txt=await r.text();
-    if(!r.ok) return {ok:false,error:`OPENAI_${r.status}: ${txt.slice(0,180)}`};
-    const j=JSON.parse(txt); const content=j?.choices?.[0]?.message?.content || '{}';
-    return sanitizeAi(JSON.parse(content));
-  } catch(e){ return {ok:false,error:String(e.message||e)}; }
+    const seed = Math.abs(String(session?.id||'default').split('').reduce((a,c)=>(a*31+c.charCodeAt(0))|0,7))%1000000;
+    const r=await fetch('https://api.openai.com/v1/chat/completions',{
+      method:'POST', signal:ac.signal,
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${OPENAI_API_KEY}`},
+      body:JSON.stringify({
+        model:OPENAI_MODEL, temperature:0.1, seed, max_tokens:OPENAI_MAX_TOKENS,
+        response_format:{type:'json_object'},
+        messages:[{role:'system',content:AI_SYSTEM},{role:'user',content:aiUserPayload(evidence,session)}]
+      })
+    });
+    if(!r.ok){ const t=await r.text().catch(()=>''); return {ok:false,error:`OPENAI_${r.status}`,detail:t.slice(0,200)}; }
+    const j=await r.json();
+    const content=j?.choices?.[0]?.message?.content || '';
+    return { ok:true, content, model:OPENAI_MODEL };
+  } catch(e){ return {ok:false,error:String(e.name==='AbortError'?'OPENAI_TIMEOUT':e.message||e)}; }
   finally{ clearTimeout(timer); }
 }
 
-function finalDecisionFromAi(f,candidate,ai,session){
-  let command=candidate.command;
-  let source='CALIBRATED_BRAIN';
-  let veto=candidate.veto;
+function parseAiJson(content){
+  if(!content) return null;
+  let txt=String(content).trim().replace(/^```json/i,'').replace(/^```/,'').replace(/```$/,'').trim();
+  try{ return JSON.parse(txt); }catch(_){}
+  const s=txt.indexOf('{'); if(s<0) return null;
+  // tolerant recovery of truncated/trailing JSON
+  for(let e=txt.length; e>s; e--){ const frag=txt.slice(s,e); try{ return JSON.parse(frag); }catch(_){} }
+  // field-level regex fallback
+  const grab=(k)=>{ const m=txt.match(new RegExp('"'+k+'"\\s*:\\s*"?([A-Za-z_0-9.\\-]+)"?')); return m?m[1]:null; };
+  const action=grab('action'); if(!action) return null;
+  return { action, confidence:Number(grab('confidence'))||0, worry:Number(grab('worry')), why:'(recovered partial AI response)', evidence:[], partial:true };
+}
+
+function normalizeAiDecision(raw, f){
+  const action=cleanCommand(raw?.action);
+  const side=sideFromCommand(action);
+  const conf=clamp(Number(raw?.confidence)||0,0,100);
+  let worry=Number(raw?.worry);
+  if(!Number.isFinite(worry)) worry=worryFromFeatures(f, f.activeSide||side);
+  worry=clamp(worry,0,100);
+  const rr=raw?.reversalRisk||{};
+  return {
+    action, side, confidence:Math.round(conf), worry:Math.round(worry),
+    verdict: verdictFromWorry(worry),
+    holdOrAbort: String(raw?.hold_or_abort||'').toUpperCase() || (worry>=62?'ABORT':'HOLD'),
+    pSettleMySide: clamp(Number(raw?.pSettleMySide),0,1),
+    tempReverse: clamp(Number(rr.tempReverse ?? f.pTouchStrike),0,1),
+    settleOpposite: clamp(Number(rr.settleOpposite ?? f.pSettleOpposite),0,1),
+    why: String(raw?.why||'').slice(0,400),
+    evidence: Array.isArray(raw?.evidence)?raw.evidence.map(x=>String(x).slice(0,80)).slice(0,6):[],
+    invalidation: String(raw?.invalidation||'').slice(0,300),
+    partial: !!raw?.partial
+  };
+}
+
+// Committed-stance layer: firmness + anti-waffle. Runs on the AI's raw call.
+function enforceFirmness(session, d, f){
   const active=f.activeSide;
-  const aiOk=ai && ai.ok;
-  const aiPref=aiOk?cleanCommand(ai.preferredCommand):'SIT_OUT';
-  const aiType=commandType(aiPref);
-  const candType=commandType(candidate.command);
-  const candSide=sideFromCommand(candidate.command);
-  const aiSide=sideFromCommand(aiPref);
+  const s=session;
 
-  if(candType==='TRADE'){
-    if(!aiOk){
-      command='SIT_OUT'; veto=ai?.error || 'NO_OPENAI_AUTHORITY'; source='NO_AI_NO_ENTRY';
-    } else {
-      const aiConflict = !ai.approve || ai.riskLevel==='critical' || (aiType==='TRADE' && aiSide!==candSide) || aiType==='SIT_OUT';
-      const numericSupport = aiVetoHasNumericSupport(f, candidate);
-      if(aiConflict && numericSupport){
-        command='SIT_OUT'; veto='AI_VETO_NUMERICALLY_SUPPORTED'; source='AI_VETO';
-      } else {
-        command=candidate.command;
-        veto=aiConflict ? 'AI_NOTE_IGNORED_NO_NUMERIC_INVALIDATION' : 'NONE';
-        source=aiConflict ? 'CALIBRATED_BRAIN_AI_CONFLICT' : 'AI_APPROVED_ENTRY';
-      }
+  // EXIT logic: only abort an open position on confirmed reversal; otherwise defer once.
+  if(active && d.action.startsWith('EXIT')){
+    // Confirmed only when the AIs worry is high AND the math corroborates a real settle-opposite risk.
+    const mathCorroborates = (f.pSettleOpposite>=0.42) || (f.reversal && f.reversal.call==='LIKELY_OPPOSITE') || (f.pHardReverse>=0.30);
+    const confirmed = (d.worry>=62 && mathCorroborates) || d.worry>=80 || f.pSettleOpposite>=0.55;
+    if(confirmed){ s.pendingExit=null; d.enforced='EXIT_CONFIRMED'; return d; }
+    const pe=s.pendingExit;
+    if(pe && (Date.now()-pe.ts)<=45000){ s.pendingExit=null; d.enforced='EXIT_CONFIRMED_2READ'; return d; }
+    s.pendingExit={ts:Date.now()};
+    d.action='HOLD_'+active; d.side=active; d.enforced='EXIT_DEFERRED';
+    d.holdOrAbort='HOLD';
+    d.why='Abort urged but reversal not confirmed (worry '+d.worry+', settleOpposite '+pct(f.pSettleOpposite)+'%). Holding — confirm on next read. '+d.why;
+    return d;
+  }
+  if(!d.action.startsWith('EXIT')) s.pendingExit=null;
+
+  // If holding a position, keep it unless the AI produced a confirmed exit above.
+  if(active && (d.action==='SIT_OUT')){
+    d.action='HOLD_'+active; d.side=active; d.enforced='HOLD_ACTIVE';
+    return d;
+  }
+
+  // Entry firmness: require cited evidence for a fresh TRADE.
+  if(!active && d.action.startsWith('TRADE')){
+    if(d.evidence.length<2 && !d.partial){
+      d.action='SIT_OUT'; d.side=null; d.enforced='EVIDENCE_REQUIRED';
+      d.why='Entry needs two cited evidence points. '+d.why;
+      return d;
     }
-  } else if(active){
-    if(aiOk && aiType==='EXIT' && aiSide===active) { command=`EXIT_${active}`; veto='AI_EXIT'; source='AI_ACTIVE_POSITION'; }
-    else if(aiOk && aiType==='HOLD' && aiSide===active && candidate.command.startsWith('HOLD')) { command=`HOLD_${active}`; veto='NONE'; source='AI_ACTIVE_POSITION'; }
-    else { command=candidate.command; source='POSITION_STATE_MACHINE'; }
-  } else {
-    command='SIT_OUT'; source=aiOk?'AI_OR_BRAIN_SIT_OUT':'NO_AI_SIT_OUT';
+    // Anti-waffle on the natural side: don't flip a fresh entry within 40s unless strong.
+    const prev=s.committed;
+    if(prev && prev.side && d.side && d.side!==prev.side && (Date.now()-prev.ts)<40000 && d.confidence<74){
+      d.action='SIT_OUT'; d.side=null; d.enforced='FLIP_SUPPRESSED';
+      d.why='Direction flip within 40s without strong conviction — suppressed. '+d.why;
+      return d;
+    }
+    s.committed={side:d.side, ts:Date.now(), confidence:d.confidence};
   }
+  return d;
+}
 
-  const prev=session.lastDecision;
-  if(command==='SIT_OUT' && canKeepLockedTrade(prev,f)){
-    command=prev.command; source='LOCKED_THESIS_REVALIDATED'; veto='NONE';
+function mathFallbackDecision(f){
+  // Used only when AI is unavailable. Clearly labeled MATH_ONLY on the client.
+  if(!f || !f.side) return { action:'SIT_OUT', side:null, confidence:0, worry:0, verdict:'IGNORE', holdOrAbort:'HOLD', why:'No valid price/target geometry.', evidence:[], source:'MATH_ONLY' };
+  const active=f.activeSide;
+  const pSide=f.pSide ?? 0;
+  const worry=worryFromFeatures(f, active||f.side);
+  if(active){
+    const confirmed = worry>=62 || (f.pSettleOpposite>=0.42) || (f.reversal?.call==='LIKELY_OPPOSITE');
+    return {
+      action: confirmed?('EXIT_'+active):('HOLD_'+active), side:active,
+      confidence: Math.round(pSide*100), worry, verdict:verdictFromWorry(worry),
+      holdOrAbort: confirmed?'ABORT':'HOLD',
+      pSettleMySide: active==='ABOVE'?f.pAbove:f.pBelow,
+      tempReverse:f.pTouchStrike, settleOpposite:f.pSettleOpposite,
+      why:`MATH ONLY (AI offline): pSide ${pct(pSide)}%, worry ${worry}, reversal ${f.reversal?.call||'NONE'}.`,
+      evidence:[`pSide ${pct(pSide)}%`,`settleOpposite ${pct(f.pSettleOpposite)}%`],
+      source:'MATH_ONLY'
+    };
   }
-  if(!COMMANDS.has(command)) command='SIT_OUT';
-  const finiteProb=x=>(x===null||x===undefined||x==='')?0.5:(Number.isFinite(Number(x))?clamp(Number(x),0,1):0.5);
-  const sideProb=finiteProb(f.pSide), touchProb=finiteProb(f.pTouchStrike), crossProb=finiteProb(f.pCrossStrike), hardProb=finiteProb(f.pHardReverse), oppProb=finiteProb(f.pSettleOpposite);
-  let confidence;
-  if(command.startsWith('TRADE') || command.startsWith('HOLD')) confidence=Math.min(sideProb, 1-Math.max(touchProb*0.55, crossProb*0.75, hardProb*0.85));
-  else if(command.startsWith('EXIT')) confidence=Math.max(touchProb,crossProb,hardProb,oppProb);
-  else confidence=Math.min(0.96, Math.max(0.50, 1-sideProb, touchProb, crossProb, hardProb, oppProb));
-  return {ok:true,version:SERVER_VERSION,ts:Date.now(),command,side:sideFromCommand(command)||f.side,source,veto,confidence:round(confidence,4),confidencePct:pct(confidence),entryQuality:candidate.entryQuality,score:candidate.score,features:f,ai:aiOk?ai:{ok:false,error:ai?.error||'NO_OPENAI_AUTHORITY'},reason: command.startsWith('TRADE')?candidate.reason:(command.startsWith('HOLD')||command.startsWith('EXIT')?candidate.reason:(aiOk&&ai.reason?ai.reason:candidate.reason)),invalidation:candidate.invalidation};
+  // entry: strong, low-reversal only
+  const strong = pSide>=0.72 && (f.pTouchStrike??1)<=0.42 && (f.pSettleOpposite??1)<=0.34 && (f.reversalScore??100)<=55 && f.secondsLeft>5;
+  return {
+    action: strong?('TRADE_'+f.side):'SIT_OUT', side: strong?f.side:null,
+    confidence: Math.round(pSide*100), worry, verdict:verdictFromWorry(worry),
+    holdOrAbort:'HOLD', pSettleMySide:pSide, tempReverse:f.pTouchStrike, settleOpposite:f.pSettleOpposite,
+    why:`MATH ONLY (AI offline): ${strong?('edge on '+f.side):'no strong edge'} — pSide ${pct(pSide)}%, reversal ${f.reversal?.call||'NONE'}.`,
+    evidence: strong?[`pSide ${pct(pSide)}%`,`reversal ${f.reversal?.call||'LOW'}`]:[],
+    source:'MATH_ONLY'
+  };
 }
 
 async function decide(payload){
-  const session=sessionFor(payload.sessionId || payload.session || 'default');
-  const features=buildFeatures(payload);
-  let candidate=candidateDecision(features);
-  let ai=session.lastAi;
-  const candidateKey=JSON.stringify({p:round(features.price,1),t:round(features.target,1),s:features.secondsLeft,side:features.side,cmd:candidate.command,active:features.activeSide||''});
-  const reusableAi=ai && ai.key===candidateKey && Date.now()-ai.ts<AI_CACHE_MS;
-  if(!reusableAi) {
-    const aiResult=await callOpenAI(features,candidate);
-    ai={...aiResult,key:candidateKey,ts:Date.now()};
-    session.lastAi=ai;
+  const market = payload.market || (await getMarket().catch(()=>null));
+  const f = buildFeatures({ ...payload, market });
+  const session = sessionFor(payload.sessionId);
+  session.id = payload.sessionId || 'default';
+
+  const evidence = f.side ? buildEvidence(f) : null;
+  let decision, source, aiError=null, model=null;
+
+  const ai = evidence ? await callOpenAI(evidence, session) : {ok:false,error:'NO_GEOMETRY'};
+  if(ai.ok){
+    const parsed = parseAiJson(ai.content);
+    if(parsed){
+      decision = normalizeAiDecision(parsed, f);
+      decision = enforceFirmness(session, decision, f);
+      decision.source = 'AI';
+      model = ai.model;
+      session.lastAi = { action:decision.action, side:decision.side, confidence:decision.confidence, worry:decision.worry, ts:Date.now() };
+      source='AI';
+    } else {
+      aiError='AI_PARSE_FAILED';
+    }
+  } else {
+    aiError = ai.error;
   }
-  const final=finalDecisionFromAi(features,candidate,ai,session);
-  session.lastDecision=final;
-  session.history.push({ts:final.ts,command:final.command,price:features.price,target:features.target,secondsLeft:features.secondsLeft,pAbove:features.pAbove,pBelow:features.pBelow,pTouchStrike:features.pTouchStrike,pCrossStrike:features.pCrossStrike,pSettleOpposite:features.pSettleOpposite,pHardReverse:features.pHardReverse,reversalCall:features.reversal&&features.reversal.call});
-  if(session.history.length>500) session.history=session.history.slice(-500);
-  return final;
+  if(!decision){
+    decision = mathFallbackDecision(f);
+    decision = enforceFirmness(session, decision, f);
+    source='MATH_ONLY';
+  }
+
+  // Always attach the full reversal picture (math-computed) for the UI.
+  const reversalWatch = {
+    worry: decision.worry,
+    verdict: decision.verdict,
+    pTempReverse: round(decision.tempReverse ?? f.pTouchStrike, 3),
+    pSettleOpposite: round(decision.settleOpposite ?? f.pSettleOpposite, 3),
+    pTouchTarget: round(f.pTouchStrike,3),
+    pCrossTarget: round(f.pCrossStrike,3),
+    pHardReverse: round(f.pHardReverse,3),
+    call: f.reversal?.call || 'NONE',
+    label: f.reversal?.label || 'LOW',
+    etaTouchSec: f.reversal?.etaTouchSec ?? null,
+    reasons: f.reversal?.reasons || []
+  };
+
+  session.lastDecision = decision;
+  return {
+    ok:true, version:SERVER_VERSION, ts:Date.now(),
+    source, model, aiError,
+    command: decision.action, side: decision.side,
+    confidence: decision.confidence,
+    holdOrAbort: decision.holdOrAbort,
+    reason: decision.why, invalidation: decision.invalidation || '',
+    evidence: decision.evidence || [],
+    enforced: decision.enforced || null,
+    reversalWatch,
+    features: {
+      price:f.price, target:f.target, secondsLeft:f.secondsLeft, gapBps:round(f.gapBps,2),
+      pAbove:f.pAbove, pBelow:f.pBelow, pSide:f.pSide,
+      drift:f.drift, vol:f.vol, dataQuality:f.dataQuality, stale:f.stale,
+      spreadBps:f.spreadBps, venueCount:f.venueCount, source:f.source,
+      activeSide:f.activeSide, reversalScore:f.reversalScore
+    }
+  };
 }
 
-function replay(logs){
-  const rows=Array.isArray(logs)?logs:[];
-  const trades=rows.filter(r=>String(r.command||'').startsWith('TRADE_') && (r.outcome==='ABOVE'||r.outcome==='BELOW'));
-  let wins=0; const buckets={};
-  for(const r of trades){ const side=sideFromCommand(r.command); const win=side===r.outcome; if(win) wins++; const k=r.secondsLeft>360?'early':r.secondsLeft>120?'mid':'late'; buckets[k] ||= {n:0,w:0}; buckets[k].n++; if(win)buckets[k].w++; }
-  for(const k of Object.keys(buckets)) buckets[k].winRate=buckets[k].n?round(buckets[k].w/buckets[k].n,4):null;
-  return {ok:true,totalRows:rows.length,trades:trades.length,wins,losses:trades.length-wins,winRate:trades.length?round(wins/trades.length,4):null,buckets,note:'Replay uses rows that include final outcome. Export logs from the frontend and mark final side for each window.'};
-}
+/* ============================ HTTP ROUTER ============================ */
+const server = http.createServer(async (req, res) => {
+  resetDailyIfNeeded();
+  const u = new URL(req.url, `http://${req.headers.host}`);
+  if(req.method==='OPTIONS'){ cors(res); res.statusCode=204; return res.end(); }
 
-async function handleDecide(req,res){ try{ const body=await readBody(req); return send(res,200,await decide(body)); } catch(e){ return send(res,500,{ok:false,version:SERVER_VERSION,command:'SIT_OUT',veto:'SERVER_ERROR',error:String(e.message||e)}); }}
-async function handleReplay(req,res){ try{ const body=await readBody(req,1000000); return send(res,200,replay(body.logs||body)); } catch(e){ return send(res,500,{ok:false,error:String(e.message||e)}); }}
-
-function runSelfTests(){
-  const base={sessionId:'test-'+Math.random(),market:{price:62000,priceTs:Date.now(),responseTs:Date.now(),confidence:92,spreadBps:2,venueCount:4,source:'test'},target:61950,timer:{secondsLeft:150},recentTape:[{ts:Date.now()-30000,price:61940},{ts:Date.now()-15000,price:61970},{ts:Date.now(),price:62000}]};
-  const tests=[]; const add=(name,fn)=>{try{tests.push({name,pass:!!fn()});}catch(e){tests.push({name,pass:false,error:String(e.message||e)});}};
-  add('commands enum has no WAIT',()=>!COMMANDS.has('WAIT')&&COMMANDS.has('SIT_OUT'));
-  add('features valid',()=>{const f=buildFeatures(base); return f.side==='ABOVE'&&f.gapBps>0&&f.pAbove>0.5;});
-  add('blank target blocks',()=>candidateDecision(buildFeatures({...base,target:''})).veto.includes('NO_TARGET'));
-  add('stale market blocks',()=>candidateDecision(buildFeatures({...base,market:{...base.market,stale:true}})).veto.includes('STALE_MARKET_DATA'));
-  add('no fake 99 cap',()=>{const f=buildFeatures({...base,market:{...base.market,price:62150},target:61950,timer:{secondsLeft:120},recentTape:[{ts:Date.now()-30000,price:62000},{ts:Date.now(),price:62150}]}); return f.pAbove<0.99 && f.pTouchStrike>=0.005;});
-  add('reversal module present',()=>{const f=buildFeatures(base); return f.reversal && Number.isFinite(f.pCrossStrike) && Number.isFinite(f.pHardReverse) && typeof f.reversal.call==='string';});
-  add('hard adverse reversal blocks entry',()=>{const t=Date.now(); const f=buildFeatures({...base,market:{...base.market,price:62004},target:61995,timer:{secondsLeft:55},recentTape:[{ts:t-30000,price:62075},{ts:t-15000,price:62050},{ts:t-5000,price:62020},{ts:t,price:62004}]}); const c=candidateDecision(f); return f.reversal.call!=='NONE' && c.command==='SIT_OUT';});
-  add('active position exits on likely touch',()=>{const t=Date.now(); const f=buildFeatures({...base,activePosition:'ABOVE',market:{...base.market,price:62004},target:61995,timer:{secondsLeft:55},recentTape:[{ts:t-30000,price:62075},{ts:t-15000,price:62050},{ts:t-5000,price:62020},{ts:t,price:62004}]}); return candidateDecision(f).command==='EXIT_ABOVE';});
-  add('active command explicit',()=>{const c=candidateDecision(buildFeatures({...base,activePosition:'ABOVE'})).command; return c==='HOLD_ABOVE'||c==='EXIT_ABOVE';});
-  add('flat command explicit',()=>COMMANDS.has(candidateDecision(buildFeatures(base)).command));
-  add('late opposite exits active',()=>{const f=buildFeatures({...base,market:{...base.market,price:61880},target:61950,activePosition:'ABOVE',timer:{secondsLeft:45}}); return candidateDecision(f).command==='EXIT_ABOVE';});
-  add('replay computes wins',()=>replay([{command:'TRADE_ABOVE',outcome:'ABOVE',secondsLeft:60},{command:'TRADE_BELOW',outcome:'ABOVE',secondsLeft:60}]).wins===1);
-  add('cleanCommand rejects garbage',()=>cleanCommand('WAIT')==='SIT_OUT'&&cleanCommand('trade above')==='TRADE_ABOVE');
-  add('no openai flag prevents entry final',()=>{const s={lastDecision:null,lastAi:null,history:[]}; const f=buildFeatures(base); const cand={...candidateDecision(f),command:'TRADE_ABOVE'}; return finalDecisionFromAi(f,cand,{ok:false,error:'NO_OPENAI_AUTHORITY'},s).command==='SIT_OUT';});
-  add('locked thesis can hold only if still valid',()=>{const s={lastDecision:{command:'TRADE_ABOVE',ts:Date.now()},lastAi:null,history:[]}; const f=buildFeatures(base); return finalDecisionFromAi(f,{...candidateDecision(f),command:'SIT_OUT'},{ok:true,approve:false,preferredCommand:'SIT_OUT'},s).command==='TRADE_ABOVE';});
-  add('AI cannot veto A setup without numeric invalidation',()=>{const t=Date.now(); const f=buildFeatures({sessionId:'test',market:{price:62132.47,priceTs:t,responseTs:t,confidence:92,spreadBps:1.63,venueCount:4,source:'test'},target:62020.70,timer:{secondsLeft:540},recentTape:[{ts:t-60000,price:62064},{ts:t-30000,price:62101},{ts:t-15000,price:62124},{ts:t,price:62132.47}]}); const c=candidateDecision(f); const s={lastDecision:null,lastAi:null,history:[]}; const badAi={ok:true,approve:false,preferredCommand:'SIT_OUT',riskLevel:'medium',reason:'bad cautious veto'}; const d=finalDecisionFromAi(f,c,badAi,s); return c.command==='TRADE_ABOVE' && d.command==='TRADE_ABOVE' && d.veto==='AI_NOTE_IGNORED_NO_NUMERIC_INVALIDATION';});
-  add('AI veto allowed when numeric reversal exists',()=>{const t=Date.now(); const f=buildFeatures({sessionId:'test',market:{price:62004,priceTs:t,responseTs:t,confidence:92,spreadBps:1.5,venueCount:4,source:'test'},target:61995,timer:{secondsLeft:55},recentTape:[{ts:t-30000,price:62075},{ts:t-15000,price:62050},{ts:t-5000,price:62020},{ts:t,price:62004}]}); const c={...candidateDecision(f),command:'TRADE_ABOVE'}; const s={lastDecision:null,lastAi:null,history:[]}; const badAi={ok:true,approve:false,preferredCommand:'SIT_OUT',riskLevel:'critical',reason:'numeric reversal'}; const d=finalDecisionFromAi(f,c,badAi,s); return d.command==='SIT_OUT' && d.veto==='AI_VETO_NUMERICALLY_SUPPORTED';});
-  return tests;
-}
-function selftestSummary(){ const tests=runSelfTests(); const failed=tests.filter(t=>!t.pass); return {ok:failed.length===0,version:SERVER_VERSION,total:tests.length,passed:tests.length-failed.length,failed:failed.length,tests}; }
-
-if(process.argv.includes('--selftest')){ const s=selftestSummary(); console.log(JSON.stringify(s,null,2)); process.exit(s.ok?0:1); }
-
-const server=http.createServer(async(req,res)=>{
   try{
-    cors(res);
-    if(req.method==='OPTIONS') return res.end();
-    const u=new URL(req.url,`http://${req.headers.host}`);
-    if(req.method==='GET' && (u.pathname==='/'||u.pathname==='/health')){ resetDailyIfNeeded(); return send(res,200,{ok:true,service:'btc-copilot-core-reversal',version:SERVER_VERSION,openaiEnabled:ENABLE_OPENAI&&!!OPENAI_API_KEY,model:OPENAI_MODEL,dayCalls,cap:AI_MAX_CALLS_PER_DAY,commands:[...COMMANDS],ts:Date.now()}); }
-    if(req.method==='GET' && (u.pathname==='/market'||u.pathname==='/btc')) return send(res,200,await getMarket());
-    if(req.method==='GET' && u.pathname==='/selftest') return send(res,200,selftestSummary());
-    if(req.method==='POST' && (u.pathname==='/decide'||u.pathname==='/analyze'||u.pathname==='/ai-trader'||u.pathname==='/copilot/auto')) return handleDecide(req,res);
-    if(req.method==='POST' && u.pathname==='/replay') return handleReplay(req,res);
-    return send(res,404,{ok:false,error:'Not found',version:SERVER_VERSION});
-  } catch(e){ return send(res,500,{ok:false,version:SERVER_VERSION,command:'SIT_OUT',veto:'SERVER_ERROR',error:String(e.message||e)}); }
+    if(req.method==='GET' && u.pathname==='/health'){
+      return send(res,200,{ ok:true, version:SERVER_VERSION, service:'btc-copilot-ai-brain',
+        openaiEnabled:ENABLE_OPENAI, model:OPENAI_MODEL, dayCalls, cap:AI_MAX_CALLS_PER_DAY, ts:Date.now() });
+    }
+    if(req.method==='GET' && (u.pathname==='/market' || u.pathname==='/btc')){
+      try{ const m=await getMarket(); return send(res,200,{...m, version:SERVER_VERSION}); }
+      catch(e){ return send(res,200,{ ok:false, version:SERVER_VERSION, error:String(e.message||e) }); }
+    }
+    if(req.method==='POST' && ['/decide','/analyze','/ai-trader','/copilot/auto'].includes(u.pathname)){
+      if(dayCalls>=AI_MAX_CALLS_PER_DAY) return send(res,200,{ ok:false, error:'DAILY_CAP_REACHED', cap:AI_MAX_CALLS_PER_DAY });
+      dayCalls+=1;
+      const body=await readBody(req);
+      const out=await decide(body);
+      return send(res,200,out);
+    }
+    if(req.method==='GET' && u.pathname==='/selftest'){
+      const out=await runSelfTest();
+      return send(res, out.ok?200:500, out);
+    }
+    return send(res,404,{ ok:false, error:'NOT_FOUND', path:u.pathname });
+  } catch(e){
+    return send(res,500,{ ok:false, error:String(e.message||e) });
+  }
 });
-server.listen(PORT,()=>console.log(`${SERVER_VERSION} listening on ${PORT}; openai=${ENABLE_OPENAI&&!!OPENAI_API_KEY}; model=${OPENAI_MODEL}`));
+
+async function runSelfTest(){
+  const checks=[];
+  const mkTape=(fn,n=90,stepMs=1000)=>{ const now=Date.now(); const t=[]; for(let i=0;i<n;i++) t.push({ts:now-(n-1-i)*stepMs, price:fn(i)}); return t; };
+  // 1. strong below → math fallback should TRADE_BELOW when AI off
+  const belowTape=mkTape(i=>62000-8*(i/90*10));
+  const f1=buildFeatures({ market:{price:belowTape[belowTape.length-1].price, priceTs:Date.now(), responseTs:Date.now(), confidence:88, spreadBps:3, venueCount:4, source:'test'}, target:62050, timer:{secondsLeft:300}, recentTape:belowTape });
+  const d1=mathFallbackDecision(f1);
+  checks.push({name:'below trend → math side BELOW', pass:f1.side==='BELOW', got:f1.side});
+  // 2. worry monotonic: rising settle-opposite raises worry
+  const wLow=worryFromFeatures({pBelow:0.9,pAbove:0.1,pTouchStrike:0.1,pCrossStrike:0.05,pHardReverse:0.02,reversalScore:15},'ABOVE');
+  const wHigh=worryFromFeatures({pBelow:0.9,pAbove:0.1,pTouchStrike:0.5,pCrossStrike:0.4,pHardReverse:0.3,reversalScore:70},'ABOVE');
+  checks.push({name:'worry rises with reversal pressure', pass:wHigh>wLow, got:`${wLow} < ${wHigh}`});
+  // 3. verdict thresholds
+  checks.push({name:'verdict bands', pass:verdictFromWorry(10)==='IGNORE'&&verdictFromWorry(45)==='WATCH'&&verdictFromWorry(80)==='EXIT NOW', got:`${verdictFromWorry(10)}/${verdictFromWorry(45)}/${verdictFromWorry(80)}`});
+  // 4. firmness: unconfirmed exit on healthy position defers to HOLD
+  const s={id:'t',committed:null,pendingExit:null,history:[]};
+  const fHealthy={activeSide:'BELOW',pSettleOpposite:0.15,pBelow:0.9,pAbove:0.1,pTouchStrike:0.2,pCrossStrike:0.05,pHardReverse:0.03,reversalScore:20,reversal:{call:'WATCH'},side:'BELOW'};
+  let dEx=normalizeAiDecision({action:'EXIT_BELOW',confidence:60,worry:30,why:'wobble'},fHealthy);
+  dEx=enforceFirmness(s,dEx,fHealthy);
+  checks.push({name:'unconfirmed exit → deferred HOLD', pass:dEx.action==='HOLD_BELOW'&&dEx.enforced==='EXIT_DEFERRED', got:dEx.action+'/'+dEx.enforced});
+  // 5. firmness: confirmed exit passes
+  const s2={id:'t2',committed:null,pendingExit:null,history:[]};
+  const fBroken={activeSide:'BELOW',pSettleOpposite:0.5,pBelow:0.4,pAbove:0.6,pTouchStrike:0.6,pCrossStrike:0.4,pHardReverse:0.3,reversalScore:75,reversal:{call:'LIKELY_OPPOSITE'},side:'BELOW'};
+  let dEx2=normalizeAiDecision({action:'EXIT_BELOW',confidence:70,worry:80,why:'confirmed'},fBroken);
+  dEx2=enforceFirmness(s2,dEx2,fBroken);
+  checks.push({name:'confirmed exit passes', pass:dEx2.action==='EXIT_BELOW'&&dEx2.enforced==='EXIT_CONFIRMED', got:dEx2.action+'/'+dEx2.enforced});
+  // 6. entry without evidence suppressed
+  const s3={id:'t3',committed:null,pendingExit:null,history:[]};
+  const fEntry={activeSide:null,side:'BELOW',pBelow:0.8,pAbove:0.2,pSettleOpposite:0.2,pTouchStrike:0.3,pCrossStrike:0.1,pHardReverse:0.05,reversalScore:30,reversal:{call:'LOW'}};
+  let dEn=normalizeAiDecision({action:'TRADE_BELOW',confidence:80,worry:20,why:'x',evidence:[]},fEntry);
+  dEn=enforceFirmness(s3,dEn,fEntry);
+  checks.push({name:'entry w/o evidence suppressed', pass:dEn.action==='SIT_OUT'&&dEn.enforced==='EVIDENCE_REQUIRED', got:dEn.action+'/'+dEn.enforced});
+  // 7. parse truncated JSON
+  const p=parseAiJson('{"action":"TRADE_BELOW","confidence":78,"worry":22,"why":"trend down","evidence":["a","b"');
+  checks.push({name:'truncated JSON recovered', pass:p&&p.action==='TRADE_BELOW', got:p&&p.action});
+  const failed=checks.filter(c=>!c.pass);
+  return { ok:failed.length===0, version:SERVER_VERSION, passed:checks.length-failed.length, total:checks.length, checks };
+}
+
+if(require.main===module){
+  server.listen(PORT, ()=>{ console.log(`btc-copilot-ai-brain listening on ${PORT}, model=${OPENAI_MODEL}, openai=${ENABLE_OPENAI}`); });
+}
+module.exports = { buildFeatures, reversalAnalytics, worryFromFeatures, verdictFromWorry, normalizeAiDecision, enforceFirmness, mathFallbackDecision, parseAiJson, decide, runSelfTest, getMarket };
