@@ -26,7 +26,7 @@ function envNumber(name, fallback, min = -Infinity, max = Infinity) {
 }
 
 const PORT = envNumber('PORT', 10000, 1, 65535);
-const SERVER_VERSION = 'btc-copilot-core-1.1-reversal';
+const SERVER_VERSION = 'btc-copilot-core-1.1-authority-locked';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const ENABLE_OPENAI = /^(0|false|no)$/i.test(process.env.ENABLE_OPENAI || '') ? false : (/^(1|true|yes)$/i.test(process.env.ENABLE_OPENAI || '') || !!OPENAI_API_KEY);
 const OPENAI_MODEL = String(process.env.OPENAI_MODEL || 'gpt-4o-mini').replace('gpt-40', 'gpt-4o');
@@ -66,7 +66,7 @@ function readBody(req, limit=350000){ return new Promise((resolve,reject)=>{ let
 async function fetchJson(url, timeoutMs=MARKET_TIMEOUT_MS){
   const ac=new AbortController(); const timer=setTimeout(()=>{try{ac.abort();}catch(_){}} , timeoutMs);
   try{
-    const r=await fetch(url,{signal:ac.signal,headers:{'User-Agent':'btc-copilot-core-1.1-reversal','Accept':'application/json'}});
+    const r=await fetch(url,{signal:ac.signal,headers:{'User-Agent':'btc-copilot-core-1.1-authority-locked','Accept':'application/json'}});
     if(!r.ok) throw new Error(`${r.status} ${r.statusText}`);
     return await r.json();
   } finally { clearTimeout(timer); }
@@ -318,6 +318,46 @@ function sanitizeAi(raw){
   return {ok:true,approve:Boolean(raw.approveCandidate ?? raw.approve ?? raw.supportsEntry ?? false),preferredCommand:preferred,riskLevel:['low','medium','high','critical'].includes(risk)?risk:'medium',reason:String(raw.reason || raw.rationale || '').slice(0,500),redFlags:Array.isArray(raw.redFlags)?raw.redFlags.slice(0,6).map(x=>String(x).slice(0,120)):[]};
 }
 
+
+function aiVetoHasNumericSupport(f, candidate){
+  const side=sideFromCommand(candidate && candidate.command);
+  const r=requirementsFor(f || {});
+  if(!side || !f) return true;
+  if(f.stale || f.dataQuality < 35) return true;
+  if(!Number.isFinite(f.price) || !Number.isFinite(f.target) || f.target <= 0 || !Number.isFinite(f.secondsLeft)) return true;
+  if(side !== f.side) return true;
+  if(f.secondsLeft <= 5) return true;
+  if(f.pSide < Math.max(0.54, r.minP - 0.04)) return true;
+  if(f.gapBps < Math.max(0.20, r.minGap * 0.72)) return true;
+  const rv=f.reversal || {};
+  if(['WATCH','LIKELY_TOUCH','LIKELY_OPPOSITE'].includes(String(rv.call || '').toUpperCase())) return true;
+  if((f.pTouchStrike ?? 0) > Math.max(r.maxTouch + 0.08, 0.32)) return true;
+  if((f.pCrossStrike ?? 0) > 0.18) return true;
+  if((f.pSettleOpposite ?? 0) > 0.22) return true;
+  if((f.pHardReverse ?? 0) > 0.14) return true;
+  if((f.reversalScore ?? 0) > Math.max(r.maxRev + 10, 45)) return true;
+  if((rv.adverseAccelerationBpsPerSec ?? 0) > 0.085 && (rv.towardStrikeBps ?? 0) > Math.max(0.9, f.gapBps * 0.22)) return true;
+  if((f.adverse2 ?? 0) > Math.max(0.75, f.gapBps * 0.30)) return true;
+  if((f.adverse5 ?? 0) > Math.max(1.05, f.gapBps * 0.38)) return true;
+  if((f.adverse15 ?? 0) > Math.max(1.35, f.gapBps * 0.50)) return true;
+  return false;
+}
+
+function strongCandidateWithoutReversal(f, candidate){
+  if(!candidate || !String(candidate.command || '').startsWith('TRADE_')) return false;
+  const rv=f.reversal || {};
+  return ['A+','A'].includes(candidate.entryQuality) &&
+    (candidate.score ?? 0) >= 70 &&
+    (f.dataQuality ?? 0) >= 55 &&
+    !f.stale &&
+    String(rv.call || 'NONE').toUpperCase() === 'NONE' &&
+    (f.pTouchStrike ?? 1) <= 0.18 &&
+    (f.pCrossStrike ?? 1) <= 0.08 &&
+    (f.pSettleOpposite ?? 1) <= 0.16 &&
+    (f.pHardReverse ?? 1) <= 0.08 &&
+    (f.reversalScore ?? 100) <= 25;
+}
+
 async function callOpenAI(f, candidate){
   resetDailyIfNeeded();
   if(!ENABLE_OPENAI || !OPENAI_API_KEY) return {ok:false,error:'NO_OPENAI_AUTHORITY'};
@@ -325,7 +365,7 @@ async function callOpenAI(f, candidate){
   dayCalls++;
   const facts={price:f.price,target:f.target,secondsLeft:f.secondsLeft,side:f.side,gapBps:f.gapBps,pAbove:f.pAbove,pBelow:f.pBelow,pTouchStrike:f.pTouchStrike,pCrossStrike:f.pCrossStrike,pSettleOpposite:f.pSettleOpposite,pHardReverse:f.pHardReverse,reversalScore:f.reversalScore,reversal:f.reversal,move2:f.move2,move5:f.move5,move10:f.move10,move15:f.move15,move30:f.move30,move60:f.move60,sideMomentum:f.sideMomentum,adverse2:f.adverse2,adverse5:f.adverse5,adverse15:f.adverse15,dataQuality:f.dataQuality,activeSide:f.activeSide||'NONE'};
   const system='You are a BTC 15-minute event-contract copilot. You are a reasoning supervisor, not a probability generator. The backend calibrated probabilities and reversal module are authoritative. Your most important job is to audit reversal/touch/opposite risk. Never invent 99% certainty. Return only JSON.';
-  const user={task:'Audit the calibrated candidate decision with special focus on reversal risk. Approve entry only if pTouchStrike/pCrossStrike/pSettleOpposite/pHardReverse and reversal.call genuinely support the side. Prefer SIT_OUT when flat and reversal risk is uncertain. If active position exists, choose HOLD_SIDE or EXIT_SIDE. No generic WAIT is allowed.',allowedCommands:[...COMMANDS],facts,candidate:{command:candidate.command,score:candidate.score,entryQuality:candidate.entryQuality,reason:candidate.reason},requiredJson:{approveCandidate:'boolean',preferredCommand:'one allowed command',riskLevel:'low|medium|high|critical',reason:'short practical reason',redFlags:['short strings']}};
+  const user={task:'Audit the calibrated candidate decision with special focus on reversal risk. Do NOT veto an A/A+ candidate when reversal.call is NONE, pTouchStrike is low, pCrossStrike is low, pSettleOpposite is low, data is fresh, and the gap/probability pass. No confirmed reversal pressure plus low pTouchStrike supports the candidate; it is not a reason to SIT_OUT. Veto only if you can point to numeric invalidation: stale/low-quality data, high pTouchStrike, high pCrossStrike, high pSettleOpposite, high pHardReverse, reversal.call WATCH/LIKELY_TOUCH/LIKELY_OPPOSITE, strong adverse acceleration, price/strike side conflict, or target/timer mismatch. If active position exists, choose HOLD_SIDE or EXIT_SIDE. No generic WAIT is allowed.',allowedCommands:[...COMMANDS],facts,candidate:{command:candidate.command,score:candidate.score,entryQuality:candidate.entryQuality,reason:candidate.reason},requiredJson:{approveCandidate:'boolean',preferredCommand:'one allowed command',riskLevel:'low|medium|high|critical',reason:'short practical reason referencing numeric facts',redFlags:['short numeric red flags only']}};
   const ac=new AbortController(); const timer=setTimeout(()=>{try{ac.abort();}catch(_){}} , OPENAI_TIMEOUT_MS);
   try{
     const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json','Authorization':`Bearer ${OPENAI_API_KEY}`},body:JSON.stringify({model:OPENAI_MODEL,temperature:0.1,max_tokens:OPENAI_MAX_TOKENS,response_format:{type:'json_object'},messages:[{role:'system',content:system},{role:'user',content:JSON.stringify(user)}]})});
@@ -350,9 +390,19 @@ function finalDecisionFromAi(f,candidate,ai,session){
   const aiSide=sideFromCommand(aiPref);
 
   if(candType==='TRADE'){
-    if(!aiOk){ command='SIT_OUT'; veto=ai?.error || 'NO_OPENAI_AUTHORITY'; source='NO_AI_NO_ENTRY'; }
-    else if(!ai.approve || ai.riskLevel==='critical' || (aiType==='TRADE' && aiSide!==candSide) || aiType==='SIT_OUT') { command='SIT_OUT'; veto='AI_VETO'; source='AI_VETO'; }
-    else { command=candidate.command; veto='NONE'; source='AI_APPROVED_ENTRY'; }
+    if(!aiOk){
+      command='SIT_OUT'; veto=ai?.error || 'NO_OPENAI_AUTHORITY'; source='NO_AI_NO_ENTRY';
+    } else {
+      const aiConflict = !ai.approve || ai.riskLevel==='critical' || (aiType==='TRADE' && aiSide!==candSide) || aiType==='SIT_OUT';
+      const numericSupport = aiVetoHasNumericSupport(f, candidate);
+      if(aiConflict && numericSupport){
+        command='SIT_OUT'; veto='AI_VETO_NUMERICALLY_SUPPORTED'; source='AI_VETO';
+      } else {
+        command=candidate.command;
+        veto=aiConflict ? 'AI_NOTE_IGNORED_NO_NUMERIC_INVALIDATION' : 'NONE';
+        source=aiConflict ? 'CALIBRATED_BRAIN_AI_CONFLICT' : 'AI_APPROVED_ENTRY';
+      }
+    }
   } else if(active){
     if(aiOk && aiType==='EXIT' && aiSide===active) { command=`EXIT_${active}`; veto='AI_EXIT'; source='AI_ACTIVE_POSITION'; }
     else if(aiOk && aiType==='HOLD' && aiSide===active && candidate.command.startsWith('HOLD')) { command=`HOLD_${active}`; veto='NONE'; source='AI_ACTIVE_POSITION'; }
@@ -424,6 +474,8 @@ function runSelfTests(){
   add('cleanCommand rejects garbage',()=>cleanCommand('WAIT')==='SIT_OUT'&&cleanCommand('trade above')==='TRADE_ABOVE');
   add('no openai flag prevents entry final',()=>{const s={lastDecision:null,lastAi:null,history:[]}; const f=buildFeatures(base); const cand={...candidateDecision(f),command:'TRADE_ABOVE'}; return finalDecisionFromAi(f,cand,{ok:false,error:'NO_OPENAI_AUTHORITY'},s).command==='SIT_OUT';});
   add('locked thesis can hold only if still valid',()=>{const s={lastDecision:{command:'TRADE_ABOVE',ts:Date.now()},lastAi:null,history:[]}; const f=buildFeatures(base); return finalDecisionFromAi(f,{...candidateDecision(f),command:'SIT_OUT'},{ok:true,approve:false,preferredCommand:'SIT_OUT'},s).command==='TRADE_ABOVE';});
+  add('AI cannot veto A setup without numeric invalidation',()=>{const t=Date.now(); const f=buildFeatures({sessionId:'test',market:{price:62132.47,priceTs:t,responseTs:t,confidence:92,spreadBps:1.63,venueCount:4,source:'test'},target:62020.70,timer:{secondsLeft:540},recentTape:[{ts:t-60000,price:62064},{ts:t-30000,price:62101},{ts:t-15000,price:62124},{ts:t,price:62132.47}]}); const c=candidateDecision(f); const s={lastDecision:null,lastAi:null,history:[]}; const badAi={ok:true,approve:false,preferredCommand:'SIT_OUT',riskLevel:'medium',reason:'bad cautious veto'}; const d=finalDecisionFromAi(f,c,badAi,s); return c.command==='TRADE_ABOVE' && d.command==='TRADE_ABOVE' && d.veto==='AI_NOTE_IGNORED_NO_NUMERIC_INVALIDATION';});
+  add('AI veto allowed when numeric reversal exists',()=>{const t=Date.now(); const f=buildFeatures({sessionId:'test',market:{price:62004,priceTs:t,responseTs:t,confidence:92,spreadBps:1.5,venueCount:4,source:'test'},target:61995,timer:{secondsLeft:55},recentTape:[{ts:t-30000,price:62075},{ts:t-15000,price:62050},{ts:t-5000,price:62020},{ts:t,price:62004}]}); const c={...candidateDecision(f),command:'TRADE_ABOVE'}; const s={lastDecision:null,lastAi:null,history:[]}; const badAi={ok:true,approve:false,preferredCommand:'SIT_OUT',riskLevel:'critical',reason:'numeric reversal'}; const d=finalDecisionFromAi(f,c,badAi,s); return d.command==='SIT_OUT' && d.veto==='AI_VETO_NUMERICALLY_SUPPORTED';});
   return tests;
 }
 function selftestSummary(){ const tests=runSelfTests(); const failed=tests.filter(t=>!t.pass); return {ok:failed.length===0,version:SERVER_VERSION,total:tests.length,passed:tests.length-failed.length,failed:failed.length,tests}; }
