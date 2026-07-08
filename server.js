@@ -1,7 +1,7 @@
 'use strict';
 
 /*
-  BTC v133 Independent AI Copilot Backend
+  BTC v134 Independent AI Copilot Backend
   Purpose: independent second-trader analysis for 15-minute BTC event contracts.
   Endpoints:
     GET  /health
@@ -25,7 +25,7 @@ function envNumber(name, fallback, min = -Infinity) {
 }
 
 const PORT = envNumber('PORT', 10000, 1);
-const SERVER_VERSION = 'v133-independent-ai-copilot';
+const SERVER_VERSION = 'v134-independent-ai-copilot';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const ENABLE_OPENAI = /^(0|false|no)$/i.test(process.env.ENABLE_OPENAI || '') ? false : (/^(1|true|yes)$/i.test(process.env.ENABLE_OPENAI || '') || !!OPENAI_API_KEY);
 const OPENAI_MODEL = String(process.env.OPENAI_MODEL || 'gpt-4o-mini').replace('gpt-40', 'gpt-4o');
@@ -82,7 +82,7 @@ function sideFromAction(a) {
 function normalizeAction(a) {
   const s = rawActionText(a);
   const side = sideFromAction(s);
-  // v133: preserve the side on exit commands when it exists. A bare EXIT is allowed, but
+  // v134: preserve the side on exit commands when it exists. A bare EXIT is allowed, but
   // active-position exits should be explicit as EXIT_ABOVE / EXIT_BELOW all the way through.
   if (s === 'EXIT' || s.startsWith('EXIT')) return side ? 'EXIT_' + side : 'EXIT';
   if (side && s.includes('HOLD')) return 'HOLD_' + side;
@@ -124,7 +124,7 @@ async function fetchJson(url, timeoutMs = MARKET_TIMEOUT_MS) {
   const ac = new AbortController();
   const t = setTimeout(() => { try { ac.abort(); } catch (_) {} }, timeoutMs);
   try {
-    const r = await fetch(url, { signal: ac.signal, headers: { 'User-Agent': 'btc-v133-independent-ai/1.0', accept: 'application/json' } });
+    const r = await fetch(url, { signal: ac.signal, headers: { 'User-Agent': 'btc-v134-independent-ai/1.0', accept: 'application/json' } });
     if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
     return await r.json();
   } finally { clearTimeout(t); }
@@ -219,6 +219,29 @@ function canonicalPAbove(price, target, secondsLeft, signedGapBps, gapBps, drift
   const z = (signedGapBps + projection) / sd;
   return clamp(normCdf(0.78 * z), 0.01, 0.99);
 }
+function adverseTailRisk(secondsLeft, gapBps, expectedMove, m2, m15, m30, drift, spreadBps) {
+  const t = clamp(secondsLeft, 0, 900);
+  const g = Math.max(0.25, Number.isFinite(gapBps) ? Math.abs(gapBps) : 0.25);
+  const em = Number.isFinite(expectedMove) ? Math.abs(expectedMove) : 4;
+  const shock = Math.max(
+    em * (t <= 90 ? 1.55 : t <= 180 ? 1.35 : 1.15),
+    Number.isFinite(m2) ? Math.abs(m2) * 3.2 : 0,
+    Number.isFinite(m15) ? Math.abs(m15) * 1.65 : 0,
+    Number.isFinite(m30) ? Math.abs(m30) * 1.05 : 0,
+    Number.isFinite(drift) ? Math.abs(drift) * Math.min(t, 90) * 0.90 : 0,
+    Number.isFinite(spreadBps) ? Math.abs(spreadBps) * 0.75 : 0
+  );
+  const ratio = shock / g;
+  const base = t <= 45 ? 0.070 : t <= 90 ? 0.055 : t <= 180 ? 0.038 : t <= 360 ? 0.026 : 0.018;
+  const ratioRisk = 0.20 * normCdf((ratio - 0.72) * 2.35);
+  const microRisk = (t <= 90 && g < 10) ? 0.025 : (t <= 180 && g < 7 ? 0.018 : 0);
+  return clamp(base + ratioRisk + microRisk, 0.018, t <= 90 ? 0.24 : 0.20);
+}
+function confidenceCeilingFromTail(secondsLeft, pAdverseTail) {
+  if (!Number.isFinite(pAdverseTail)) return 96;
+  const tPenalty = secondsLeft <= 45 ? 6 : secondsLeft <= 90 ? 4 : secondsLeft <= 180 ? 2 : 0;
+  return Math.round(clamp((1 - pAdverseTail) * 100 - tPenalty, 55, 96));
+}
 function confidenceContradictsGeometry(pAbove, signedGapBps, gapBps, pTouchStrike) {
   if (!Number.isFinite(pAbove) || !Number.isFinite(signedGapBps) || !Number.isFinite(gapBps)) return false;
   const signSaysAbove = signedGapBps > 0;
@@ -247,21 +270,29 @@ function derivePractical(snapshot) {
   const vol = clamp(numberFrom(d.volBpsPerSec, d.vol, d.sigmaBpsPerSec), 0.025, 2.5);
   const expectedMove = Number.isFinite(d.expectedMove) ? Math.abs(Number(d.expectedMove)) : vol * Math.sqrt(Math.max(secondsLeft, 1));
 
-  // v133: canonical settlement probability is recomputed from live price-vs-strike geometry.
+  // v134: canonical settlement probability is recomputed from live price-vs-strike geometry.
   // Do not let a short-term EWMA drift extrapolated over the full remaining window invert a far/low-touch side.
   const pTouchRaw = hasValidGeometry ? numberFrom(d.pTouchStrike, d.p_touch_strike) : NaN;
   const pAboveRaw = hasValidGeometry ? numberFrom(d.pAbove, d.pSettleAbove, d.p_settle_above) : NaN;
   const pAboveCanon = hasValidGeometry ? canonicalPAbove(price, target, secondsLeft, signedGapBps, gapBps, drift, expectedMove) : NaN;
   let pAbove = hasValidGeometry && Number.isFinite(pAboveCanon) ? pAboveCanon : (hasValidGeometry && Number.isFinite(pAboveRaw) ? clamp(pAboveRaw, 0, 1) : NaN);
+  const pAdverseTail = hasValidGeometry ? adverseTailRisk(secondsLeft, gapBps, expectedMove, m2, m15, m30, drift, numberFrom(m.spreadBps, d.spreadBps)) : NaN;
+  if (hasValidGeometry && Number.isFinite(pAbove) && Number.isFinite(pAdverseTail)) {
+    pAbove = clamp(pAbove, pAdverseTail, 1 - pAdverseTail);
+  }
+  const confidenceCeiling = confidenceCeilingFromTail(secondsLeft, pAdverseTail);
 
   const driftTowardStrikeForTouch = Number.isFinite(signedGapBps) && Number.isFinite(drift) ? (signedGapBps > 0 ? -drift : drift) : 0;
   const touchScale = Math.max(0.20, expectedMove * (driftTowardStrikeForTouch > 0 ? 1.10 : 0.90));
   const touchBoost = driftTowardStrikeForTouch > 0
     ? Math.min(0.12, Math.max(0, driftTowardStrikeForTouch) * Math.min(secondsLeft, 90) / Math.max(1, expectedMove) * 0.045)
     : 0;
-  const pTouchStrike = hasValidGeometry && Number.isFinite(gapBps) && Number.isFinite(touchScale)
+  const pTouchBase = hasValidGeometry && Number.isFinite(gapBps) && Number.isFinite(touchScale)
     ? clamp(2 * (1 - normCdf(gapBps / touchScale)) + touchBoost, 0.01, 0.99)
     : pTouchRaw;
+  const pTouchStrike = Number.isFinite(pAdverseTail) && Number.isFinite(pTouchBase)
+    ? Math.max(pTouchBase, clamp(pAdverseTail * 1.15, 0.01, 0.99))
+    : pTouchBase;
 
   if (confidenceContradictsGeometry(pAbove, signedGapBps, gapBps, pTouchStrike) && Number.isFinite(pAboveCanon)) {
     pAbove = pAboveCanon;
@@ -285,7 +316,7 @@ function derivePractical(snapshot) {
   }
   const trendQuality = clamp(50 + sideMomentum * 10 - opposingAccel * 7 - reversalScore * 0.22, 0, 100);
   const pSettleOpposite = side === 'ABOVE' ? pBelow : side === 'BELOW' ? pAbove : NaN;
-  return { price, target, secondsLeft, gap, gapBps, signedGapBps, pAbove, pBelow, pSide, side, pTouchStrike, pSettleOpposite, drift, m2, m15, m30, vol, expectedMove, sideMomentum, opposingMomentum, opposingAccel, reversalScore, trendQuality, marketAgeMs, marketStaleFlag };
+  return { price, target, secondsLeft, gap, gapBps, signedGapBps, pAbove, pBelow, pSide, side, pTouchStrike, pSettleOpposite, pAdverseTail, confidenceCeiling, drift, m2, m15, m30, vol, expectedMove, sideMomentum, opposingMomentum, opposingAccel, reversalScore, trendQuality, marketAgeMs, marketStaleFlag };
 }
 function dynamicRisk(pr) {
   const t = pr.secondsLeft;
@@ -335,14 +366,16 @@ function localPracticalDecision(snapshot) {
   const pSide = pr.pSide;
   const pSettle = side === 'ABOVE' ? pr.pAbove : side === 'BELOW' ? pr.pBelow : null;
   const score = opportunityScore(pr, risk);
-  const confidence = Math.round(clamp(score * 0.55 + (Number.isFinite(pSide) ? pSide * 100 : 0) * 0.45, 0, 99));
+  const confidence = Math.min(pr.confidenceCeiling || 96, Math.round(clamp(score * 0.55 + (Number.isFinite(pSide) ? pSide * 100 : 0) * 0.45, 0, 99)));
   if (active === 'ABOVE' || active === 'BELOW') {
     const pWin = active === 'ABOVE' ? pr.pAbove : pr.pBelow;
     const against = active === 'ABOVE' ? -pr.sideMomentum : pr.sideMomentum;
-    if ((Number.isFinite(pWin) && pWin < (pr.secondsLeft > 240 ? 0.40 : 0.34)) || (against > 2.6 && pr.reversalScore > 72)) {
-      return { action: 'EXIT_' + active, confidence: Math.round(clamp(100 - (pWin || 0) * 100, 55, 96)), pSettle: pWin, thesis: active, timing: 'NOW', why: 'Open position lost practical edge; exit before the opposing move becomes a full loss.', risk: 'position_edge_broken', invalidation: 'If pWin recovers above 0.55 with favorable tape, reassess.', evidence: [`pWin ${Math.round((pWin || 0) * 100)}%`, `reversal ${Math.round(pr.reversalScore)}`, `score ${Math.round(score)}`], practical: pr, dynamicRisk: risk, score, veto: 'NONE' };
+    const lastMinuteFlipRisk = pr.secondsLeft <= 105 && against > 1.15 && (pr.secondsLeft <= 75 && against > 1.75 || pr.opposingAccel > 0.90 || pr.reversalScore > 46 || (Number.isFinite(pr.pTouchStrike) && pr.pTouchStrike > 0.10) || (Number.isFinite(pr.pAdverseTail) && pr.pAdverseTail > 0.085));
+    if ((Number.isFinite(pWin) && pWin < (pr.secondsLeft > 240 ? 0.40 : 0.34)) || (against > 2.6 && pr.reversalScore > 72) || lastMinuteFlipRisk) {
+      const veto = lastMinuteFlipRisk ? 'LAST_MINUTE_FLIP_RISK' : 'NONE';
+      return { action: 'EXIT_' + active, confidence: Math.round(clamp(100 - (pWin || 0) * 100 + (lastMinuteFlipRisk ? 10 : 0), 55, 96)), pSettle: pWin, thesis: active, timing: 'NOW', why: lastMinuteFlipRisk ? 'Last-minute adverse tape / strike-touch risk detected; exit/reassess instead of trusting a stale high-confidence hold.' : 'Open position lost practical edge; exit before the opposing move becomes a full loss.', risk: lastMinuteFlipRisk ? 'last_minute_flip_risk' : 'position_edge_broken', invalidation: 'If pWin recovers above 0.55 with favorable tape, reassess.', evidence: [`pWin ${Math.round((pWin || 0) * 100)}%`, `reversal ${Math.round(pr.reversalScore)}`, `touch ${Math.round((pr.pTouchStrike || 0) * 100)}%`, `against ${against.toFixed(2)}bps`], practical: pr, dynamicRisk: risk, score, veto };
     }
-    return { action: 'HOLD_' + active, confidence: Math.round(clamp((pWin || 0) * 100, 1, 98)), pSettle: pWin, thesis: active, timing: 'WAIT', why: 'Position edge is still intact; no exit trigger confirmed.', risk: 'normal BTC reversal risk', invalidation: 'Exit if pWin breaks the floor with adverse acceleration.', evidence: [`pWin ${Math.round((pWin || 0) * 100)}%`, `reversal ${Math.round(pr.reversalScore)}`, `score ${Math.round(score)}`], practical: pr, dynamicRisk: risk, score, veto: 'NONE' };
+    return { action: 'HOLD_' + active, confidence: Math.min(pr.confidenceCeiling || 96, Math.round(clamp((pWin || 0) * 100, 1, 98))), pSettle: pWin, thesis: active, timing: 'WAIT', why: 'Position edge is still intact; no exit trigger confirmed.', risk: 'normal BTC reversal risk', invalidation: 'Exit if pWin breaks the floor with adverse acceleration.', evidence: [`pWin ${Math.round((pWin || 0) * 100)}%`, `reversal ${Math.round(pr.reversalScore)}`, `score ${Math.round(score)}`], practical: pr, dynamicRisk: risk, score, veto: 'NONE' };
   }
   const earlyThin = unsafeEarlyThin(pr, risk);
   const reversalHot = pr.reversalScore >= (pr.secondsLeft > 360 ? 74 : 84);
@@ -383,6 +416,8 @@ function practicalContext(snapshot) {
     pSettleSide: Number.isFinite(pSide) ? Number(pSide.toFixed(4)) : null,
     pTouchStrike: Number.isFinite(pr.pTouchStrike) ? Number(pr.pTouchStrike.toFixed(4)) : null,
     pSettleOpposite: Number.isFinite(pr.pSettleOpposite) ? Number(pr.pSettleOpposite.toFixed(4)) : null,
+    pAdverseTail: Number.isFinite(pr.pAdverseTail) ? Number(pr.pAdverseTail.toFixed(4)) : null,
+    confidenceCeiling: Number.isFinite(pr.confidenceCeiling) ? pr.confidenceCeiling : null,
     move2Bps: Number.isFinite(pr.m2) ? Number(pr.m2.toFixed(2)) : null,
     move15Bps: Number.isFinite(pr.m15) ? Number(pr.m15.toFixed(2)) : null,
     move30Bps: Number.isFinite(pr.m30) ? Number(pr.m30.toFixed(2)) : null,
@@ -401,7 +436,7 @@ function practicalContext(snapshot) {
     `Price is ${facts.price} and strike/target is ${facts.target}.`,
     `Geometry side is ${side}; signed gap is ${facts.signedGapBps} bps (${facts.gapUsd} dollars).`,
     `${facts.secondsLeft}s remain; P(ABOVE) ${Math.round((pr.pAbove || 0) * 100)}%, P(BELOW) ${Math.round((pr.pBelow || 0) * 100)}%.`,
-    `P(touch strike) ${Math.round((pr.pTouchStrike || 0) * 100)}%; P(settle opposite) ${Math.round((pr.pSettleOpposite || 0) * 100)}%.`,
+    `P(touch strike) ${Math.round((pr.pTouchStrike || 0) * 100)}%; P(settle opposite) ${Math.round((pr.pSettleOpposite || 0) * 100)}%; calibrated adverse-tail floor ${Math.round((pr.pAdverseTail || 0) * 100)}%; confidence ceiling ${pr.confidenceCeiling || 96}%.`,
     `Tape 2/15/30s = ${facts.move2Bps}/${facts.move15Bps}/${facts.move30Bps} bps; reversal score ${facts.reversalScore}.`,
     `Local telemetry says ${local.action}; treat that as instrument data, not an order.`
   ];
@@ -459,6 +494,7 @@ function reviewDecision(snapshot, decision) {
   }
   if (Number.isFinite(pr.pTouchStrike)) d.pTouchStrike = pr.pTouchStrike;
   if (Number.isFinite(pr.pSettleOpposite)) d.pSettleOpposite = pr.pSettleOpposite;
+  if (Number.isFinite(pr.confidenceCeiling)) d.confidence = Math.min(d.confidence, pr.confidenceCeiling);
   // The AI chooses the action/thesis; the displayed probability must remain tied to the live strike geometry.
   // This prevents an AI wording or JSON mistake from showing 99% for the wrong side.
   if (aiSide === 'ABOVE' && Number.isFinite(pr.pAbove)) d.pSettle = pr.pAbove;
@@ -473,6 +509,9 @@ function reviewDecision(snapshot, decision) {
       const pWin = active === 'ABOVE' ? pr.pAbove : pr.pBelow;
       d = { ...d, action: 'HOLD_' + active, timing: 'WAIT', thesis: active, pSettle: Number.isFinite(pWin) ? pWin : d.pSettle, why: 'Active ' + active + ' position requires HOLD or EXIT, not bare WAIT. AI WAIT converted to HOLD because no exit trigger was confirmed. ' + d.why, veto: 'ACTIVE_POSITION_WAIT_TO_HOLD' };
     }
+  }
+  if ((active === 'ABOVE' || active === 'BELOW') && d.action.startsWith('HOLD') && String(local.action || '').startsWith('EXIT')) {
+    d = { ...d, action: 'EXIT_' + active, thesis: active, timing: 'NOW', pSettle: local.pSettle, why: 'Active ' + active + ' position: AI said HOLD, but fresh local safety telemetry says EXIT_' + active + ' because of ' + (local.veto || local.risk || 'edge break') + '. ' + d.why, veto: local.veto || 'ACTIVE_POSITION_HOLD_TO_EXIT' };
   }
   if ((active === 'ABOVE' || active === 'BELOW') && d.action.startsWith('EXIT')) {
     d = { ...d, action: 'EXIT_' + active, thesis: active, timing: 'NOW' };
@@ -507,9 +546,9 @@ function reviewDecision(snapshot, decision) {
       d = { ...d, action: 'WAIT', timing: 'WAIT', thesis: aiSide || localSide || 'NONE', why: `AI trade rejected by fact-check governor: ${whyBits.join('; ')}.`, risk: 'fact_check_governor', evidence: (d.evidence || []).concat(whyBits.slice(0, 3)), veto: impossibleAgainstGeometry ? 'AI_SIDE_GEOMETRY_MISMATCH' : (earlyThin ? 'EARLY_THIN_TOUCH_RISK' : 'SANITY_GOVERNOR'), pTouchStrike: pr.pTouchStrike, pSettleOpposite: pr.pSettleOpposite };
     }
   }
-  // v133: AI remains authority, but impossible-side/stale-telemetry contradictions are blocked.
+  // v134: AI remains authority, but impossible-side/stale-telemetry contradictions are blocked.
   // LocalPracticalDecision is retained for telemetry and sanity review only.
-  d.review = { localAction: local.action, localWhy: local.why, dynamicReqP: risk.reqP, dynamicMinGapBps: risk.minGapBps, scoreNeed: risk.scoreNeed, opportunityScore: score, price: pr.price, target: pr.target, signedGapBps: pr.signedGapBps, geometrySide: pr.side, pAbove: pr.pAbove, pBelow: pr.pBelow, pSide: pr.pSide, pTouchStrike: pr.pTouchStrike, pSettleOpposite: pr.pSettleOpposite, gapBps: pr.gapBps, secondsLeft: pr.secondsLeft, reversalScore: pr.reversalScore, sideMomentum: pr.sideMomentum, rawSource };
+  d.review = { localAction: local.action, localWhy: local.why, dynamicReqP: risk.reqP, dynamicMinGapBps: risk.minGapBps, scoreNeed: risk.scoreNeed, opportunityScore: score, price: pr.price, target: pr.target, signedGapBps: pr.signedGapBps, geometrySide: pr.side, pAbove: pr.pAbove, pBelow: pr.pBelow, pSide: pr.pSide, pTouchStrike: pr.pTouchStrike, pSettleOpposite: pr.pSettleOpposite, pAdverseTail: pr.pAdverseTail, confidenceCeiling: pr.confidenceCeiling, gapBps: pr.gapBps, secondsLeft: pr.secondsLeft, reversalScore: pr.reversalScore, sideMomentum: pr.sideMomentum, rawSource };
   return d;
 }
 function updateSession(st, decision) {
@@ -527,7 +566,7 @@ function sessionForPrompt(st) {
 }
 
 function aiSystemPrompt(kind) {
-  const base = `You are the independent AI Copilot for 15-minute BTC ABOVE/BELOW event contracts. You are the decision-maker, not a formatter for the local engine. The contract settles ABOVE or BELOW the target/strike, NOT above or below the current BTC price. Current BTC price only measures distance from the strike. Local telemetry is instrument data only, not an order. Decide what a practical human second trader should do NOW: WAIT, TRADE_ABOVE, TRADE_BELOW when flat; HOLD_ABOVE/HOLD_BELOW/EXIT when in a position. Use judgment across time left, distance to strike, P(settle), P(touch strike), P(settle opposite), drift, fresh 2/15/30s tape, venue spread, acceleration, reversal pressure, and contract price if supplied. Do not trade from probability alone. Do not wait for perfection when price-vs-strike geometry is decisive and touch/opposite risk is low. Ground your conclusion in the facts: do not call a 7+ bps price-to-strike gap "small" unless the computed touch probability and tape justify that; do not call touch risk "notable" when P(touch strike) is low unless you identify a live adverse tape reason. Confidence must be an integer 0-100, not 0-1. Return compact JSON only with keys: action, confidence, pSettle, pTouchStrike, pSettleOpposite, thesis, timing, why, risk, invalidation, invalidation_hit, reasoning_class, evidence.`;
+  const base = `You are the independent AI Copilot for 15-minute BTC ABOVE/BELOW event contracts. You are the decision-maker, not a formatter for the local engine. The contract settles ABOVE or BELOW the target/strike, NOT above or below the current BTC price. Current BTC price only measures distance from the strike. Local telemetry is instrument data only, not an order. Decide what a practical human second trader should do NOW: WAIT, TRADE_ABOVE, TRADE_BELOW when flat; HOLD_ABOVE/HOLD_BELOW/EXIT when in a position. Use judgment across time left, distance to strike, P(settle), P(touch strike), P(settle opposite), drift, fresh 2/15/30s tape, venue spread, acceleration, reversal pressure, and contract price if supplied. Do not trade from probability alone. Never present 99% as practical certainty in BTC; last-minute jump/tail risk must cap confidence. Do not wait for perfection when price-vs-strike geometry is decisive and touch/opposite risk is low. Ground your conclusion in the facts: do not call a 7+ bps price-to-strike gap "small" unless the computed touch probability and tape justify that; do not call touch risk "notable" when P(touch strike) is low unless you identify a live adverse tape reason. Confidence must be an integer 0-100, not 0-1. Return compact JSON only with keys: action, confidence, pSettle, pTouchStrike, pSettleOpposite, thesis, timing, why, risk, invalidation, invalidation_hit, reasoning_class, evidence.`;
   if (kind === 'audit') return base + ` You are now doing a second-look audit because the first AI answer may have contradicted the numeric facts. Be independent, but reconcile the facts explicitly. If you still choose WAIT while P(settle side) is very high, P(touch strike) is low, and P(settle opposite) is very low, name the concrete adverse tape/venue/liquidity reason. Otherwise issue the practical trade command.`;
   return base;
 }
@@ -628,18 +667,22 @@ function runSelfTests() {
   const blankTarget = reviewDecision({ ...strong, target: '', derived: { ...strong.derived, target: '' } }, { source: 'OPENAI', action: 'TRADE_BELOW', confidence: 99, pSettle: .99, thesis: 'BELOW', why: 'should not trade with blank target' });
   const zeroTarget = reviewDecision({ ...strong, target: 0, derived: { ...strong.derived, target: 0 } }, { source: 'OPENAI', action: 'TRADE_BELOW', confidence: 99, pSettle: .99, thesis: 'BELOW', why: 'should not trade with zero target' });
   const waitNullFields = reviewDecision(strong, { source: 'TEST_WAIT_NULLS', action: 'WAIT', confidence: 0, pSettle: null, pTouchStrike: null, pSettleOpposite: null, thesis: 'NONE', why: 'null fields should stay null for WAIT' });
+  const lastMinuteLargeCushion = { ...base, timer: { secondsLeft: 58 }, market: { price: 62060, spreadBps: 1.4 }, derived: { pAbove: 0.99, pBelow: 0.01, pTouchStrike: 0.01, pSettleOpposite: 0.01, gapBps: 24.2, signedGapBps: 24.2, expectedMove: 3.2, m2: 0.1, m15: 0.8, m30: 1.5, driftBpsPerSec: 0.02, reversalScore: 5 } };
+  const dTailCap = reviewDecision(lastMinuteLargeCushion, { source: 'OPENAI', action: 'TRADE_ABOVE', confidence: 99, pSettle: .99, thesis: 'ABOVE', why: '99% large cushion' });
+  const activeLastMinuteFlip = { ...base, activeTrade: 'ABOVE', timer: { secondsLeft: 55 }, market: { price: 62010, spreadBps: 1.2 }, derived: { pAbove: .93, pBelow: .07, pTouchStrike: .16, pSettleOpposite: .07, gapBps: 16.1, signedGapBps: 16.1, expectedMove: 5.1, m2: -1.8, m15: -3.1, m30: -2.0, driftBpsPerSec: -0.10, reversalScore: 50 } };
+  const dLastMinuteExit = reviewDecision(activeLastMinuteFlip, { source: 'OPENAI', action: 'HOLD_ABOVE', confidence: 99, pSettle: .93, thesis: 'ABOVE', why: 'hold 99 despite hard adverse tape' });
   return [
     { name: 'early thin high-touch trade rejected by sanity governor', pass: d1.action === 'WAIT' && d1.veto === 'EARLY_THIN_TOUCH_RISK', got: d1.action + ' ' + d1.veto, why: d1.why },
     { name: 'strong late below obeys AI trade', pass: d2.action === 'TRADE_BELOW', got: d2.action },
     { name: 'mid-window catch-up obeys AI trade', pass: d3.action === 'TRADE_BELOW', got: d3.action },
     { name: 'flat EXIT converts to WAIT', pass: flatExit.action === 'WAIT', got: flatExit.action },
     { name: 'v123 bad BELOW while price is above strike is blocked', pass: dBadBelow.action !== 'TRADE_BELOW', got: dBadBelow.action + ' ' + (dBadBelow.veto || 'NONE'), why: dBadBelow.why },
-    { name: 'fractional AI confidence 0.99 displays as 99 not 1', pass: dGoodAboveConf.confidence === 99, got: dGoodAboveConf.confidence },
+    { name: 'fractional AI confidence 0.99 is parsed as percent, then tail-risk capped rather than shown as 1%', pass: dGoodAboveConf.confidence > 80 && dGoodAboveConf.confidence < 99, got: dGoodAboveConf.confidence },
     { name: 'second-look trigger catches bad AI WAIT on far/low-touch setup', pass: needsAiSecondLook({ target: 61756.60, timer: { secondsLeft: 124 }, market: { price: 61911.32, spreadBps: 1.83 }, derived: { pAbove: .99, pBelow: .01, pTouchStrike: .15, pSettleOpposite: .01, gapBps: 25.05, signedGapBps: 25.05, m2: .04, m15: -1.11, m30: 2.64, driftBpsPerSec: -.069, reversalScore: 25, sideMomentum: 1.10 } }, { action: 'WAIT', confidence: 1, thesis: 'NONE', why: 'small distance to the strike and notable probability of touching the strike' }) === true, got: 'trigger' },
     { name: 'pTouchStrike and pSettleOpposite present', pass: Number.isFinite(d2.pTouchStrike) && Number.isFinite(d2.pSettleOpposite), got: { pTouchStrike: d2.pTouchStrike, pSettleOpposite: d2.pSettleOpposite } },
     { name: 'bad wrong-side trade triggers second-look audit path', pass: needsAiSecondLook(v123BadBelow, dBadBelow) === true, got: { veto: dBadBelow.veto, secondLook: needsAiSecondLook(v123BadBelow, dBadBelow) } },
-    { name: 'wrong-side AI probability cannot overwrite live geometry pSettle', pass: dBadBelow.pSettle < 0.12, got: dBadBelow.pSettle },
-    { name: 'AI ABOVE display probability is tied to live geometry', pass: dGoodAboveBadPSettle.pSettle > 0.95 && dGoodAboveBadPSettle.pTouchStrike < 0.25 && dGoodAboveBadPSettle.pSettleOpposite < 0.05, got: { pSettle: dGoodAboveBadPSettle.pSettle, pTouchStrike: dGoodAboveBadPSettle.pTouchStrike, pSettleOpposite: dGoodAboveBadPSettle.pSettleOpposite } },
+    { name: 'wrong-side AI probability cannot overwrite live geometry pSettle', pass: dBadBelow.pSettle < 0.18, got: dBadBelow.pSettle },
+    { name: 'AI ABOVE display probability is tied to live geometry', pass: dGoodAboveBadPSettle.pSettle > 0.92 && dGoodAboveBadPSettle.pTouchStrike < 0.25 && dGoodAboveBadPSettle.pSettleOpposite < 0.08, got: { pSettle: dGoodAboveBadPSettle.pSettle, pTouchStrike: dGoodAboveBadPSettle.pTouchStrike, pSettleOpposite: dGoodAboveBadPSettle.pSettleOpposite } },
     { name: 'AI BELOW display probability is tied to live geometry', pass: dGoodBelowBadPSettle.pSettle > 0.90 && dGoodBelowBadPSettle.pTouchStrike < 0.25 && dGoodBelowBadPSettle.pSettleOpposite < 0.12, got: { pSettle: dGoodBelowBadPSettle.pSettle, pTouchStrike: dGoodBelowBadPSettle.pTouchStrike, pSettleOpposite: dGoodBelowBadPSettle.pSettleOpposite } },
     { name: 'stale market data blocks otherwise strong AI trade', pass: stale.action === 'WAIT' && stale.veto === 'STALE_MARKET_DATA', got: stale.action + ' ' + stale.veto },
     { name: 'backend stale-cache flag blocks otherwise strong AI trade', pass: staleCache.action === 'WAIT' && staleCache.veto === 'STALE_MARKET_DATA', got: staleCache.action + ' ' + staleCache.veto },
@@ -651,7 +694,9 @@ function runSelfTests() {
     { name: 'active opposite AI trade converts to EXIT, not new entry', pass: activeOpposite.action === 'EXIT_ABOVE' && activeOpposite.veto === 'ACTIVE_POSITION_OPPOSITE_TRADE_EXIT', got: activeOpposite.action + ' ' + activeOpposite.veto },
     { name: 'active bare WAIT converts to HOLD instead of ambiguous WAIT', pass: activeWaitHold.action === 'HOLD_BELOW' && activeWaitHold.veto === 'ACTIVE_POSITION_WAIT_TO_HOLD', got: activeWaitHold.action + ' ' + activeWaitHold.veto },
     { name: 'active bare WAIT converts to EXIT when local edge is broken', pass: activeWaitExit.action === 'EXIT_ABOVE' && activeWaitExit.veto === 'ACTIVE_POSITION_WAIT_TO_EXIT', got: activeWaitExit.action + ' ' + activeWaitExit.veto },
-    { name: 'active AI EXIT preserves explicit side', pass: activeAiExitSide.action === 'EXIT_BELOW' && activeAiExitSide.thesis === 'BELOW', got: activeAiExitSide.action + ' ' + activeAiExitSide.thesis }
+    { name: 'active AI EXIT preserves explicit side', pass: activeAiExitSide.action === 'EXIT_BELOW' && activeAiExitSide.thesis === 'BELOW', got: activeAiExitSide.action + ' ' + activeAiExitSide.thesis },
+    { name: 'last-minute large-cushion confidence is tail-risk capped, not displayed as 99%', pass: dTailCap.action === 'TRADE_ABOVE' && dTailCap.confidence < 97 && dTailCap.pSettle < 0.97 && dTailCap.review.pAdverseTail >= 0.03, got: { action: dTailCap.action, confidence: dTailCap.confidence, pSettle: dTailCap.pSettle, tail: dTailCap.review.pAdverseTail } },
+    { name: 'active last-minute adverse flip risk exits instead of holding stale 99%', pass: dLastMinuteExit.action === 'EXIT_ABOVE' && dLastMinuteExit.veto === 'LAST_MINUTE_FLIP_RISK', got: { action: dLastMinuteExit.action, veto: dLastMinuteExit.veto, why: dLastMinuteExit.why } }
   ];
 }
 
