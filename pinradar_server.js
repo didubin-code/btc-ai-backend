@@ -1,0 +1,364 @@
+/* =====================================================================
+   BTC PIN RADAR — standalone late-window reversal early-warning server
+   Fuses: (1) Kalshi order-book positioning near the strike,
+          (2) spot order-flow (CVD + book imbalance) from Coinbase/Binance,
+          (3) pin geometry (distance-to-strike in remaining-window sigmas),
+          (4) time decay.
+   No API key required for any data source. OpenAI optional (adds a plain-English read).
+   ===================================================================== */
+'use strict';
+const http = require('http');
+const { URL } = require('url');
+
+const PORT = Number(process.env.PORT || 10000);
+const SERVER_VERSION = 'pin-radar-1.0';
+const KALSHI_BASE = (process.env.KALSHI_BASE || 'https://api.elections.kalshi.com/trade-api/v2').replace(/\/+$/,'');
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+const ENABLE_OPENAI = /^(0|false|no)$/i.test(process.env.ENABLE_OPENAI||'') ? false : (/^(1|true|yes)$/i.test(process.env.ENABLE_OPENAI||'') || !!OPENAI_API_KEY);
+const OPENAI_MODEL = String(process.env.OPENAI_MODEL || 'gpt-4o-mini').replace('gpt-40','gpt-4o');
+
+/* ----------------------------- helpers ----------------------------- */
+function clamp(x,lo,hi){const n=Number(x);return Number.isFinite(n)?Math.max(lo,Math.min(hi,n)):lo;}
+function round(x,d=4){const n=Number(x);return Number.isFinite(n)?Number(n.toFixed(d)):null;}
+function erf(x){const s=x<0?-1:1;x=Math.abs(x);const t=1/(1+0.3275911*x);const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return s*y;}
+function normCdf(x){return 0.5*(1+erf(x/Math.SQRT2));}
+function cors(res){res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS');res.setHeader('Access-Control-Allow-Headers','Content-Type, Authorization');res.setHeader('Cache-Control','no-store');}
+function send(res,code,obj){cors(res);res.statusCode=code;res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(obj));}
+function readBody(req,limit=200000){return new Promise((resolve,reject)=>{let d='';req.on('data',c=>{d+=c;if(d.length>limit){reject(new Error('too large'));req.destroy();}});req.on('end',()=>{if(!d)return resolve({});try{resolve(JSON.parse(d));}catch(e){reject(new Error('bad json'));}});req.on('error',reject);});}
+async function fetchJson(url,opts={},timeoutMs=4000){
+  const ac=new AbortController();const t=setTimeout(()=>{try{ac.abort();}catch(_){}} ,timeoutMs);
+  try{const r=await fetch(url,{signal:ac.signal,headers:{accept:'application/json'},...opts});
+    if(!r.ok)throw new Error('HTTP '+r.status);return await r.json();}
+  finally{clearTimeout(t);}
+}
+
+/* ---------------------- spot flow (Coinbase/Binance) ---------------------- */
+// CVD = cumulative volume delta (aggressive buy vol - aggressive sell vol). Book imbalance near touch.
+async function coinbaseFlow(){
+  // recent trades (side = buy/sell of the taker), plus best bid/ask depth
+  const [trades, book] = await Promise.all([
+    fetchJson('https://api.exchange.coinbase.com/products/BTC-USD/trades?limit=120').catch(()=>null),
+    fetchJson('https://api.exchange.coinbase.com/products/BTC-USD/book?level=2').catch(()=>null)
+  ]);
+  let cvd=0, buyVol=0, sellVol=0, last=null;
+  if(Array.isArray(trades)){
+    for(const t of trades){
+      const sz=Number(t.size)||0; last=Number(t.price)||last;
+      // Coinbase 'side' is the maker side; taker is opposite. side='sell' => taker bought (aggressive buy).
+      if(t.side==='sell'){buyVol+=sz;cvd+=sz;} else if(t.side==='buy'){sellVol+=sz;cvd-=sz;}
+    }
+  }
+  let bidDepth=0, askDepth=0, spread=null, mid=last;
+  if(book&&Array.isArray(book.bids)&&Array.isArray(book.asks)){
+    const bestBid=Number(book.bids[0]?.[0]), bestAsk=Number(book.asks[0]?.[0]);
+    if(Number.isFinite(bestBid)&&Number.isFinite(bestAsk)){mid=(bestBid+bestAsk)/2;spread=bestAsk-bestBid;}
+    const band=mid*0.0006; // ~$37 band each side
+    for(const b of book.bids){const p=Number(b[0]),s=Number(b[1]);if(mid-p<=band)bidDepth+=s;else break;}
+    for(const a of book.asks){const p=Number(a[0]),s=Number(a[1]);if(p-mid<=band)askDepth+=s;else break;}
+  }
+  const totalVol=buyVol+sellVol;
+  const flowImbalance = totalVol>0 ? (buyVol-sellVol)/totalVol : 0;   // -1..1, + = aggressive buying
+  const depthTotal=bidDepth+askDepth;
+  const bookImbalance = depthTotal>0 ? (bidDepth-askDepth)/depthTotal : 0; // + = bid-heavy (support)
+  return { ok:true, venue:'coinbase', last, mid, cvd:round(cvd,3), buyVol:round(buyVol,3), sellVol:round(sellVol,3),
+    flowImbalance:round(flowImbalance,3), bookImbalance:round(bookImbalance,3),
+    bidDepth:round(bidDepth,3), askDepth:round(askDepth,3), spread:round(spread,2) };
+}
+async function binanceFlow(){
+  const [trades, book] = await Promise.all([
+    fetchJson('https://api.binance.com/api/v3/aggTrades?symbol=BTCUSDT&limit=200').catch(()=>null),
+    fetchJson('https://api.binance.com/api/v3/depth?symbol=BTCUSDT&limit=100').catch(()=>null)
+  ]);
+  let cvd=0,buyVol=0,sellVol=0,last=null;
+  if(Array.isArray(trades)){
+    for(const t of trades){
+      const sz=Number(t.q)||0; last=Number(t.p)||last;
+      // m=true => buyer is maker => taker sold (aggressive sell)
+      if(t.m===false){buyVol+=sz;cvd+=sz;} else {sellVol+=sz;cvd-=sz;}
+    }
+  }
+  let bidDepth=0,askDepth=0,spread=null,mid=last;
+  if(book&&Array.isArray(book.bids)&&Array.isArray(book.asks)){
+    const bestBid=Number(book.bids[0]?.[0]),bestAsk=Number(book.asks[0]?.[0]);
+    if(Number.isFinite(bestBid)&&Number.isFinite(bestAsk)){mid=(bestBid+bestAsk)/2;spread=bestAsk-bestBid;}
+    const band=mid*0.0006;
+    for(const b of book.bids){const p=Number(b[0]),s=Number(b[1]);if(mid-p<=band)bidDepth+=s;else break;}
+    for(const a of book.asks){const p=Number(a[0]),s=Number(a[1]);if(p-mid<=band)askDepth+=s;else break;}
+  }
+  const totalVol=buyVol+sellVol;
+  return { ok:true, venue:'binance', last, mid, cvd:round(cvd,3), buyVol:round(buyVol,3), sellVol:round(sellVol,3),
+    flowImbalance: totalVol>0?round((buyVol-sellVol)/totalVol,3):0,
+    bookImbalance: (bidDepth+askDepth)>0?round((bidDepth-askDepth)/(bidDepth+askDepth),3):0,
+    bidDepth:round(bidDepth,3), askDepth:round(askDepth,3), spread:round(spread,2) };
+}
+async function getSpotFlow(){
+  const cb=await coinbaseFlow().catch(e=>({ok:false,error:String(e.message||e)}));
+  if(cb.ok && Number.isFinite(cb.last)) return cb;
+  const bn=await binanceFlow().catch(e=>({ok:false,error:String(e.message||e)}));
+  if(bn.ok && Number.isFinite(bn.last)) return bn;
+  return { ok:false, error:'no spot flow source reachable' };
+}
+
+/* ---------------------- Kalshi contract book ---------------------- */
+let kalshiCache={t:0,key:'',data:null};
+function parseStrike(m){
+  for(const c of [m.floor_strike,m.cap_strike,m.strike]){const n=Number(c);if(Number.isFinite(n)&&n>0)return n;}
+  const tail=String(m.ticker||'').split('-').pop()||'';const n=Number(tail.replace(/[^0-9.]/g,''));
+  return Number.isFinite(n)&&n>0?n:NaN;
+}
+async function getKalshiContext(targetStrike){
+  const key=String(Math.round(Number(targetStrike)||0));
+  const now=Date.now();
+  if(kalshiCache.data&&kalshiCache.key===key&&now-kalshiCache.t<2500)return kalshiCache.data;
+  const nowSec=Math.floor(now/1000);
+  const url=KALSHI_BASE+'/markets?status=open&limit=200&min_close_ts='+nowSec+'&max_close_ts='+(nowSec+20*60);
+  const mj=await fetchJson(url).catch(e=>({error:String(e.message||e)}));
+  const all=Array.isArray(mj.markets)?mj.markets:[];
+  const btc=all.filter(m=>/BTC/i.test(String(m.ticker||'')+' '+String(m.title||'')));
+  if(!btc.length) return {ok:false,error:'no open BTC markets in next 20min'};
+  const tgt=Number(targetStrike);
+  btc.sort((a,b)=>{const ca=Number(a.close_ts||0),cb=Number(b.close_ts||0);if(ca!==cb)return ca-cb;return Math.abs(parseStrike(a)-tgt)-Math.abs(parseStrike(b)-tgt);});
+  const firstClose=Number(btc[0].close_ts||0);
+  let win=btc.filter(m=>Number(m.close_ts||0)===firstClose);
+  if(Number.isFinite(tgt))win.sort((a,b)=>Math.abs(parseStrike(a)-tgt)-Math.abs(parseStrike(b)-tgt));
+  const mkt=win[0];
+  let ob=null;
+  try{const or_=await fetchJson(KALSHI_BASE+'/markets/'+encodeURIComponent(mkt.ticker)+'/orderbook?depth=20');ob=or_.orderbook||null;}catch(_){}
+  const yes=(ob&&Array.isArray(ob.yes)?ob.yes:[]).filter(x=>Array.isArray(x)&&x.length>=2);
+  const no=(ob&&Array.isArray(ob.no)?ob.no:[]).filter(x=>Array.isArray(x)&&x.length>=2);
+  const yesDepth=yes.reduce((a,x)=>a+(Number(x[1])||0),0);
+  const noDepth=no.reduce((a,x)=>a+(Number(x[1])||0),0);
+  const bestYes=yes.length?Math.max(...yes.map(x=>Number(x[0]))):Number(mkt.yes_bid);
+  const bestNo=no.length?Math.max(...no.map(x=>Number(x[0]))):(Number.isFinite(Number(mkt.yes_ask))?100-Number(mkt.yes_ask):NaN);
+  const yesBid=Number.isFinite(bestYes)?bestYes:Number(mkt.yes_bid);
+  const yesAsk=Number.isFinite(bestNo)?100-bestNo:Number(mkt.yes_ask);
+  const implied=(Number.isFinite(yesBid)&&Number.isFinite(yesAsk))?(yesBid+yesAsk)/200:NaN;
+  const bookImbalance=(yesDepth+noDepth)>0?(yesDepth-noDepth)/(yesDepth+noDepth):0; // + = YES(above)-heavy resting
+  const data={ok:true,ticker:mkt.ticker,title:mkt.title||'',strike:parseStrike(mkt),closeTs:firstClose,
+    yesBid,yesAsk,impliedAbove:Number.isFinite(implied)?round(implied,3):null,
+    yesDepth:round(yesDepth,0),noDepth:round(noDepth,0),bookImbalance:round(bookImbalance,3),t:now};
+  kalshiCache={t:now,key,data};return data;
+}
+
+/* ---------------------- pin geometry + fusion ---------------------- */
+// vol in bps/sqrt-sec estimated from the client tape if provided, else a default.
+function volFromTape(tape){
+  if(!Array.isArray(tape)||tape.length<8)return 0.45;
+  const rets=[];
+  for(let i=1;i<tape.length;i++){
+    const dt=Math.max(0.5,(tape[i].ts-tape[i-1].ts)/1000);
+    const r=(tape[i].price-tape[i-1].price)/tape[i-1].price*1e4/Math.sqrt(dt);
+    if(Number.isFinite(r))rets.push(r);
+  }
+  if(rets.length<4)return 0.45;
+  const m=rets.reduce((a,b)=>a+b,0)/rets.length;
+  const v=Math.sqrt(rets.reduce((a,b)=>a+(b-m)*(b-m),0)/(rets.length-1));
+  return clamp(v,0.12,4);
+}
+function driftFromTape(tape){
+  if(!Array.isArray(tape)||tape.length<6)return 0;
+  const recent=tape.slice(-Math.min(tape.length,90));
+  const HL=25;let num=0,den=0;const now=recent[recent.length-1].ts;
+  for(let i=1;i<recent.length;i++){
+    const dt=Math.max(0.5,(recent[i].ts-recent[i-1].ts)/1000);
+    const r=(recent[i].price-recent[i-1].price)/recent[i-1].price*1e4/dt;
+    const age=(now-recent[i].ts)/1000;const w=Math.pow(0.5,age/HL);
+    if(Number.isFinite(r)){num+=w*r;den+=w;}
+  }
+  return den?clamp(num/den,-3,3):0;
+}
+
+// Core fusion. side = the side the trader is on (or the side price currently favors).
+function computePinPressure(input){
+  const { price, strike, secondsLeft, side, spotFlow, kalshi, tape } = input;
+  const gapUsd = Number.isFinite(price)&&Number.isFinite(strike) ? price-strike : NaN;
+  const gapBps = Number.isFinite(gapUsd)&&price ? (gapUsd/price)*1e4 : NaN;
+  // Which side is price on now
+  const naturalSide = Number.isFinite(gapBps) ? (gapBps>=0?'ABOVE':'BELOW') : null;
+  const mySide = side || naturalSide;                 // side we're protecting
+  const sideSign = mySide==='ABOVE'?1:-1;             // + means we want price to stay above
+  const time=Math.max(1,secondsLeft);
+  const vol=volFromTape(tape);
+  const drift=driftFromTape(tape);
+
+  // (2) PIN GEOMETRY: distance to strike in remaining-window sigmas. Small = pin magnet dangerous.
+  const sigma=Math.max(0.45, vol*Math.sqrt(time));
+  const sigmasOfCushion = Number.isFinite(gapBps) ? Math.abs(gapBps)/sigma : 99;
+  // Adverse drift = drift pushing price toward (and past) the strike from our side.
+  const adverseDriftPerSec = -sideSign*(Number.isFinite(drift)?drift:0);      // + = drifting toward strike
+  const projectedAdverseBps = adverseDriftPerSec*time;                         // expected adverse move to expiry
+  // First-passage-style probability the strike is crossed before expiry (drift-adjusted).
+  const zCross = (Math.abs(gapBps)-Math.max(0,projectedAdverseBps))/sigma;
+  const pCross = clamp(Number.isFinite(zCross)? (1-normCdf(zCross)) : 0.02, 0.002, 0.97);
+
+  // (3) SPOT FLOW: aggressive flow + book pressure pushing toward the strike.
+  let flowScore=0, flowNote='no flow data';
+  if(spotFlow&&spotFlow.ok){
+    // adverse flow: if we're ABOVE, danger is aggressive SELLING (flowImbalance<0) and ask-heavy book pushing down.
+    // Normalize into "toward-strike" direction: sideSign>0 (ABOVE) -> danger is negative flow.
+    const towardStrikeFlow = -sideSign*(spotFlow.flowImbalance||0);   // + = aggressive flow toward strike
+    const towardStrikeBook = -sideSign*(spotFlow.bookImbalance||0);   // + = resting book leaning toward strike
+    flowScore = clamp(towardStrikeFlow*46 + towardStrikeBook*20, -40, 66);
+    flowNote = `flow ${spotFlow.flowImbalance>0?'+':''}${spotFlow.flowImbalance} (${towardStrikeFlow>0.12?'toward strike':towardStrikeFlow<-0.12?'away':'neutral'}), book ${spotFlow.bookImbalance}`;
+  }
+
+  // (1) KALSHI POSITIONING: thin resting size on our side + wall on the other = late-cross setup.
+  let kalshiScore=0, kalshiNote='no kalshi book';
+  if(kalshi&&kalshi.ok){
+    // bookImbalance + = YES(above)-heavy. If we're BELOW, YES-heavy resting is pressure toward above (adverse).
+    const towardStrikeK = sideSign>0 ? -(kalshi.bookImbalance||0) : (kalshi.bookImbalance||0);
+    kalshiScore = clamp(towardStrikeK*30, -20, 34);
+    kalshiNote = `kalshi resting ${kalshi.bookImbalance>0?'YES/above':'NO/below'}-heavy (${kalshi.bookImbalance})`;
+  }
+
+  // (4) TIME DECAY weighting: everything matters more as expiry approaches AND cushion is thin.
+  const lateWeight = clamp((240-secondsLeft)/240, 0, 1);        // 0 at >=4min, 1 at expiry
+  const thinCushion = clamp((1.6-sigmasOfCushion)*1.0, 0, 1.6); // >0 when within ~1.6 sigma
+
+  // FUSION → Pin Pressure 0-100
+  const geometryScore = clamp(pCross*70 + thinCushion*22, 0, 92);
+  const raw = geometryScore*(0.55+0.45*lateWeight) + Math.max(0,flowScore)*(0.45+0.65*lateWeight) + Math.max(0,kalshiScore)*(0.5+0.6*lateWeight);
+  // Late-window adverse-flow floor: strong aggressive flow toward the strike in the final 2 min is itself a warning,
+  // even before geometry tightens — this is the "grind hasn't arrived yet but the pressure is building" case.
+  const lateFlowFloor = (secondsLeft<=120 && flowScore>=28) ? clamp(28 + (flowScore-28)*0.9 + Math.max(0,kalshiScore)*0.5, 0, 62) : 0;
+  const pinPressure = clamp(Math.round(Math.max(raw, lateFlowFloor)), 0, 100);
+
+  // Lead-time estimate: seconds until projected touch, if drifting adversely.
+  let etaSec=null;
+  if(adverseDriftPerSec>0.003 && Number.isFinite(gapBps) && Math.abs(gapBps)>0){
+    etaSec = Math.round(Math.abs(gapBps)/adverseDriftPerSec);
+    if(etaSec>secondsLeft) etaSec=null; // won't touch before expiry at current drift
+  }
+
+  let level, verdict;
+  if(pinPressure>=66){level='RED';verdict='CROSS LIKELY';}
+  else if(pinPressure>=40){level='AMBER';verdict='ELEVATED';}
+  else if(pinPressure>=22){level='YELLOW';verdict='WATCH';}
+  else {level='GREEN';verdict='CLEAR';}
+
+  const reasons=[];
+  if(sigmasOfCushion<1.2) reasons.push(`thin cushion: ${sigmasOfCushion.toFixed(2)} sigma to strike`);
+  if(projectedAdverseBps>Math.abs(gapBps)*0.5&&adverseDriftPerSec>0.003) reasons.push(`drift projects ${projectedAdverseBps.toFixed(1)}bps toward strike`);
+  if(flowScore>18) reasons.push('aggressive spot flow toward strike');
+  if(kalshiScore>14) reasons.push('kalshi book leaning against your side');
+  if(secondsLeft<=120&&sigmasOfCushion<1.6) reasons.push('final 2 minutes, near strike');
+  if(!reasons.length) reasons.push(secondsLeft>240?'outside danger window':'cushion healthy');
+
+  return {
+    pinPressure, level, verdict,
+    gapUsd:round(gapUsd,2), gapBps:round(gapBps,2), mySide, naturalSide,
+    secondsLeft, sigmasOfCushion:round(sigmasOfCushion,2),
+    pCrossBeforeExpiry:round(pCross,3), projectedAdverseBps:round(projectedAdverseBps,2),
+    etaTouchSec:etaSec, drift:round(drift,4), vol:round(vol,3),
+    components:{ geometry:round(geometryScore,1), flow:round(flowScore,1), kalshi:round(kalshiScore,1), lateWeight:round(lateWeight,2) },
+    notes:{ flow:flowNote, kalshi:kalshiNote },
+    reasons
+  };
+}
+
+/* ---------------------- optional OpenAI plain-English read ---------------------- */
+async function aiRead(pin, evidence){
+  if(!ENABLE_OPENAI||!OPENAI_API_KEY) return null;
+  const ac=new AbortController();const t=setTimeout(()=>{try{ac.abort();}catch(_){}} ,6000);
+  try{
+    const sys='You are a terse trading-desk risk assistant watching for late-window BTC option pin/gamma reversals. Given a computed pin-pressure snapshot, write ONE short sentence (max 24 words) telling the trader plainly whether a reversal across the strike is brewing and why. No preamble. No JSON.';
+    const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',signal:ac.signal,
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${OPENAI_API_KEY}`},
+      body:JSON.stringify({model:OPENAI_MODEL,temperature:0.2,max_tokens:80,
+        messages:[{role:'system',content:sys},{role:'user',content:JSON.stringify({pin,evidence})}]})});
+    if(!r.ok)return null;const j=await r.json();return (j?.choices?.[0]?.message?.content||'').trim().slice(0,180);
+  }catch(_){return null;}finally{clearTimeout(t);}
+}
+
+/* ---------------------- main radar endpoint ---------------------- */
+async function radar(payload){
+  const strike=Number(payload.target);
+  const secondsLeft=Math.max(0,Math.floor(Number(payload?.timer?.secondsLeft ?? payload.secondsLeft ?? 900)));
+  const side=payload.activePosition||null;
+  const tape=Array.isArray(payload.recentTape)?payload.recentTape:[];
+  const wantAi = payload.ai!==false;
+
+  const [spotFlow, kalshi] = await Promise.all([
+    getSpotFlow().catch(e=>({ok:false,error:String(e.message||e)})),
+    Number.isFinite(strike)?getKalshiContext(strike).catch(e=>({ok:false,error:String(e.message||e)})):Promise.resolve({ok:false,error:'no strike'})
+  ]);
+
+  // price: prefer client market, else spot flow mid/last
+  let price=Number(payload?.market?.price);
+  if(!Number.isFinite(price)) price=Number(spotFlow.mid ?? spotFlow.last);
+
+  const pin=computePinPressure({ price, strike, secondsLeft, side, spotFlow, kalshi, tape });
+
+  let ai=null;
+  if(wantAi && (pin.level==='AMBER'||pin.level==='RED')) {
+    ai=await aiRead(
+      {pinPressure:pin.pinPressure,level:pin.level,verdict:pin.verdict,reasons:pin.reasons},
+      {gapBps:pin.gapBps,secondsLeft,sigmas:pin.sigmasOfCushion,flow:pin.notes.flow,kalshi:pin.notes.kalshi,eta:pin.etaTouchSec}
+    );
+  }
+
+  return {
+    ok:true, version:SERVER_VERSION, ts:Date.now(),
+    price:round(price,2), strike:Number.isFinite(strike)?strike:null, secondsLeft,
+    ...pin, ai,
+    sources:{ spotFlow: spotFlow.ok?spotFlow.venue:('offline: '+(spotFlow.error||'?')),
+              kalshi: kalshi.ok?kalshi.ticker:('offline: '+(kalshi.error||'?')) },
+    spotFlow: spotFlow.ok?spotFlow:null,
+    kalshi: kalshi.ok?kalshi:null
+  };
+}
+
+/* ---------------------- self-test ---------------------- */
+function mkTape(fn,n=90,step=1000){const now=Date.now();const t=[];for(let i=0;i<n;i++)t.push({ts:now-(n-1-i)*step,price:fn(i)});return t;}
+function runSelfTest(){
+  const checks=[];
+  const strike=62050;
+  // A: BELOW, grinding up to strike, 45s left → should be RED/AMBER, high pressure
+  const grindTape=mkTape(i=>61995+40*(i/89));
+  const a=computePinPressure({price:62035,strike,secondsLeft:45,side:'BELOW',
+    spotFlow:{ok:true,flowImbalance:0.4,bookImbalance:0.2,venue:'test',last:62035},
+    kalshi:{ok:true,bookImbalance:0.5},tape:grindTape});
+  checks.push({name:'grind-to-strike late → RED/AMBER',pass:['RED','AMBER'].includes(a.level),got:a.level+' '+a.pinPressure});
+  checks.push({name:'grind → high cross prob',pass:a.pCrossBeforeExpiry>0.3,got:a.pCrossBeforeExpiry});
+  // B: comfortable, flat, lots of time → GREEN
+  const flatTape=mkTape(()=>61930);
+  const b=computePinPressure({price:61930,strike,secondsLeft:400,side:'BELOW',
+    spotFlow:{ok:true,flowImbalance:0,bookImbalance:0,venue:'test',last:61930},kalshi:{ok:false},tape:flatTape});
+  checks.push({name:'flat far-from-strike → GREEN',pass:b.level==='GREEN',got:b.level+' '+b.pinPressure});
+  // C: moving away, late → low pressure
+  const awayTape=mkTape(i=>62010-30*(i/89));
+  const c=computePinPressure({price:61980,strike,secondsLeft:45,side:'BELOW',
+    spotFlow:{ok:true,flowImbalance:-0.3,bookImbalance:-0.2,venue:'test',last:61980},kalshi:{ok:false},tape:awayTape});
+  checks.push({name:'moving away late → not RED',pass:c.level!=='RED',got:c.level+' '+c.pinPressure});
+  // D: adverse flow raises pressure vs neutral flow (same geometry)
+  const base={price:62030,strike,secondsLeft:90,side:'BELOW',kalshi:{ok:false},tape:mkTape(i=>62000+30*(i/89))};
+  const neutral=computePinPressure({...base,spotFlow:{ok:true,flowImbalance:0,bookImbalance:0,venue:'t',last:62030}});
+  const adverse=computePinPressure({...base,spotFlow:{ok:true,flowImbalance:0.6,bookImbalance:0.4,venue:'t',last:62030}});
+  checks.push({name:'adverse spot flow raises pressure',pass:adverse.pinPressure>neutral.pinPressure,got:neutral.pinPressure+' < '+adverse.pinPressure});
+  // E: ETA computed when drifting toward strike
+  checks.push({name:'ETA present on adverse grind',pass:Number.isFinite(a.etaTouchSec),got:a.etaTouchSec});
+  // F: symmetry — ABOVE grinding down mirrors BELOW grinding up
+  const down=computePinPressure({price:62065,strike,secondsLeft:45,side:'ABOVE',
+    spotFlow:{ok:true,flowImbalance:-0.4,bookImbalance:-0.2,venue:'t',last:62065},kalshi:{ok:true,bookImbalance:-0.5},tape:mkTape(i=>62105-40*(i/89))});
+  checks.push({name:'symmetric ABOVE-grind-down → elevated',pass:['RED','AMBER'].includes(down.level),got:down.level+' '+down.pinPressure});
+  const failed=checks.filter(c=>!c.pass);
+  return {ok:failed.length===0,version:SERVER_VERSION,passed:checks.length-failed.length,total:checks.length,checks};
+}
+
+/* ---------------------- HTTP ---------------------- */
+const server=http.createServer(async(req,res)=>{
+  const u=new URL(req.url,`http://${req.headers.host}`);
+  if(req.method==='OPTIONS'){cors(res);res.statusCode=204;return res.end();}
+  try{
+    if(req.method==='GET'&&u.pathname==='/health')
+      return send(res,200,{ok:true,version:SERVER_VERSION,service:'btc-pin-radar',openaiEnabled:ENABLE_OPENAI,model:OPENAI_MODEL,ts:Date.now()});
+    if(req.method==='GET'&&u.pathname==='/selftest'){const r=runSelfTest();return send(res,r.ok?200:500,r);}
+    if(req.method==='GET'&&u.pathname==='/flow'){const f=await getSpotFlow();return send(res,200,{...f,version:SERVER_VERSION});}
+    if(req.method==='POST'&&(u.pathname==='/radar'||u.pathname==='/pin')){
+      const body=await readBody(req);const out=await radar(body);return send(res,200,out);
+    }
+    return send(res,404,{ok:false,error:'NOT_FOUND',path:u.pathname});
+  }catch(e){return send(res,500,{ok:false,error:String(e.message||e)});}
+});
+if(require.main===module) server.listen(PORT,()=>console.log(`btc-pin-radar ${SERVER_VERSION} on ${PORT}, openai=${ENABLE_OPENAI}`));
+module.exports={ computePinPressure, getSpotFlow, getKalshiContext, radar, runSelfTest, volFromTape, driftFromTape };
