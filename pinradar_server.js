@@ -1,9 +1,14 @@
 /* =====================================================================
    BTC PIN RADAR — standalone late-window reversal early-warning server
+   v1.1 adds the UPSTREAM SENTINEL: Binance perp order-flow pressure
+   (CVD divergence, flow burst, book pull, perp-spot basis) detected
+   BEFORE it reaches spot/BRTI. Blended into pinPressure automatically —
+   no frontend change required.
    Fuses: (1) Kalshi order-book positioning near the strike,
           (2) spot order-flow (CVD + book imbalance) from Coinbase/Binance,
           (3) pin geometry (distance-to-strike in remaining-window sigmas),
-          (4) time decay.
+          (4) time decay,
+          (5) upstream perp sentinel (leads spot by 30-120s).
    No API key required for any data source. OpenAI optional (adds a plain-English read).
    ===================================================================== */
 'use strict';
@@ -11,7 +16,7 @@ const http = require('http');
 const { URL } = require('url');
 
 const PORT = Number(process.env.PORT || 10000);
-const SERVER_VERSION = 'pin-radar-1.0';
+const SERVER_VERSION = 'pin-radar-1.1';
 const KALSHI_BASE = (process.env.KALSHI_BASE || 'https://api.elections.kalshi.com/trade-api/v2').replace(/\/+$/,'');
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const ENABLE_OPENAI = /^(0|false|no)$/i.test(process.env.ENABLE_OPENAI||'') ? false : (/^(1|true|yes)$/i.test(process.env.ENABLE_OPENAI||'') || !!OPENAI_API_KEY);
@@ -140,6 +145,105 @@ async function getKalshiContext(targetStrike){
   kalshiCache={t:now,key,data};return data;
 }
 
+/* ==================== UPSTREAM SENTINEL (v1.1) ====================
+   Watches Binance USDT-perp — the venue that MOVES FIRST — via REST
+   polling on a background loop. Detects the flow that causes late
+   reversals 30-120s before it propagates to spot and the BRTI average.
+   Components (each signed, + = upward pressure, - = downward):
+     cvdDiv:   heavy net taker flow NOT yet paid out in price (absorption)
+     burst:    abnormal net aggressive flow in the last 30s
+     bookPull: top-of-book depth yanked on one side vs 5-min baseline
+     basis:    perp trading away from spot vs its own recent baseline
+   Output: signed pressure -100..+100. Blended into pinPressure below. */
+function ewmaZ(alpha){let m=null,v=null;return{update(x){if(m===null){m=x;v=1e-9;return 0;}const d=x-m;m+=alpha*d;v=(1-alpha)*(v+alpha*d*d);return d/Math.sqrt(Math.max(v,1e-9));}};}
+const zToScore=z=>clamp(z/3.5,-1,1)*100;
+const SENT={
+  started:false, timer:null, lastOkPoll:0, lastErr:null, lastAggId:null,
+  trades:[],      // [ts, signedNotionalUSD, price] rolling 90s
+  depthHist:[],   // [ts, bidQty, askQty] rolling 300s
+  curDepth:{bid:0,ask:0}, perpMid:null, spotMid:null, basisEwma:null,
+  z:{div:ewmaZ(0.03), burst:ewmaZ(0.03), basis:ewmaZ(0.03)},
+  read:{ok:false,error:'warming up'}
+};
+function sentPrune(now){
+  const cutT=now-90000; while(SENT.trades.length&&SENT.trades[0][0]<cutT)SENT.trades.shift();
+  const cutD=now-300000; while(SENT.depthHist.length&&SENT.depthHist[0][0]<cutD)SENT.depthHist.shift();
+}
+function sentCompute(){
+  const now=Date.now(); sentPrune(now);
+  if(SENT.trades.length<10||SENT.depthHist.length<8||!Number.isFinite(SENT.perpMid))
+    return {ok:false,error:'warming up',ageSec:round((now-SENT.lastOkPoll)/1000,0)};
+  // cvd divergence: net taker flow ($M) vs price move it "should" have caused (~$1M per 5bp)
+  let netFlow=0; for(const t of SENT.trades)netFlow+=t[1];
+  const p0=SENT.trades[0][2], p1=SENT.trades[SENT.trades.length-1][2];
+  const dPxPct=(p1-p0)/p0;
+  const div=netFlow/1e6 - dPxPct*20000;
+  const cvdDiv=zToScore(SENT.z.div.update(div));
+  // burst: net signed flow last 30s, z vs its own baseline
+  let burst30=0; const cut30=now-30000;
+  for(let i=SENT.trades.length-1;i>=0&&SENT.trades[i][0]>=cut30;i--)burst30+=SENT.trades[i][1];
+  const burst=zToScore(SENT.z.burst.update(burst30/1e6));
+  // book pull: current top-10 depth vs 5-min median, per side; bids pulled => negative
+  const med=a=>{const b=[...a].sort((x,y)=>x-y);return b[Math.floor(b.length/2)]||1e-6;};
+  const bidRatio=SENT.curDepth.bid/Math.max(med(SENT.depthHist.map(d=>d[1])),1e-6);
+  const askRatio=SENT.curDepth.ask/Math.max(med(SENT.depthHist.map(d=>d[2])),1e-6);
+  const bookPull=clamp((bidRatio-askRatio)*100,-100,100);
+  // basis: perp mid minus spot mid vs its EWMA; perp sinking under spot => down next
+  let basisScore=0, basis=null;
+  if(Number.isFinite(SENT.spotMid)){
+    basis=SENT.perpMid-SENT.spotMid;
+    if(SENT.basisEwma===null)SENT.basisEwma=basis;
+    SENT.basisEwma+=0.05*(basis-SENT.basisEwma);
+    basisScore=zToScore(SENT.z.basis.update(basis-SENT.basisEwma));
+  }
+  const pressure=clamp(0.35*cvdDiv+0.20*burst+0.30*bookPull+0.15*basisScore,-100,100);
+  const stale=(now-SENT.lastOkPoll)>12000;
+  return {ok:!stale, error:stale?'stale feed':null, pressure:Math.round(pressure),
+    components:{cvdDiv:Math.round(cvdDiv),burst:Math.round(burst),bookPull:Math.round(bookPull),basis:Math.round(basisScore)},
+    basisUsd:basis==null?null:round(basis,2), perpMid:round(SENT.perpMid,2), spotMid:round(SENT.spotMid,2),
+    ageSec:round((now-SENT.lastOkPoll)/1000,0)};
+}
+async function sentPoll(){
+  const now=Date.now();
+  try{
+    const aggUrl='https://fapi.binance.com/fapi/v1/aggTrades?symbol=BTCUSDT'+(SENT.lastAggId?('&fromId='+(SENT.lastAggId+1)+'&limit=500'):'&limit=300');
+    const [trades,depth,perpBT,spotBT]=await Promise.all([
+      fetchJson(aggUrl,{},3500).catch(()=>null),
+      fetchJson('https://fapi.binance.com/fapi/v1/depth?symbol=BTCUSDT&limit=10',{},3500).catch(()=>null),
+      fetchJson('https://fapi.binance.com/fapi/v1/ticker/bookTicker?symbol=BTCUSDT',{},3500).catch(()=>null),
+      fetchJson('https://api.binance.com/api/v3/ticker/bookTicker?symbol=BTCUSDT',{},3500).catch(()=>null)
+    ]);
+    let any=false;
+    if(Array.isArray(trades)){
+      for(const t of trades){
+        const p=Number(t.p),q=Number(t.q);if(!Number.isFinite(p)||!Number.isFinite(q))continue;
+        const signed=(t.m?-1:1)*p*q; // m=true => taker sold
+        SENT.trades.push([Number(t.T)||now,signed,p]);
+        SENT.lastAggId=Math.max(SENT.lastAggId||0,Number(t.a)||0);
+      }
+      any=true;
+    }
+    if(depth&&Array.isArray(depth.bids)&&Array.isArray(depth.asks)){
+      const sum=s=>s.reduce((a,x)=>a+(Number(x[1])||0),0);
+      SENT.curDepth={bid:sum(depth.bids),ask:sum(depth.asks)};
+      SENT.depthHist.push([now,SENT.curDepth.bid,SENT.curDepth.ask]);
+      any=true;
+    }
+    if(perpBT&&perpBT.bidPrice&&perpBT.askPrice)SENT.perpMid=(Number(perpBT.bidPrice)+Number(perpBT.askPrice))/2;
+    if(spotBT&&spotBT.bidPrice&&spotBT.askPrice)SENT.spotMid=(Number(spotBT.bidPrice)+Number(spotBT.askPrice))/2;
+    if(any)SENT.lastOkPoll=now;
+    SENT.read=sentCompute();
+    SENT.lastErr=null;
+  }catch(e){SENT.lastErr=String(e.message||e);SENT.read=sentCompute();}
+}
+function ensureSentinel(){
+  if(SENT.started)return;
+  SENT.started=true;
+  sentPoll();
+  SENT.timer=setInterval(sentPoll,2500);
+  if(SENT.timer.unref)SENT.timer.unref();
+}
+
 /* ---------------------- pin geometry + fusion ---------------------- */
 // vol in bps/sqrt-sec estimated from the client tape if provided, else a default.
 function volFromTape(tape){
@@ -170,7 +274,7 @@ function driftFromTape(tape){
 
 // Core fusion. side = the side the trader is on (or the side price currently favors).
 function computePinPressure(input){
-  const { price, strike, secondsLeft, side, spotFlow, kalshi, tape } = input;
+  const { price, strike, secondsLeft, side, spotFlow, kalshi, tape, sentinel } = input;
   const gapUsd = Number.isFinite(price)&&Number.isFinite(strike) ? price-strike : NaN;
   const gapBps = Number.isFinite(gapUsd)&&price ? (gapUsd/price)*1e4 : NaN;
   // Which side is price on now
@@ -211,17 +315,29 @@ function computePinPressure(input){
     kalshiNote = `kalshi resting ${kalshi.bookImbalance>0?'YES/above':'NO/below'}-heavy (${kalshi.bookImbalance})`;
   }
 
+  // (5) UPSTREAM SENTINEL (v1.1): perp order-flow pressure BEFORE it reaches spot/BRTI.
+  // sentinel.pressure is signed: + = upward pressure building, - = downward.
+  let sentScore=0, sentNote='no sentinel data';
+  if(sentinel&&sentinel.ok&&Number.isFinite(sentinel.pressure)){
+    const towardStrikeS = -sideSign*(sentinel.pressure/100);          // + = upstream flow pushing toward strike
+    sentScore = clamp(towardStrikeS*62, -35, 62);
+    sentNote = `perp pressure ${sentinel.pressure>0?'+':''}${sentinel.pressure} (${towardStrikeS>0.2?'toward strike':towardStrikeS<-0.2?'away':'neutral'})`;
+  }
+
   // (4) TIME DECAY weighting: everything matters more as expiry approaches AND cushion is thin.
   const lateWeight = clamp((240-secondsLeft)/240, 0, 1);        // 0 at >=4min, 1 at expiry
   const thinCushion = clamp((1.6-sigmasOfCushion)*1.0, 0, 1.6); // >0 when within ~1.6 sigma
 
   // FUSION → Pin Pressure 0-100
   const geometryScore = clamp(pCross*70 + thinCushion*22, 0, 92);
-  const raw = geometryScore*(0.55+0.45*lateWeight) + Math.max(0,flowScore)*(0.45+0.65*lateWeight) + Math.max(0,kalshiScore)*(0.5+0.6*lateWeight);
+  const raw = geometryScore*(0.55+0.45*lateWeight) + Math.max(0,flowScore)*(0.45+0.65*lateWeight) + Math.max(0,kalshiScore)*(0.5+0.6*lateWeight) + Math.max(0,sentScore)*(0.5+0.7*lateWeight);
   // Late-window adverse-flow floor: strong aggressive flow toward the strike in the final 2 min is itself a warning,
   // even before geometry tightens — this is the "grind hasn't arrived yet but the pressure is building" case.
   const lateFlowFloor = (secondsLeft<=120 && flowScore>=28) ? clamp(28 + (flowScore-28)*0.9 + Math.max(0,kalshiScore)*0.5, 0, 62) : 0;
-  const pinPressure = clamp(Math.round(Math.max(raw, lateFlowFloor)), 0, 100);
+  // Sentinel floor: upstream perp pressure toward the strike inside the final 3 min fires the alarm on its own,
+  // BEFORE spot moves and geometry deteriorates. This is the fix for "slammed out of nowhere".
+  const lateSentFloor = (secondsLeft<=180 && sentScore>=30) ? clamp(30 + (sentScore-30)*1.0 + Math.max(0,flowScore)*0.4, 0, 70) : 0;
+  const pinPressure = clamp(Math.round(Math.max(raw, lateFlowFloor, lateSentFloor)), 0, 100);
 
   // Lead-time estimate: seconds until projected touch, if drifting adversely.
   let etaSec=null;
@@ -240,6 +356,7 @@ function computePinPressure(input){
   if(sigmasOfCushion<1.2) reasons.push(`thin cushion: ${sigmasOfCushion.toFixed(2)} sigma to strike`);
   if(projectedAdverseBps>Math.abs(gapBps)*0.5&&adverseDriftPerSec>0.003) reasons.push(`drift projects ${projectedAdverseBps.toFixed(1)}bps toward strike`);
   if(flowScore>18) reasons.push('aggressive spot flow toward strike');
+  if(sentScore>20) reasons.push('upstream perp flow building toward strike (leads spot)');
   if(kalshiScore>14) reasons.push('kalshi book leaning against your side');
   if(secondsLeft<=120&&sigmasOfCushion<1.6) reasons.push('final 2 minutes, near strike');
   if(!reasons.length) reasons.push(secondsLeft>240?'outside danger window':'cushion healthy');
@@ -250,8 +367,8 @@ function computePinPressure(input){
     secondsLeft, sigmasOfCushion:round(sigmasOfCushion,2),
     pCrossBeforeExpiry:round(pCross,3), projectedAdverseBps:round(projectedAdverseBps,2),
     etaTouchSec:etaSec, drift:round(drift,4), vol:round(vol,3),
-    components:{ geometry:round(geometryScore,1), flow:round(flowScore,1), kalshi:round(kalshiScore,1), lateWeight:round(lateWeight,2) },
-    notes:{ flow:flowNote, kalshi:kalshiNote },
+    components:{ geometry:round(geometryScore,1), flow:round(flowScore,1), kalshi:round(kalshiScore,1), sentinel:round(sentScore,1), lateWeight:round(lateWeight,2) },
+    notes:{ flow:flowNote, kalshi:kalshiNote, sentinel:sentNote },
     reasons
   };
 }
@@ -272,6 +389,7 @@ async function aiRead(pin, evidence){
 
 /* ---------------------- main radar endpoint ---------------------- */
 async function radar(payload){
+  ensureSentinel();
   const strike=Number(payload.target);
   const secondsLeft=Math.max(0,Math.floor(Number(payload?.timer?.secondsLeft ?? payload.secondsLeft ?? 900)));
   const side=payload.activePosition||null;
@@ -282,18 +400,19 @@ async function radar(payload){
     getSpotFlow().catch(e=>({ok:false,error:String(e.message||e)})),
     Number.isFinite(strike)?getKalshiContext(strike).catch(e=>({ok:false,error:String(e.message||e)})):Promise.resolve({ok:false,error:'no strike'})
   ]);
+  const sentinel = SENT.read || {ok:false,error:'not started'};
 
   // price: prefer client market, else spot flow mid/last
   let price=Number(payload?.market?.price);
   if(!Number.isFinite(price)) price=Number(spotFlow.mid ?? spotFlow.last);
 
-  const pin=computePinPressure({ price, strike, secondsLeft, side, spotFlow, kalshi, tape });
+  const pin=computePinPressure({ price, strike, secondsLeft, side, spotFlow, kalshi, tape, sentinel });
 
   let ai=null;
   if(wantAi && (pin.level==='AMBER'||pin.level==='RED')) {
     ai=await aiRead(
       {pinPressure:pin.pinPressure,level:pin.level,verdict:pin.verdict,reasons:pin.reasons},
-      {gapBps:pin.gapBps,secondsLeft,sigmas:pin.sigmasOfCushion,flow:pin.notes.flow,kalshi:pin.notes.kalshi,eta:pin.etaTouchSec}
+      {gapBps:pin.gapBps,secondsLeft,sigmas:pin.sigmasOfCushion,flow:pin.notes.flow,kalshi:pin.notes.kalshi,sentinel:pin.notes.sentinel,eta:pin.etaTouchSec}
     );
   }
 
@@ -302,9 +421,11 @@ async function radar(payload){
     price:round(price,2), strike:Number.isFinite(strike)?strike:null, secondsLeft,
     ...pin, ai,
     sources:{ spotFlow: spotFlow.ok?spotFlow.venue:('offline: '+(spotFlow.error||'?')),
-              kalshi: kalshi.ok?kalshi.ticker:('offline: '+(kalshi.error||'?')) },
+              kalshi: kalshi.ok?kalshi.ticker:('offline: '+(kalshi.error||'?')),
+              sentinel: sentinel.ok?'binance-perp':('offline: '+(sentinel.error||'?')) },
     spotFlow: spotFlow.ok?spotFlow:null,
-    kalshi: kalshi.ok?kalshi:null
+    kalshi: kalshi.ok?kalshi:null,
+    sentinel: sentinel.ok?sentinel:null
   };
 }
 
@@ -341,6 +462,17 @@ function runSelfTest(){
   const down=computePinPressure({price:62065,strike,secondsLeft:45,side:'ABOVE',
     spotFlow:{ok:true,flowImbalance:-0.4,bookImbalance:-0.2,venue:'t',last:62065},kalshi:{ok:true,bookImbalance:-0.5},tape:mkTape(i=>62105-40*(i/89))});
   checks.push({name:'symmetric ABOVE-grind-down → elevated',pass:['RED','AMBER'].includes(down.level),got:down.level+' '+down.pinPressure});
+  // G (v1.1): adverse sentinel raises pressure vs no sentinel (same geometry/flow)
+  const gBase={price:62030,strike,secondsLeft:90,side:'BELOW',kalshi:{ok:false},tape:mkTape(i=>62000+30*(i/89)),
+    spotFlow:{ok:true,flowImbalance:0,bookImbalance:0,venue:'t',last:62030}};
+  const noSent=computePinPressure({...gBase});
+  const withSent=computePinPressure({...gBase,sentinel:{ok:true,pressure:70}}); // BELOW side: +70 = upward = adverse
+  checks.push({name:'adverse sentinel raises pressure',pass:withSent.pinPressure>noSent.pinPressure,got:noSent.pinPressure+' < '+withSent.pinPressure});
+  // H (v1.1): sentinel-only early warning — calm geometry, strong upstream pressure, final 3 min → not GREEN
+  const h=computePinPressure({price:62160,strike,secondsLeft:150,side:'ABOVE',
+    spotFlow:{ok:true,flowImbalance:0,bookImbalance:0,venue:'t',last:62160},kalshi:{ok:false},
+    tape:mkTape(()=>62160),sentinel:{ok:true,pressure:-70}}); // ABOVE side: -70 = downward = adverse
+  checks.push({name:'sentinel fires before price moves (floor)',pass:h.level!=='GREEN',got:h.level+' '+h.pinPressure});
   const failed=checks.filter(c=>!c.pass);
   return {ok:failed.length===0,version:SERVER_VERSION,passed:checks.length-failed.length,total:checks.length,checks};
 }
@@ -350,15 +482,19 @@ const server=http.createServer(async(req,res)=>{
   const u=new URL(req.url,`http://${req.headers.host}`);
   if(req.method==='OPTIONS'){cors(res);res.statusCode=204;return res.end();}
   try{
-    if(req.method==='GET'&&u.pathname==='/health')
-      return send(res,200,{ok:true,version:SERVER_VERSION,service:'btc-pin-radar',openaiEnabled:ENABLE_OPENAI,model:OPENAI_MODEL,ts:Date.now()});
+    if(req.method==='GET'&&u.pathname==='/health'){
+      ensureSentinel();
+      return send(res,200,{ok:true,version:SERVER_VERSION,service:'btc-pin-radar',openaiEnabled:ENABLE_OPENAI,model:OPENAI_MODEL,
+        sentinel:(SENT.read&&SENT.read.ok)?'live':'warming/offline',ts:Date.now()});
+    }
     if(req.method==='GET'&&u.pathname==='/selftest'){const r=runSelfTest();return send(res,r.ok?200:500,r);}
     if(req.method==='GET'&&u.pathname==='/flow'){const f=await getSpotFlow();return send(res,200,{...f,version:SERVER_VERSION});}
+    if(req.method==='GET'&&u.pathname==='/sentinel'){ensureSentinel();return send(res,200,{...(SENT.read||{ok:false}),lastErr:SENT.lastErr,version:SERVER_VERSION});}
     if(req.method==='POST'&&(u.pathname==='/radar'||u.pathname==='/pin')){
       const body=await readBody(req);const out=await radar(body);return send(res,200,out);
     }
     return send(res,404,{ok:false,error:'NOT_FOUND',path:u.pathname});
   }catch(e){return send(res,500,{ok:false,error:String(e.message||e)});}
 });
-if(require.main===module) server.listen(PORT,()=>console.log(`btc-pin-radar ${SERVER_VERSION} on ${PORT}, openai=${ENABLE_OPENAI}`));
-module.exports={ computePinPressure, getSpotFlow, getKalshiContext, radar, runSelfTest, volFromTape, driftFromTape };
+if(require.main===module){server.listen(PORT,()=>console.log(`btc-pin-radar ${SERVER_VERSION} on ${PORT}, openai=${ENABLE_OPENAI}`));ensureSentinel();}
+module.exports={ computePinPressure, getSpotFlow, getKalshiContext, radar, runSelfTest, volFromTape, driftFromTape, sentCompute, ensureSentinel };
