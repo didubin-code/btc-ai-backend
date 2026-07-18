@@ -16,7 +16,7 @@ const http = require('http');
 const { URL } = require('url');
 
 const PORT = Number(process.env.PORT || 10000);
-const SERVER_VERSION = 'pin-radar-1.1';
+const SERVER_VERSION = 'pin-radar-1.3';
 const KALSHI_BASE = (process.env.KALSHI_BASE || 'https://api.elections.kalshi.com/trade-api/v2').replace(/\/+$/,'');
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const ENABLE_OPENAI = /^(0|false|no)$/i.test(process.env.ENABLE_OPENAI||'') ? false : (/^(1|true|yes)$/i.test(process.env.ENABLE_OPENAI||'') || !!OPENAI_API_KEY);
@@ -127,10 +127,18 @@ async function getKalshiContext(targetStrike){
   let win=btc.filter(m=>Number(m.close_ts||0)===firstClose);
   if(Number.isFinite(tgt))win.sort((a,b)=>Math.abs(parseStrike(a)-tgt)-Math.abs(parseStrike(b)-tgt));
   const mkt=win[0];
-  let ob=null;
-  try{const or_=await fetchJson(KALSHI_BASE+'/markets/'+encodeURIComponent(mkt.ticker)+'/orderbook?depth=20');ob=or_.orderbook||null;}catch(_){}
-  const yes=(ob&&Array.isArray(ob.yes)?ob.yes:[]).filter(x=>Array.isArray(x)&&x.length>=2);
-  const no=(ob&&Array.isArray(ob.no)?ob.no:[]).filter(x=>Array.isArray(x)&&x.length>=2);
+  let yes=[],no=[];
+  try{
+    const or_=await fetchJson(KALSHI_BASE+'/markets/'+encodeURIComponent(mkt.ticker)+'/orderbook?depth=20');
+    const fp=or_&&or_.orderbook_fp, ob=fp||((or_&&or_.orderbook)||null);
+    if(ob){
+      const norm=a=>(Array.isArray(a)?a:[]).filter(x=>Array.isArray(x)&&x.length>=2)
+        .map(x=>[Number(x[0])*(fp?100:1),Number(x[1])])
+        .filter(x=>Number.isFinite(x[0])&&x[0]>0&&x[0]<100&&Number.isFinite(x[1]));
+      yes=norm(fp?ob.yes_dollars:ob.yes);
+      no=norm(fp?ob.no_dollars:ob.no);
+    }
+  }catch(_){}
   const yesDepth=yes.reduce((a,x)=>a+(Number(x[1])||0),0);
   const noDepth=no.reduce((a,x)=>a+(Number(x[1])||0),0);
   const bestYes=yes.length?Math.max(...yes.map(x=>Number(x[0]))):Number(mkt.yes_bid);
@@ -205,36 +213,68 @@ function sentCompute(){
 }
 async function sentPoll(){
   const now=Date.now();
+  let any=false;
   try{
-    const aggUrl='https://fapi.binance.com/fapi/v1/aggTrades?symbol=BTCUSDT'+(SENT.lastAggId?('&fromId='+(SENT.lastAggId+1)+'&limit=500'):'&limit=300');
-    const [trades,depth,perpBT,spotBT]=await Promise.all([
-      fetchJson(aggUrl,{},3500).catch(()=>null),
-      fetchJson('https://fapi.binance.com/fapi/v1/depth?symbol=BTCUSDT&limit=10',{},3500).catch(()=>null),
-      fetchJson('https://fapi.binance.com/fapi/v1/ticker/bookTicker?symbol=BTCUSDT',{},3500).catch(()=>null),
-      fetchJson('https://api.binance.com/api/v3/ticker/bookTicker?symbol=BTCUSDT',{},3500).catch(()=>null)
-    ]);
-    let any=false;
-    if(Array.isArray(trades)){
-      for(const t of trades){
-        const p=Number(t.p),q=Number(t.q);if(!Number.isFinite(p)||!Number.isFinite(q))continue;
-        const signed=(t.m?-1:1)*p*q; // m=true => taker sold
-        SENT.trades.push([Number(t.T)||now,signed,p]);
-        SENT.lastAggId=Math.max(SENT.lastAggId||0,Number(t.a)||0);
+    if((SENT.failN||0)<3){ // primary: Binance perp — geo-blocked from some US hosts
+      const aggUrl='https://fapi.binance.com/fapi/v1/aggTrades?symbol=BTCUSDT'+(SENT.lastAggId?('&fromId='+(SENT.lastAggId+1)+'&limit=500'):'&limit=300');
+      const [trades,depth,perpBT,spotBT]=await Promise.all([
+        fetchJson(aggUrl,{},3500).catch(()=>null),
+        fetchJson('https://fapi.binance.com/fapi/v1/depth?symbol=BTCUSDT&limit=10',{},3500).catch(()=>null),
+        fetchJson('https://fapi.binance.com/fapi/v1/ticker/bookTicker?symbol=BTCUSDT',{},3500).catch(()=>null),
+        fetchJson('https://api.binance.com/api/v3/ticker/bookTicker?symbol=BTCUSDT',{},3500).catch(()=>null)
+      ]);
+      if(Array.isArray(trades)){
+        for(const t of trades){
+          const p=Number(t.p),q=Number(t.q);if(!Number.isFinite(p)||!Number.isFinite(q))continue;
+          SENT.trades.push([Number(t.T)||now,(t.m?-1:1)*p*q,p]);
+          SENT.lastAggId=Math.max(SENT.lastAggId||0,Number(t.a)||0);
+        }
+        any=true;
       }
-      any=true;
+      if(depth&&Array.isArray(depth.bids)&&Array.isArray(depth.asks)){
+        const sum=s=>s.reduce((a,x)=>a+(Number(x[1])||0),0);
+        SENT.curDepth={bid:sum(depth.bids),ask:sum(depth.asks)};
+        SENT.depthHist.push([now,SENT.curDepth.bid,SENT.curDepth.ask]);
+        any=true;
+      }
+      if(perpBT&&perpBT.bidPrice&&perpBT.askPrice)SENT.perpMid=(Number(perpBT.bidPrice)+Number(perpBT.askPrice))/2;
+      if(spotBT&&spotBT.bidPrice&&spotBT.askPrice)SENT.spotMid=(Number(spotBT.bidPrice)+Number(spotBT.askPrice))/2;
+      if(any){SENT.failN=0;SENT.venue='binance-perp';}
+      else SENT.failN=(SENT.failN||0)+1;
     }
-    if(depth&&Array.isArray(depth.bids)&&Array.isArray(depth.asks)){
-      const sum=s=>s.reduce((a,x)=>a+(Number(x[1])||0),0);
-      SENT.curDepth={bid:sum(depth.bids),ask:sum(depth.asks)};
-      SENT.depthHist.push([now,SENT.curDepth.bid,SENT.curDepth.ask]);
-      any=true;
+    if(!any&&(SENT.failN||0)>=3){ // fallback: Coinbase spot flow (US-reachable)
+      if(SENT.venue!=='coinbase-spot'){SENT.lastAggId=null;SENT.trades.length=0;SENT.venue='coinbase-spot';}
+      const [trades,book]=await Promise.all([
+        fetchJson('https://api.exchange.coinbase.com/products/BTC-USD/trades?limit=100',{},3500).catch(()=>null),
+        fetchJson('https://api.exchange.coinbase.com/products/BTC-USD/book?level=2',{},3500).catch(()=>null)
+      ]);
+      if(Array.isArray(trades)){
+        for(const t of trades){
+          const p=Number(t.price),q=Number(t.size),id=Number(t.trade_id);
+          if(!Number.isFinite(p)||!Number.isFinite(q))continue;
+          if(SENT.lastAggId&&Number.isFinite(id)&&id<=SENT.lastAggId)continue;
+          SENT.trades.push([Date.parse(t.time)||now,(t.side==='sell'?1:-1)*p*q,p]); // maker sold => taker BOUGHT
+          if(Number.isFinite(id))SENT.lastAggId=Math.max(SENT.lastAggId||0,id);
+        }
+        any=true;
+      }
+      if(book&&Array.isArray(book.bids)&&Array.isArray(book.asks)){
+        const bb=Number((book.bids[0]||[])[0]),ba=Number((book.asks[0]||[])[0]);
+        if(Number.isFinite(bb)&&Number.isFinite(ba)){
+          const mid=(bb+ba)/2,band=mid*0.0006;let bd=0,ad=0;
+          for(const b of book.bids){const p=Number(b[0]),sz=Number(b[1]);if(mid-p<=band)bd+=sz;else break;}
+          for(const a of book.asks){const p=Number(a[0]),sz=Number(a[1]);if(p-mid<=band)ad+=sz;else break;}
+          SENT.curDepth={bid:bd,ask:ad};
+          SENT.depthHist.push([now,bd,ad]);
+          SENT.perpMid=mid;SENT.spotMid=mid;any=true;
+        }
+      }
     }
-    if(perpBT&&perpBT.bidPrice&&perpBT.askPrice)SENT.perpMid=(Number(perpBT.bidPrice)+Number(perpBT.askPrice))/2;
-    if(spotBT&&spotBT.bidPrice&&spotBT.askPrice)SENT.spotMid=(Number(spotBT.bidPrice)+Number(spotBT.askPrice))/2;
     if(any)SENT.lastOkPoll=now;
-    SENT.read=sentCompute();
     SENT.lastErr=null;
-  }catch(e){SENT.lastErr=String(e.message||e);SENT.read=sentCompute();}
+  }catch(e){SENT.lastErr=String(e.message||e);}
+  SENT.read=sentCompute();
+  if(SENT.read)SENT.read.venue=SENT.venue||null;
 }
 function ensureSentinel(){
   if(SENT.started)return;
