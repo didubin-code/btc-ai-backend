@@ -1,6 +1,7 @@
 /* =====================================================================
    BTC PIN RADAR — standalone late-window reversal early-warning server
-   v1.4 (patched): (A) never fabricate 99σ on a missing tick — return null
+   v1.5 (patched): resilient multi-venue price feed w/ logging + auto-recover;
+   v1.4: (A) never fabricate 99σ on a missing tick — return null
    + STALE level; (B) server-side last-good-price hold (<=15s) so a single
    failed spot fetch doesn't blank the gap; (C) Coinbase-primary sentinel
    (Binance perp is geo-blocked from Render US) so the sentinel warms up.
@@ -11,7 +12,7 @@ const http = require('http');
 const { URL } = require('url');
 
 const PORT = Number(process.env.PORT || 10000);
-const SERVER_VERSION = 'pin-radar-1.4';
+const SERVER_VERSION = 'pin-radar-1.5';
 const KALSHI_BASE = (process.env.KALSHI_BASE || 'https://api.elections.kalshi.com/trade-api/v2').replace(/\/+$/,'');
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const ENABLE_OPENAI = /^(0|false|no)$/i.test(process.env.ENABLE_OPENAI||'') ? false : (/^(1|true|yes)$/i.test(process.env.ENABLE_OPENAI||'') || !!OPENAI_API_KEY);
@@ -92,9 +93,67 @@ async function binanceFlow(){
 async function getSpotFlow(){
   const cb=await coinbaseFlow().catch(e=>({ok:false,error:String(e.message||e)}));
   if(cb.ok && Number.isFinite(cb.last)) return cb;
+  console.error('[spotflow] coinbase unusable: '+(cb.error||'no last price'));
   const bn=await binanceFlow().catch(e=>({ok:false,error:String(e.message||e)}));
   if(bn.ok && Number.isFinite(bn.last)) return bn;
-  return { ok:false, error:'no spot flow source reachable' };
+  console.error('[spotflow] binance unusable: '+(bn.error||'no last price'));
+  return { ok:false, error:'no spot flow source reachable (cb: '+(cb.error||'no price')+'; bn: '+(bn.error||'no price')+')' };
+}
+
+
+/* ---------------------- price feed diagnostics + multi-venue fallback (v1.5) ---------------------- */
+// Rolling diagnostics so failures are visible, not swallowed.
+const FEED = {
+  lastPrice:null, lastPriceTs:0, lastSource:null,
+  consecutiveFails:0, totalFails:0, totalOk:0,
+  lastError:null, lastErrorTs:0,
+  recent:[]  // rolling [{ts, source, ok, ms, err}]
+};
+function feedLog(rec){
+  FEED.recent.push(rec);
+  if(FEED.recent.length>60) FEED.recent.shift();
+  if(rec.ok){ FEED.totalOk++; FEED.consecutiveFails=0; FEED.lastSource=rec.source; }
+  else { FEED.totalFails++; FEED.consecutiveFails++; FEED.lastError=rec.err||'unknown'; FEED.lastErrorTs=rec.ts; }
+}
+// Lightweight single-value price endpoints (fast, more reliable than full trades+book).
+// Ordered by preference; each returns a finite number or throws with a reason.
+const PRICE_VENUES = [
+  { name:'coinbase', url:'https://api.exchange.coinbase.com/products/BTC-USD/ticker',
+    pick:j=>Number(j && j.price) },
+  { name:'binance', url:'https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT',
+    pick:j=>Number(j && j.price) },
+  { name:'kraken', url:'https://api.kraken.com/0/public/Ticker?pair=XBTUSD',
+    pick:j=>{ const r=j&&j.result; const k=r&&Object.keys(r)[0]; return Number(k && r[k] && r[k].c && r[k].c[0]); } },
+  { name:'bitstamp', url:'https://www.bitstamp.net/api/v2/ticker/btcusd/',
+    pick:j=>Number(j && j.last) },
+];
+async function fetchPriceFrom(v, timeoutMs=3500){
+  const t0=Date.now();
+  try{
+    const j=await fetchJson(v.url,{},timeoutMs);
+    const p=v.pick(j);
+    if(!Number.isFinite(p)||p<=0) throw new Error('bad/absent price field');
+    feedLog({ts:Date.now(),source:v.name,ok:true,ms:Date.now()-t0});
+    return {price:p, source:v.name};
+  }catch(e){
+    const reason=String(e && e.message || e);
+    feedLog({ts:Date.now(),source:v.name,ok:false,ms:Date.now()-t0,err:reason});
+    // Explicit, visible failure log (was silently swallowed before).
+    console.error('[price] '+v.name+' FAIL ('+(Date.now()-t0)+'ms): '+reason);
+    throw e;
+  }
+}
+// Try venues in order; first finite price wins. Records every attempt.
+async function getLivePrice(){
+  const errors=[];
+  for(const v of PRICE_VENUES){
+    try{
+      const r=await fetchPriceFrom(v);
+      FEED.lastPrice=r.price; FEED.lastPriceTs=Date.now(); FEED.lastSource=r.source;
+      return { ok:true, price:r.price, source:r.source, errors };
+    }catch(e){ errors.push({venue:v.name, err:String(e && e.message || e)}); }
+  }
+  return { ok:false, price:null, source:null, errors };
 }
 
 /* ---------------------- Kalshi contract book ---------------------- */
@@ -427,12 +486,26 @@ async function radar(payload){
   ]);
   const sentinel = SENT.read || {ok:false,error:'not started'};
 
+  // Price resolution, most-authoritative first:
+  //   1) client override  2) full spot-flow mid/last  3) multi-venue live price (v1.5)
+  //   4) held last-good (<=PRICE_HOLD_MS)  -> else STALE
   let price=Number(payload?.market?.price);
-  if(!Number.isFinite(price)) price=Number(spotFlow.mid ?? spotFlow.last);
+  let priceSource = Number.isFinite(price) ? 'override' : null;
+  if(!Number.isFinite(price)){
+    const sf=Number(spotFlow.mid ?? spotFlow.last);
+    if(Number.isFinite(sf)){ price=sf; priceSource=spotFlow.venue||'spotflow'; }
+  }
+  let priceErrors=null;
+  if(!Number.isFinite(price)){
+    // (3) FALLBACK LIVE PRICE — one Coinbase failure no longer makes us stale.
+    const lp=await getLivePrice();
+    if(lp.ok){ price=lp.price; priceSource=lp.source; }
+    priceErrors=lp.errors&&lp.errors.length?lp.errors:null;
+  }
   // PATCH B: hold last good price up to PRICE_HOLD_MS so a single failed fetch doesn't blank the gap.
   let priceHeld=false;
-  if(Number.isFinite(price)){ lastGoodPrice=price; lastGoodPriceTs=Date.now(); }
-  else if(Number.isFinite(lastGoodPrice) && (Date.now()-lastGoodPriceTs)<PRICE_HOLD_MS){ price=lastGoodPrice; priceHeld=true; }
+  if(Number.isFinite(price)){ lastGoodPrice=price; lastGoodPriceTs=Date.now(); FEED.lastPrice=price; FEED.lastPriceTs=Date.now(); if(priceSource)FEED.lastSource=priceSource; }
+  else if(Number.isFinite(lastGoodPrice) && (Date.now()-lastGoodPriceTs)<PRICE_HOLD_MS){ price=lastGoodPrice; priceHeld=true; priceSource='held'; }
 
   const pin=computePinPressure({ price, strike, secondsLeft, side, spotFlow, kalshi, tape, sentinel });
 
@@ -446,7 +519,10 @@ async function radar(payload){
 
   return {
     ok:true, version:SERVER_VERSION, ts:Date.now(),
-    price:round(price,2), strike:Number.isFinite(strike)?strike:null, secondsLeft, priceHeld,
+    price:round(price,2), strike:Number.isFinite(strike)?strike:null, secondsLeft,
+    priceHeld, priceSource, priceErrors,
+    feed:{ lastSource:FEED.lastSource, consecutiveFails:FEED.consecutiveFails, lastError:FEED.lastError,
+           ageMs:FEED.lastPriceTs?Date.now()-FEED.lastPriceTs:null },
     ...pin, ai,
     sources:{ spotFlow: spotFlow.ok?spotFlow.venue:('offline: '+(spotFlow.error||'?')),
               kalshi: kalshi.ok?kalshi.ticker:('offline: '+(kalshi.error||'?')),
@@ -505,11 +581,21 @@ const server=http.createServer(async(req,res)=>{
     if(req.method==='GET'&&u.pathname==='/health'){
       ensureSentinel();
       return send(res,200,{ok:true,version:SERVER_VERSION,service:'btc-pin-radar',openaiEnabled:ENABLE_OPENAI,model:OPENAI_MODEL,
-        sentinel:(SENT.read&&SENT.read.ok)?'live':'warming/offline',sentinelVenue:SENT.venue||null,ts:Date.now()});
+        sentinel:(SENT.read&&SENT.read.ok)?'live':'warming/offline',sentinelVenue:SENT.venue||null,
+        feed:{ lastSource:FEED.lastSource, lastPriceAgeMs:FEED.lastPriceTs?Date.now()-FEED.lastPriceTs:null,
+               consecutiveFails:FEED.consecutiveFails, totalOk:FEED.totalOk, totalFails:FEED.totalFails,
+               lastError:FEED.lastError, lastErrorAgeMs:FEED.lastErrorTs?Date.now()-FEED.lastErrorTs:null },
+        ts:Date.now()});
     }
     if(req.method==='GET'&&u.pathname==='/selftest'){const r=runSelfTest();return send(res,r.ok?200:500,r);}
     if(req.method==='GET'&&u.pathname==='/flow'){const f=await getSpotFlow();return send(res,200,{...f,version:SERVER_VERSION});}
     if(req.method==='GET'&&u.pathname==='/sentinel'){ensureSentinel();return send(res,200,{...(SENT.read||{ok:false}),lastErr:SENT.lastErr,version:SERVER_VERSION});}
+    if(req.method==='GET'&&u.pathname==='/diag'){return send(res,200,{ok:true,version:SERVER_VERSION,ts:Date.now(),
+      feed:{lastSource:FEED.lastSource,lastPrice:FEED.lastPrice,lastPriceAgeMs:FEED.lastPriceTs?Date.now()-FEED.lastPriceTs:null,
+            consecutiveFails:FEED.consecutiveFails,totalOk:FEED.totalOk,totalFails:FEED.totalFails,
+            lastError:FEED.lastError,lastErrorAgeMs:FEED.lastErrorTs?Date.now()-FEED.lastErrorTs:null,
+            recent:FEED.recent.slice(-30)},
+      sentinel:{venue:SENT.venue,ok:!!(SENT.read&&SENT.read.ok),err:SENT.lastErr}});}
     if(req.method==='POST'&&(u.pathname==='/radar'||u.pathname==='/pin')){
       const body=await readBody(req);const out=await radar(body);return send(res,200,out);
     }
@@ -517,4 +603,4 @@ const server=http.createServer(async(req,res)=>{
   }catch(e){return send(res,500,{ok:false,error:String(e.message||e)});}
 });
 if(require.main===module){server.listen(PORT,()=>console.log(`btc-pin-radar ${SERVER_VERSION} on ${PORT}, openai=${ENABLE_OPENAI}, sentinel=${SENTINEL_PRIMARY}`));ensureSentinel();}
-module.exports={ computePinPressure, getSpotFlow, getKalshiContext, radar, runSelfTest, volFromTape, driftFromTape, sentCompute, ensureSentinel };
+module.exports={ computePinPressure, getSpotFlow, getKalshiContext, radar, runSelfTest, volFromTape, driftFromTape, sentCompute, ensureSentinel, getLivePrice };
