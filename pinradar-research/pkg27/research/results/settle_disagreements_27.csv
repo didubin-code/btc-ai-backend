@@ -1,0 +1,4 @@
+set,contract,actual,2.6 first LOCKED,2.7 official-mode first LOCKED,kind,official margin $
+holdout,KXBTC15M-26AUG091345-45,DOWN,DOWN at T-52,DOWN at T-50,"same correct call, later",-1.91
+dev_folds1_6,KXBTC15M-26SEP041745-45,UP,DOWN at T-10,,improvement: wrong 2.6 LOCKED withheld,0.63
+dev_folds1_6,KXBTC15M-26OCT091800-00,DOWN,DOWN at T-23,DOWN at T-12,"same correct call, later",-1.46

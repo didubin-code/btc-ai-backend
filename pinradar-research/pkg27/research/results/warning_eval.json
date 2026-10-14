@@ -1,0 +1,3498 @@
+{
+ "holdout": {
+  "A": {
+   "TRADES CONS": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 32,
+     "lost_positions": 0,
+     "classes": {
+      "exit possible | won": 1,
+      "no warning | won": 31
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 1,
+     "winners_cost_c_per_contract_total": -17.0,
+     "hold_pnl_c_per_contract": 2.05,
+     "exit_policy_pnl_c_per_contract": 1.519,
+     "delta_usd_per_10lot_total": -1.7,
+     "median_bid_at_exit_c": 85.0,
+     "median_seconds_left_at_warning": 21.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 32,
+     "lost_positions": 0,
+     "classes": {
+      "after LOCKED, before fill | won": 1,
+      "no warning | won": 31
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 0,
+     "winners_cost_c_per_contract_total": 0,
+     "hold_pnl_c_per_contract": 2.05,
+     "exit_policy_pnl_c_per_contract": 2.05,
+     "delta_usd_per_10lot_total": 0.0,
+     "median_bid_at_exit_c": null,
+     "median_seconds_left_at_warning": null
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 32,
+     "lost_positions": 0,
+     "classes": {
+      "after LOCKED, before fill | won": 1,
+      "exit possible | won": 1,
+      "no warning | won": 30
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 1,
+     "winners_cost_c_per_contract_total": -40.7,
+     "hold_pnl_c_per_contract": 2.05,
+     "exit_policy_pnl_c_per_contract": 0.778,
+     "delta_usd_per_10lot_total": -4.07,
+     "median_bid_at_exit_c": 62.0,
+     "median_seconds_left_at_warning": 27.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 32,
+     "lost_positions": 0,
+     "classes": {
+      "after LOCKED, before fill | won": 2,
+      "no warning | won": 30
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 0,
+     "winners_cost_c_per_contract_total": 0,
+     "hold_pnl_c_per_contract": 2.05,
+     "exit_policy_pnl_c_per_contract": 2.05,
+     "delta_usd_per_10lot_total": 0.0,
+     "median_bid_at_exit_c": null,
+     "median_seconds_left_at_warning": null
+    }
+   },
+   "TRADES VISIBLE": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 43,
+     "lost_positions": 0,
+     "classes": {
+      "exit possible | won": 1,
+      "no warning | won": 42
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 1,
+     "winners_cost_c_per_contract_total": -10.3,
+     "hold_pnl_c_per_contract": 2.114,
+     "exit_policy_pnl_c_per_contract": 1.874,
+     "delta_usd_per_10lot_total": -1.03,
+     "median_bid_at_exit_c": 91.4,
+     "median_seconds_left_at_warning": 21.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 43,
+     "lost_positions": 0,
+     "classes": {
+      "after LOCKED, before fill | won": 1,
+      "no warning | won": 42
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 0,
+     "winners_cost_c_per_contract_total": 0,
+     "hold_pnl_c_per_contract": 2.114,
+     "exit_policy_pnl_c_per_contract": 2.114,
+     "delta_usd_per_10lot_total": 0.0,
+     "median_bid_at_exit_c": null,
+     "median_seconds_left_at_warning": null
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 43,
+     "lost_positions": 0,
+     "classes": {
+      "after LOCKED, before fill | won": 1,
+      "exit possible | won": 1,
+      "no warning | won": 41
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 1,
+     "winners_cost_c_per_contract_total": -43.8,
+     "hold_pnl_c_per_contract": 2.114,
+     "exit_policy_pnl_c_per_contract": 1.095,
+     "delta_usd_per_10lot_total": -4.38,
+     "median_bid_at_exit_c": 59.0,
+     "median_seconds_left_at_warning": 27.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 43,
+     "lost_positions": 0,
+     "classes": {
+      "after LOCKED, before fill | won": 2,
+      "no warning | won": 41
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 0,
+     "winners_cost_c_per_contract_total": 0,
+     "hold_pnl_c_per_contract": 2.114,
+     "exit_policy_pnl_c_per_contract": 2.114,
+     "delta_usd_per_10lot_total": 0.0,
+     "median_bid_at_exit_c": null,
+     "median_seconds_left_at_warning": null
+    }
+   },
+   "ALLLOCK CONS": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 1651,
+     "lost_positions": 1,
+     "classes": {
+      "exit possible | lost": 1,
+      "exit possible | won": 10,
+      "no warning | won": 1640
+     },
+     "losers_exited": 1,
+     "losers_saved_c_per_contract_total": 16.9,
+     "winners_exited_false_alarm": 10,
+     "winners_cost_c_per_contract_total": -184.8,
+     "hold_pnl_c_per_contract": 0.864,
+     "exit_policy_pnl_c_per_contract": 0.762,
+     "delta_usd_per_10lot_total": -16.79,
+     "median_bid_at_exit_c": 85.0,
+     "median_seconds_left_at_warning": 86.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 1651,
+     "lost_positions": 1,
+     "classes": {
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 1,
+      "exit possible | won": 17,
+      "no warning | won": 1632
+     },
+     "losers_exited": 1,
+     "losers_saved_c_per_contract_total": 98.3,
+     "winners_exited_false_alarm": 17,
+     "winners_cost_c_per_contract_total": -269.6,
+     "hold_pnl_c_per_contract": 0.864,
+     "exit_policy_pnl_c_per_contract": 0.76,
+     "delta_usd_per_10lot_total": -17.13,
+     "median_bid_at_exit_c": 89.9,
+     "median_seconds_left_at_warning": 64.5
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 1651,
+     "lost_positions": 1,
+     "classes": {
+      "after LOCKED, before fill | won": 3,
+      "exit possible | lost": 1,
+      "exit possible | won": 46,
+      "no warning | won": 1601
+     },
+     "losers_exited": 1,
+     "losers_saved_c_per_contract_total": 98.3,
+     "winners_exited_false_alarm": 46,
+     "winners_cost_c_per_contract_total": -277.4,
+     "hold_pnl_c_per_contract": 0.864,
+     "exit_policy_pnl_c_per_contract": 0.755,
+     "delta_usd_per_10lot_total": -17.91,
+     "median_bid_at_exit_c": 98.7,
+     "median_seconds_left_at_warning": 84.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 1651,
+     "lost_positions": 1,
+     "classes": {
+      "after LOCKED, before fill | won": 9,
+      "exit possible | lost": 1,
+      "exit possible | won": 102,
+      "no warning | won": 1539
+     },
+     "losers_exited": 1,
+     "losers_saved_c_per_contract_total": 98.3,
+     "winners_exited_false_alarm": 102,
+     "winners_cost_c_per_contract_total": -328.0,
+     "hold_pnl_c_per_contract": 0.864,
+     "exit_policy_pnl_c_per_contract": 0.725,
+     "delta_usd_per_10lot_total": -22.97,
+     "median_bid_at_exit_c": 99.3,
+     "median_seconds_left_at_warning": 102.0
+    }
+   },
+   "ALLLOCK VISIBLE": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 1651,
+     "lost_positions": 1,
+     "classes": {
+      "exit possible | lost": 1,
+      "exit possible | won": 10,
+      "no warning | won": 1640
+     },
+     "losers_exited": 1,
+     "losers_saved_c_per_contract_total": 77.8,
+     "winners_exited_false_alarm": 10,
+     "winners_cost_c_per_contract_total": -184.2,
+     "hold_pnl_c_per_contract": 0.864,
+     "exit_policy_pnl_c_per_contract": 0.799,
+     "delta_usd_per_10lot_total": -10.64,
+     "median_bid_at_exit_c": 89.0,
+     "median_seconds_left_at_warning": 86.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 1651,
+     "lost_positions": 1,
+     "classes": {
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 1,
+      "exit possible | won": 17,
+      "no warning | won": 1632
+     },
+     "losers_exited": 1,
+     "losers_saved_c_per_contract_total": 98.2,
+     "winners_exited_false_alarm": 17,
+     "winners_cost_c_per_contract_total": -164.0,
+     "hold_pnl_c_per_contract": 0.864,
+     "exit_policy_pnl_c_per_contract": 0.824,
+     "delta_usd_per_10lot_total": -6.58,
+     "median_bid_at_exit_c": 95.4,
+     "median_seconds_left_at_warning": 64.5
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 1651,
+     "lost_positions": 1,
+     "classes": {
+      "after LOCKED, before fill | won": 3,
+      "exit possible | lost": 1,
+      "exit possible | won": 46,
+      "no warning | won": 1601
+     },
+     "losers_exited": 1,
+     "losers_saved_c_per_contract_total": 98.2,
+     "winners_exited_false_alarm": 46,
+     "winners_cost_c_per_contract_total": -235.6,
+     "hold_pnl_c_per_contract": 0.864,
+     "exit_policy_pnl_c_per_contract": 0.78,
+     "delta_usd_per_10lot_total": -13.74,
+     "median_bid_at_exit_c": 99.0,
+     "median_seconds_left_at_warning": 84.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 1651,
+     "lost_positions": 1,
+     "classes": {
+      "after LOCKED, before fill | won": 9,
+      "exit possible | lost": 1,
+      "exit possible | won": 102,
+      "no warning | won": 1539
+     },
+     "losers_exited": 1,
+     "losers_saved_c_per_contract_total": 98.2,
+     "winners_exited_false_alarm": 102,
+     "winners_cost_c_per_contract_total": -290.9,
+     "hold_pnl_c_per_contract": 0.864,
+     "exit_policy_pnl_c_per_contract": 0.747,
+     "delta_usd_per_10lot_total": -19.27,
+     "median_bid_at_exit_c": 99.4,
+     "median_seconds_left_at_warning": 102.0
+    }
+   }
+  },
+  "C": {
+   "TRADES CONS": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 46,
+     "lost_positions": 0,
+     "classes": {
+      "exit possible | won": 1,
+      "no warning | won": 45
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 1,
+     "winners_cost_c_per_contract_total": -17.0,
+     "hold_pnl_c_per_contract": 1.909,
+     "exit_policy_pnl_c_per_contract": 1.539,
+     "delta_usd_per_10lot_total": -1.7,
+     "median_bid_at_exit_c": 85.0,
+     "median_seconds_left_at_warning": 21.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 46,
+     "lost_positions": 0,
+     "classes": {
+      "exit possible | won": 1,
+      "no warning | won": 45
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 1,
+     "winners_cost_c_per_contract_total": -17.0,
+     "hold_pnl_c_per_contract": 1.909,
+     "exit_policy_pnl_c_per_contract": 1.539,
+     "delta_usd_per_10lot_total": -1.7,
+     "median_bid_at_exit_c": 85.0,
+     "median_seconds_left_at_warning": 21.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 46,
+     "lost_positions": 0,
+     "classes": {
+      "exit possible | won": 4,
+      "no warning | won": 42
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 4,
+     "winners_cost_c_per_contract_total": -75.8,
+     "hold_pnl_c_per_contract": 1.909,
+     "exit_policy_pnl_c_per_contract": 0.261,
+     "delta_usd_per_10lot_total": -7.58,
+     "median_bid_at_exit_c": 85.5,
+     "median_seconds_left_at_warning": 27.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 46,
+     "lost_positions": 0,
+     "classes": {
+      "after LOCKED, before fill | won": 1,
+      "exit possible | won": 5,
+      "no warning | won": 40
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 5,
+     "winners_cost_c_per_contract_total": -70.0,
+     "hold_pnl_c_per_contract": 1.909,
+     "exit_policy_pnl_c_per_contract": 0.387,
+     "delta_usd_per_10lot_total": -7.0,
+     "median_bid_at_exit_c": 92.0,
+     "median_seconds_left_at_warning": 38.0
+    }
+   },
+   "TRADES VISIBLE": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 63,
+     "lost_positions": 0,
+     "classes": {
+      "exit possible | won": 1,
+      "no warning | won": 62
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 1,
+     "winners_cost_c_per_contract_total": -10.3,
+     "hold_pnl_c_per_contract": 2.097,
+     "exit_policy_pnl_c_per_contract": 1.933,
+     "delta_usd_per_10lot_total": -1.03,
+     "median_bid_at_exit_c": 91.4,
+     "median_seconds_left_at_warning": 21.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 63,
+     "lost_positions": 0,
+     "classes": {
+      "exit possible | won": 1,
+      "no warning | won": 62
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 1,
+     "winners_cost_c_per_contract_total": -10.3,
+     "hold_pnl_c_per_contract": 2.097,
+     "exit_policy_pnl_c_per_contract": 1.933,
+     "delta_usd_per_10lot_total": -1.03,
+     "median_bid_at_exit_c": 91.4,
+     "median_seconds_left_at_warning": 21.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 63,
+     "lost_positions": 0,
+     "classes": {
+      "exit possible | won": 4,
+      "no warning | won": 59
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 4,
+     "winners_cost_c_per_contract_total": -55.8,
+     "hold_pnl_c_per_contract": 2.097,
+     "exit_policy_pnl_c_per_contract": 1.211,
+     "delta_usd_per_10lot_total": -5.58,
+     "median_bid_at_exit_c": 96.2,
+     "median_seconds_left_at_warning": 27.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 63,
+     "lost_positions": 0,
+     "classes": {
+      "after LOCKED, before fill | won": 1,
+      "exit possible | won": 5,
+      "no warning | won": 57
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 5,
+     "winners_cost_c_per_contract_total": -22.5,
+     "hold_pnl_c_per_contract": 2.097,
+     "exit_policy_pnl_c_per_contract": 1.74,
+     "delta_usd_per_10lot_total": -2.25,
+     "median_bid_at_exit_c": 96.2,
+     "median_seconds_left_at_warning": 38.0
+    }
+   },
+   "ALLLOCK CONS": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 1689,
+     "lost_positions": 1,
+     "classes": {
+      "exit possible | lost": 1,
+      "exit possible | won": 7,
+      "no warning | won": 1681
+     },
+     "losers_exited": 1,
+     "losers_saved_c_per_contract_total": 16.9,
+     "winners_exited_false_alarm": 7,
+     "winners_cost_c_per_contract_total": -122.6,
+     "hold_pnl_c_per_contract": 0.863,
+     "exit_policy_pnl_c_per_contract": 0.801,
+     "delta_usd_per_10lot_total": -10.57,
+     "median_bid_at_exit_c": 84.5,
+     "median_seconds_left_at_warning": 55.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 1689,
+     "lost_positions": 1,
+     "classes": {
+      "exit possible | lost": 1,
+      "exit possible | won": 15,
+      "no warning | won": 1673
+     },
+     "losers_exited": 1,
+     "losers_saved_c_per_contract_total": 17.9,
+     "winners_exited_false_alarm": 15,
+     "winners_cost_c_per_contract_total": -242.3,
+     "hold_pnl_c_per_contract": 0.863,
+     "exit_policy_pnl_c_per_contract": 0.73,
+     "delta_usd_per_10lot_total": -22.44,
+     "median_bid_at_exit_c": 85.5,
+     "median_seconds_left_at_warning": 55.5
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 1689,
+     "lost_positions": 1,
+     "classes": {
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 1,
+      "exit possible | won": 44,
+      "no warning | won": 1643
+     },
+     "losers_exited": 1,
+     "losers_saved_c_per_contract_total": 98.3,
+     "winners_exited_false_alarm": 44,
+     "winners_cost_c_per_contract_total": -298.5,
+     "hold_pnl_c_per_contract": 0.863,
+     "exit_policy_pnl_c_per_contract": 0.745,
+     "delta_usd_per_10lot_total": -20.02,
+     "median_bid_at_exit_c": 98.7,
+     "median_seconds_left_at_warning": 61.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 1689,
+     "lost_positions": 1,
+     "classes": {
+      "after LOCKED, before fill | won": 4,
+      "exit possible | lost": 1,
+      "exit possible | won": 83,
+      "no warning | won": 1601
+     },
+     "losers_exited": 1,
+     "losers_saved_c_per_contract_total": 98.3,
+     "winners_exited_false_alarm": 83,
+     "winners_cost_c_per_contract_total": -328.1,
+     "hold_pnl_c_per_contract": 0.863,
+     "exit_policy_pnl_c_per_contract": 0.727,
+     "delta_usd_per_10lot_total": -22.98,
+     "median_bid_at_exit_c": 99.2,
+     "median_seconds_left_at_warning": 77.0
+    }
+   },
+   "ALLLOCK VISIBLE": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 1689,
+     "lost_positions": 1,
+     "classes": {
+      "exit possible | lost": 1,
+      "exit possible | won": 7,
+      "no warning | won": 1681
+     },
+     "losers_exited": 1,
+     "losers_saved_c_per_contract_total": 77.8,
+     "winners_exited_false_alarm": 7,
+     "winners_cost_c_per_contract_total": -146.8,
+     "hold_pnl_c_per_contract": 0.863,
+     "exit_policy_pnl_c_per_contract": 0.822,
+     "delta_usd_per_10lot_total": -6.9,
+     "median_bid_at_exit_c": 88.5,
+     "median_seconds_left_at_warning": 55.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 1689,
+     "lost_positions": 1,
+     "classes": {
+      "exit possible | lost": 1,
+      "exit possible | won": 15,
+      "no warning | won": 1673
+     },
+     "losers_exited": 1,
+     "losers_saved_c_per_contract_total": 93.6,
+     "winners_exited_false_alarm": 15,
+     "winners_cost_c_per_contract_total": -142.8,
+     "hold_pnl_c_per_contract": 0.863,
+     "exit_policy_pnl_c_per_contract": 0.834,
+     "delta_usd_per_10lot_total": -4.92,
+     "median_bid_at_exit_c": 95.4,
+     "median_seconds_left_at_warning": 55.5
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 1689,
+     "lost_positions": 1,
+     "classes": {
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 1,
+      "exit possible | won": 44,
+      "no warning | won": 1643
+     },
+     "losers_exited": 1,
+     "losers_saved_c_per_contract_total": 98.2,
+     "winners_exited_false_alarm": 44,
+     "winners_cost_c_per_contract_total": -239.3,
+     "hold_pnl_c_per_contract": 0.863,
+     "exit_policy_pnl_c_per_contract": 0.78,
+     "delta_usd_per_10lot_total": -14.11,
+     "median_bid_at_exit_c": 99.0,
+     "median_seconds_left_at_warning": 61.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 1689,
+     "lost_positions": 1,
+     "classes": {
+      "after LOCKED, before fill | won": 4,
+      "exit possible | lost": 1,
+      "exit possible | won": 83,
+      "no warning | won": 1601
+     },
+     "losers_exited": 1,
+     "losers_saved_c_per_contract_total": 98.2,
+     "winners_exited_false_alarm": 83,
+     "winners_cost_c_per_contract_total": -257.2,
+     "hold_pnl_c_per_contract": 0.863,
+     "exit_policy_pnl_c_per_contract": 0.769,
+     "delta_usd_per_10lot_total": -15.9,
+     "median_bid_at_exit_c": 99.4,
+     "median_seconds_left_at_warning": 77.0
+    }
+   }
+  },
+  "As": {
+   "TRADES CONS": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 68,
+     "lost_positions": 0,
+     "classes": {
+      "no warning | won": 68
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 0,
+     "winners_cost_c_per_contract_total": 0,
+     "hold_pnl_c_per_contract": 1.409,
+     "exit_policy_pnl_c_per_contract": 1.409,
+     "delta_usd_per_10lot_total": 0.0,
+     "median_bid_at_exit_c": null,
+     "median_seconds_left_at_warning": null
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 68,
+     "lost_positions": 0,
+     "classes": {
+      "exit possible | won": 2,
+      "no warning | won": 66
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 2,
+     "winners_cost_c_per_contract_total": -20.1,
+     "hold_pnl_c_per_contract": 1.409,
+     "exit_policy_pnl_c_per_contract": 1.113,
+     "delta_usd_per_10lot_total": -2.01,
+     "median_bid_at_exit_c": 91.5,
+     "median_seconds_left_at_warning": 33.5
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 68,
+     "lost_positions": 0,
+     "classes": {
+      "after LOCKED, before fill | won": 1,
+      "exit possible | won": 1,
+      "no warning | won": 66
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 1,
+     "winners_cost_c_per_contract_total": -1.5,
+     "hold_pnl_c_per_contract": 1.409,
+     "exit_policy_pnl_c_per_contract": 1.387,
+     "delta_usd_per_10lot_total": -0.15,
+     "median_bid_at_exit_c": 99.6,
+     "median_seconds_left_at_warning": 54.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 68,
+     "lost_positions": 0,
+     "classes": {
+      "after LOCKED, before fill | won": 1,
+      "exit possible | won": 1,
+      "no warning | won": 66
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 1,
+     "winners_cost_c_per_contract_total": -1.5,
+     "hold_pnl_c_per_contract": 1.409,
+     "exit_policy_pnl_c_per_contract": 1.387,
+     "delta_usd_per_10lot_total": -0.15,
+     "median_bid_at_exit_c": 99.6,
+     "median_seconds_left_at_warning": 54.0
+    }
+   },
+   "TRADES VISIBLE": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 104,
+     "lost_positions": 0,
+     "classes": {
+      "no warning | won": 104
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 0,
+     "winners_cost_c_per_contract_total": 0,
+     "hold_pnl_c_per_contract": 1.95,
+     "exit_policy_pnl_c_per_contract": 1.95,
+     "delta_usd_per_10lot_total": 0.0,
+     "median_bid_at_exit_c": null,
+     "median_seconds_left_at_warning": null
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 104,
+     "lost_positions": 0,
+     "classes": {
+      "exit possible | won": 2,
+      "no warning | won": 102
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 2,
+     "winners_cost_c_per_contract_total": -17.9,
+     "hold_pnl_c_per_contract": 1.95,
+     "exit_policy_pnl_c_per_contract": 1.778,
+     "delta_usd_per_10lot_total": -1.79,
+     "median_bid_at_exit_c": 92.7,
+     "median_seconds_left_at_warning": 33.5
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 104,
+     "lost_positions": 0,
+     "classes": {
+      "after LOCKED, before fill | won": 2,
+      "exit possible | won": 1,
+      "no warning | won": 101
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 1,
+     "winners_cost_c_per_contract_total": -1.5,
+     "hold_pnl_c_per_contract": 1.95,
+     "exit_policy_pnl_c_per_contract": 1.936,
+     "delta_usd_per_10lot_total": -0.15,
+     "median_bid_at_exit_c": 99.6,
+     "median_seconds_left_at_warning": 54.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 104,
+     "lost_positions": 0,
+     "classes": {
+      "after LOCKED, before fill | won": 2,
+      "exit possible | won": 1,
+      "no warning | won": 101
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 1,
+     "winners_cost_c_per_contract_total": -1.5,
+     "hold_pnl_c_per_contract": 1.95,
+     "exit_policy_pnl_c_per_contract": 1.936,
+     "delta_usd_per_10lot_total": -0.15,
+     "median_bid_at_exit_c": 99.6,
+     "median_seconds_left_at_warning": 54.0
+    }
+   },
+   "ALLLOCK CONS": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 1896,
+     "lost_positions": 0,
+     "classes": {
+      "exit possible | won": 7,
+      "no warning | won": 1889
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 7,
+     "winners_cost_c_per_contract_total": -142.4,
+     "hold_pnl_c_per_contract": 0.958,
+     "exit_policy_pnl_c_per_contract": 0.883,
+     "delta_usd_per_10lot_total": -14.24,
+     "median_bid_at_exit_c": 86.0,
+     "median_seconds_left_at_warning": 104.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 1896,
+     "lost_positions": 0,
+     "classes": {
+      "exit possible | won": 16,
+      "no warning | won": 1880
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 16,
+     "winners_cost_c_per_contract_total": -227.4,
+     "hold_pnl_c_per_contract": 0.958,
+     "exit_policy_pnl_c_per_contract": 0.838,
+     "delta_usd_per_10lot_total": -22.74,
+     "median_bid_at_exit_c": 88.0,
+     "median_seconds_left_at_warning": 72.5
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 1896,
+     "lost_positions": 0,
+     "classes": {
+      "after LOCKED, before fill | won": 2,
+      "exit possible | won": 36,
+      "no warning | won": 1858
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 36,
+     "winners_cost_c_per_contract_total": -291.6,
+     "hold_pnl_c_per_contract": 0.958,
+     "exit_policy_pnl_c_per_contract": 0.804,
+     "delta_usd_per_10lot_total": -29.16,
+     "median_bid_at_exit_c": 97.4,
+     "median_seconds_left_at_warning": 88.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 1896,
+     "lost_positions": 0,
+     "classes": {
+      "after LOCKED, before fill | won": 12,
+      "exit possible | won": 95,
+      "no warning | won": 1789
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 95,
+     "winners_cost_c_per_contract_total": -323.8,
+     "hold_pnl_c_per_contract": 0.958,
+     "exit_policy_pnl_c_per_contract": 0.787,
+     "delta_usd_per_10lot_total": -32.38,
+     "median_bid_at_exit_c": 99.3,
+     "median_seconds_left_at_warning": 102.0
+    }
+   },
+   "ALLLOCK VISIBLE": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 1896,
+     "lost_positions": 0,
+     "classes": {
+      "exit possible | won": 7,
+      "no warning | won": 1889
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 7,
+     "winners_cost_c_per_contract_total": -133.6,
+     "hold_pnl_c_per_contract": 0.958,
+     "exit_policy_pnl_c_per_contract": 0.888,
+     "delta_usd_per_10lot_total": -13.36,
+     "median_bid_at_exit_c": 88.0,
+     "median_seconds_left_at_warning": 104.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 1896,
+     "lost_positions": 0,
+     "classes": {
+      "exit possible | won": 16,
+      "no warning | won": 1880
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 16,
+     "winners_cost_c_per_contract_total": -219.0,
+     "hold_pnl_c_per_contract": 0.958,
+     "exit_policy_pnl_c_per_contract": 0.843,
+     "delta_usd_per_10lot_total": -21.9,
+     "median_bid_at_exit_c": 92.7,
+     "median_seconds_left_at_warning": 72.5
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 1896,
+     "lost_positions": 0,
+     "classes": {
+      "after LOCKED, before fill | won": 2,
+      "exit possible | won": 36,
+      "no warning | won": 1858
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 36,
+     "winners_cost_c_per_contract_total": -193.4,
+     "hold_pnl_c_per_contract": 0.958,
+     "exit_policy_pnl_c_per_contract": 0.856,
+     "delta_usd_per_10lot_total": -19.34,
+     "median_bid_at_exit_c": 98.0,
+     "median_seconds_left_at_warning": 88.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 1896,
+     "lost_positions": 0,
+     "classes": {
+      "after LOCKED, before fill | won": 12,
+      "exit possible | won": 95,
+      "no warning | won": 1789
+     },
+     "losers_exited": 0,
+     "losers_saved_c_per_contract_total": 0,
+     "winners_exited_false_alarm": 95,
+     "winners_cost_c_per_contract_total": -281.0,
+     "hold_pnl_c_per_contract": 0.958,
+     "exit_policy_pnl_c_per_contract": 0.81,
+     "delta_usd_per_10lot_total": -28.1,
+     "median_bid_at_exit_c": 99.5,
+     "median_seconds_left_at_warning": 102.0
+    }
+   }
+  },
+  "B": {
+   "TRADES CONS": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 945,
+     "lost_positions": 31,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "exit possible | lost": 30,
+      "exit possible | won": 56,
+      "no warning | won": 858
+     },
+     "losers_exited": 30,
+     "losers_saved_c_per_contract_total": 1295.5,
+     "winners_exited_false_alarm": 56,
+     "winners_cost_c_per_contract_total": -1765.3,
+     "hold_pnl_c_per_contract": -1.289,
+     "exit_policy_pnl_c_per_contract": -1.786,
+     "delta_usd_per_10lot_total": -46.98,
+     "median_bid_at_exit_c": 72.0,
+     "median_seconds_left_at_warning": 107.5
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 945,
+     "lost_positions": 31,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "exit possible | lost": 30,
+      "exit possible | won": 84,
+      "no warning | won": 830
+     },
+     "losers_exited": 30,
+     "losers_saved_c_per_contract_total": 1493.1,
+     "winners_exited_false_alarm": 84,
+     "winners_cost_c_per_contract_total": -2156.0,
+     "hold_pnl_c_per_contract": -1.289,
+     "exit_policy_pnl_c_per_contract": -1.991,
+     "delta_usd_per_10lot_total": -66.29,
+     "median_bid_at_exit_c": 77.0,
+     "median_seconds_left_at_warning": 113.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 945,
+     "lost_positions": 31,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "after LOCKED, before fill | won": 2,
+      "exit possible | lost": 30,
+      "exit possible | won": 124,
+      "no warning | won": 788
+     },
+     "losers_exited": 30,
+     "losers_saved_c_per_contract_total": 1759.3,
+     "winners_exited_false_alarm": 124,
+     "winners_cost_c_per_contract_total": -2449.1,
+     "hold_pnl_c_per_contract": -1.289,
+     "exit_policy_pnl_c_per_contract": -2.019,
+     "delta_usd_per_10lot_total": -68.98,
+     "median_bid_at_exit_c": 83.0,
+     "median_seconds_left_at_warning": 119.5
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 945,
+     "lost_positions": 31,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "after LOCKED, before fill | won": 5,
+      "exit possible | lost": 30,
+      "exit possible | won": 170,
+      "no warning | won": 739
+     },
+     "losers_exited": 30,
+     "losers_saved_c_per_contract_total": 1860.1,
+     "winners_exited_false_alarm": 170,
+     "winners_cost_c_per_contract_total": -2482.2,
+     "hold_pnl_c_per_contract": -1.289,
+     "exit_policy_pnl_c_per_contract": -1.948,
+     "delta_usd_per_10lot_total": -62.21,
+     "median_bid_at_exit_c": 88.5,
+     "median_seconds_left_at_warning": 125.5
+    }
+   },
+   "TRADES VISIBLE": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 1017,
+     "lost_positions": 31,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "exit possible | lost": 30,
+      "exit possible | won": 56,
+      "no warning | won": 930
+     },
+     "losers_exited": 30,
+     "losers_saved_c_per_contract_total": 1593.0,
+     "winners_exited_false_alarm": 56,
+     "winners_cost_c_per_contract_total": -1484.1,
+     "hold_pnl_c_per_contract": -0.927,
+     "exit_policy_pnl_c_per_contract": -0.82,
+     "delta_usd_per_10lot_total": 10.89,
+     "median_bid_at_exit_c": 76.0,
+     "median_seconds_left_at_warning": 107.5
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 1017,
+     "lost_positions": 31,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "exit possible | lost": 30,
+      "exit possible | won": 85,
+      "no warning | won": 901
+     },
+     "losers_exited": 30,
+     "losers_saved_c_per_contract_total": 1882.8,
+     "winners_exited_false_alarm": 85,
+     "winners_cost_c_per_contract_total": -1763.9,
+     "hold_pnl_c_per_contract": -0.927,
+     "exit_policy_pnl_c_per_contract": -0.81,
+     "delta_usd_per_10lot_total": 11.89,
+     "median_bid_at_exit_c": 82.0,
+     "median_seconds_left_at_warning": 114.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 1017,
+     "lost_positions": 31,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "after LOCKED, before fill | won": 2,
+      "exit possible | lost": 30,
+      "exit possible | won": 125,
+      "no warning | won": 859
+     },
+     "losers_exited": 30,
+     "losers_saved_c_per_contract_total": 2191.6,
+     "winners_exited_false_alarm": 125,
+     "winners_cost_c_per_contract_total": -1917.6,
+     "hold_pnl_c_per_contract": -0.927,
+     "exit_policy_pnl_c_per_contract": -0.657,
+     "delta_usd_per_10lot_total": 27.4,
+     "median_bid_at_exit_c": 88.0,
+     "median_seconds_left_at_warning": 120.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 1017,
+     "lost_positions": 31,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "after LOCKED, before fill | won": 4,
+      "exit possible | lost": 30,
+      "exit possible | won": 175,
+      "no warning | won": 807
+     },
+     "losers_exited": 30,
+     "losers_saved_c_per_contract_total": 2321.2,
+     "winners_exited_false_alarm": 175,
+     "winners_cost_c_per_contract_total": -2091.4,
+     "hold_pnl_c_per_contract": -0.927,
+     "exit_policy_pnl_c_per_contract": -0.701,
+     "delta_usd_per_10lot_total": 22.98,
+     "median_bid_at_exit_c": 91.4,
+     "median_seconds_left_at_warning": 127.0
+    }
+   },
+   "ALLLOCK CONS": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 1758,
+     "lost_positions": 34,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "exit possible | lost": 33,
+      "exit possible | won": 76,
+      "no warning | won": 1648
+     },
+     "losers_exited": 33,
+     "losers_saved_c_per_contract_total": 1518.7,
+     "winners_exited_false_alarm": 76,
+     "winners_cost_c_per_contract_total": -2263.3,
+     "hold_pnl_c_per_contract": -0.429,
+     "exit_policy_pnl_c_per_contract": -0.853,
+     "delta_usd_per_10lot_total": -74.46,
+     "median_bid_at_exit_c": 73.0,
+     "median_seconds_left_at_warning": 104.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 1758,
+     "lost_positions": 34,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "exit possible | lost": 33,
+      "exit possible | won": 116,
+      "no warning | won": 1608
+     },
+     "losers_exited": 33,
+     "losers_saved_c_per_contract_total": 1731.9,
+     "winners_exited_false_alarm": 116,
+     "winners_cost_c_per_contract_total": -2696.9,
+     "hold_pnl_c_per_contract": -0.429,
+     "exit_policy_pnl_c_per_contract": -0.978,
+     "delta_usd_per_10lot_total": -96.5,
+     "median_bid_at_exit_c": 79.0,
+     "median_seconds_left_at_warning": 110.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 1758,
+     "lost_positions": 34,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 33,
+      "exit possible | won": 180,
+      "no warning | won": 1543
+     },
+     "losers_exited": 33,
+     "losers_saved_c_per_contract_total": 2004.0,
+     "winners_exited_false_alarm": 180,
+     "winners_cost_c_per_contract_total": -3209.6,
+     "hold_pnl_c_per_contract": -0.429,
+     "exit_policy_pnl_c_per_contract": -1.115,
+     "delta_usd_per_10lot_total": -120.56,
+     "median_bid_at_exit_c": 87.0,
+     "median_seconds_left_at_warning": 117.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 1758,
+     "lost_positions": 34,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "after LOCKED, before fill | won": 4,
+      "exit possible | lost": 33,
+      "exit possible | won": 261,
+      "no warning | won": 1459
+     },
+     "losers_exited": 33,
+     "losers_saved_c_per_contract_total": 2110.9,
+     "winners_exited_false_alarm": 261,
+     "winners_cost_c_per_contract_total": -3186.8,
+     "hold_pnl_c_per_contract": -0.429,
+     "exit_policy_pnl_c_per_contract": -1.041,
+     "delta_usd_per_10lot_total": -107.59,
+     "median_bid_at_exit_c": 92.4,
+     "median_seconds_left_at_warning": 124.5
+    }
+   },
+   "ALLLOCK VISIBLE": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 1758,
+     "lost_positions": 34,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "exit possible | lost": 33,
+      "exit possible | won": 76,
+      "no warning | won": 1648
+     },
+     "losers_exited": 33,
+     "losers_saved_c_per_contract_total": 1922.3,
+     "winners_exited_false_alarm": 76,
+     "winners_cost_c_per_contract_total": -1978.6,
+     "hold_pnl_c_per_contract": -0.429,
+     "exit_policy_pnl_c_per_contract": -0.461,
+     "delta_usd_per_10lot_total": -5.63,
+     "median_bid_at_exit_c": 78.0,
+     "median_seconds_left_at_warning": 104.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 1758,
+     "lost_positions": 34,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "exit possible | lost": 33,
+      "exit possible | won": 116,
+      "no warning | won": 1608
+     },
+     "losers_exited": 33,
+     "losers_saved_c_per_contract_total": 2229.0,
+     "winners_exited_false_alarm": 116,
+     "winners_cost_c_per_contract_total": -2117.3,
+     "hold_pnl_c_per_contract": -0.429,
+     "exit_policy_pnl_c_per_contract": -0.365,
+     "delta_usd_per_10lot_total": 11.17,
+     "median_bid_at_exit_c": 84.0,
+     "median_seconds_left_at_warning": 110.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 1758,
+     "lost_positions": 34,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 33,
+      "exit possible | won": 180,
+      "no warning | won": 1543
+     },
+     "losers_exited": 33,
+     "losers_saved_c_per_contract_total": 2464.1,
+     "winners_exited_false_alarm": 180,
+     "winners_cost_c_per_contract_total": -2342.4,
+     "hold_pnl_c_per_contract": -0.429,
+     "exit_policy_pnl_c_per_contract": -0.36,
+     "delta_usd_per_10lot_total": 12.17,
+     "median_bid_at_exit_c": 90.5,
+     "median_seconds_left_at_warning": 117.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 1758,
+     "lost_positions": 34,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "after LOCKED, before fill | won": 4,
+      "exit possible | lost": 33,
+      "exit possible | won": 261,
+      "no warning | won": 1459
+     },
+     "losers_exited": 33,
+     "losers_saved_c_per_contract_total": 2624.1,
+     "winners_exited_false_alarm": 261,
+     "winners_cost_c_per_contract_total": -2589.7,
+     "hold_pnl_c_per_contract": -0.429,
+     "exit_policy_pnl_c_per_contract": -0.409,
+     "delta_usd_per_10lot_total": 3.44,
+     "median_bid_at_exit_c": 93.8,
+     "median_seconds_left_at_warning": 124.5
+    }
+   }
+  }
+ },
+ "dev_folds1_6": {
+  "A": {
+   "TRADES CONS": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 261,
+     "lost_positions": 2,
+     "classes": {
+      "exit possible | lost": 2,
+      "exit possible | won": 3,
+      "no warning | won": 256
+     },
+     "losers_exited": 2,
+     "losers_saved_c_per_contract_total": 79.5,
+     "winners_exited_false_alarm": 3,
+     "winners_cost_c_per_contract_total": -125.2,
+     "hold_pnl_c_per_contract": 0.855,
+     "exit_policy_pnl_c_per_contract": 0.68,
+     "delta_usd_per_10lot_total": -4.57,
+     "median_bid_at_exit_c": 44.0,
+     "median_seconds_left_at_warning": 63.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 261,
+     "lost_positions": 2,
+     "classes": {
+      "exit possible | lost": 2,
+      "exit possible | won": 5,
+      "no warning | won": 254
+     },
+     "losers_exited": 2,
+     "losers_saved_c_per_contract_total": 79.5,
+     "winners_exited_false_alarm": 5,
+     "winners_cost_c_per_contract_total": -160.2,
+     "hold_pnl_c_per_contract": 0.855,
+     "exit_policy_pnl_c_per_contract": 0.546,
+     "delta_usd_per_10lot_total": -8.07,
+     "median_bid_at_exit_c": 74.0,
+     "median_seconds_left_at_warning": 73.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 261,
+     "lost_positions": 2,
+     "classes": {
+      "exit possible | lost": 2,
+      "exit possible | won": 11,
+      "no warning | won": 248
+     },
+     "losers_exited": 2,
+     "losers_saved_c_per_contract_total": 79.5,
+     "winners_exited_false_alarm": 11,
+     "winners_cost_c_per_contract_total": -183.6,
+     "hold_pnl_c_per_contract": 0.855,
+     "exit_policy_pnl_c_per_contract": 0.456,
+     "delta_usd_per_10lot_total": -10.41,
+     "median_bid_at_exit_c": 91.8,
+     "median_seconds_left_at_warning": 77.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 261,
+     "lost_positions": 2,
+     "classes": {
+      "after LOCKED, before fill | won": 5,
+      "exit possible | lost": 2,
+      "exit possible | won": 18,
+      "no warning | won": 236
+     },
+     "losers_exited": 2,
+     "losers_saved_c_per_contract_total": 79.5,
+     "winners_exited_false_alarm": 18,
+     "winners_cost_c_per_contract_total": -200.3,
+     "hold_pnl_c_per_contract": 0.855,
+     "exit_policy_pnl_c_per_contract": 0.392,
+     "delta_usd_per_10lot_total": -12.08,
+     "median_bid_at_exit_c": 95.1,
+     "median_seconds_left_at_warning": 104.5
+    }
+   },
+   "TRADES VISIBLE": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 336,
+     "lost_positions": 2,
+     "classes": {
+      "exit possible | lost": 2,
+      "exit possible | won": 4,
+      "no warning | won": 330
+     },
+     "losers_exited": 2,
+     "losers_saved_c_per_contract_total": 112.5,
+     "winners_exited_false_alarm": 4,
+     "winners_cost_c_per_contract_total": -109.2,
+     "hold_pnl_c_per_contract": 1.315,
+     "exit_policy_pnl_c_per_contract": 1.325,
+     "delta_usd_per_10lot_total": 0.33,
+     "median_bid_at_exit_c": 73.0,
+     "median_seconds_left_at_warning": 68.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 336,
+     "lost_positions": 2,
+     "classes": {
+      "exit possible | lost": 2,
+      "exit possible | won": 7,
+      "no warning | won": 327
+     },
+     "losers_exited": 2,
+     "losers_saved_c_per_contract_total": 112.5,
+     "winners_exited_false_alarm": 7,
+     "winners_cost_c_per_contract_total": -147.0,
+     "hold_pnl_c_per_contract": 1.315,
+     "exit_policy_pnl_c_per_contract": 1.213,
+     "delta_usd_per_10lot_total": -3.45,
+     "median_bid_at_exit_c": 85.0,
+     "median_seconds_left_at_warning": 80.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 336,
+     "lost_positions": 2,
+     "classes": {
+      "exit possible | lost": 2,
+      "exit possible | won": 13,
+      "no warning | won": 321
+     },
+     "losers_exited": 2,
+     "losers_saved_c_per_contract_total": 112.5,
+     "winners_exited_false_alarm": 13,
+     "winners_cost_c_per_contract_total": -156.1,
+     "hold_pnl_c_per_contract": 1.315,
+     "exit_policy_pnl_c_per_contract": 1.185,
+     "delta_usd_per_10lot_total": -4.36,
+     "median_bid_at_exit_c": 92.7,
+     "median_seconds_left_at_warning": 84.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 336,
+     "lost_positions": 2,
+     "classes": {
+      "after LOCKED, before fill | won": 5,
+      "exit possible | lost": 2,
+      "exit possible | won": 20,
+      "no warning | won": 309
+     },
+     "losers_exited": 2,
+     "losers_saved_c_per_contract_total": 112.5,
+     "winners_exited_false_alarm": 20,
+     "winners_cost_c_per_contract_total": -161.0,
+     "hold_pnl_c_per_contract": 1.315,
+     "exit_policy_pnl_c_per_contract": 1.171,
+     "delta_usd_per_10lot_total": -4.85,
+     "median_bid_at_exit_c": 96.1,
+     "median_seconds_left_at_warning": 106.5
+    }
+   },
+   "ALLLOCK CONS": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 3475,
+     "lost_positions": 12,
+     "classes": {
+      "exit possible | lost": 11,
+      "exit possible | won": 25,
+      "no warning | lost": 1,
+      "no warning | won": 3438
+     },
+     "losers_exited": 11,
+     "losers_saved_c_per_contract_total": 568.6,
+     "winners_exited_false_alarm": 25,
+     "winners_cost_c_per_contract_total": -634.8,
+     "hold_pnl_c_per_contract": 0.632,
+     "exit_policy_pnl_c_per_contract": 0.613,
+     "delta_usd_per_10lot_total": -6.62,
+     "median_bid_at_exit_c": 68.5,
+     "median_seconds_left_at_warning": 64.5
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 3475,
+     "lost_positions": 12,
+     "classes": {
+      "after LOCKED, before fill | lost": 2,
+      "exit possible | lost": 10,
+      "exit possible | won": 41,
+      "no warning | won": 3422
+     },
+     "losers_exited": 10,
+     "losers_saved_c_per_contract_total": 521.4,
+     "winners_exited_false_alarm": 41,
+     "winners_cost_c_per_contract_total": -719.3,
+     "hold_pnl_c_per_contract": 0.632,
+     "exit_policy_pnl_c_per_contract": 0.575,
+     "delta_usd_per_10lot_total": -19.79,
+     "median_bid_at_exit_c": 90.4,
+     "median_seconds_left_at_warning": 73.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 3475,
+     "lost_positions": 12,
+     "classes": {
+      "after LOCKED, before fill | lost": 2,
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 10,
+      "exit possible | won": 107,
+      "no warning | won": 3354,
+      "too late (< 3 s left) | won": 1
+     },
+     "losers_exited": 10,
+     "losers_saved_c_per_contract_total": 569.5,
+     "winners_exited_false_alarm": 107,
+     "winners_cost_c_per_contract_total": -942.9,
+     "hold_pnl_c_per_contract": 0.632,
+     "exit_policy_pnl_c_per_contract": 0.524,
+     "delta_usd_per_10lot_total": -37.34,
+     "median_bid_at_exit_c": 96.6,
+     "median_seconds_left_at_warning": 78.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 3475,
+     "lost_positions": 12,
+     "classes": {
+      "after LOCKED, before fill | lost": 3,
+      "after LOCKED, before fill | won": 19,
+      "exit possible | lost": 9,
+      "exit possible | won": 232,
+      "no warning | won": 3211,
+      "too late (< 3 s left) | won": 1
+     },
+     "losers_exited": 9,
+     "losers_saved_c_per_contract_total": 530.9,
+     "winners_exited_false_alarm": 232,
+     "winners_cost_c_per_contract_total": -1187.5,
+     "hold_pnl_c_per_contract": 0.632,
+     "exit_policy_pnl_c_per_contract": 0.443,
+     "delta_usd_per_10lot_total": -65.66,
+     "median_bid_at_exit_c": 98.5,
+     "median_seconds_left_at_warning": 91.0
+    }
+   },
+   "ALLLOCK VISIBLE": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 3475,
+     "lost_positions": 12,
+     "classes": {
+      "exit possible | lost": 11,
+      "exit possible | won": 25,
+      "no warning | lost": 1,
+      "no warning | won": 3438
+     },
+     "losers_exited": 11,
+     "losers_saved_c_per_contract_total": 821.9,
+     "winners_exited_false_alarm": 25,
+     "winners_cost_c_per_contract_total": -412.2,
+     "hold_pnl_c_per_contract": 0.632,
+     "exit_policy_pnl_c_per_contract": 0.75,
+     "delta_usd_per_10lot_total": 40.97,
+     "median_bid_at_exit_c": 85.5,
+     "median_seconds_left_at_warning": 64.5
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 3475,
+     "lost_positions": 12,
+     "classes": {
+      "after LOCKED, before fill | lost": 2,
+      "exit possible | lost": 10,
+      "exit possible | won": 41,
+      "no warning | won": 3422
+     },
+     "losers_exited": 10,
+     "losers_saved_c_per_contract_total": 805.2,
+     "winners_exited_false_alarm": 41,
+     "winners_cost_c_per_contract_total": -518.5,
+     "hold_pnl_c_per_contract": 0.632,
+     "exit_policy_pnl_c_per_contract": 0.714,
+     "delta_usd_per_10lot_total": 28.67,
+     "median_bid_at_exit_c": 91.6,
+     "median_seconds_left_at_warning": 73.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 3475,
+     "lost_positions": 12,
+     "classes": {
+      "after LOCKED, before fill | lost": 2,
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 10,
+      "exit possible | won": 107,
+      "no warning | won": 3354,
+      "too late (< 3 s left) | won": 1
+     },
+     "losers_exited": 10,
+     "losers_saved_c_per_contract_total": 839.4,
+     "winners_exited_false_alarm": 107,
+     "winners_cost_c_per_contract_total": -630.7,
+     "hold_pnl_c_per_contract": 0.632,
+     "exit_policy_pnl_c_per_contract": 0.692,
+     "delta_usd_per_10lot_total": 20.87,
+     "median_bid_at_exit_c": 98.0,
+     "median_seconds_left_at_warning": 78.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 3475,
+     "lost_positions": 12,
+     "classes": {
+      "after LOCKED, before fill | lost": 3,
+      "after LOCKED, before fill | won": 19,
+      "exit possible | lost": 9,
+      "exit possible | won": 232,
+      "no warning | won": 3211,
+      "too late (< 3 s left) | won": 1
+     },
+     "losers_exited": 9,
+     "losers_saved_c_per_contract_total": 767.1,
+     "winners_exited_false_alarm": 232,
+     "winners_cost_c_per_contract_total": -802.9,
+     "hold_pnl_c_per_contract": 0.632,
+     "exit_policy_pnl_c_per_contract": 0.622,
+     "delta_usd_per_10lot_total": -3.58,
+     "median_bid_at_exit_c": 99.0,
+     "median_seconds_left_at_warning": 91.0
+    }
+   }
+  },
+  "C": {
+   "TRADES CONS": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 233,
+     "lost_positions": 3,
+     "classes": {
+      "exit possible | lost": 3,
+      "exit possible | won": 1,
+      "no warning | won": 229
+     },
+     "losers_exited": 3,
+     "losers_saved_c_per_contract_total": 91.4,
+     "winners_exited_false_alarm": 1,
+     "winners_cost_c_per_contract_total": -64.7,
+     "hold_pnl_c_per_contract": 0.37,
+     "exit_policy_pnl_c_per_contract": 0.485,
+     "delta_usd_per_10lot_total": 2.67,
+     "median_bid_at_exit_c": 37.5,
+     "median_seconds_left_at_warning": 61.5
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 233,
+     "lost_positions": 3,
+     "classes": {
+      "exit possible | lost": 3,
+      "exit possible | won": 1,
+      "no warning | won": 229
+     },
+     "losers_exited": 3,
+     "losers_saved_c_per_contract_total": 91.4,
+     "winners_exited_false_alarm": 1,
+     "winners_cost_c_per_contract_total": -64.7,
+     "hold_pnl_c_per_contract": 0.37,
+     "exit_policy_pnl_c_per_contract": 0.485,
+     "delta_usd_per_10lot_total": 2.67,
+     "median_bid_at_exit_c": 37.5,
+     "median_seconds_left_at_warning": 61.5
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 233,
+     "lost_positions": 3,
+     "classes": {
+      "exit possible | lost": 3,
+      "exit possible | won": 5,
+      "no warning | won": 225
+     },
+     "losers_exited": 3,
+     "losers_saved_c_per_contract_total": 99.1,
+     "winners_exited_false_alarm": 5,
+     "winners_cost_c_per_contract_total": -95.2,
+     "hold_pnl_c_per_contract": 0.37,
+     "exit_policy_pnl_c_per_contract": 0.387,
+     "delta_usd_per_10lot_total": 0.39,
+     "median_bid_at_exit_c": 65.0,
+     "median_seconds_left_at_warning": 62.5
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 233,
+     "lost_positions": 3,
+     "classes": {
+      "exit possible | lost": 3,
+      "exit possible | won": 12,
+      "no warning | won": 218
+     },
+     "losers_exited": 3,
+     "losers_saved_c_per_contract_total": 99.1,
+     "winners_exited_false_alarm": 12,
+     "winners_cost_c_per_contract_total": -117.2,
+     "hold_pnl_c_per_contract": 0.37,
+     "exit_policy_pnl_c_per_contract": 0.292,
+     "delta_usd_per_10lot_total": -1.81,
+     "median_bid_at_exit_c": 97.4,
+     "median_seconds_left_at_warning": 85.0
+    }
+   },
+   "TRADES VISIBLE": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 314,
+     "lost_positions": 3,
+     "classes": {
+      "exit possible | lost": 3,
+      "exit possible | won": 1,
+      "no warning | won": 310
+     },
+     "losers_exited": 3,
+     "losers_saved_c_per_contract_total": 139.9,
+     "winners_exited_false_alarm": 1,
+     "winners_cost_c_per_contract_total": -29.5,
+     "hold_pnl_c_per_contract": 0.933,
+     "exit_policy_pnl_c_per_contract": 1.284,
+     "delta_usd_per_10lot_total": 11.04,
+     "median_bid_at_exit_c": 56.5,
+     "median_seconds_left_at_warning": 61.5
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 314,
+     "lost_positions": 3,
+     "classes": {
+      "exit possible | lost": 3,
+      "exit possible | won": 1,
+      "no warning | won": 310
+     },
+     "losers_exited": 3,
+     "losers_saved_c_per_contract_total": 139.9,
+     "winners_exited_false_alarm": 1,
+     "winners_cost_c_per_contract_total": -24.3,
+     "hold_pnl_c_per_contract": 0.933,
+     "exit_policy_pnl_c_per_contract": 1.301,
+     "delta_usd_per_10lot_total": 11.56,
+     "median_bid_at_exit_c": 56.5,
+     "median_seconds_left_at_warning": 61.5
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 314,
+     "lost_positions": 3,
+     "classes": {
+      "exit possible | lost": 3,
+      "exit possible | won": 6,
+      "no warning | won": 305
+     },
+     "losers_exited": 3,
+     "losers_saved_c_per_contract_total": 168.5,
+     "winners_exited_false_alarm": 6,
+     "winners_cost_c_per_contract_total": -42.0,
+     "hold_pnl_c_per_contract": 0.933,
+     "exit_policy_pnl_c_per_contract": 1.336,
+     "delta_usd_per_10lot_total": 12.65,
+     "median_bid_at_exit_c": 89.0,
+     "median_seconds_left_at_warning": 62.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 314,
+     "lost_positions": 3,
+     "classes": {
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 3,
+      "exit possible | won": 15,
+      "no warning | won": 295
+     },
+     "losers_exited": 3,
+     "losers_saved_c_per_contract_total": 168.5,
+     "winners_exited_false_alarm": 15,
+     "winners_cost_c_per_contract_total": -73.9,
+     "hold_pnl_c_per_contract": 0.933,
+     "exit_policy_pnl_c_per_contract": 1.234,
+     "delta_usd_per_10lot_total": 9.46,
+     "median_bid_at_exit_c": 97.3,
+     "median_seconds_left_at_warning": 83.0
+    }
+   },
+   "ALLLOCK CONS": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 3470,
+     "lost_positions": 15,
+     "classes": {
+      "exit possible | lost": 15,
+      "exit possible | won": 17,
+      "no warning | won": 3438
+     },
+     "losers_exited": 15,
+     "losers_saved_c_per_contract_total": 695.0,
+     "winners_exited_false_alarm": 17,
+     "winners_cost_c_per_contract_total": -443.5,
+     "hold_pnl_c_per_contract": 0.533,
+     "exit_policy_pnl_c_per_contract": 0.605,
+     "delta_usd_per_10lot_total": 25.15,
+     "median_bid_at_exit_c": 64.5,
+     "median_seconds_left_at_warning": 60.5
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 3470,
+     "lost_positions": 15,
+     "classes": {
+      "exit possible | lost": 15,
+      "exit possible | won": 33,
+      "no warning | won": 3422
+     },
+     "losers_exited": 15,
+     "losers_saved_c_per_contract_total": 801.9,
+     "winners_exited_false_alarm": 33,
+     "winners_cost_c_per_contract_total": -552.2,
+     "hold_pnl_c_per_contract": 0.533,
+     "exit_policy_pnl_c_per_contract": 0.605,
+     "delta_usd_per_10lot_total": 24.97,
+     "median_bid_at_exit_c": 89.0,
+     "median_seconds_left_at_warning": 66.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 3470,
+     "lost_positions": 15,
+     "classes": {
+      "after LOCKED, before fill | won": 3,
+      "exit possible | lost": 15,
+      "exit possible | won": 83,
+      "no warning | won": 3368,
+      "too late (< 3 s left) | won": 1
+     },
+     "losers_exited": 15,
+     "losers_saved_c_per_contract_total": 843.4,
+     "winners_exited_false_alarm": 83,
+     "winners_cost_c_per_contract_total": -780.2,
+     "hold_pnl_c_per_contract": 0.533,
+     "exit_policy_pnl_c_per_contract": 0.551,
+     "delta_usd_per_10lot_total": 6.32,
+     "median_bid_at_exit_c": 95.2,
+     "median_seconds_left_at_warning": 72.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 3470,
+     "lost_positions": 15,
+     "classes": {
+      "after LOCKED, before fill | won": 6,
+      "exit possible | lost": 15,
+      "exit possible | won": 178,
+      "no warning | won": 3270,
+      "too late (< 3 s left) | won": 1
+     },
+     "losers_exited": 15,
+     "losers_saved_c_per_contract_total": 905.6,
+     "winners_exited_false_alarm": 178,
+     "winners_cost_c_per_contract_total": -1001.9,
+     "hold_pnl_c_per_contract": 0.533,
+     "exit_policy_pnl_c_per_contract": 0.505,
+     "delta_usd_per_10lot_total": -9.63,
+     "median_bid_at_exit_c": 98.6,
+     "median_seconds_left_at_warning": 85.0
+    }
+   },
+   "ALLLOCK VISIBLE": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 3470,
+     "lost_positions": 15,
+     "classes": {
+      "exit possible | lost": 15,
+      "exit possible | won": 17,
+      "no warning | won": 3438
+     },
+     "losers_exited": 15,
+     "losers_saved_c_per_contract_total": 1034.5,
+     "winners_exited_false_alarm": 17,
+     "winners_cost_c_per_contract_total": -337.9,
+     "hold_pnl_c_per_contract": 0.533,
+     "exit_policy_pnl_c_per_contract": 0.733,
+     "delta_usd_per_10lot_total": 69.66,
+     "median_bid_at_exit_c": 78.5,
+     "median_seconds_left_at_warning": 60.5
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 3470,
+     "lost_positions": 15,
+     "classes": {
+      "exit possible | lost": 15,
+      "exit possible | won": 33,
+      "no warning | won": 3422
+     },
+     "losers_exited": 15,
+     "losers_saved_c_per_contract_total": 1158.8,
+     "winners_exited_false_alarm": 33,
+     "winners_cost_c_per_contract_total": -424.3,
+     "hold_pnl_c_per_contract": 0.533,
+     "exit_policy_pnl_c_per_contract": 0.744,
+     "delta_usd_per_10lot_total": 73.45,
+     "median_bid_at_exit_c": 90.7,
+     "median_seconds_left_at_warning": 66.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 3470,
+     "lost_positions": 15,
+     "classes": {
+      "after LOCKED, before fill | won": 3,
+      "exit possible | lost": 15,
+      "exit possible | won": 83,
+      "no warning | won": 3368,
+      "too late (< 3 s left) | won": 1
+     },
+     "losers_exited": 15,
+     "losers_saved_c_per_contract_total": 1195.6,
+     "winners_exited_false_alarm": 83,
+     "winners_cost_c_per_contract_total": -517.0,
+     "hold_pnl_c_per_contract": 0.533,
+     "exit_policy_pnl_c_per_contract": 0.728,
+     "delta_usd_per_10lot_total": 67.86,
+     "median_bid_at_exit_c": 97.6,
+     "median_seconds_left_at_warning": 72.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 3470,
+     "lost_positions": 15,
+     "classes": {
+      "after LOCKED, before fill | won": 6,
+      "exit possible | lost": 15,
+      "exit possible | won": 178,
+      "no warning | won": 3270,
+      "too late (< 3 s left) | won": 1
+     },
+     "losers_exited": 15,
+     "losers_saved_c_per_contract_total": 1214.1,
+     "winners_exited_false_alarm": 178,
+     "winners_cost_c_per_contract_total": -645.9,
+     "hold_pnl_c_per_contract": 0.533,
+     "exit_policy_pnl_c_per_contract": 0.696,
+     "delta_usd_per_10lot_total": 56.82,
+     "median_bid_at_exit_c": 99.1,
+     "median_seconds_left_at_warning": 85.0
+    }
+   }
+  },
+  "As": {
+   "TRADES CONS": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 307,
+     "lost_positions": 4,
+     "classes": {
+      "exit possible | lost": 4,
+      "exit possible | won": 3,
+      "no warning | won": 300
+     },
+     "losers_exited": 4,
+     "losers_saved_c_per_contract_total": 168.0,
+     "winners_exited_false_alarm": 3,
+     "winners_cost_c_per_contract_total": -110.5,
+     "hold_pnl_c_per_contract": 0.279,
+     "exit_policy_pnl_c_per_contract": 0.466,
+     "delta_usd_per_10lot_total": 5.75,
+     "median_bid_at_exit_c": 45.0,
+     "median_seconds_left_at_warning": 63.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 307,
+     "lost_positions": 4,
+     "classes": {
+      "exit possible | lost": 4,
+      "exit possible | won": 5,
+      "no warning | won": 298
+     },
+     "losers_exited": 4,
+     "losers_saved_c_per_contract_total": 168.0,
+     "winners_exited_false_alarm": 5,
+     "winners_cost_c_per_contract_total": -142.9,
+     "hold_pnl_c_per_contract": 0.279,
+     "exit_policy_pnl_c_per_contract": 0.361,
+     "delta_usd_per_10lot_total": 2.51,
+     "median_bid_at_exit_c": 57.0,
+     "median_seconds_left_at_warning": 73.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 307,
+     "lost_positions": 4,
+     "classes": {
+      "exit possible | lost": 4,
+      "exit possible | won": 7,
+      "no warning | won": 296
+     },
+     "losers_exited": 4,
+     "losers_saved_c_per_contract_total": 166.0,
+     "winners_exited_false_alarm": 7,
+     "winners_cost_c_per_contract_total": -146.1,
+     "hold_pnl_c_per_contract": 0.279,
+     "exit_policy_pnl_c_per_contract": 0.344,
+     "delta_usd_per_10lot_total": 1.99,
+     "median_bid_at_exit_c": 78.0,
+     "median_seconds_left_at_warning": 73.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 307,
+     "lost_positions": 4,
+     "classes": {
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 4,
+      "exit possible | won": 16,
+      "no warning | won": 286
+     },
+     "losers_exited": 4,
+     "losers_saved_c_per_contract_total": 208.3,
+     "winners_exited_false_alarm": 16,
+     "winners_cost_c_per_contract_total": -187.7,
+     "hold_pnl_c_per_contract": 0.279,
+     "exit_policy_pnl_c_per_contract": 0.346,
+     "delta_usd_per_10lot_total": 2.06,
+     "median_bid_at_exit_c": 93.5,
+     "median_seconds_left_at_warning": 116.0
+    }
+   },
+   "TRADES VISIBLE": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 409,
+     "lost_positions": 4,
+     "classes": {
+      "exit possible | lost": 4,
+      "exit possible | won": 4,
+      "no warning | won": 401
+     },
+     "losers_exited": 4,
+     "losers_saved_c_per_contract_total": 216.5,
+     "winners_exited_false_alarm": 4,
+     "winners_cost_c_per_contract_total": -79.4,
+     "hold_pnl_c_per_contract": 1.005,
+     "exit_policy_pnl_c_per_contract": 1.341,
+     "delta_usd_per_10lot_total": 13.71,
+     "median_bid_at_exit_c": 68.0,
+     "median_seconds_left_at_warning": 68.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 409,
+     "lost_positions": 4,
+     "classes": {
+      "exit possible | lost": 4,
+      "exit possible | won": 6,
+      "no warning | won": 399
+     },
+     "losers_exited": 4,
+     "losers_saved_c_per_contract_total": 214.4,
+     "winners_exited_false_alarm": 6,
+     "winners_cost_c_per_contract_total": -92.6,
+     "hold_pnl_c_per_contract": 1.005,
+     "exit_policy_pnl_c_per_contract": 1.303,
+     "delta_usd_per_10lot_total": 12.18,
+     "median_bid_at_exit_c": 78.0,
+     "median_seconds_left_at_warning": 76.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 409,
+     "lost_positions": 4,
+     "classes": {
+      "exit possible | lost": 4,
+      "exit possible | won": 8,
+      "no warning | won": 397
+     },
+     "losers_exited": 4,
+     "losers_saved_c_per_contract_total": 235.1,
+     "winners_exited_false_alarm": 8,
+     "winners_cost_c_per_contract_total": -92.7,
+     "hold_pnl_c_per_contract": 1.005,
+     "exit_policy_pnl_c_per_contract": 1.354,
+     "delta_usd_per_10lot_total": 14.24,
+     "median_bid_at_exit_c": 89.6,
+     "median_seconds_left_at_warning": 78.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 409,
+     "lost_positions": 4,
+     "classes": {
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 4,
+      "exit possible | won": 17,
+      "no warning | won": 387
+     },
+     "losers_exited": 4,
+     "losers_saved_c_per_contract_total": 239.8,
+     "winners_exited_false_alarm": 17,
+     "winners_cost_c_per_contract_total": -119.1,
+     "hold_pnl_c_per_contract": 1.005,
+     "exit_policy_pnl_c_per_contract": 1.3,
+     "delta_usd_per_10lot_total": 12.07,
+     "median_bid_at_exit_c": 95.7,
+     "median_seconds_left_at_warning": 128.0
+    }
+   },
+   "ALLLOCK CONS": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 3746,
+     "lost_positions": 20,
+     "classes": {
+      "exit possible | lost": 20,
+      "exit possible | won": 22,
+      "no warning | won": 3704
+     },
+     "losers_exited": 20,
+     "losers_saved_c_per_contract_total": 742.1,
+     "winners_exited_false_alarm": 22,
+     "winners_cost_c_per_contract_total": -552.6,
+     "hold_pnl_c_per_contract": 0.459,
+     "exit_policy_pnl_c_per_contract": 0.51,
+     "delta_usd_per_10lot_total": 18.95,
+     "median_bid_at_exit_c": 63.5,
+     "median_seconds_left_at_warning": 67.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 3746,
+     "lost_positions": 20,
+     "classes": {
+      "after LOCKED, before fill | lost": 2,
+      "exit possible | lost": 18,
+      "exit possible | won": 38,
+      "no warning | won": 3688
+     },
+     "losers_exited": 18,
+     "losers_saved_c_per_contract_total": 688.6,
+     "winners_exited_false_alarm": 38,
+     "winners_cost_c_per_contract_total": -631.1,
+     "hold_pnl_c_per_contract": 0.459,
+     "exit_policy_pnl_c_per_contract": 0.474,
+     "delta_usd_per_10lot_total": 5.75,
+     "median_bid_at_exit_c": 82.5,
+     "median_seconds_left_at_warning": 73.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 3746,
+     "lost_positions": 20,
+     "classes": {
+      "after LOCKED, before fill | lost": 2,
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 18,
+      "exit possible | won": 95,
+      "no warning | won": 3630
+     },
+     "losers_exited": 18,
+     "losers_saved_c_per_contract_total": 795.5,
+     "winners_exited_false_alarm": 95,
+     "winners_cost_c_per_contract_total": -844.2,
+     "hold_pnl_c_per_contract": 0.459,
+     "exit_policy_pnl_c_per_contract": 0.446,
+     "delta_usd_per_10lot_total": -4.87,
+     "median_bid_at_exit_c": 95.2,
+     "median_seconds_left_at_warning": 82.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 3746,
+     "lost_positions": 20,
+     "classes": {
+      "after LOCKED, before fill | lost": 3,
+      "after LOCKED, before fill | won": 11,
+      "exit possible | lost": 17,
+      "exit possible | won": 226,
+      "no warning | won": 3489
+     },
+     "losers_exited": 17,
+     "losers_saved_c_per_contract_total": 839.1,
+     "winners_exited_false_alarm": 226,
+     "winners_cost_c_per_contract_total": -1168.2,
+     "hold_pnl_c_per_contract": 0.459,
+     "exit_policy_pnl_c_per_contract": 0.371,
+     "delta_usd_per_10lot_total": -32.91,
+     "median_bid_at_exit_c": 98.3,
+     "median_seconds_left_at_warning": 94.0
+    }
+   },
+   "ALLLOCK VISIBLE": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 3746,
+     "lost_positions": 20,
+     "classes": {
+      "exit possible | lost": 20,
+      "exit possible | won": 22,
+      "no warning | won": 3704
+     },
+     "losers_exited": 20,
+     "losers_saved_c_per_contract_total": 1353.0,
+     "winners_exited_false_alarm": 22,
+     "winners_cost_c_per_contract_total": -379.3,
+     "hold_pnl_c_per_contract": 0.459,
+     "exit_policy_pnl_c_per_contract": 0.719,
+     "delta_usd_per_10lot_total": 97.37,
+     "median_bid_at_exit_c": 80.5,
+     "median_seconds_left_at_warning": 67.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 3746,
+     "lost_positions": 20,
+     "classes": {
+      "after LOCKED, before fill | lost": 2,
+      "exit possible | lost": 18,
+      "exit possible | won": 38,
+      "no warning | won": 3688
+     },
+     "losers_exited": 18,
+     "losers_saved_c_per_contract_total": 1345.5,
+     "winners_exited_false_alarm": 38,
+     "winners_cost_c_per_contract_total": -473.5,
+     "hold_pnl_c_per_contract": 0.459,
+     "exit_policy_pnl_c_per_contract": 0.692,
+     "delta_usd_per_10lot_total": 87.2,
+     "median_bid_at_exit_c": 88.0,
+     "median_seconds_left_at_warning": 73.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 3746,
+     "lost_positions": 20,
+     "classes": {
+      "after LOCKED, before fill | lost": 2,
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 18,
+      "exit possible | won": 95,
+      "no warning | won": 3630
+     },
+     "losers_exited": 18,
+     "losers_saved_c_per_contract_total": 1495.7,
+     "winners_exited_false_alarm": 95,
+     "winners_cost_c_per_contract_total": -609.8,
+     "hold_pnl_c_per_contract": 0.459,
+     "exit_policy_pnl_c_per_contract": 0.695,
+     "delta_usd_per_10lot_total": 88.59,
+     "median_bid_at_exit_c": 97.0,
+     "median_seconds_left_at_warning": 82.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 3746,
+     "lost_positions": 20,
+     "classes": {
+      "after LOCKED, before fill | lost": 3,
+      "after LOCKED, before fill | won": 11,
+      "exit possible | lost": 17,
+      "exit possible | won": 226,
+      "no warning | won": 3489
+     },
+     "losers_exited": 17,
+     "losers_saved_c_per_contract_total": 1427.4,
+     "winners_exited_false_alarm": 226,
+     "winners_cost_c_per_contract_total": -732.2,
+     "hold_pnl_c_per_contract": 0.459,
+     "exit_policy_pnl_c_per_contract": 0.645,
+     "delta_usd_per_10lot_total": 69.52,
+     "median_bid_at_exit_c": 98.9,
+     "median_seconds_left_at_warning": 94.0
+    }
+   }
+  },
+  "B": {
+   "TRADES CONS": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 2234,
+     "lost_positions": 101,
+     "classes": {
+      "after LOCKED, before fill | lost": 2,
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 99,
+      "exit possible | won": 134,
+      "no warning | won": 1998
+     },
+     "losers_exited": 99,
+     "losers_saved_c_per_contract_total": 3910.9,
+     "winners_exited_false_alarm": 134,
+     "winners_cost_c_per_contract_total": -4604.6,
+     "hold_pnl_c_per_contract": -2.01,
+     "exit_policy_pnl_c_per_contract": -2.321,
+     "delta_usd_per_10lot_total": -69.37,
+     "median_bid_at_exit_c": 61.0,
+     "median_seconds_left_at_warning": 96.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 2234,
+     "lost_positions": 101,
+     "classes": {
+      "after LOCKED, before fill | lost": 2,
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 99,
+      "exit possible | won": 199,
+      "no warning | won": 1933
+     },
+     "losers_exited": 99,
+     "losers_saved_c_per_contract_total": 4232.9,
+     "winners_exited_false_alarm": 199,
+     "winners_cost_c_per_contract_total": -5189.5,
+     "hold_pnl_c_per_contract": -2.01,
+     "exit_policy_pnl_c_per_contract": -2.438,
+     "delta_usd_per_10lot_total": -95.66,
+     "median_bid_at_exit_c": 73.0,
+     "median_seconds_left_at_warning": 101.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 2234,
+     "lost_positions": 101,
+     "classes": {
+      "after LOCKED, before fill | lost": 3,
+      "after LOCKED, before fill | won": 3,
+      "exit possible | lost": 98,
+      "exit possible | won": 293,
+      "no warning | won": 1837
+     },
+     "losers_exited": 98,
+     "losers_saved_c_per_contract_total": 4880.1,
+     "winners_exited_false_alarm": 293,
+     "winners_cost_c_per_contract_total": -5828.8,
+     "hold_pnl_c_per_contract": -2.01,
+     "exit_policy_pnl_c_per_contract": -2.435,
+     "delta_usd_per_10lot_total": -94.87,
+     "median_bid_at_exit_c": 82.0,
+     "median_seconds_left_at_warning": 108.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 2234,
+     "lost_positions": 101,
+     "classes": {
+      "after LOCKED, before fill | lost": 3,
+      "after LOCKED, before fill | won": 22,
+      "exit possible | lost": 98,
+      "exit possible | won": 397,
+      "no warning | won": 1714
+     },
+     "losers_exited": 98,
+     "losers_saved_c_per_contract_total": 5366.9,
+     "winners_exited_false_alarm": 397,
+     "winners_cost_c_per_contract_total": -6263.0,
+     "hold_pnl_c_per_contract": -2.01,
+     "exit_policy_pnl_c_per_contract": -2.411,
+     "delta_usd_per_10lot_total": -89.61,
+     "median_bid_at_exit_c": 88.0,
+     "median_seconds_left_at_warning": 116.0
+    }
+   },
+   "TRADES VISIBLE": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 2376,
+     "lost_positions": 101,
+     "classes": {
+      "after LOCKED, before fill | lost": 2,
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 99,
+      "exit possible | won": 135,
+      "no warning | won": 2139
+     },
+     "losers_exited": 99,
+     "losers_saved_c_per_contract_total": 5616.9,
+     "winners_exited_false_alarm": 135,
+     "winners_cost_c_per_contract_total": -3867.6,
+     "hold_pnl_c_per_contract": -1.36,
+     "exit_policy_pnl_c_per_contract": -0.624,
+     "delta_usd_per_10lot_total": 174.93,
+     "median_bid_at_exit_c": 72.0,
+     "median_seconds_left_at_warning": 95.5
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 2376,
+     "lost_positions": 101,
+     "classes": {
+      "after LOCKED, before fill | lost": 2,
+      "after LOCKED, before fill | won": 1,
+      "exit possible | lost": 99,
+      "exit possible | won": 201,
+      "no warning | won": 2073
+     },
+     "losers_exited": 99,
+     "losers_saved_c_per_contract_total": 5974.1,
+     "winners_exited_false_alarm": 201,
+     "winners_cost_c_per_contract_total": -4431.8,
+     "hold_pnl_c_per_contract": -1.36,
+     "exit_policy_pnl_c_per_contract": -0.711,
+     "delta_usd_per_10lot_total": 154.23,
+     "median_bid_at_exit_c": 79.0,
+     "median_seconds_left_at_warning": 101.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 2376,
+     "lost_positions": 101,
+     "classes": {
+      "after LOCKED, before fill | lost": 3,
+      "after LOCKED, before fill | won": 3,
+      "exit possible | lost": 98,
+      "exit possible | won": 299,
+      "no warning | won": 1973
+     },
+     "losers_exited": 98,
+     "losers_saved_c_per_contract_total": 6505.1,
+     "winners_exited_false_alarm": 299,
+     "winners_cost_c_per_contract_total": -5147.4,
+     "hold_pnl_c_per_contract": -1.36,
+     "exit_policy_pnl_c_per_contract": -0.788,
+     "delta_usd_per_10lot_total": 135.77,
+     "median_bid_at_exit_c": 85.0,
+     "median_seconds_left_at_warning": 108.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 2376,
+     "lost_positions": 101,
+     "classes": {
+      "after LOCKED, before fill | lost": 3,
+      "after LOCKED, before fill | won": 20,
+      "exit possible | lost": 98,
+      "exit possible | won": 407,
+      "no warning | won": 1848
+     },
+     "losers_exited": 98,
+     "losers_saved_c_per_contract_total": 6914.3,
+     "winners_exited_false_alarm": 407,
+     "winners_cost_c_per_contract_total": -5473.9,
+     "hold_pnl_c_per_contract": -1.36,
+     "exit_policy_pnl_c_per_contract": -0.754,
+     "delta_usd_per_10lot_total": 144.04,
+     "median_bid_at_exit_c": 90.2,
+     "median_seconds_left_at_warning": 115.0
+    }
+   },
+   "ALLLOCK CONS": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 3546,
+     "lost_positions": 137,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "after LOCKED, before fill | won": 2,
+      "exit possible | lost": 136,
+      "exit possible | won": 177,
+      "no warning | won": 3230
+     },
+     "losers_exited": 136,
+     "losers_saved_c_per_contract_total": 5036.2,
+     "winners_exited_false_alarm": 177,
+     "winners_cost_c_per_contract_total": -5838.0,
+     "hold_pnl_c_per_contract": -1.394,
+     "exit_policy_pnl_c_per_contract": -1.62,
+     "delta_usd_per_10lot_total": -80.18,
+     "median_bid_at_exit_c": 62.0,
+     "median_seconds_left_at_warning": 92.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 3546,
+     "lost_positions": 137,
+     "classes": {
+      "after LOCKED, before fill | lost": 2,
+      "after LOCKED, before fill | won": 3,
+      "exit possible | lost": 135,
+      "exit possible | won": 261,
+      "no warning | won": 3145
+     },
+     "losers_exited": 135,
+     "losers_saved_c_per_contract_total": 5534.1,
+     "winners_exited_false_alarm": 261,
+     "winners_cost_c_per_contract_total": -6506.0,
+     "hold_pnl_c_per_contract": -1.394,
+     "exit_policy_pnl_c_per_contract": -1.668,
+     "delta_usd_per_10lot_total": -97.19,
+     "median_bid_at_exit_c": 74.0,
+     "median_seconds_left_at_warning": 97.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 3546,
+     "lost_positions": 137,
+     "classes": {
+      "after LOCKED, before fill | lost": 3,
+      "after LOCKED, before fill | won": 8,
+      "exit possible | lost": 134,
+      "exit possible | won": 400,
+      "no warning | won": 3001
+     },
+     "losers_exited": 134,
+     "losers_saved_c_per_contract_total": 6458.3,
+     "winners_exited_false_alarm": 400,
+     "winners_cost_c_per_contract_total": -7204.8,
+     "hold_pnl_c_per_contract": -1.394,
+     "exit_policy_pnl_c_per_contract": -1.604,
+     "delta_usd_per_10lot_total": -74.65,
+     "median_bid_at_exit_c": 85.0,
+     "median_seconds_left_at_warning": 106.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 3546,
+     "lost_positions": 137,
+     "classes": {
+      "after LOCKED, before fill | lost": 4,
+      "after LOCKED, before fill | won": 25,
+      "exit possible | lost": 133,
+      "exit possible | won": 587,
+      "no warning | won": 2797
+     },
+     "losers_exited": 133,
+     "losers_saved_c_per_contract_total": 6925.9,
+     "winners_exited_false_alarm": 587,
+     "winners_cost_c_per_contract_total": -7992.3,
+     "hold_pnl_c_per_contract": -1.394,
+     "exit_policy_pnl_c_per_contract": -1.695,
+     "delta_usd_per_10lot_total": -106.64,
+     "median_bid_at_exit_c": 90.9,
+     "median_seconds_left_at_warning": 112.0
+    }
+   },
+   "ALLLOCK VISIBLE": {
+    "W10 (2.6 shipped: flip >= 10%)": {
+     "positions": 3546,
+     "lost_positions": 137,
+     "classes": {
+      "after LOCKED, before fill | lost": 1,
+      "after LOCKED, before fill | won": 2,
+      "exit possible | lost": 136,
+      "exit possible | won": 177,
+      "no warning | won": 3230
+     },
+     "losers_exited": 136,
+     "losers_saved_c_per_contract_total": 7670.1,
+     "winners_exited_false_alarm": 177,
+     "winners_cost_c_per_contract_total": -4895.7,
+     "hold_pnl_c_per_contract": -1.394,
+     "exit_policy_pnl_c_per_contract": -0.611,
+     "delta_usd_per_10lot_total": 277.44,
+     "median_bid_at_exit_c": 72.0,
+     "median_seconds_left_at_warning": 92.0
+    },
+    "W5 (flip >= 5%)": {
+     "positions": 3546,
+     "lost_positions": 137,
+     "classes": {
+      "after LOCKED, before fill | lost": 2,
+      "after LOCKED, before fill | won": 3,
+      "exit possible | lost": 135,
+      "exit possible | won": 261,
+      "no warning | won": 3145
+     },
+     "losers_exited": 135,
+     "losers_saved_c_per_contract_total": 8108.2,
+     "winners_exited_false_alarm": 261,
+     "winners_cost_c_per_contract_total": -5499.7,
+     "hold_pnl_c_per_contract": -1.394,
+     "exit_policy_pnl_c_per_contract": -0.658,
+     "delta_usd_per_10lot_total": 260.85,
+     "median_bid_at_exit_c": 80.0,
+     "median_seconds_left_at_warning": 97.0
+    },
+    "W2 (flip >= 2%)": {
+     "positions": 3546,
+     "lost_positions": 137,
+     "classes": {
+      "after LOCKED, before fill | lost": 3,
+      "after LOCKED, before fill | won": 8,
+      "exit possible | lost": 134,
+      "exit possible | won": 400,
+      "no warning | won": 3001
+     },
+     "losers_exited": 134,
+     "losers_saved_c_per_contract_total": 8797.3,
+     "winners_exited_false_alarm": 400,
+     "winners_cost_c_per_contract_total": -6181.4,
+     "hold_pnl_c_per_contract": -1.394,
+     "exit_policy_pnl_c_per_contract": -0.656,
+     "delta_usd_per_10lot_total": 261.59,
+     "median_bid_at_exit_c": 87.0,
+     "median_seconds_left_at_warning": 106.0
+    },
+    "W1 (flip >= 1%)": {
+     "positions": 3546,
+     "lost_positions": 137,
+     "classes": {
+      "after LOCKED, before fill | lost": 4,
+      "after LOCKED, before fill | won": 25,
+      "exit possible | lost": 133,
+      "exit possible | won": 587,
+      "no warning | won": 2797
+     },
+     "losers_exited": 133,
+     "losers_saved_c_per_contract_total": 9137.4,
+     "winners_exited_false_alarm": 587,
+     "winners_cost_c_per_contract_total": -6751.4,
+     "hold_pnl_c_per_contract": -1.394,
+     "exit_policy_pnl_c_per_contract": -0.721,
+     "delta_usd_per_10lot_total": 238.6,
+     "median_bid_at_exit_c": 92.1,
+     "median_seconds_left_at_warning": 112.0
+    }
+   }
+  }
+ },
+ "losing_first_locks_timeline": [
+  {
+   "set": "holdout",
+   "variant": "A",
+   "contract": "KXBTC15M-26AUG080815-15",
+   "locked": "DOWN",
+   "locked_at_tau": 87,
+   "entry_px_c": 99.0,
+   "official_margin": 18.18,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 84,
+     "bid_visible_c": 99.4
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 84,
+     "bid_visible_c": 99.4
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 84,
+     "bid_visible_c": 99.4
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 51,
+     "bid_visible_c": 80.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "A",
+   "contract": "KXBTC15M-26SEP041745-45",
+   "locked": "DOWN",
+   "locked_at_tau": 10,
+   "entry_px_c": 59.0,
+   "official_margin": 0.63,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 9,
+     "bid_visible_c": 12.0
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 9,
+     "bid_visible_c": 12.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 9,
+     "bid_visible_c": 12.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": null,
+     "bid_visible_c": null
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "A",
+   "contract": "KXBTC15M-26SEP042130-30",
+   "locked": "DOWN",
+   "locked_at_tau": 70,
+   "entry_px_c": 99.0,
+   "official_margin": 4.77,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 42,
+     "bid_visible_c": 58.0
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 42,
+     "bid_visible_c": 58.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 42,
+     "bid_visible_c": 58.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 42,
+     "bid_visible_c": 58.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "A",
+   "contract": "KXBTC15M-26SEP051615-15",
+   "locked": "UP",
+   "locked_at_tau": 117,
+   "entry_px_c": 99.0,
+   "official_margin": -20.46,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 61,
+     "bid_visible_c": 70.0
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 61,
+     "bid_visible_c": 70.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 61,
+     "bid_visible_c": 70.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 61,
+     "bid_visible_c": 70.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "A",
+   "contract": "KXBTC15M-26SEP061745-45",
+   "locked": "UP",
+   "locked_at_tau": 94,
+   "entry_px_c": 99.0,
+   "official_margin": -7.4,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 65,
+     "bid_visible_c": 99.0
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 65,
+     "bid_visible_c": 99.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 61,
+     "bid_visible_c": 98.6
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 59,
+     "bid_visible_c": 64.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "A",
+   "contract": "KXBTC15M-26SEP081730-30",
+   "locked": "UP",
+   "locked_at_tau": 100,
+   "entry_px_c": 99.0,
+   "official_margin": -1.62,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 99,
+     "bid_visible_c": 81.0
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 99,
+     "bid_visible_c": 81.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 99,
+     "bid_visible_c": 81.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 98,
+     "bid_visible_c": 81.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "A",
+   "contract": "KXBTC15M-26SEP092330-30",
+   "locked": "DOWN",
+   "locked_at_tau": 103,
+   "entry_px_c": 99.0,
+   "official_margin": 7.08,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 91,
+     "bid_visible_c": 99.4
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 85,
+     "bid_visible_c": 97.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 84,
+     "bid_visible_c": 90.6
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 83,
+     "bid_visible_c": 81.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "A",
+   "contract": "KXBTC15M-26SEP130245-45",
+   "locked": "DOWN",
+   "locked_at_tau": 82,
+   "entry_px_c": 99.0,
+   "official_margin": 5.75,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 63,
+     "bid_visible_c": 60.0
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 63,
+     "bid_visible_c": 60.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 63,
+     "bid_visible_c": 60.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 63,
+     "bid_visible_c": 60.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "A",
+   "contract": "KXBTC15M-26SEP141445-45",
+   "locked": "DOWN",
+   "locked_at_tau": 145,
+   "entry_px_c": 99.0,
+   "official_margin": 49.16,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 133,
+     "bid_visible_c": 98.6
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 129,
+     "bid_visible_c": 95.6
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 127,
+     "bid_visible_c": 77.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 127,
+     "bid_visible_c": 77.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "A",
+   "contract": "KXBTC15M-26SEP151430-30",
+   "locked": "DOWN",
+   "locked_at_tau": 156,
+   "entry_px_c": 99.0,
+   "official_margin": 80.83,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 57,
+     "bid_visible_c": 99.9
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 57,
+     "bid_visible_c": 99.9
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 57,
+     "bid_visible_c": 99.9
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 57,
+     "bid_visible_c": 99.9
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "A",
+   "contract": "KXBTC15M-26SEP220200-00",
+   "locked": "UP",
+   "locked_at_tau": 73,
+   "entry_px_c": 99.0,
+   "official_margin": -1.21,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 68,
+     "bid_visible_c": 98.1
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 68,
+     "bid_visible_c": 98.1
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 67,
+     "bid_visible_c": 90.7
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 63,
+     "bid_visible_c": 77.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "A",
+   "contract": "KXBTC15M-26OCT021630-30",
+   "locked": "UP",
+   "locked_at_tau": 167,
+   "entry_px_c": 99.0,
+   "official_margin": -23.2,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 166,
+     "bid_visible_c": 99.1
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 135,
+     "bid_visible_c": 80.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 135,
+     "bid_visible_c": 80.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 135,
+     "bid_visible_c": 80.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "A",
+   "contract": "KXBTC15M-26OCT042115-15",
+   "locked": "DOWN",
+   "locked_at_tau": 54,
+   "entry_px_c": 99.0,
+   "official_margin": 5.04,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 50,
+     "bid_visible_c": 99.2
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 28,
+     "bid_visible_c": 99.4
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 27,
+     "bid_visible_c": 99.7
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 26,
+     "bid_visible_c": 98.2
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26SEP042130-30",
+   "locked": "DOWN",
+   "locked_at_tau": 68,
+   "entry_px_c": 99.0,
+   "official_margin": 4.77,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 42,
+     "bid_visible_c": 58.0
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 42,
+     "bid_visible_c": 58.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 42,
+     "bid_visible_c": 58.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 42,
+     "bid_visible_c": 58.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26SEP051615-15",
+   "locked": "UP",
+   "locked_at_tau": 117,
+   "entry_px_c": 99.0,
+   "official_margin": -20.46,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 61,
+     "bid_visible_c": 70.0
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 61,
+     "bid_visible_c": 70.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 61,
+     "bid_visible_c": 70.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 61,
+     "bid_visible_c": 70.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26SEP061745-45",
+   "locked": "UP",
+   "locked_at_tau": 94,
+   "entry_px_c": 99.0,
+   "official_margin": -7.4,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 65,
+     "bid_visible_c": 99.0
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 65,
+     "bid_visible_c": 99.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 61,
+     "bid_visible_c": 98.6
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 59,
+     "bid_visible_c": 64.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26SEP081730-30",
+   "locked": "UP",
+   "locked_at_tau": 100,
+   "entry_px_c": 99.0,
+   "official_margin": -1.62,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 99,
+     "bid_visible_c": 81.0
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 99,
+     "bid_visible_c": 81.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 99,
+     "bid_visible_c": 81.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 98,
+     "bid_visible_c": 81.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26SEP092330-30",
+   "locked": "DOWN",
+   "locked_at_tau": 101,
+   "entry_px_c": 99.0,
+   "official_margin": 7.08,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 91,
+     "bid_visible_c": 99.4
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 91,
+     "bid_visible_c": 99.4
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 84,
+     "bid_visible_c": 90.6
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 83,
+     "bid_visible_c": 81.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26SEP102315-15",
+   "locked": "DOWN",
+   "locked_at_tau": 136,
+   "entry_px_c": 98.5,
+   "official_margin": 27.92,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 134,
+     "bid_visible_c": 96.3
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 94,
+     "bid_visible_c": 91.8
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 89,
+     "bid_visible_c": 72.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 88,
+     "bid_visible_c": 74.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26SEP112300-00",
+   "locked": "DOWN",
+   "locked_at_tau": 23,
+   "entry_px_c": 99.0,
+   "official_margin": 3.04,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 11,
+     "bid_visible_c": 97.8
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 11,
+     "bid_visible_c": 97.8
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 11,
+     "bid_visible_c": 97.8
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 10,
+     "bid_visible_c": 45.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26SEP130245-45",
+   "locked": "DOWN",
+   "locked_at_tau": 67,
+   "entry_px_c": 98.1,
+   "official_margin": 5.75,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 63,
+     "bid_visible_c": 60.0
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 63,
+     "bid_visible_c": 60.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 63,
+     "bid_visible_c": 60.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 63,
+     "bid_visible_c": 60.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26SEP140530-30",
+   "locked": "DOWN",
+   "locked_at_tau": 23,
+   "entry_px_c": 99.0,
+   "official_margin": 2.28,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 12,
+     "bid_visible_c": 97.1
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 12,
+     "bid_visible_c": 97.1
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 11,
+     "bid_visible_c": 59.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 11,
+     "bid_visible_c": 59.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26SEP141445-45",
+   "locked": "DOWN",
+   "locked_at_tau": 145,
+   "entry_px_c": 99.0,
+   "official_margin": 49.16,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 133,
+     "bid_visible_c": 98.6
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 132,
+     "bid_visible_c": 97.9
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 128,
+     "bid_visible_c": 87.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 127,
+     "bid_visible_c": 77.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26SEP150715-15",
+   "locked": "UP",
+   "locked_at_tau": 145,
+   "entry_px_c": 99.0,
+   "official_margin": -29.72,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 136,
+     "bid_visible_c": 88.0
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 136,
+     "bid_visible_c": 88.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 136,
+     "bid_visible_c": 88.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 133,
+     "bid_visible_c": 68.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26SEP151430-30",
+   "locked": "DOWN",
+   "locked_at_tau": 191,
+   "entry_px_c": 99.0,
+   "official_margin": 80.83,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 57,
+     "bid_visible_c": 99.9
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 57,
+     "bid_visible_c": 99.9
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 57,
+     "bid_visible_c": 99.9
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 57,
+     "bid_visible_c": 99.9
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26SEP180300-00",
+   "locked": "DOWN",
+   "locked_at_tau": 155,
+   "entry_px_c": 99.0,
+   "official_margin": 63.37,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 151,
+     "bid_visible_c": 97.6
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 133,
+     "bid_visible_c": 94.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 131,
+     "bid_visible_c": 85.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 105,
+     "bid_visible_c": 85.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26SEP220200-00",
+   "locked": "UP",
+   "locked_at_tau": 75,
+   "entry_px_c": 99.0,
+   "official_margin": -1.21,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 68,
+     "bid_visible_c": 98.1
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 68,
+     "bid_visible_c": 98.1
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 67,
+     "bid_visible_c": 90.7
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 63,
+     "bid_visible_c": 77.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26SEP300300-00",
+   "locked": "UP",
+   "locked_at_tau": 30,
+   "entry_px_c": 99.0,
+   "official_margin": -15.43,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 27,
+     "bid_visible_c": 64.0
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 27,
+     "bid_visible_c": 64.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 27,
+     "bid_visible_c": 64.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 27,
+     "bid_visible_c": 64.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26OCT021630-30",
+   "locked": "UP",
+   "locked_at_tau": 167,
+   "entry_px_c": 99.0,
+   "official_margin": -23.2,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 166,
+     "bid_visible_c": 99.1
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 135,
+     "bid_visible_c": 80.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 135,
+     "bid_visible_c": 80.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 135,
+     "bid_visible_c": 80.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26OCT030500-00",
+   "locked": "UP",
+   "locked_at_tau": 69,
+   "entry_px_c": 99.0,
+   "official_margin": -1.05,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 60,
+     "bid_visible_c": 35.0
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 60,
+     "bid_visible_c": 35.0
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 60,
+     "bid_visible_c": 35.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 60,
+     "bid_visible_c": 35.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26OCT042115-15",
+   "locked": "DOWN",
+   "locked_at_tau": 55,
+   "entry_px_c": 99.0,
+   "official_margin": 5.04,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 27,
+     "bid_visible_c": 99.7
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 26,
+     "bid_visible_c": 98.2
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 19,
+     "bid_visible_c": 87.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 18,
+     "bid_visible_c": 76.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26OCT110515-15",
+   "locked": "UP",
+   "locked_at_tau": 108,
+   "entry_px_c": 99.0,
+   "official_margin": -2.81,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 107,
+     "bid_visible_c": 98.8
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 107,
+     "bid_visible_c": 98.8
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 107,
+     "bid_visible_c": 98.8
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 76,
+     "bid_visible_c": 86.0
+    }
+   ]
+  },
+  {
+   "set": "dev_folds1_6",
+   "variant": "As",
+   "contract": "KXBTC15M-26OCT122045-45",
+   "locked": "UP",
+   "locked_at_tau": 19,
+   "entry_px_c": 99.0,
+   "official_margin": -2.55,
+   "warnings": [
+    {
+     "thr_pct": 1.0,
+     "tau": 15,
+     "bid_visible_c": 97.6
+    },
+    {
+     "thr_pct": 2.0,
+     "tau": 13,
+     "bid_visible_c": 98.9
+    },
+    {
+     "thr_pct": 5.0,
+     "tau": 12,
+     "bid_visible_c": 61.0
+    },
+    {
+     "thr_pct": 10.0,
+     "tau": 12,
+     "bid_visible_c": 61.0
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,1385 @@
+set,variant,contract,actual,A_2_6,variant_call,kind,official_margin
+holdout,C,KXBTC15M-26JUL250130-30,DOWN,,DOWN at T-27,coverage gain: correct LOCKED where 2.6 had none,-7.08
+holdout,C,KXBTC15M-26JUL250915-15,UP,,UP at T-27,coverage gain: correct LOCKED where 2.6 had none,10.67
+holdout,C,KXBTC15M-26AUG070615-15,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,8.59
+holdout,C,KXBTC15M-26AUG110115-15,UP,,UP at T-21,coverage gain: correct LOCKED where 2.6 had none,10.27
+holdout,B,KXBTC15M-26JUL220215-15,DOWN,,DOWN at T-274,coverage gain: correct LOCKED where 2.6 had none,-1.28
+holdout,B,KXBTC15M-26JUL222330-30,UP,UP at T-25,DOWN at T-98,deterioration: wrong LOCKED where 2.6 was not wrong,15.96
+holdout,B,KXBTC15M-26JUL240300-00,UP,,DOWN at T-128,deterioration: wrong LOCKED where 2.6 was not wrong,5.04
+holdout,B,KXBTC15M-26JUL240830-30,DOWN,DOWN at T-38,UP at T-156,deterioration: wrong LOCKED where 2.6 was not wrong,-36.48
+holdout,B,KXBTC15M-26JUL240945-45,DOWN,,DOWN at T-252,coverage gain: correct LOCKED where 2.6 had none,-2.59
+holdout,B,KXBTC15M-26JUL241045-45,DOWN,DOWN at T-8,,coverage loss: no LOCKED where 2.6 was right,-11.52
+holdout,B,KXBTC15M-26JUL241115-15,UP,UP at T-33,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,52.6
+holdout,B,KXBTC15M-26JUL241745-45,UP,,DOWN at T-65,deterioration: wrong LOCKED where 2.6 was not wrong,0.51
+holdout,B,KXBTC15M-26JUL241815-15,UP,,UP at T-239,coverage gain: correct LOCKED where 2.6 had none,10.64
+holdout,B,KXBTC15M-26JUL241915-15,DOWN,,DOWN at T-83,coverage gain: correct LOCKED where 2.6 had none,-1.79
+holdout,B,KXBTC15M-26JUL241945-45,UP,UP at T-9,,coverage loss: no LOCKED where 2.6 was right,3.39
+holdout,B,KXBTC15M-26JUL250000-00,DOWN,,DOWN at T-253,coverage gain: correct LOCKED where 2.6 had none,-4.88
+holdout,B,KXBTC15M-26JUL250300-00,UP,UP at T-16,DOWN at T-95,deterioration: wrong LOCKED where 2.6 was not wrong,12.82
+holdout,B,KXBTC15M-26JUL250915-15,UP,,UP at T-96,coverage gain: correct LOCKED where 2.6 had none,10.67
+holdout,B,KXBTC15M-26JUL251215-15,UP,UP at T-22,DOWN at T-205,deterioration: wrong LOCKED where 2.6 was not wrong,14.5
+holdout,B,KXBTC15M-26JUL251600-00,DOWN,DOWN at T-34,UP at T-228,deterioration: wrong LOCKED where 2.6 was not wrong,-14.56
+holdout,B,KXBTC15M-26JUL252230-30,UP,,DOWN at T-246,deterioration: wrong LOCKED where 2.6 was not wrong,2.26
+holdout,B,KXBTC15M-26JUL252345-45,UP,,UP at T-144,coverage gain: correct LOCKED where 2.6 had none,2.61
+holdout,B,KXBTC15M-26JUL262000-00,DOWN,,DOWN at T-110,coverage gain: correct LOCKED where 2.6 had none,-6.47
+holdout,B,KXBTC15M-26JUL270030-30,UP,,UP at T-244,coverage gain: correct LOCKED where 2.6 had none,12.12
+holdout,B,KXBTC15M-26JUL270330-30,DOWN,DOWN at T-4,,coverage loss: no LOCKED where 2.6 was right,-4.98
+holdout,B,KXBTC15M-26JUL271345-45,UP,,UP at T-173,coverage gain: correct LOCKED where 2.6 had none,4.23
+holdout,B,KXBTC15M-26JUL280830-30,UP,,UP at T-163,coverage gain: correct LOCKED where 2.6 had none,3.04
+holdout,B,KXBTC15M-26JUL290015-15,UP,UP at T-2,,coverage loss: no LOCKED where 2.6 was right,3.18
+holdout,B,KXBTC15M-26JUL290645-45,UP,UP at T-80,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,55.27
+holdout,B,KXBTC15M-26JUL291000-00,UP,UP at T-62,DOWN at T-176,deterioration: wrong LOCKED where 2.6 was not wrong,135.61
+holdout,B,KXBTC15M-26JUL291845-45,DOWN,,DOWN at T-265,coverage gain: correct LOCKED where 2.6 had none,-4.81
+holdout,B,KXBTC15M-26JUL292230-30,UP,,UP at T-50,coverage gain: correct LOCKED where 2.6 had none,4.85
+holdout,B,KXBTC15M-26JUL300000-00,UP,,UP at T-255,coverage gain: correct LOCKED where 2.6 had none,0.61
+holdout,B,KXBTC15M-26JUL300030-30,DOWN,,UP at T-86,deterioration: wrong LOCKED where 2.6 was not wrong,-4.31
+holdout,B,KXBTC15M-26JUL300130-30,UP,,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,0.8
+holdout,B,KXBTC15M-26JUL300615-15,UP,,UP at T-182,coverage gain: correct LOCKED where 2.6 had none,1.29
+holdout,B,KXBTC15M-26JUL300645-45,DOWN,,DOWN at T-300,coverage gain: correct LOCKED where 2.6 had none,-1.7
+holdout,B,KXBTC15M-26JUL300945-45,UP,UP at T-67,DOWN at T-286,deterioration: wrong LOCKED where 2.6 was not wrong,167.45
+holdout,B,KXBTC15M-26JUL310415-15,UP,,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,3.45
+holdout,B,KXBTC15M-26JUL310430-30,UP,,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,7.87
+holdout,B,KXBTC15M-26JUL311645-45,DOWN,DOWN at T-8,,coverage loss: no LOCKED where 2.6 was right,-7.85
+holdout,B,KXBTC15M-26JUL311730-30,DOWN,DOWN at T-13,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-4.3
+holdout,B,KXBTC15M-26AUG010900-00,UP,,UP at T-300,coverage gain: correct LOCKED where 2.6 had none,5.27
+holdout,B,KXBTC15M-26AUG011145-45,DOWN,DOWN at T-20,,coverage loss: no LOCKED where 2.6 was right,-9.43
+holdout,B,KXBTC15M-26AUG011315-15,DOWN,DOWN at T-40,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-18.02
+holdout,B,KXBTC15M-26AUG011830-30,DOWN,,DOWN at T-242,coverage gain: correct LOCKED where 2.6 had none,-4.55
+holdout,B,KXBTC15M-26AUG020245-45,DOWN,,DOWN at T-99,coverage gain: correct LOCKED where 2.6 had none,-3.89
+holdout,B,KXBTC15M-26AUG020415-15,UP,,UP at T-222,coverage gain: correct LOCKED where 2.6 had none,5.68
+holdout,B,KXBTC15M-26AUG020700-00,DOWN,DOWN at T-11,,coverage loss: no LOCKED where 2.6 was right,-6.11
+holdout,B,KXBTC15M-26AUG020945-45,DOWN,,DOWN at T-300,coverage gain: correct LOCKED where 2.6 had none,-6.23
+holdout,B,KXBTC15M-26AUG021315-15,UP,UP at T-45,DOWN at T-289,deterioration: wrong LOCKED where 2.6 was not wrong,17.28
+holdout,B,KXBTC15M-26AUG021615-15,DOWN,,DOWN at T-193,coverage gain: correct LOCKED where 2.6 had none,-0.91
+holdout,B,KXBTC15M-26AUG030045-45,DOWN,,UP at T-200,deterioration: wrong LOCKED where 2.6 was not wrong,-6.12
+holdout,B,KXBTC15M-26AUG030930-30,DOWN,DOWN at T-39,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-17.07
+holdout,B,KXBTC15M-26AUG040515-15,DOWN,,DOWN at T-291,coverage gain: correct LOCKED where 2.6 had none,-7.68
+holdout,B,KXBTC15M-26AUG040745-45,UP,UP at T-51,DOWN at T-253,deterioration: wrong LOCKED where 2.6 was not wrong,59.89
+holdout,B,KXBTC15M-26AUG050100-00,DOWN,,DOWN at T-182,coverage gain: correct LOCKED where 2.6 had none,-8.29
+holdout,B,KXBTC15M-26AUG051415-15,UP,UP at T-29,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,21.58
+holdout,B,KXBTC15M-26AUG060130-30,DOWN,DOWN at T-34,UP at T-174,deterioration: wrong LOCKED where 2.6 was not wrong,-22.68
+holdout,B,KXBTC15M-26AUG060200-00,DOWN,,DOWN at T-259,coverage gain: correct LOCKED where 2.6 had none,-1.86
+holdout,B,KXBTC15M-26AUG060530-30,DOWN,DOWN at T-40,UP at T-84,deterioration: wrong LOCKED where 2.6 was not wrong,-34.51
+holdout,B,KXBTC15M-26AUG062015-15,DOWN,DOWN at T-39,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-24.29
+holdout,B,KXBTC15M-26AUG070030-30,DOWN,,DOWN at T-81,coverage gain: correct LOCKED where 2.6 had none,-3.57
+holdout,B,KXBTC15M-26AUG070630-30,UP,UP at T-56,DOWN at T-221,deterioration: wrong LOCKED where 2.6 was not wrong,45.43
+holdout,B,KXBTC15M-26AUG072245-45,DOWN,DOWN at T-9,,coverage loss: no LOCKED where 2.6 was right,-7.54
+holdout,B,KXBTC15M-26AUG080400-00,UP,,UP at T-84,coverage gain: correct LOCKED where 2.6 had none,14.77
+holdout,B,KXBTC15M-26AUG080830-30,DOWN,DOWN at T-13,,coverage loss: no LOCKED where 2.6 was right,-11.63
+holdout,B,KXBTC15M-26AUG081930-30,DOWN,,UP at T-299,deterioration: wrong LOCKED where 2.6 was not wrong,-1.31
+holdout,B,KXBTC15M-26AUG082000-00,DOWN,,DOWN at T-76,coverage gain: correct LOCKED where 2.6 had none,-9.58
+holdout,B,KXBTC15M-26AUG082015-15,UP,,UP at T-90,coverage gain: correct LOCKED where 2.6 had none,4.82
+holdout,B,KXBTC15M-26AUG082045-45,UP,,UP at T-208,coverage gain: correct LOCKED where 2.6 had none,3.49
+holdout,B,KXBTC15M-26AUG092000-00,DOWN,,DOWN at T-238,coverage gain: correct LOCKED where 2.6 had none,-0.99
+holdout,B,KXBTC15M-26AUG100115-15,DOWN,DOWN at T-33,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-11.88
+holdout,B,KXBTC15M-26AUG100700-00,UP,UP at T-12,,coverage loss: no LOCKED where 2.6 was right,6.6
+holdout,B,KXBTC15M-26AUG100815-15,UP,,UP at T-285,coverage gain: correct LOCKED where 2.6 had none,3.72
+holdout,B,KXBTC15M-26AUG101115-15,DOWN,DOWN at T-46,UP at T-218,deterioration: wrong LOCKED where 2.6 was not wrong,-57.5
+holdout,B,KXBTC15M-26AUG101545-45,UP,UP at T-33,DOWN at T-232,deterioration: wrong LOCKED where 2.6 was not wrong,13.87
+holdout,B,KXBTC15M-26AUG101930-30,UP,,DOWN at T-76,deterioration: wrong LOCKED where 2.6 was not wrong,11.28
+holdout,B,KXBTC15M-26AUG102015-15,DOWN,,DOWN at T-204,coverage gain: correct LOCKED where 2.6 had none,-2.87
+holdout,B,KXBTC15M-26AUG102215-15,DOWN,DOWN at T-31,UP at T-108,deterioration: wrong LOCKED where 2.6 was not wrong,-21.67
+holdout,B,KXBTC15M-26AUG102230-30,UP,,UP at T-165,coverage gain: correct LOCKED where 2.6 had none,6.18
+holdout,B,KXBTC15M-26AUG110000-00,UP,,DOWN at T-138,deterioration: wrong LOCKED where 2.6 was not wrong,4.94
+holdout,B,KXBTC15M-26AUG110300-00,UP,UP at T-45,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,26.53
+holdout,B,KXBTC15M-26AUG110915-15,DOWN,DOWN at T-34,UP at T-249,deterioration: wrong LOCKED where 2.6 was not wrong,-11.67
+holdout,B,KXBTC15M-26AUG111315-15,UP,,UP at T-32,coverage gain: correct LOCKED where 2.6 had none,7.75
+holdout,B,KXBTC15M-26AUG111345-45,DOWN,,DOWN at T-237,coverage gain: correct LOCKED where 2.6 had none,-2.17
+holdout,B,KXBTC15M-26AUG111645-45,UP,,UP at T-233,coverage gain: correct LOCKED where 2.6 had none,5.26
+holdout,B,KXBTC15M-26AUG111745-45,DOWN,,UP at T-99,deterioration: wrong LOCKED where 2.6 was not wrong,-4.14
+holdout,B,KXBTC15M-26AUG112015-15,UP,,DOWN at T-238,deterioration: wrong LOCKED where 2.6 was not wrong,1.24
+holdout,B,KXBTC15M-26AUG112200-00,UP,,UP at T-111,coverage gain: correct LOCKED where 2.6 had none,1.37
+holdout,B,KXBTC15M-26AUG112230-30,UP,UP at T-24,DOWN at T-206,deterioration: wrong LOCKED where 2.6 was not wrong,16.0
+holdout,B,KXBTC15M-26AUG120000-00,UP,UP at T-30,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,13.59
+holdout,B,KXBTC15M-26AUG120100-00,UP,,UP at T-300,coverage gain: correct LOCKED where 2.6 had none,7.7
+holdout,B,KXBTC15M-26AUG120200-00,UP,,DOWN at T-265,deterioration: wrong LOCKED where 2.6 was not wrong,1.88
+holdout,B,KXBTC15M-26AUG121215-15,UP,UP at T-27,DOWN at T-135,deterioration: wrong LOCKED where 2.6 was not wrong,27.46
+holdout,B,KXBTC15M-26AUG121515-15,UP,,UP at T-257,coverage gain: correct LOCKED where 2.6 had none,6.36
+holdout,B,KXBTC15M-26AUG121715-15,DOWN,,UP at T-116,deterioration: wrong LOCKED where 2.6 was not wrong,-0.72
+holdout,B,KXBTC15M-26AUG121945-45,DOWN,,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-3.5
+holdout,B,KXBTC15M-26AUG122245-45,UP,UP at T-31,DOWN at T-275,deterioration: wrong LOCKED where 2.6 was not wrong,15.62
+holdout,B,KXBTC15M-26AUG122330-30,DOWN,,UP at T-103,deterioration: wrong LOCKED where 2.6 was not wrong,-3.53
+holdout,B,KXBTC15M-26AUG130015-15,UP,UP at T-32,DOWN at T-218,deterioration: wrong LOCKED where 2.6 was not wrong,21.56
+holdout,B,KXBTC15M-26AUG130100-00,UP,,UP at T-289,coverage gain: correct LOCKED where 2.6 had none,2.89
+holdout,B,KXBTC15M-26AUG130745-45,DOWN,,DOWN at T-53,coverage gain: correct LOCKED where 2.6 had none,-2.99
+holdout,As,KXBTC15M-26JUL220215-15,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-1.28
+holdout,As,KXBTC15M-26JUL221945-45,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-3.03
+holdout,As,KXBTC15M-26JUL230545-45,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-2.92
+holdout,As,KXBTC15M-26JUL231445-45,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,5.9
+holdout,As,KXBTC15M-26JUL231945-45,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,6.26
+holdout,As,KXBTC15M-26JUL240200-00,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,1.53
+holdout,As,KXBTC15M-26JUL240300-00,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,5.04
+holdout,As,KXBTC15M-26JUL240945-45,DOWN,,DOWN at T-7,coverage gain: correct LOCKED where 2.6 had none,-2.59
+holdout,As,KXBTC15M-26JUL241745-45,UP,,UP at T-2,coverage gain: correct LOCKED where 2.6 had none,0.51
+holdout,As,KXBTC15M-26JUL241815-15,UP,,UP at T-29,coverage gain: correct LOCKED where 2.6 had none,10.64
+holdout,As,KXBTC15M-26JUL241915-15,DOWN,,DOWN at T-7,coverage gain: correct LOCKED where 2.6 had none,-1.79
+holdout,As,KXBTC15M-26JUL242215-15,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,3.83
+holdout,As,KXBTC15M-26JUL250000-00,DOWN,,DOWN at T-20,coverage gain: correct LOCKED where 2.6 had none,-4.88
+holdout,As,KXBTC15M-26JUL250130-30,DOWN,,DOWN at T-33,coverage gain: correct LOCKED where 2.6 had none,-7.08
+holdout,As,KXBTC15M-26JUL250330-30,UP,,UP at T-36,coverage gain: correct LOCKED where 2.6 had none,9.15
+holdout,As,KXBTC15M-26JUL250345-45,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,0.88
+holdout,As,KXBTC15M-26JUL250400-00,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,0.69
+holdout,As,KXBTC15M-26JUL250515-15,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,4.97
+holdout,As,KXBTC15M-26JUL250545-45,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-0.76
+holdout,As,KXBTC15M-26JUL250630-30,DOWN,,DOWN at T-32,coverage gain: correct LOCKED where 2.6 had none,-8.61
+holdout,As,KXBTC15M-26JUL250645-45,DOWN,,DOWN at T-22,coverage gain: correct LOCKED where 2.6 had none,-7.88
+holdout,As,KXBTC15M-26JUL250715-15,UP,,UP at T-20,coverage gain: correct LOCKED where 2.6 had none,5.96
+holdout,As,KXBTC15M-26JUL250800-00,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,3.59
+holdout,As,KXBTC15M-26JUL250815-15,DOWN,,DOWN at T-26,coverage gain: correct LOCKED where 2.6 had none,-8.98
+holdout,As,KXBTC15M-26JUL250830-30,DOWN,,DOWN at T-20,coverage gain: correct LOCKED where 2.6 had none,-4.42
+holdout,As,KXBTC15M-26JUL250915-15,UP,,UP at T-47,coverage gain: correct LOCKED where 2.6 had none,10.67
+holdout,As,KXBTC15M-26JUL250930-30,UP,,UP at T-20,coverage gain: correct LOCKED where 2.6 had none,2.97
+holdout,As,KXBTC15M-26JUL251015-15,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-2.59
+holdout,As,KXBTC15M-26JUL251030-30,DOWN,,DOWN at T-22,coverage gain: correct LOCKED where 2.6 had none,-6.83
+holdout,As,KXBTC15M-26JUL251315-15,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-2.6
+holdout,As,KXBTC15M-26JUL251630-30,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-2.02
+holdout,As,KXBTC15M-26JUL251800-00,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,0.99
+holdout,As,KXBTC15M-26JUL251845-45,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,5.83
+holdout,As,KXBTC15M-26JUL252115-15,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-1.84
+holdout,As,KXBTC15M-26JUL252230-30,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,2.26
+holdout,As,KXBTC15M-26JUL252345-45,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,2.61
+holdout,As,KXBTC15M-26JUL260345-45,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-8.24
+holdout,As,KXBTC15M-26JUL260400-00,UP,,UP at T-20,coverage gain: correct LOCKED where 2.6 had none,6.0
+holdout,As,KXBTC15M-26JUL260600-00,DOWN,,DOWN at T-28,coverage gain: correct LOCKED where 2.6 had none,-5.19
+holdout,As,KXBTC15M-26JUL260730-30,DOWN,,DOWN at T-37,coverage gain: correct LOCKED where 2.6 had none,-4.79
+holdout,As,KXBTC15M-26JUL260745-45,DOWN,,DOWN at T-29,coverage gain: correct LOCKED where 2.6 had none,-9.93
+holdout,As,KXBTC15M-26JUL261400-00,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,1.64
+holdout,As,KXBTC15M-26JUL261430-30,DOWN,,DOWN at T-28,coverage gain: correct LOCKED where 2.6 had none,-7.65
+holdout,As,KXBTC15M-26JUL262000-00,DOWN,,DOWN at T-18,coverage gain: correct LOCKED where 2.6 had none,-6.47
+holdout,As,KXBTC15M-26JUL262215-15,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,1.08
+holdout,As,KXBTC15M-26JUL270030-30,UP,,UP at T-23,coverage gain: correct LOCKED where 2.6 had none,12.12
+holdout,As,KXBTC15M-26JUL270315-15,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,2.19
+holdout,As,KXBTC15M-26JUL270500-00,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,3.05
+holdout,As,KXBTC15M-26JUL271345-45,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,4.23
+holdout,As,KXBTC15M-26JUL271530-30,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-0.76
+holdout,As,KXBTC15M-26JUL280015-15,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.28
+holdout,As,KXBTC15M-26JUL280330-30,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,6.71
+holdout,As,KXBTC15M-26JUL280830-30,UP,,UP at T-24,coverage gain: correct LOCKED where 2.6 had none,3.04
+holdout,As,KXBTC15M-26JUL281030-30,UP,,UP at T-3,coverage gain: correct LOCKED where 2.6 had none,1.14
+holdout,As,KXBTC15M-26JUL281430-30,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-3.38
+holdout,As,KXBTC15M-26JUL281930-30,UP,,UP at T-23,coverage gain: correct LOCKED where 2.6 had none,10.78
+holdout,As,KXBTC15M-26JUL290530-30,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,3.18
+holdout,As,KXBTC15M-26JUL290730-30,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-6.57
+holdout,As,KXBTC15M-26JUL291215-15,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,1.27
+holdout,As,KXBTC15M-26JUL291830-30,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,2.18
+holdout,As,KXBTC15M-26JUL291845-45,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-4.81
+holdout,As,KXBTC15M-26JUL292230-30,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,4.85
+holdout,As,KXBTC15M-26JUL300000-00,UP,,UP at T-2,coverage gain: correct LOCKED where 2.6 had none,0.61
+holdout,As,KXBTC15M-26JUL300030-30,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-4.31
+holdout,As,KXBTC15M-26JUL300130-30,UP,,UP at T-3,coverage gain: correct LOCKED where 2.6 had none,0.8
+holdout,As,KXBTC15M-26JUL300615-15,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,1.29
+holdout,As,KXBTC15M-26JUL300645-45,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-1.7
+holdout,As,KXBTC15M-26JUL301345-45,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,6.48
+holdout,As,KXBTC15M-26JUL302345-45,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,2.22
+holdout,As,KXBTC15M-26JUL310100-00,UP,,UP at T-20,coverage gain: correct LOCKED where 2.6 had none,6.31
+holdout,As,KXBTC15M-26JUL310415-15,UP,,UP at T-19,coverage gain: correct LOCKED where 2.6 had none,3.45
+holdout,As,KXBTC15M-26JUL310430-30,UP,,UP at T-21,coverage gain: correct LOCKED where 2.6 had none,7.87
+holdout,As,KXBTC15M-26JUL311630-30,UP,,UP at T-28,coverage gain: correct LOCKED where 2.6 had none,10.93
+holdout,As,KXBTC15M-26JUL311745-45,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,8.83
+holdout,As,KXBTC15M-26JUL311830-30,UP,,UP at T-19,coverage gain: correct LOCKED where 2.6 had none,4.04
+holdout,As,KXBTC15M-26JUL312300-00,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-3.97
+holdout,As,KXBTC15M-26AUG010000-00,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,4.98
+holdout,As,KXBTC15M-26AUG010215-15,DOWN,,DOWN at T-21,coverage gain: correct LOCKED where 2.6 had none,-7.3
+holdout,As,KXBTC15M-26AUG010245-45,UP,,UP at T-1,coverage gain: correct LOCKED where 2.6 had none,0.16
+holdout,As,KXBTC15M-26AUG010300-00,UP,,UP at T-21,coverage gain: correct LOCKED where 2.6 had none,4.34
+holdout,As,KXBTC15M-26AUG010400-00,UP,,UP at T-31,coverage gain: correct LOCKED where 2.6 had none,5.42
+holdout,As,KXBTC15M-26AUG010430-30,DOWN,,DOWN at T-34,coverage gain: correct LOCKED where 2.6 had none,-7.25
+holdout,As,KXBTC15M-26AUG010445-45,UP,,UP at T-29,coverage gain: correct LOCKED where 2.6 had none,5.99
+holdout,As,KXBTC15M-26AUG010715-15,DOWN,,DOWN at T-21,coverage gain: correct LOCKED where 2.6 had none,-4.08
+holdout,As,KXBTC15M-26AUG010900-00,UP,,UP at T-27,coverage gain: correct LOCKED where 2.6 had none,5.27
+holdout,As,KXBTC15M-26AUG010915-15,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,2.3
+holdout,As,KXBTC15M-26AUG011115-15,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-1.8
+holdout,As,KXBTC15M-26AUG011745-45,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,3.29
+holdout,As,KXBTC15M-26AUG011830-30,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-4.55
+holdout,As,KXBTC15M-26AUG011845-45,DOWN,,DOWN at T-25,coverage gain: correct LOCKED where 2.6 had none,-7.43
+holdout,As,KXBTC15M-26AUG012130-30,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,0.97
+holdout,As,KXBTC15M-26AUG020030-30,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-5.29
+holdout,As,KXBTC15M-26AUG020130-30,DOWN,,DOWN at T-18,coverage gain: correct LOCKED where 2.6 had none,-4.06
+holdout,As,KXBTC15M-26AUG020215-15,DOWN,,DOWN at T-23,coverage gain: correct LOCKED where 2.6 had none,-4.56
+holdout,As,KXBTC15M-26AUG020245-45,DOWN,,DOWN at T-20,coverage gain: correct LOCKED where 2.6 had none,-3.89
+holdout,As,KXBTC15M-26AUG020300-00,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-2.22
+holdout,As,KXBTC15M-26AUG020315-15,DOWN,,DOWN at T-32,coverage gain: correct LOCKED where 2.6 had none,-4.48
+holdout,As,KXBTC15M-26AUG020330-30,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,4.33
+holdout,As,KXBTC15M-26AUG020415-15,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,5.68
+holdout,As,KXBTC15M-26AUG020600-00,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-1.01
+holdout,As,KXBTC15M-26AUG020915-15,DOWN,,DOWN at T-25,coverage gain: correct LOCKED where 2.6 had none,-7.82
+holdout,As,KXBTC15M-26AUG020945-45,DOWN,,DOWN at T-22,coverage gain: correct LOCKED where 2.6 had none,-6.23
+holdout,As,KXBTC15M-26AUG021130-30,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.42
+holdout,As,KXBTC15M-26AUG021215-15,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,1.62
+holdout,As,KXBTC15M-26AUG021230-30,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.62
+holdout,As,KXBTC15M-26AUG021400-00,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,2.77
+holdout,As,KXBTC15M-26AUG021415-15,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,1.68
+holdout,As,KXBTC15M-26AUG021615-15,DOWN,,DOWN at T-4,coverage gain: correct LOCKED where 2.6 had none,-0.91
+holdout,As,KXBTC15M-26AUG030045-45,DOWN,,DOWN at T-20,coverage gain: correct LOCKED where 2.6 had none,-6.12
+holdout,As,KXBTC15M-26AUG030815-15,DOWN,,DOWN at T-22,coverage gain: correct LOCKED where 2.6 had none,-8.32
+holdout,As,KXBTC15M-26AUG031045-45,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,10.95
+holdout,As,KXBTC15M-26AUG040015-15,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.64
+holdout,As,KXBTC15M-26AUG040100-00,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-8.75
+holdout,As,KXBTC15M-26AUG040500-00,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,3.0
+holdout,As,KXBTC15M-26AUG040515-15,DOWN,,DOWN at T-19,coverage gain: correct LOCKED where 2.6 had none,-7.68
+holdout,As,KXBTC15M-26AUG040530-30,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-3.18
+holdout,As,KXBTC15M-26AUG040545-45,DOWN,,DOWN at T-22,coverage gain: correct LOCKED where 2.6 had none,-8.27
+holdout,As,KXBTC15M-26AUG042245-45,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-5.46
+holdout,As,KXBTC15M-26AUG050100-00,DOWN,,DOWN at T-24,coverage gain: correct LOCKED where 2.6 had none,-8.29
+holdout,As,KXBTC15M-26AUG051330-30,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,0.82
+holdout,As,KXBTC15M-26AUG051500-00,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.67
+holdout,As,KXBTC15M-26AUG051645-45,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,2.96
+holdout,As,KXBTC15M-26AUG060145-45,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,1.68
+holdout,As,KXBTC15M-26AUG060200-00,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-1.86
+holdout,As,KXBTC15M-26AUG060245-45,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,6.77
+holdout,As,KXBTC15M-26AUG061015-15,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,4.39
+holdout,As,KXBTC15M-26AUG061500-00,DOWN,,DOWN at T-22,coverage gain: correct LOCKED where 2.6 had none,-7.59
+holdout,As,KXBTC15M-26AUG061815-15,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-5.62
+holdout,As,KXBTC15M-26AUG062030-30,DOWN,,DOWN at T-18,coverage gain: correct LOCKED where 2.6 had none,-6.25
+holdout,As,KXBTC15M-26AUG062300-00,DOWN,,DOWN at T-24,coverage gain: correct LOCKED where 2.6 had none,-11.21
+holdout,As,KXBTC15M-26AUG070030-30,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-3.57
+holdout,As,KXBTC15M-26AUG070615-15,UP,,UP at T-23,coverage gain: correct LOCKED where 2.6 had none,8.59
+holdout,As,KXBTC15M-26AUG071145-45,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,5.65
+holdout,As,KXBTC15M-26AUG071630-30,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-2.45
+holdout,As,KXBTC15M-26AUG071730-30,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,1.27
+holdout,As,KXBTC15M-26AUG071830-30,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-2.71
+holdout,As,KXBTC15M-26AUG071915-15,UP,,UP at T-56,coverage gain: correct LOCKED where 2.6 had none,6.9
+holdout,As,KXBTC15M-26AUG071930-30,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-2.73
+holdout,As,KXBTC15M-26AUG072300-00,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,3.36
+holdout,As,KXBTC15M-26AUG072345-45,DOWN,,DOWN at T-43,coverage gain: correct LOCKED where 2.6 had none,-9.85
+holdout,As,KXBTC15M-26AUG080145-45,DOWN,,DOWN at T-31,coverage gain: correct LOCKED where 2.6 had none,-5.16
+holdout,As,KXBTC15M-26AUG080230-30,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-5.49
+holdout,As,KXBTC15M-26AUG080330-30,UP,,UP at T-20,coverage gain: correct LOCKED where 2.6 had none,3.62
+holdout,As,KXBTC15M-26AUG080400-00,UP,,UP at T-38,coverage gain: correct LOCKED where 2.6 had none,14.77
+holdout,As,KXBTC15M-26AUG080415-15,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,0.87
+holdout,As,KXBTC15M-26AUG080545-45,DOWN,,DOWN at T-18,coverage gain: correct LOCKED where 2.6 had none,-4.78
+holdout,As,KXBTC15M-26AUG080645-45,DOWN,,DOWN at T-25,coverage gain: correct LOCKED where 2.6 had none,-5.02
+holdout,As,KXBTC15M-26AUG080700-00,DOWN,,DOWN at T-31,coverage gain: correct LOCKED where 2.6 had none,-4.47
+holdout,As,KXBTC15M-26AUG080715-15,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,3.86
+holdout,As,KXBTC15M-26AUG080800-00,DOWN,,DOWN at T-24,coverage gain: correct LOCKED where 2.6 had none,-4.83
+holdout,As,KXBTC15M-26AUG080815-15,UP,DOWN at T-87,UP at T-30,improvement: avoided a wrong 2.6 LOCKED,18.18
+holdout,As,KXBTC15M-26AUG080900-00,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-2.32
+holdout,As,KXBTC15M-26AUG080915-15,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,2.15
+holdout,As,KXBTC15M-26AUG081000-00,UP,,UP at T-26,coverage gain: correct LOCKED where 2.6 had none,5.75
+holdout,As,KXBTC15M-26AUG081215-15,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,1.65
+holdout,As,KXBTC15M-26AUG081530-30,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-0.92
+holdout,As,KXBTC15M-26AUG081615-15,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,3.45
+holdout,As,KXBTC15M-26AUG081700-00,UP,,UP at T-25,coverage gain: correct LOCKED where 2.6 had none,4.91
+holdout,As,KXBTC15M-26AUG081830-30,DOWN,,DOWN at T-35,coverage gain: correct LOCKED where 2.6 had none,-5.55
+holdout,As,KXBTC15M-26AUG081930-30,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-1.31
+holdout,As,KXBTC15M-26AUG082000-00,DOWN,,DOWN at T-51,coverage gain: correct LOCKED where 2.6 had none,-9.58
+holdout,As,KXBTC15M-26AUG082015-15,UP,,UP at T-25,coverage gain: correct LOCKED where 2.6 had none,4.82
+holdout,As,KXBTC15M-26AUG082030-30,UP,,UP at T-33,coverage gain: correct LOCKED where 2.6 had none,4.47
+holdout,As,KXBTC15M-26AUG082045-45,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,3.49
+holdout,As,KXBTC15M-26AUG082100-00,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,4.4
+holdout,As,KXBTC15M-26AUG082115-15,UP,,UP at T-28,coverage gain: correct LOCKED where 2.6 had none,7.15
+holdout,As,KXBTC15M-26AUG090030-30,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,4.21
+holdout,As,KXBTC15M-26AUG090115-15,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-1.2
+holdout,As,KXBTC15M-26AUG090130-30,DOWN,,DOWN at T-23,coverage gain: correct LOCKED where 2.6 had none,-2.97
+holdout,As,KXBTC15M-26AUG090145-45,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,0.61
+holdout,As,KXBTC15M-26AUG090315-15,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,0.46
+holdout,As,KXBTC15M-26AUG090345-45,DOWN,,DOWN at T-22,coverage gain: correct LOCKED where 2.6 had none,-5.04
+holdout,As,KXBTC15M-26AUG090515-15,UP,,UP at T-33,coverage gain: correct LOCKED where 2.6 had none,5.49
+holdout,As,KXBTC15M-26AUG090545-45,UP,,UP at T-20,coverage gain: correct LOCKED where 2.6 had none,4.12
+holdout,As,KXBTC15M-26AUG090730-30,DOWN,,DOWN at T-20,coverage gain: correct LOCKED where 2.6 had none,-1.32
+holdout,As,KXBTC15M-26AUG090830-30,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,0.26
+holdout,As,KXBTC15M-26AUG090845-45,DOWN,,DOWN at T-54,coverage gain: correct LOCKED where 2.6 had none,-3.46
+holdout,As,KXBTC15M-26AUG091000-00,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-1.37
+holdout,As,KXBTC15M-26AUG091145-45,DOWN,,DOWN at T-22,coverage gain: correct LOCKED where 2.6 had none,-5.24
+holdout,As,KXBTC15M-26AUG091200-00,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,3.91
+holdout,As,KXBTC15M-26AUG091330-30,UP,,UP at T-54,coverage gain: correct LOCKED where 2.6 had none,8.22
+holdout,As,KXBTC15M-26AUG091415-15,UP,,UP at T-31,coverage gain: correct LOCKED where 2.6 had none,4.22
+holdout,As,KXBTC15M-26AUG091430-30,UP,,UP at T-44,coverage gain: correct LOCKED where 2.6 had none,11.0
+holdout,As,KXBTC15M-26AUG091445-45,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,0.7
+holdout,As,KXBTC15M-26AUG091700-00,DOWN,,DOWN at T-18,coverage gain: correct LOCKED where 2.6 had none,-3.6
+holdout,As,KXBTC15M-26AUG091715-15,DOWN,,DOWN at T-34,coverage gain: correct LOCKED where 2.6 had none,-5.19
+holdout,As,KXBTC15M-26AUG091730-30,UP,,UP at T-21,coverage gain: correct LOCKED where 2.6 had none,3.72
+holdout,As,KXBTC15M-26AUG092000-00,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-0.99
+holdout,As,KXBTC15M-26AUG100745-45,DOWN,,DOWN at T-33,coverage gain: correct LOCKED where 2.6 had none,-15.42
+holdout,As,KXBTC15M-26AUG100815-15,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,3.72
+holdout,As,KXBTC15M-26AUG100915-15,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,2.31
+holdout,As,KXBTC15M-26AUG101600-00,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,0.74
+holdout,As,KXBTC15M-26AUG101730-30,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,3.11
+holdout,As,KXBTC15M-26AUG101930-30,UP,,UP at T-29,coverage gain: correct LOCKED where 2.6 had none,11.28
+holdout,As,KXBTC15M-26AUG102000-00,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,2.82
+holdout,As,KXBTC15M-26AUG102015-15,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-2.87
+holdout,As,KXBTC15M-26AUG102030-30,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-0.82
+holdout,As,KXBTC15M-26AUG102045-45,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-3.01
+holdout,As,KXBTC15M-26AUG102130-30,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,6.72
+holdout,As,KXBTC15M-26AUG102230-30,UP,,UP at T-26,coverage gain: correct LOCKED where 2.6 had none,6.18
+holdout,As,KXBTC15M-26AUG102300-00,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,2.17
+holdout,As,KXBTC15M-26AUG102345-45,DOWN,,DOWN at T-23,coverage gain: correct LOCKED where 2.6 had none,-8.41
+holdout,As,KXBTC15M-26AUG110000-00,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,4.94
+holdout,As,KXBTC15M-26AUG110115-15,UP,,UP at T-30,coverage gain: correct LOCKED where 2.6 had none,10.27
+holdout,As,KXBTC15M-26AUG110245-45,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-3.48
+holdout,As,KXBTC15M-26AUG110315-15,UP,,UP at T-22,coverage gain: correct LOCKED where 2.6 had none,4.81
+holdout,As,KXBTC15M-26AUG110515-15,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.46
+holdout,As,KXBTC15M-26AUG110745-45,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,3.75
+holdout,As,KXBTC15M-26AUG110845-45,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,5.86
+holdout,As,KXBTC15M-26AUG110900-00,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,1.2
+holdout,As,KXBTC15M-26AUG110945-45,DOWN,,DOWN at T-18,coverage gain: correct LOCKED where 2.6 had none,-9.56
+holdout,As,KXBTC15M-26AUG111230-30,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,3.38
+holdout,As,KXBTC15M-26AUG111300-00,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.6
+holdout,As,KXBTC15M-26AUG111315-15,UP,,UP at T-28,coverage gain: correct LOCKED where 2.6 had none,7.75
+holdout,As,KXBTC15M-26AUG111345-45,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-2.17
+holdout,As,KXBTC15M-26AUG111645-45,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,5.26
+holdout,As,KXBTC15M-26AUG111715-15,DOWN,,DOWN at T-4,coverage gain: correct LOCKED where 2.6 had none,-0.64
+holdout,As,KXBTC15M-26AUG111745-45,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-4.14
+holdout,As,KXBTC15M-26AUG112015-15,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,1.24
+holdout,As,KXBTC15M-26AUG112200-00,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,1.37
+holdout,As,KXBTC15M-26AUG120100-00,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,7.7
+holdout,As,KXBTC15M-26AUG120200-00,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,1.88
+holdout,As,KXBTC15M-26AUG120245-45,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,4.75
+holdout,As,KXBTC15M-26AUG120700-00,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-3.3
+holdout,As,KXBTC15M-26AUG120715-15,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-1.24
+holdout,As,KXBTC15M-26AUG120745-45,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-4.32
+holdout,As,KXBTC15M-26AUG121400-00,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-1.95
+holdout,As,KXBTC15M-26AUG121415-15,UP,,UP at T-1,coverage gain: correct LOCKED where 2.6 had none,0.27
+holdout,As,KXBTC15M-26AUG121445-45,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,5.73
+holdout,As,KXBTC15M-26AUG121515-15,UP,,UP at T-25,coverage gain: correct LOCKED where 2.6 had none,6.36
+holdout,As,KXBTC15M-26AUG121715-15,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.72
+holdout,As,KXBTC15M-26AUG121830-30,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-2.38
+holdout,As,KXBTC15M-26AUG121945-45,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-3.5
+holdout,As,KXBTC15M-26AUG122215-15,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,4.68
+holdout,As,KXBTC15M-26AUG122330-30,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-3.53
+holdout,As,KXBTC15M-26AUG122345-45,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,6.56
+holdout,As,KXBTC15M-26AUG130100-00,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,2.89
+holdout,As,KXBTC15M-26AUG130630-30,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,3.36
+holdout,As,KXBTC15M-26AUG130645-45,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,5.72
+holdout,As,KXBTC15M-26AUG130745-45,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-2.99
+holdout,Cs,KXBTC15M-26JUL220215-15,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-1.28
+holdout,Cs,KXBTC15M-26JUL220915-15,DOWN,,DOWN at T-1,coverage gain: correct LOCKED where 2.6 had none,-0.13
+holdout,Cs,KXBTC15M-26JUL221945-45,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-3.03
+holdout,Cs,KXBTC15M-26JUL230545-45,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-2.92
+holdout,Cs,KXBTC15M-26JUL231445-45,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,5.9
+holdout,Cs,KXBTC15M-26JUL231945-45,UP,,UP at T-19,coverage gain: correct LOCKED where 2.6 had none,6.26
+holdout,Cs,KXBTC15M-26JUL240200-00,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,1.53
+holdout,Cs,KXBTC15M-26JUL240300-00,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,5.04
+holdout,Cs,KXBTC15M-26JUL240945-45,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-2.59
+holdout,Cs,KXBTC15M-26JUL241745-45,UP,,UP at T-2,coverage gain: correct LOCKED where 2.6 had none,0.51
+holdout,Cs,KXBTC15M-26JUL241815-15,UP,,UP at T-33,coverage gain: correct LOCKED where 2.6 had none,10.64
+holdout,Cs,KXBTC15M-26JUL241915-15,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-1.79
+holdout,Cs,KXBTC15M-26JUL242215-15,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,3.83
+holdout,Cs,KXBTC15M-26JUL250000-00,DOWN,,DOWN at T-23,coverage gain: correct LOCKED where 2.6 had none,-4.88
+holdout,Cs,KXBTC15M-26JUL250130-30,DOWN,,DOWN at T-38,coverage gain: correct LOCKED where 2.6 had none,-7.08
+holdout,Cs,KXBTC15M-26JUL250330-30,UP,,UP at T-42,coverage gain: correct LOCKED where 2.6 had none,9.15
+holdout,Cs,KXBTC15M-26JUL250345-45,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,0.88
+holdout,Cs,KXBTC15M-26JUL250400-00,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,0.69
+holdout,Cs,KXBTC15M-26JUL250515-15,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,4.97
+holdout,Cs,KXBTC15M-26JUL250545-45,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-0.76
+holdout,Cs,KXBTC15M-26JUL250630-30,DOWN,,DOWN at T-35,coverage gain: correct LOCKED where 2.6 had none,-8.61
+holdout,Cs,KXBTC15M-26JUL250645-45,DOWN,,DOWN at T-26,coverage gain: correct LOCKED where 2.6 had none,-7.88
+holdout,Cs,KXBTC15M-26JUL250715-15,UP,,UP at T-24,coverage gain: correct LOCKED where 2.6 had none,5.96
+holdout,Cs,KXBTC15M-26JUL250800-00,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,3.59
+holdout,Cs,KXBTC15M-26JUL250815-15,DOWN,,DOWN at T-32,coverage gain: correct LOCKED where 2.6 had none,-8.98
+holdout,Cs,KXBTC15M-26JUL250830-30,DOWN,,DOWN at T-23,coverage gain: correct LOCKED where 2.6 had none,-4.42
+holdout,Cs,KXBTC15M-26JUL250915-15,UP,,UP at T-52,coverage gain: correct LOCKED where 2.6 had none,10.67
+holdout,Cs,KXBTC15M-26JUL250930-30,UP,,UP at T-24,coverage gain: correct LOCKED where 2.6 had none,2.97
+holdout,Cs,KXBTC15M-26JUL251015-15,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-2.59
+holdout,Cs,KXBTC15M-26JUL251030-30,DOWN,,DOWN at T-26,coverage gain: correct LOCKED where 2.6 had none,-6.83
+holdout,Cs,KXBTC15M-26JUL251315-15,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-2.6
+holdout,Cs,KXBTC15M-26JUL251630-30,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-2.02
+holdout,Cs,KXBTC15M-26JUL251800-00,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,0.99
+holdout,Cs,KXBTC15M-26JUL251845-45,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,5.83
+holdout,Cs,KXBTC15M-26JUL252115-15,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-1.84
+holdout,Cs,KXBTC15M-26JUL252230-30,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,2.26
+holdout,Cs,KXBTC15M-26JUL252345-45,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,2.61
+holdout,Cs,KXBTC15M-26JUL260345-45,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-8.24
+holdout,Cs,KXBTC15M-26JUL260400-00,UP,,UP at T-23,coverage gain: correct LOCKED where 2.6 had none,6.0
+holdout,Cs,KXBTC15M-26JUL260600-00,DOWN,,DOWN at T-32,coverage gain: correct LOCKED where 2.6 had none,-5.19
+holdout,Cs,KXBTC15M-26JUL260730-30,DOWN,,DOWN at T-40,coverage gain: correct LOCKED where 2.6 had none,-4.79
+holdout,Cs,KXBTC15M-26JUL260745-45,DOWN,,DOWN at T-33,coverage gain: correct LOCKED where 2.6 had none,-9.93
+holdout,Cs,KXBTC15M-26JUL261400-00,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,1.64
+holdout,Cs,KXBTC15M-26JUL261430-30,DOWN,,DOWN at T-32,coverage gain: correct LOCKED where 2.6 had none,-7.65
+holdout,Cs,KXBTC15M-26JUL262000-00,DOWN,,DOWN at T-18,coverage gain: correct LOCKED where 2.6 had none,-6.47
+holdout,Cs,KXBTC15M-26JUL262215-15,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,1.08
+holdout,Cs,KXBTC15M-26JUL270030-30,UP,,UP at T-23,coverage gain: correct LOCKED where 2.6 had none,12.12
+holdout,Cs,KXBTC15M-26JUL270315-15,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,2.19
+holdout,Cs,KXBTC15M-26JUL270500-00,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,3.05
+holdout,Cs,KXBTC15M-26JUL271345-45,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,4.23
+holdout,Cs,KXBTC15M-26JUL271530-30,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-0.76
+holdout,Cs,KXBTC15M-26JUL280015-15,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.28
+holdout,Cs,KXBTC15M-26JUL280330-30,UP,,UP at T-19,coverage gain: correct LOCKED where 2.6 had none,6.71
+holdout,Cs,KXBTC15M-26JUL280830-30,UP,,UP at T-24,coverage gain: correct LOCKED where 2.6 had none,3.04
+holdout,Cs,KXBTC15M-26JUL281030-30,UP,,UP at T-2,coverage gain: correct LOCKED where 2.6 had none,1.14
+holdout,Cs,KXBTC15M-26JUL281430-30,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-3.38
+holdout,Cs,KXBTC15M-26JUL281930-30,UP,,UP at T-23,coverage gain: correct LOCKED where 2.6 had none,10.78
+holdout,Cs,KXBTC15M-26JUL290530-30,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,3.18
+holdout,Cs,KXBTC15M-26JUL290730-30,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-6.57
+holdout,Cs,KXBTC15M-26JUL291215-15,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,1.27
+holdout,Cs,KXBTC15M-26JUL291830-30,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,2.18
+holdout,Cs,KXBTC15M-26JUL291845-45,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-4.81
+holdout,Cs,KXBTC15M-26JUL292230-30,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,4.85
+holdout,Cs,KXBTC15M-26JUL300000-00,UP,,UP at T-3,coverage gain: correct LOCKED where 2.6 had none,0.61
+holdout,Cs,KXBTC15M-26JUL300030-30,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-4.31
+holdout,Cs,KXBTC15M-26JUL300130-30,UP,,UP at T-3,coverage gain: correct LOCKED where 2.6 had none,0.8
+holdout,Cs,KXBTC15M-26JUL300615-15,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,1.29
+holdout,Cs,KXBTC15M-26JUL300645-45,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-1.7
+holdout,Cs,KXBTC15M-26JUL301345-45,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,6.48
+holdout,Cs,KXBTC15M-26JUL302345-45,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,2.22
+holdout,Cs,KXBTC15M-26JUL310100-00,UP,,UP at T-23,coverage gain: correct LOCKED where 2.6 had none,6.31
+holdout,Cs,KXBTC15M-26JUL310415-15,UP,,UP at T-19,coverage gain: correct LOCKED where 2.6 had none,3.45
+holdout,Cs,KXBTC15M-26JUL310430-30,UP,,UP at T-28,coverage gain: correct LOCKED where 2.6 had none,7.87
+holdout,Cs,KXBTC15M-26JUL311630-30,UP,,UP at T-31,coverage gain: correct LOCKED where 2.6 had none,10.93
+holdout,Cs,KXBTC15M-26JUL311745-45,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,8.83
+holdout,Cs,KXBTC15M-26JUL311830-30,UP,,UP at T-22,coverage gain: correct LOCKED where 2.6 had none,4.04
+holdout,Cs,KXBTC15M-26JUL312300-00,DOWN,,DOWN at T-19,coverage gain: correct LOCKED where 2.6 had none,-3.97
+holdout,Cs,KXBTC15M-26AUG010000-00,UP,,UP at T-20,coverage gain: correct LOCKED where 2.6 had none,4.98
+holdout,Cs,KXBTC15M-26AUG010215-15,DOWN,,DOWN at T-24,coverage gain: correct LOCKED where 2.6 had none,-7.3
+holdout,Cs,KXBTC15M-26AUG010245-45,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,0.16
+holdout,Cs,KXBTC15M-26AUG010300-00,UP,,UP at T-25,coverage gain: correct LOCKED where 2.6 had none,4.34
+holdout,Cs,KXBTC15M-26AUG010400-00,UP,,UP at T-36,coverage gain: correct LOCKED where 2.6 had none,5.42
+holdout,Cs,KXBTC15M-26AUG010430-30,DOWN,,DOWN at T-39,coverage gain: correct LOCKED where 2.6 had none,-7.25
+holdout,Cs,KXBTC15M-26AUG010445-45,UP,,UP at T-34,coverage gain: correct LOCKED where 2.6 had none,5.99
+holdout,Cs,KXBTC15M-26AUG010715-15,DOWN,,DOWN at T-25,coverage gain: correct LOCKED where 2.6 had none,-4.08
+holdout,Cs,KXBTC15M-26AUG010900-00,UP,,UP at T-37,coverage gain: correct LOCKED where 2.6 had none,5.27
+holdout,Cs,KXBTC15M-26AUG010915-15,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,2.3
+holdout,Cs,KXBTC15M-26AUG011115-15,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-1.8
+holdout,Cs,KXBTC15M-26AUG011745-45,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,3.29
+holdout,Cs,KXBTC15M-26AUG011830-30,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-4.55
+holdout,Cs,KXBTC15M-26AUG011845-45,DOWN,,DOWN at T-29,coverage gain: correct LOCKED where 2.6 had none,-7.43
+holdout,Cs,KXBTC15M-26AUG012130-30,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,0.97
+holdout,Cs,KXBTC15M-26AUG020030-30,DOWN,,DOWN at T-19,coverage gain: correct LOCKED where 2.6 had none,-5.29
+holdout,Cs,KXBTC15M-26AUG020130-30,DOWN,,DOWN at T-21,coverage gain: correct LOCKED where 2.6 had none,-4.06
+holdout,Cs,KXBTC15M-26AUG020215-15,DOWN,,DOWN at T-27,coverage gain: correct LOCKED where 2.6 had none,-4.56
+holdout,Cs,KXBTC15M-26AUG020245-45,DOWN,,DOWN at T-23,coverage gain: correct LOCKED where 2.6 had none,-3.89
+holdout,Cs,KXBTC15M-26AUG020300-00,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-2.22
+holdout,Cs,KXBTC15M-26AUG020315-15,DOWN,,DOWN at T-37,coverage gain: correct LOCKED where 2.6 had none,-4.48
+holdout,Cs,KXBTC15M-26AUG020330-30,UP,,UP at T-22,coverage gain: correct LOCKED where 2.6 had none,4.33
+holdout,Cs,KXBTC15M-26AUG020415-15,UP,,UP at T-23,coverage gain: correct LOCKED where 2.6 had none,5.68
+holdout,Cs,KXBTC15M-26AUG020600-00,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-1.01
+holdout,Cs,KXBTC15M-26AUG020915-15,DOWN,,DOWN at T-29,coverage gain: correct LOCKED where 2.6 had none,-7.82
+holdout,Cs,KXBTC15M-26AUG020945-45,DOWN,,DOWN at T-26,coverage gain: correct LOCKED where 2.6 had none,-6.23
+holdout,Cs,KXBTC15M-26AUG021130-30,DOWN,,DOWN at T-4,coverage gain: correct LOCKED where 2.6 had none,-0.42
+holdout,Cs,KXBTC15M-26AUG021215-15,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,1.62
+holdout,Cs,KXBTC15M-26AUG021230-30,DOWN,,DOWN at T-4,coverage gain: correct LOCKED where 2.6 had none,-0.62
+holdout,Cs,KXBTC15M-26AUG021400-00,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,2.77
+holdout,Cs,KXBTC15M-26AUG021415-15,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,1.68
+holdout,Cs,KXBTC15M-26AUG021615-15,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-0.91
+holdout,Cs,KXBTC15M-26AUG030045-45,DOWN,,DOWN at T-23,coverage gain: correct LOCKED where 2.6 had none,-6.12
+holdout,Cs,KXBTC15M-26AUG030815-15,DOWN,,DOWN at T-22,coverage gain: correct LOCKED where 2.6 had none,-8.32
+holdout,Cs,KXBTC15M-26AUG031045-45,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,10.95
+holdout,Cs,KXBTC15M-26AUG040015-15,DOWN,,DOWN at T-4,coverage gain: correct LOCKED where 2.6 had none,-0.64
+holdout,Cs,KXBTC15M-26AUG040100-00,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-8.75
+holdout,Cs,KXBTC15M-26AUG040500-00,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,3.0
+holdout,Cs,KXBTC15M-26AUG040515-15,DOWN,,DOWN at T-21,coverage gain: correct LOCKED where 2.6 had none,-7.68
+holdout,Cs,KXBTC15M-26AUG040530-30,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-3.18
+holdout,Cs,KXBTC15M-26AUG040545-45,DOWN,,DOWN at T-25,coverage gain: correct LOCKED where 2.6 had none,-8.27
+holdout,Cs,KXBTC15M-26AUG042245-45,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-5.46
+holdout,Cs,KXBTC15M-26AUG050100-00,DOWN,,DOWN at T-27,coverage gain: correct LOCKED where 2.6 had none,-8.29
+holdout,Cs,KXBTC15M-26AUG051330-30,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,0.82
+holdout,Cs,KXBTC15M-26AUG051500-00,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.67
+holdout,Cs,KXBTC15M-26AUG051645-45,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,2.96
+holdout,Cs,KXBTC15M-26AUG060145-45,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,1.68
+holdout,Cs,KXBTC15M-26AUG060200-00,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-1.86
+holdout,Cs,KXBTC15M-26AUG060245-45,UP,,UP at T-21,coverage gain: correct LOCKED where 2.6 had none,6.77
+holdout,Cs,KXBTC15M-26AUG061015-15,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,4.39
+holdout,Cs,KXBTC15M-26AUG061500-00,DOWN,,DOWN at T-26,coverage gain: correct LOCKED where 2.6 had none,-7.59
+holdout,Cs,KXBTC15M-26AUG061815-15,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-5.62
+holdout,Cs,KXBTC15M-26AUG062030-30,DOWN,,DOWN at T-20,coverage gain: correct LOCKED where 2.6 had none,-6.25
+holdout,Cs,KXBTC15M-26AUG062300-00,DOWN,,DOWN at T-28,coverage gain: correct LOCKED where 2.6 had none,-11.21
+holdout,Cs,KXBTC15M-26AUG070030-30,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-3.57
+holdout,Cs,KXBTC15M-26AUG070615-15,UP,,UP at T-24,coverage gain: correct LOCKED where 2.6 had none,8.59
+holdout,Cs,KXBTC15M-26AUG071145-45,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,5.65
+holdout,Cs,KXBTC15M-26AUG071630-30,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-2.45
+holdout,Cs,KXBTC15M-26AUG071730-30,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,1.27
+holdout,Cs,KXBTC15M-26AUG071830-30,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-2.71
+holdout,Cs,KXBTC15M-26AUG071915-15,UP,,UP at T-65,coverage gain: correct LOCKED where 2.6 had none,6.9
+holdout,Cs,KXBTC15M-26AUG071930-30,DOWN,,DOWN at T-50,coverage gain: correct LOCKED where 2.6 had none,-2.73
+holdout,Cs,KXBTC15M-26AUG072300-00,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,3.36
+holdout,Cs,KXBTC15M-26AUG072345-45,DOWN,,DOWN at T-50,coverage gain: correct LOCKED where 2.6 had none,-9.85
+holdout,Cs,KXBTC15M-26AUG080145-45,DOWN,,DOWN at T-36,coverage gain: correct LOCKED where 2.6 had none,-5.16
+holdout,Cs,KXBTC15M-26AUG080230-30,DOWN,,DOWN at T-20,coverage gain: correct LOCKED where 2.6 had none,-5.49
+holdout,Cs,KXBTC15M-26AUG080330-30,UP,,UP at T-24,coverage gain: correct LOCKED where 2.6 had none,3.62
+holdout,Cs,KXBTC15M-26AUG080400-00,UP,,UP at T-42,coverage gain: correct LOCKED where 2.6 had none,14.77
+holdout,Cs,KXBTC15M-26AUG080415-15,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,0.87
+holdout,Cs,KXBTC15M-26AUG080545-45,DOWN,,DOWN at T-25,coverage gain: correct LOCKED where 2.6 had none,-4.78
+holdout,Cs,KXBTC15M-26AUG080645-45,DOWN,,DOWN at T-29,coverage gain: correct LOCKED where 2.6 had none,-5.02
+holdout,Cs,KXBTC15M-26AUG080700-00,DOWN,,DOWN at T-36,coverage gain: correct LOCKED where 2.6 had none,-4.47
+holdout,Cs,KXBTC15M-26AUG080715-15,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,3.86
+holdout,Cs,KXBTC15M-26AUG080800-00,DOWN,,DOWN at T-28,coverage gain: correct LOCKED where 2.6 had none,-4.83
+holdout,Cs,KXBTC15M-26AUG080900-00,DOWN,,DOWN at T-18,coverage gain: correct LOCKED where 2.6 had none,-2.32
+holdout,Cs,KXBTC15M-26AUG080915-15,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,2.15
+holdout,Cs,KXBTC15M-26AUG081000-00,UP,,UP at T-30,coverage gain: correct LOCKED where 2.6 had none,5.75
+holdout,Cs,KXBTC15M-26AUG081215-15,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,1.65
+holdout,Cs,KXBTC15M-26AUG081530-30,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-0.92
+holdout,Cs,KXBTC15M-26AUG081615-15,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,3.45
+holdout,Cs,KXBTC15M-26AUG081700-00,UP,,UP at T-29,coverage gain: correct LOCKED where 2.6 had none,4.91
+holdout,Cs,KXBTC15M-26AUG081830-30,DOWN,,DOWN at T-40,coverage gain: correct LOCKED where 2.6 had none,-5.55
+holdout,Cs,KXBTC15M-26AUG081930-30,DOWN,,DOWN at T-7,coverage gain: correct LOCKED where 2.6 had none,-1.31
+holdout,Cs,KXBTC15M-26AUG082000-00,DOWN,,DOWN at T-57,coverage gain: correct LOCKED where 2.6 had none,-9.58
+holdout,Cs,KXBTC15M-26AUG082015-15,UP,,UP at T-38,coverage gain: correct LOCKED where 2.6 had none,4.82
+holdout,Cs,KXBTC15M-26AUG082030-30,UP,,UP at T-38,coverage gain: correct LOCKED where 2.6 had none,4.47
+holdout,Cs,KXBTC15M-26AUG082045-45,UP,,UP at T-19,coverage gain: correct LOCKED where 2.6 had none,3.49
+holdout,Cs,KXBTC15M-26AUG082100-00,UP,,UP at T-29,coverage gain: correct LOCKED where 2.6 had none,4.4
+holdout,Cs,KXBTC15M-26AUG082115-15,UP,,UP at T-35,coverage gain: correct LOCKED where 2.6 had none,7.15
+holdout,Cs,KXBTC15M-26AUG090030-30,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,4.21
+holdout,Cs,KXBTC15M-26AUG090115-15,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-1.2
+holdout,Cs,KXBTC15M-26AUG090130-30,DOWN,,DOWN at T-27,coverage gain: correct LOCKED where 2.6 had none,-2.97
+holdout,Cs,KXBTC15M-26AUG090145-45,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,0.61
+holdout,Cs,KXBTC15M-26AUG090315-15,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,0.46
+holdout,Cs,KXBTC15M-26AUG090345-45,DOWN,,DOWN at T-25,coverage gain: correct LOCKED where 2.6 had none,-5.04
+holdout,Cs,KXBTC15M-26AUG090515-15,UP,,UP at T-39,coverage gain: correct LOCKED where 2.6 had none,5.49
+holdout,Cs,KXBTC15M-26AUG090545-45,UP,,UP at T-22,coverage gain: correct LOCKED where 2.6 had none,4.12
+holdout,Cs,KXBTC15M-26AUG090730-30,DOWN,,DOWN at T-24,coverage gain: correct LOCKED where 2.6 had none,-1.32
+holdout,Cs,KXBTC15M-26AUG090830-30,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,0.26
+holdout,Cs,KXBTC15M-26AUG090845-45,DOWN,,DOWN at T-54,coverage gain: correct LOCKED where 2.6 had none,-3.46
+holdout,Cs,KXBTC15M-26AUG091000-00,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-1.37
+holdout,Cs,KXBTC15M-26AUG091145-45,DOWN,,DOWN at T-26,coverage gain: correct LOCKED where 2.6 had none,-5.24
+holdout,Cs,KXBTC15M-26AUG091200-00,UP,,UP at T-65,coverage gain: correct LOCKED where 2.6 had none,3.91
+holdout,Cs,KXBTC15M-26AUG091330-30,UP,,UP at T-62,coverage gain: correct LOCKED where 2.6 had none,8.22
+holdout,Cs,KXBTC15M-26AUG091415-15,UP,,UP at T-36,coverage gain: correct LOCKED where 2.6 had none,4.22
+holdout,Cs,KXBTC15M-26AUG091430-30,UP,,UP at T-51,coverage gain: correct LOCKED where 2.6 had none,11.0
+holdout,Cs,KXBTC15M-26AUG091445-45,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,0.7
+holdout,Cs,KXBTC15M-26AUG091700-00,DOWN,,DOWN at T-21,coverage gain: correct LOCKED where 2.6 had none,-3.6
+holdout,Cs,KXBTC15M-26AUG091715-15,DOWN,,DOWN at T-37,coverage gain: correct LOCKED where 2.6 had none,-5.19
+holdout,Cs,KXBTC15M-26AUG091730-30,UP,,UP at T-25,coverage gain: correct LOCKED where 2.6 had none,3.72
+holdout,Cs,KXBTC15M-26AUG092000-00,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-0.99
+holdout,Cs,KXBTC15M-26AUG100745-45,DOWN,,DOWN at T-37,coverage gain: correct LOCKED where 2.6 had none,-15.42
+holdout,Cs,KXBTC15M-26AUG100815-15,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,3.72
+holdout,Cs,KXBTC15M-26AUG100915-15,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,2.31
+holdout,Cs,KXBTC15M-26AUG101600-00,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,0.74
+holdout,Cs,KXBTC15M-26AUG101730-30,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,3.11
+holdout,Cs,KXBTC15M-26AUG101930-30,UP,,UP at T-29,coverage gain: correct LOCKED where 2.6 had none,11.28
+holdout,Cs,KXBTC15M-26AUG102000-00,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,2.82
+holdout,Cs,KXBTC15M-26AUG102015-15,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-2.87
+holdout,Cs,KXBTC15M-26AUG102030-30,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-0.82
+holdout,Cs,KXBTC15M-26AUG102045-45,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-3.01
+holdout,Cs,KXBTC15M-26AUG102130-30,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,6.72
+holdout,Cs,KXBTC15M-26AUG102230-30,UP,,UP at T-28,coverage gain: correct LOCKED where 2.6 had none,6.18
+holdout,Cs,KXBTC15M-26AUG102300-00,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,2.17
+holdout,Cs,KXBTC15M-26AUG102345-45,DOWN,,DOWN at T-27,coverage gain: correct LOCKED where 2.6 had none,-8.41
+holdout,Cs,KXBTC15M-26AUG110000-00,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,4.94
+holdout,Cs,KXBTC15M-26AUG110115-15,UP,,UP at T-35,coverage gain: correct LOCKED where 2.6 had none,10.27
+holdout,Cs,KXBTC15M-26AUG110245-45,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-3.48
+holdout,Cs,KXBTC15M-26AUG110315-15,UP,,UP at T-27,coverage gain: correct LOCKED where 2.6 had none,4.81
+holdout,Cs,KXBTC15M-26AUG110515-15,DOWN,,DOWN at T-4,coverage gain: correct LOCKED where 2.6 had none,-0.46
+holdout,Cs,KXBTC15M-26AUG110745-45,UP,,UP at T-20,coverage gain: correct LOCKED where 2.6 had none,3.75
+holdout,Cs,KXBTC15M-26AUG110845-45,UP,,UP at T-20,coverage gain: correct LOCKED where 2.6 had none,5.86
+holdout,Cs,KXBTC15M-26AUG110900-00,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,1.2
+holdout,Cs,KXBTC15M-26AUG110945-45,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-9.56
+holdout,Cs,KXBTC15M-26AUG111230-30,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,3.38
+holdout,Cs,KXBTC15M-26AUG111300-00,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.6
+holdout,Cs,KXBTC15M-26AUG111315-15,UP,,UP at T-28,coverage gain: correct LOCKED where 2.6 had none,7.75
+holdout,Cs,KXBTC15M-26AUG111345-45,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-2.17
+holdout,Cs,KXBTC15M-26AUG111645-45,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,5.26
+holdout,Cs,KXBTC15M-26AUG111715-15,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-0.64
+holdout,Cs,KXBTC15M-26AUG111745-45,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-4.14
+holdout,Cs,KXBTC15M-26AUG112015-15,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,1.24
+holdout,Cs,KXBTC15M-26AUG112200-00,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,1.37
+holdout,Cs,KXBTC15M-26AUG120100-00,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,7.7
+holdout,Cs,KXBTC15M-26AUG120200-00,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,1.88
+holdout,Cs,KXBTC15M-26AUG120245-45,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,4.75
+holdout,Cs,KXBTC15M-26AUG120700-00,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-3.3
+holdout,Cs,KXBTC15M-26AUG120715-15,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-1.24
+holdout,Cs,KXBTC15M-26AUG120745-45,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-4.32
+holdout,Cs,KXBTC15M-26AUG121400-00,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-1.95
+holdout,Cs,KXBTC15M-26AUG121415-15,UP,,UP at T-2,coverage gain: correct LOCKED where 2.6 had none,0.27
+holdout,Cs,KXBTC15M-26AUG121445-45,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,5.73
+holdout,Cs,KXBTC15M-26AUG121515-15,UP,,UP at T-35,coverage gain: correct LOCKED where 2.6 had none,6.36
+holdout,Cs,KXBTC15M-26AUG121715-15,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.72
+holdout,Cs,KXBTC15M-26AUG121830-30,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-2.38
+holdout,Cs,KXBTC15M-26AUG121945-45,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-3.5
+holdout,Cs,KXBTC15M-26AUG122215-15,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,4.68
+holdout,Cs,KXBTC15M-26AUG122330-30,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-3.53
+holdout,Cs,KXBTC15M-26AUG122345-45,UP,,UP at T-22,coverage gain: correct LOCKED where 2.6 had none,6.56
+holdout,Cs,KXBTC15M-26AUG130100-00,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,2.89
+holdout,Cs,KXBTC15M-26AUG130630-30,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,3.36
+holdout,Cs,KXBTC15M-26AUG130645-45,UP,,UP at T-20,coverage gain: correct LOCKED where 2.6 had none,5.72
+holdout,Cs,KXBTC15M-26AUG130745-45,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-2.99
+dev_folds1_6,C,KXBTC15M-26SEP041745-45,UP,DOWN at T-10,,improvement: avoided a wrong 2.6 LOCKED,0.63
+dev_folds1_6,C,KXBTC15M-26SEP051445-45,UP,UP at T-33,,coverage loss: no LOCKED where 2.6 was right,2.41
+dev_folds1_6,C,KXBTC15M-26SEP081730-30,DOWN,UP at T-100,,improvement: avoided a wrong 2.6 LOCKED,-1.62
+dev_folds1_6,C,KXBTC15M-26SEP120045-45,UP,,UP at T-253,coverage gain: correct LOCKED where 2.6 had none,4.09
+dev_folds1_6,C,KXBTC15M-26SEP120415-15,UP,,UP at T-95,coverage gain: correct LOCKED where 2.6 had none,1.82
+dev_folds1_6,C,KXBTC15M-26SEP141445-45,UP,DOWN at T-145,UP at T-38,improvement: avoided a wrong 2.6 LOCKED,49.16
+dev_folds1_6,C,KXBTC15M-26SEP150715-15,DOWN,DOWN at T-38,UP at T-152,deterioration: wrong LOCKED where 2.6 was not wrong,-29.72
+dev_folds1_6,C,KXBTC15M-26SEP180300-00,UP,UP at T-51,DOWN at T-191,deterioration: wrong LOCKED where 2.6 was not wrong,63.37
+dev_folds1_6,C,KXBTC15M-26SEP182315-15,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-2.88
+dev_folds1_6,C,KXBTC15M-26SEP290145-45,DOWN,DOWN at T-232,,coverage loss: no LOCKED where 2.6 was right,-9.98
+dev_folds1_6,C,KXBTC15M-26OCT021630-30,DOWN,UP at T-167,DOWN at T-22,improvement: avoided a wrong 2.6 LOCKED,-23.2
+dev_folds1_6,C,KXBTC15M-26OCT030500-00,DOWN,,UP at T-65,deterioration: wrong LOCKED where 2.6 was not wrong,-1.05
+dev_folds1_6,C,KXBTC15M-26OCT041345-45,UP,UP at T-16,DOWN at T-123,deterioration: wrong LOCKED where 2.6 was not wrong,15.61
+dev_folds1_6,C,KXBTC15M-26OCT051830-30,UP,UP at T-19,DOWN at T-108,deterioration: wrong LOCKED where 2.6 was not wrong,16.19
+dev_folds1_6,C,KXBTC15M-26OCT060530-30,DOWN,UP at T-264,DOWN at T-58,improvement: avoided a wrong 2.6 LOCKED,-182.02
+dev_folds1_6,C,KXBTC15M-26OCT110515-15,DOWN,,UP at T-113,deterioration: wrong LOCKED where 2.6 was not wrong,-2.81
+dev_folds1_6,C,KXBTC15M-26OCT111015-15,UP,,DOWN at T-62,deterioration: wrong LOCKED where 2.6 was not wrong,4.61
+dev_folds1_6,Aq,KXBTC15M-26SEP041745-45,UP,DOWN at T-10,,improvement: avoided a wrong 2.6 LOCKED,0.63
+dev_folds1_6,Aq,KXBTC15M-26SEP051445-45,UP,UP at T-33,,coverage loss: no LOCKED where 2.6 was right,2.41
+dev_folds1_6,Aq,KXBTC15M-26SEP081730-30,DOWN,UP at T-100,,improvement: avoided a wrong 2.6 LOCKED,-1.62
+dev_folds1_6,Aq,KXBTC15M-26SEP141445-45,UP,DOWN at T-145,UP at T-38,improvement: avoided a wrong 2.6 LOCKED,49.16
+dev_folds1_6,Aq,KXBTC15M-26SEP290145-45,DOWN,DOWN at T-232,,coverage loss: no LOCKED where 2.6 was right,-9.98
+dev_folds1_6,Aq,KXBTC15M-26OCT021630-30,DOWN,UP at T-167,DOWN at T-22,improvement: avoided a wrong 2.6 LOCKED,-23.2
+dev_folds1_6,Aq,KXBTC15M-26OCT060530-30,DOWN,UP at T-264,DOWN at T-58,improvement: avoided a wrong 2.6 LOCKED,-182.02
+dev_folds1_6,B,KXBTC15M-26SEP040200-00,UP,UP at T-80,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,29.62
+dev_folds1_6,B,KXBTC15M-26SEP040630-30,UP,UP at T-10,,coverage loss: no LOCKED where 2.6 was right,7.04
+dev_folds1_6,B,KXBTC15M-26SEP040815-15,UP,,DOWN at T-144,deterioration: wrong LOCKED where 2.6 was not wrong,2.45
+dev_folds1_6,B,KXBTC15M-26SEP041730-30,UP,,DOWN at T-94,deterioration: wrong LOCKED where 2.6 was not wrong,2.36
+dev_folds1_6,B,KXBTC15M-26SEP041745-45,UP,DOWN at T-10,UP at T-160,improvement: avoided a wrong 2.6 LOCKED,0.63
+dev_folds1_6,B,KXBTC15M-26SEP042045-45,DOWN,,UP at T-49,deterioration: wrong LOCKED where 2.6 was not wrong,-5.07
+dev_folds1_6,B,KXBTC15M-26SEP042230-30,DOWN,DOWN at T-51,UP at T-220,deterioration: wrong LOCKED where 2.6 was not wrong,-41.91
+dev_folds1_6,B,KXBTC15M-26SEP050130-30,UP,UP at T-33,DOWN at T-158,deterioration: wrong LOCKED where 2.6 was not wrong,18.83
+dev_folds1_6,B,KXBTC15M-26SEP050230-30,UP,,UP at T-93,coverage gain: correct LOCKED where 2.6 had none,11.16
+dev_folds1_6,B,KXBTC15M-26SEP050300-00,DOWN,DOWN at T-13,UP at T-160,deterioration: wrong LOCKED where 2.6 was not wrong,-9.43
+dev_folds1_6,B,KXBTC15M-26SEP050630-30,DOWN,DOWN at T-16,UP at T-252,deterioration: wrong LOCKED where 2.6 was not wrong,-7.47
+dev_folds1_6,B,KXBTC15M-26SEP050715-15,UP,,UP at T-144,coverage gain: correct LOCKED where 2.6 had none,3.7
+dev_folds1_6,B,KXBTC15M-26SEP050915-15,UP,,DOWN at T-139,deterioration: wrong LOCKED where 2.6 was not wrong,4.96
+dev_folds1_6,B,KXBTC15M-26SEP051130-30,DOWN,DOWN at T-44,UP at T-145,deterioration: wrong LOCKED where 2.6 was not wrong,-20.45
+dev_folds1_6,B,KXBTC15M-26SEP051445-45,UP,UP at T-33,DOWN at T-122,deterioration: wrong LOCKED where 2.6 was not wrong,2.41
+dev_folds1_6,B,KXBTC15M-26SEP051630-30,DOWN,DOWN at T-13,UP at T-256,deterioration: wrong LOCKED where 2.6 was not wrong,-14.16
+dev_folds1_6,B,KXBTC15M-26SEP051700-00,DOWN,DOWN at T-27,UP at T-54,deterioration: wrong LOCKED where 2.6 was not wrong,-17.38
+dev_folds1_6,B,KXBTC15M-26SEP052000-00,UP,UP at T-6,,coverage loss: no LOCKED where 2.6 was right,8.72
+dev_folds1_6,B,KXBTC15M-26SEP052030-30,UP,UP at T-61,DOWN at T-282,deterioration: wrong LOCKED where 2.6 was not wrong,31.87
+dev_folds1_6,B,KXBTC15M-26SEP052100-00,DOWN,DOWN at T-30,UP at T-107,deterioration: wrong LOCKED where 2.6 was not wrong,-18.42
+dev_folds1_6,B,KXBTC15M-26SEP060900-00,DOWN,,UP at T-276,deterioration: wrong LOCKED where 2.6 was not wrong,-6.82
+dev_folds1_6,B,KXBTC15M-26SEP061215-15,DOWN,,DOWN at T-300,coverage gain: correct LOCKED where 2.6 had none,-4.5
+dev_folds1_6,B,KXBTC15M-26SEP061230-30,UP,UP at T-32,DOWN at T-276,deterioration: wrong LOCKED where 2.6 was not wrong,8.12
+dev_folds1_6,B,KXBTC15M-26SEP061245-45,UP,UP at T-22,DOWN at T-54,deterioration: wrong LOCKED where 2.6 was not wrong,6.81
+dev_folds1_6,B,KXBTC15M-26SEP061645-45,UP,UP at T-32,DOWN at T-97,deterioration: wrong LOCKED where 2.6 was not wrong,9.22
+dev_folds1_6,B,KXBTC15M-26SEP070030-30,DOWN,DOWN at T-14,UP at T-146,deterioration: wrong LOCKED where 2.6 was not wrong,-13.43
+dev_folds1_6,B,KXBTC15M-26SEP070115-15,UP,UP at T-42,DOWN at T-128,deterioration: wrong LOCKED where 2.6 was not wrong,46.06
+dev_folds1_6,B,KXBTC15M-26SEP070715-15,UP,UP at T-61,DOWN at T-239,deterioration: wrong LOCKED where 2.6 was not wrong,35.39
+dev_folds1_6,B,KXBTC15M-26SEP070800-00,UP,UP at T-36,DOWN at T-93,deterioration: wrong LOCKED where 2.6 was not wrong,13.68
+dev_folds1_6,B,KXBTC15M-26SEP071300-00,UP,,DOWN at T-84,deterioration: wrong LOCKED where 2.6 was not wrong,7.25
+dev_folds1_6,B,KXBTC15M-26SEP071330-30,DOWN,,DOWN at T-149,coverage gain: correct LOCKED where 2.6 had none,-9.69
+dev_folds1_6,B,KXBTC15M-26SEP071715-15,UP,UP at T-32,DOWN at T-94,deterioration: wrong LOCKED where 2.6 was not wrong,21.16
+dev_folds1_6,B,KXBTC15M-26SEP080030-30,DOWN,,UP at T-56,deterioration: wrong LOCKED where 2.6 was not wrong,-10.3
+dev_folds1_6,B,KXBTC15M-26SEP080345-45,DOWN,DOWN at T-35,UP at T-268,deterioration: wrong LOCKED where 2.6 was not wrong,-26.27
+dev_folds1_6,B,KXBTC15M-26SEP081630-30,UP,,DOWN at T-165,deterioration: wrong LOCKED where 2.6 was not wrong,0.73
+dev_folds1_6,B,KXBTC15M-26SEP082000-00,UP,,DOWN at T-172,deterioration: wrong LOCKED where 2.6 was not wrong,3.8
+dev_folds1_6,B,KXBTC15M-26SEP082115-15,DOWN,DOWN at T-22,UP at T-172,deterioration: wrong LOCKED where 2.6 was not wrong,-18.18
+dev_folds1_6,B,KXBTC15M-26SEP091330-30,DOWN,DOWN at T-6,,coverage loss: no LOCKED where 2.6 was right,-9.64
+dev_folds1_6,B,KXBTC15M-26SEP092100-00,UP,UP at T-19,DOWN at T-131,deterioration: wrong LOCKED where 2.6 was not wrong,17.8
+dev_folds1_6,B,KXBTC15M-26SEP100115-15,UP,UP at T-19,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,15.73
+dev_folds1_6,B,KXBTC15M-26SEP100130-30,UP,UP at T-50,DOWN at T-217,deterioration: wrong LOCKED where 2.6 was not wrong,62.4
+dev_folds1_6,B,KXBTC15M-26SEP100245-45,DOWN,DOWN at T-29,UP at T-129,deterioration: wrong LOCKED where 2.6 was not wrong,-17.8
+dev_folds1_6,B,KXBTC15M-26SEP101715-15,DOWN,DOWN at T-32,UP at T-111,deterioration: wrong LOCKED where 2.6 was not wrong,-13.64
+dev_folds1_6,B,KXBTC15M-26SEP102145-45,UP,UP at T-25,DOWN at T-190,deterioration: wrong LOCKED where 2.6 was not wrong,28.04
+dev_folds1_6,B,KXBTC15M-26SEP102315-15,UP,UP at T-26,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,27.92
+dev_folds1_6,B,KXBTC15M-26SEP110115-15,UP,,DOWN at T-90,deterioration: wrong LOCKED where 2.6 was not wrong,6.64
+dev_folds1_6,B,KXBTC15M-26SEP111715-15,UP,,UP at T-280,coverage gain: correct LOCKED where 2.6 had none,1.47
+dev_folds1_6,B,KXBTC15M-26SEP120045-45,UP,,UP at T-300,coverage gain: correct LOCKED where 2.6 had none,4.09
+dev_folds1_6,B,KXBTC15M-26SEP120115-15,UP,UP at T-25,DOWN at T-249,deterioration: wrong LOCKED where 2.6 was not wrong,8.74
+dev_folds1_6,B,KXBTC15M-26SEP120415-15,UP,,UP at T-300,coverage gain: correct LOCKED where 2.6 had none,1.82
+dev_folds1_6,B,KXBTC15M-26SEP120530-30,DOWN,DOWN at T-11,UP at T-74,deterioration: wrong LOCKED where 2.6 was not wrong,-11.29
+dev_folds1_6,B,KXBTC15M-26SEP120545-45,DOWN,DOWN at T-21,UP at T-90,deterioration: wrong LOCKED where 2.6 was not wrong,-9.14
+dev_folds1_6,B,KXBTC15M-26SEP120830-30,UP,,UP at T-49,coverage gain: correct LOCKED where 2.6 had none,4.37
+dev_folds1_6,B,KXBTC15M-26SEP120845-45,DOWN,,UP at T-61,deterioration: wrong LOCKED where 2.6 was not wrong,-4.67
+dev_folds1_6,B,KXBTC15M-26SEP120900-00,DOWN,,DOWN at T-211,coverage gain: correct LOCKED where 2.6 had none,-0.6
+dev_folds1_6,B,KXBTC15M-26SEP121445-45,DOWN,,DOWN at T-169,coverage gain: correct LOCKED where 2.6 had none,-11.86
+dev_folds1_6,B,KXBTC15M-26SEP121645-45,DOWN,,DOWN at T-220,coverage gain: correct LOCKED where 2.6 had none,-0.18
+dev_folds1_6,B,KXBTC15M-26SEP121715-15,DOWN,,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-4.64
+dev_folds1_6,B,KXBTC15M-26SEP121830-30,DOWN,DOWN at T-39,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-25.28
+dev_folds1_6,B,KXBTC15M-26SEP122030-30,DOWN,DOWN at T-12,,coverage loss: no LOCKED where 2.6 was right,-4.34
+dev_folds1_6,B,KXBTC15M-26SEP122115-15,UP,,UP at T-114,coverage gain: correct LOCKED where 2.6 had none,4.31
+dev_folds1_6,B,KXBTC15M-26SEP122130-30,DOWN,DOWN at T-10,UP at T-258,deterioration: wrong LOCKED where 2.6 was not wrong,-5.53
+dev_folds1_6,B,KXBTC15M-26SEP131415-15,UP,UP at T-29,DOWN at T-66,deterioration: wrong LOCKED where 2.6 was not wrong,12.73
+dev_folds1_6,B,KXBTC15M-26SEP140100-00,UP,UP at T-29,DOWN at T-128,deterioration: wrong LOCKED where 2.6 was not wrong,23.84
+dev_folds1_6,B,KXBTC15M-26SEP140430-30,UP,,UP at T-136,coverage gain: correct LOCKED where 2.6 had none,4.92
+dev_folds1_6,B,KXBTC15M-26SEP140530-30,UP,,DOWN at T-289,deterioration: wrong LOCKED where 2.6 was not wrong,2.28
+dev_folds1_6,B,KXBTC15M-26SEP150530-30,UP,,DOWN at T-69,deterioration: wrong LOCKED where 2.6 was not wrong,3.72
+dev_folds1_6,B,KXBTC15M-26SEP150600-00,UP,,UP at T-300,coverage gain: correct LOCKED where 2.6 had none,0.49
+dev_folds1_6,B,KXBTC15M-26SEP150715-15,DOWN,DOWN at T-38,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-29.72
+dev_folds1_6,B,KXBTC15M-26SEP150830-30,DOWN,DOWN at T-22,UP at T-127,deterioration: wrong LOCKED where 2.6 was not wrong,-11.69
+dev_folds1_6,B,KXBTC15M-26SEP150900-00,UP,,UP at T-300,coverage gain: correct LOCKED where 2.6 had none,2.33
+dev_folds1_6,B,KXBTC15M-26SEP160200-00,DOWN,,DOWN at T-240,coverage gain: correct LOCKED where 2.6 had none,-3.71
+dev_folds1_6,B,KXBTC15M-26SEP160245-45,UP,,DOWN at T-72,deterioration: wrong LOCKED where 2.6 was not wrong,5.39
+dev_folds1_6,B,KXBTC15M-26SEP160345-45,DOWN,,UP at T-265,deterioration: wrong LOCKED where 2.6 was not wrong,-4.05
+dev_folds1_6,B,KXBTC15M-26SEP160945-45,DOWN,,DOWN at T-66,coverage gain: correct LOCKED where 2.6 had none,-5.8
+dev_folds1_6,B,KXBTC15M-26SEP161430-30,UP,UP at T-37,DOWN at T-83,deterioration: wrong LOCKED where 2.6 was not wrong,84.57
+dev_folds1_6,B,KXBTC15M-26SEP171245-45,DOWN,,DOWN at T-206,coverage gain: correct LOCKED where 2.6 had none,-10.74
+dev_folds1_6,B,KXBTC15M-26SEP171600-00,UP,,DOWN at T-122,deterioration: wrong LOCKED where 2.6 was not wrong,2.27
+dev_folds1_6,B,KXBTC15M-26SEP172015-15,UP,,DOWN at T-166,deterioration: wrong LOCKED where 2.6 was not wrong,5.07
+dev_folds1_6,B,KXBTC15M-26SEP172115-15,DOWN,DOWN at T-17,UP at T-253,deterioration: wrong LOCKED where 2.6 was not wrong,-9.95
+dev_folds1_6,B,KXBTC15M-26SEP172215-15,UP,UP at T-11,DOWN at T-285,deterioration: wrong LOCKED where 2.6 was not wrong,8.94
+dev_folds1_6,B,KXBTC15M-26SEP180130-30,UP,UP at T-36,DOWN at T-186,deterioration: wrong LOCKED where 2.6 was not wrong,40.97
+dev_folds1_6,B,KXBTC15M-26SEP180300-00,UP,UP at T-51,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,63.37
+dev_folds1_6,B,KXBTC15M-26SEP181200-00,UP,,UP at T-71,coverage gain: correct LOCKED where 2.6 had none,8.75
+dev_folds1_6,B,KXBTC15M-26SEP181500-00,DOWN,,DOWN at T-113,coverage gain: correct LOCKED where 2.6 had none,-5.2
+dev_folds1_6,B,KXBTC15M-26SEP181915-15,UP,UP at T-24,DOWN at T-115,deterioration: wrong LOCKED where 2.6 was not wrong,17.19
+dev_folds1_6,B,KXBTC15M-26SEP182000-00,DOWN,DOWN at T-25,UP at T-134,deterioration: wrong LOCKED where 2.6 was not wrong,-18.64
+dev_folds1_6,B,KXBTC15M-26SEP182130-30,DOWN,DOWN at T-34,UP at T-89,deterioration: wrong LOCKED where 2.6 was not wrong,-25.53
+dev_folds1_6,B,KXBTC15M-26SEP190200-00,UP,,DOWN at T-38,deterioration: wrong LOCKED where 2.6 was not wrong,2.34
+dev_folds1_6,B,KXBTC15M-26SEP190630-30,UP,,DOWN at T-68,deterioration: wrong LOCKED where 2.6 was not wrong,0.64
+dev_folds1_6,B,KXBTC15M-26SEP190700-00,DOWN,DOWN at T-38,UP at T-297,deterioration: wrong LOCKED where 2.6 was not wrong,-34.26
+dev_folds1_6,B,KXBTC15M-26SEP191600-00,UP,UP at T-15,DOWN at T-55,deterioration: wrong LOCKED where 2.6 was not wrong,11.26
+dev_folds1_6,B,KXBTC15M-26SEP191930-30,UP,UP at T-30,DOWN at T-271,deterioration: wrong LOCKED where 2.6 was not wrong,15.43
+dev_folds1_6,B,KXBTC15M-26SEP192000-00,DOWN,DOWN at T-21,UP at T-223,deterioration: wrong LOCKED where 2.6 was not wrong,-13.03
+dev_folds1_6,B,KXBTC15M-26SEP192200-00,UP,UP at T-4,,coverage loss: no LOCKED where 2.6 was right,11.19
+dev_folds1_6,B,KXBTC15M-26SEP192315-15,DOWN,DOWN at T-10,UP at T-174,deterioration: wrong LOCKED where 2.6 was not wrong,-11.2
+dev_folds1_6,B,KXBTC15M-26SEP200815-15,DOWN,,UP at T-129,deterioration: wrong LOCKED where 2.6 was not wrong,-3.59
+dev_folds1_6,B,KXBTC15M-26SEP200945-45,UP,UP at T-27,DOWN at T-180,deterioration: wrong LOCKED where 2.6 was not wrong,19.88
+dev_folds1_6,B,KXBTC15M-26SEP201845-45,DOWN,DOWN at T-8,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-6.7
+dev_folds1_6,B,KXBTC15M-26SEP201915-15,DOWN,DOWN at T-30,UP at T-111,deterioration: wrong LOCKED where 2.6 was not wrong,-35.34
+dev_folds1_6,B,KXBTC15M-26SEP201930-30,DOWN,DOWN at T-4,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-5.66
+dev_folds1_6,B,KXBTC15M-26SEP211245-45,DOWN,,DOWN at T-300,coverage gain: correct LOCKED where 2.6 had none,-4.93
+dev_folds1_6,B,KXBTC15M-26SEP212215-15,UP,UP at T-30,DOWN at T-149,deterioration: wrong LOCKED where 2.6 was not wrong,37.47
+dev_folds1_6,B,KXBTC15M-26SEP220730-30,DOWN,DOWN at T-44,UP at T-230,deterioration: wrong LOCKED where 2.6 was not wrong,-40.04
+dev_folds1_6,B,KXBTC15M-26SEP220900-00,DOWN,DOWN at T-16,UP at T-78,deterioration: wrong LOCKED where 2.6 was not wrong,-12.13
+dev_folds1_6,B,KXBTC15M-26SEP221730-30,DOWN,,DOWN at T-195,coverage gain: correct LOCKED where 2.6 had none,-2.8
+dev_folds1_6,B,KXBTC15M-26SEP221800-00,DOWN,DOWN at T-27,UP at T-219,deterioration: wrong LOCKED where 2.6 was not wrong,-14.52
+dev_folds1_6,B,KXBTC15M-26SEP222045-45,DOWN,,UP at T-201,deterioration: wrong LOCKED where 2.6 was not wrong,-3.74
+dev_folds1_6,B,KXBTC15M-26SEP222200-00,UP,UP at T-28,DOWN at T-291,deterioration: wrong LOCKED where 2.6 was not wrong,30.95
+dev_folds1_6,B,KXBTC15M-26SEP230145-45,DOWN,DOWN at T-40,UP at T-110,deterioration: wrong LOCKED where 2.6 was not wrong,-36.12
+dev_folds1_6,B,KXBTC15M-26SEP232030-30,DOWN,,UP at T-25,deterioration: wrong LOCKED where 2.6 was not wrong,-3.37
+dev_folds1_6,B,KXBTC15M-26SEP241245-45,DOWN,DOWN at T-42,UP at T-201,deterioration: wrong LOCKED where 2.6 was not wrong,-90.92
+dev_folds1_6,B,KXBTC15M-26SEP251800-00,DOWN,DOWN at T-33,UP at T-175,deterioration: wrong LOCKED where 2.6 was not wrong,-19.61
+dev_folds1_6,B,KXBTC15M-26SEP251830-30,DOWN,DOWN at T-34,UP at T-259,deterioration: wrong LOCKED where 2.6 was not wrong,-23.28
+dev_folds1_6,B,KXBTC15M-26SEP251900-00,UP,,UP at T-213,coverage gain: correct LOCKED where 2.6 had none,0.85
+dev_folds1_6,B,KXBTC15M-26SEP251930-30,UP,UP at T-30,DOWN at T-226,deterioration: wrong LOCKED where 2.6 was not wrong,14.07
+dev_folds1_6,B,KXBTC15M-26SEP252000-00,UP,UP at T-37,DOWN at T-130,deterioration: wrong LOCKED where 2.6 was not wrong,24.2
+dev_folds1_6,B,KXBTC15M-26SEP252100-00,DOWN,DOWN at T-13,,coverage loss: no LOCKED where 2.6 was right,-4.62
+dev_folds1_6,B,KXBTC15M-26SEP260300-00,DOWN,DOWN at T-28,UP at T-84,deterioration: wrong LOCKED where 2.6 was not wrong,-18.77
+dev_folds1_6,B,KXBTC15M-26SEP260545-45,DOWN,DOWN at T-8,,coverage loss: no LOCKED where 2.6 was right,-8.17
+dev_folds1_6,B,KXBTC15M-26SEP260600-00,DOWN,,DOWN at T-110,coverage gain: correct LOCKED where 2.6 had none,-4.66
+dev_folds1_6,B,KXBTC15M-26SEP261100-00,UP,,UP at T-178,coverage gain: correct LOCKED where 2.6 had none,6.59
+dev_folds1_6,B,KXBTC15M-26SEP261115-15,UP,,UP at T-92,coverage gain: correct LOCKED where 2.6 had none,1.63
+dev_folds1_6,B,KXBTC15M-26SEP261830-30,UP,UP at T-34,DOWN at T-152,deterioration: wrong LOCKED where 2.6 was not wrong,20.04
+dev_folds1_6,B,KXBTC15M-26SEP261930-30,UP,UP at T-16,DOWN at T-60,deterioration: wrong LOCKED where 2.6 was not wrong,11.43
+dev_folds1_6,B,KXBTC15M-26SEP270330-30,UP,,UP at T-54,coverage gain: correct LOCKED where 2.6 had none,6.07
+dev_folds1_6,B,KXBTC15M-26SEP270700-00,UP,,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,5.34
+dev_folds1_6,B,KXBTC15M-26SEP271200-00,UP,,UP at T-32,coverage gain: correct LOCKED where 2.6 had none,5.25
+dev_folds1_6,B,KXBTC15M-26SEP280100-00,UP,UP at T-7,DOWN at T-166,deterioration: wrong LOCKED where 2.6 was not wrong,3.53
+dev_folds1_6,B,KXBTC15M-26SEP280145-45,UP,UP at T-24,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,27.41
+dev_folds1_6,B,KXBTC15M-26SEP280800-00,UP,,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,7.23
+dev_folds1_6,B,KXBTC15M-26SEP282030-30,UP,UP at T-22,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,8.87
+dev_folds1_6,B,KXBTC15M-26SEP290230-30,UP,UP at T-8,,coverage loss: no LOCKED where 2.6 was right,6.49
+dev_folds1_6,B,KXBTC15M-26SEP290615-15,DOWN,DOWN at T-21,UP at T-206,deterioration: wrong LOCKED where 2.6 was not wrong,-20.85
+dev_folds1_6,B,KXBTC15M-26SEP291300-00,UP,UP at T-19,DOWN at T-212,deterioration: wrong LOCKED where 2.6 was not wrong,5.91
+dev_folds1_6,B,KXBTC15M-26SEP291330-30,UP,,DOWN at T-58,deterioration: wrong LOCKED where 2.6 was not wrong,1.35
+dev_folds1_6,B,KXBTC15M-26SEP300230-30,DOWN,,DOWN at T-207,coverage gain: correct LOCKED where 2.6 had none,-1.47
+dev_folds1_6,B,KXBTC15M-26SEP300300-00,DOWN,DOWN at T-20,UP at T-79,deterioration: wrong LOCKED where 2.6 was not wrong,-15.43
+dev_folds1_6,B,KXBTC15M-26SEP301415-15,DOWN,,UP at T-31,deterioration: wrong LOCKED where 2.6 was not wrong,-0.71
+dev_folds1_6,B,KXBTC15M-26OCT010845-45,DOWN,DOWN at T-6,UP at T-222,deterioration: wrong LOCKED where 2.6 was not wrong,-10.15
+dev_folds1_6,B,KXBTC15M-26OCT011845-45,DOWN,DOWN at T-20,UP at T-205,deterioration: wrong LOCKED where 2.6 was not wrong,-17.84
+dev_folds1_6,B,KXBTC15M-26OCT012015-15,UP,UP at T-28,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,14.04
+dev_folds1_6,B,KXBTC15M-26OCT021530-30,UP,,UP at T-61,coverage gain: correct LOCKED where 2.6 had none,6.16
+dev_folds1_6,B,KXBTC15M-26OCT021945-45,DOWN,,DOWN at T-58,coverage gain: correct LOCKED where 2.6 had none,-1.85
+dev_folds1_6,B,KXBTC15M-26OCT022015-15,DOWN,,DOWN at T-300,coverage gain: correct LOCKED where 2.6 had none,-6.19
+dev_folds1_6,B,KXBTC15M-26OCT022115-15,DOWN,DOWN at T-16,UP at T-218,deterioration: wrong LOCKED where 2.6 was not wrong,-9.16
+dev_folds1_6,B,KXBTC15M-26OCT022200-00,UP,UP at T-8,DOWN at T-120,deterioration: wrong LOCKED where 2.6 was not wrong,9.96
+dev_folds1_6,B,KXBTC15M-26OCT030145-45,UP,UP at T-23,,coverage loss: no LOCKED where 2.6 was right,13.48
+dev_folds1_6,B,KXBTC15M-26OCT030215-15,DOWN,,UP at T-161,deterioration: wrong LOCKED where 2.6 was not wrong,-2.0
+dev_folds1_6,B,KXBTC15M-26OCT030245-45,UP,UP at T-12,DOWN at T-93,deterioration: wrong LOCKED where 2.6 was not wrong,4.42
+dev_folds1_6,B,KXBTC15M-26OCT030500-00,DOWN,,UP at T-179,deterioration: wrong LOCKED where 2.6 was not wrong,-1.05
+dev_folds1_6,B,KXBTC15M-26OCT031500-00,UP,,UP at T-79,coverage gain: correct LOCKED where 2.6 had none,3.05
+dev_folds1_6,B,KXBTC15M-26OCT031745-45,DOWN,,UP at T-113,deterioration: wrong LOCKED where 2.6 was not wrong,-4.95
+dev_folds1_6,B,KXBTC15M-26OCT031930-30,DOWN,DOWN at T-35,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-21.85
+dev_folds1_6,B,KXBTC15M-26OCT032030-30,DOWN,,UP at T-298,deterioration: wrong LOCKED where 2.6 was not wrong,-8.46
+dev_folds1_6,B,KXBTC15M-26OCT032330-30,DOWN,DOWN at T-14,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-9.21
+dev_folds1_6,B,KXBTC15M-26OCT040815-15,DOWN,DOWN at T-42,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-51.9
+dev_folds1_6,B,KXBTC15M-26OCT041345-45,UP,UP at T-16,DOWN at T-283,deterioration: wrong LOCKED where 2.6 was not wrong,15.61
+dev_folds1_6,B,KXBTC15M-26OCT041500-00,DOWN,DOWN at T-15,UP at T-62,deterioration: wrong LOCKED where 2.6 was not wrong,-7.83
+dev_folds1_6,B,KXBTC15M-26OCT041615-15,UP,,DOWN at T-60,deterioration: wrong LOCKED where 2.6 was not wrong,1.06
+dev_folds1_6,B,KXBTC15M-26OCT051130-30,DOWN,,DOWN at T-40,coverage gain: correct LOCKED where 2.6 had none,-7.59
+dev_folds1_6,B,KXBTC15M-26OCT051830-30,UP,UP at T-19,DOWN at T-175,deterioration: wrong LOCKED where 2.6 was not wrong,16.19
+dev_folds1_6,B,KXBTC15M-26OCT051915-15,DOWN,DOWN at T-40,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-57.14
+dev_folds1_6,B,KXBTC15M-26OCT052030-30,DOWN,DOWN at T-24,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-17.05
+dev_folds1_6,B,KXBTC15M-26OCT060300-00,DOWN,,UP at T-65,deterioration: wrong LOCKED where 2.6 was not wrong,-7.25
+dev_folds1_6,B,KXBTC15M-26OCT061615-15,DOWN,,DOWN at T-205,coverage gain: correct LOCKED where 2.6 had none,-0.61
+dev_folds1_6,B,KXBTC15M-26OCT061930-30,DOWN,DOWN at T-21,UP at T-127,deterioration: wrong LOCKED where 2.6 was not wrong,-13.99
+dev_folds1_6,B,KXBTC15M-26OCT062000-00,DOWN,,UP at T-97,deterioration: wrong LOCKED where 2.6 was not wrong,-6.79
+dev_folds1_6,B,KXBTC15M-26OCT070000-00,DOWN,DOWN at T-21,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-6.88
+dev_folds1_6,B,KXBTC15M-26OCT070315-15,UP,UP at T-34,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,13.92
+dev_folds1_6,B,KXBTC15M-26OCT071430-30,UP,UP at T-20,DOWN at T-63,deterioration: wrong LOCKED where 2.6 was not wrong,11.64
+dev_folds1_6,B,KXBTC15M-26OCT071545-45,DOWN,,DOWN at T-103,coverage gain: correct LOCKED where 2.6 had none,-4.31
+dev_folds1_6,B,KXBTC15M-26OCT071845-45,DOWN,,DOWN at T-274,coverage gain: correct LOCKED where 2.6 had none,-4.42
+dev_folds1_6,B,KXBTC15M-26OCT072030-30,UP,,UP at T-50,coverage gain: correct LOCKED where 2.6 had none,6.49
+dev_folds1_6,B,KXBTC15M-26OCT072045-45,UP,,DOWN at T-75,deterioration: wrong LOCKED where 2.6 was not wrong,8.22
+dev_folds1_6,B,KXBTC15M-26OCT081930-30,DOWN,DOWN at T-9,,coverage loss: no LOCKED where 2.6 was right,-2.84
+dev_folds1_6,B,KXBTC15M-26OCT082100-00,DOWN,DOWN at T-34,UP at T-243,deterioration: wrong LOCKED where 2.6 was not wrong,-28.62
+dev_folds1_6,B,KXBTC15M-26OCT090330-30,DOWN,,UP at T-277,deterioration: wrong LOCKED where 2.6 was not wrong,-0.46
+dev_folds1_6,B,KXBTC15M-26OCT091915-15,DOWN,DOWN at T-10,UP at T-75,deterioration: wrong LOCKED where 2.6 was not wrong,-5.9
+dev_folds1_6,B,KXBTC15M-26OCT091945-45,UP,UP at T-20,DOWN at T-132,deterioration: wrong LOCKED where 2.6 was not wrong,13.32
+dev_folds1_6,B,KXBTC15M-26OCT092245-45,DOWN,,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-2.6
+dev_folds1_6,B,KXBTC15M-26OCT100430-30,DOWN,DOWN at T-26,UP at T-219,deterioration: wrong LOCKED where 2.6 was not wrong,-14.27
+dev_folds1_6,B,KXBTC15M-26OCT100530-30,UP,,DOWN at T-184,deterioration: wrong LOCKED where 2.6 was not wrong,2.59
+dev_folds1_6,B,KXBTC15M-26OCT100800-00,DOWN,DOWN at T-23,UP at T-87,deterioration: wrong LOCKED where 2.6 was not wrong,-15.01
+dev_folds1_6,B,KXBTC15M-26OCT101200-00,UP,,DOWN at T-135,deterioration: wrong LOCKED where 2.6 was not wrong,3.25
+dev_folds1_6,B,KXBTC15M-26OCT101515-15,DOWN,DOWN at T-14,,coverage loss: no LOCKED where 2.6 was right,-16.67
+dev_folds1_6,B,KXBTC15M-26OCT101630-30,DOWN,DOWN at T-20,UP at T-138,deterioration: wrong LOCKED where 2.6 was not wrong,-13.01
+dev_folds1_6,B,KXBTC15M-26OCT101830-30,UP,UP at T-19,DOWN at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,7.33
+dev_folds1_6,B,KXBTC15M-26OCT102145-45,DOWN,,UP at T-300,deterioration: wrong LOCKED where 2.6 was not wrong,-6.4
+dev_folds1_6,B,KXBTC15M-26OCT102230-30,UP,,UP at T-271,coverage gain: correct LOCKED where 2.6 had none,1.06
+dev_folds1_6,B,KXBTC15M-26OCT110515-15,DOWN,,UP at T-176,deterioration: wrong LOCKED where 2.6 was not wrong,-2.81
+dev_folds1_6,B,KXBTC15M-26OCT110745-45,DOWN,,DOWN at T-102,coverage gain: correct LOCKED where 2.6 had none,-1.76
+dev_folds1_6,B,KXBTC15M-26OCT110845-45,UP,UP at T-8,DOWN at T-94,deterioration: wrong LOCKED where 2.6 was not wrong,17.16
+dev_folds1_6,B,KXBTC15M-26OCT110930-30,DOWN,,UP at T-119,deterioration: wrong LOCKED where 2.6 was not wrong,-10.79
+dev_folds1_6,B,KXBTC15M-26OCT110945-45,DOWN,,UP at T-255,deterioration: wrong LOCKED where 2.6 was not wrong,-4.97
+dev_folds1_6,B,KXBTC15M-26OCT111015-15,UP,,DOWN at T-74,deterioration: wrong LOCKED where 2.6 was not wrong,4.61
+dev_folds1_6,B,KXBTC15M-26OCT111030-30,DOWN,,DOWN at T-300,coverage gain: correct LOCKED where 2.6 had none,-4.92
+dev_folds1_6,B,KXBTC15M-26OCT111100-00,DOWN,,UP at T-284,deterioration: wrong LOCKED where 2.6 was not wrong,-3.7
+dev_folds1_6,B,KXBTC15M-26OCT111345-45,UP,,UP at T-233,coverage gain: correct LOCKED where 2.6 had none,9.2
+dev_folds1_6,B,KXBTC15M-26OCT112045-45,DOWN,DOWN at T-24,UP at T-203,deterioration: wrong LOCKED where 2.6 was not wrong,-7.16
+dev_folds1_6,B,KXBTC15M-26OCT112115-15,UP,UP at T-18,DOWN at T-242,deterioration: wrong LOCKED where 2.6 was not wrong,13.51
+dev_folds1_6,B,KXBTC15M-26OCT121345-45,DOWN,,DOWN at T-66,coverage gain: correct LOCKED where 2.6 had none,-3.94
+dev_folds1_6,B,KXBTC15M-26OCT122045-45,DOWN,,UP at T-38,deterioration: wrong LOCKED where 2.6 was not wrong,-2.55
+dev_folds1_6,B,KXBTC15M-26OCT130015-15,UP,,UP at T-42,coverage gain: correct LOCKED where 2.6 had none,6.77
+dev_folds1_6,As,KXBTC15M-26SEP040800-00,DOWN,,DOWN at T-19,coverage gain: correct LOCKED where 2.6 had none,-11.48
+dev_folds1_6,As,KXBTC15M-26SEP040815-15,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,2.45
+dev_folds1_6,As,KXBTC15M-26SEP041500-00,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-4.54
+dev_folds1_6,As,KXBTC15M-26SEP041730-30,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,2.36
+dev_folds1_6,As,KXBTC15M-26SEP041745-45,UP,DOWN at T-10,UP at T-3,improvement: avoided a wrong 2.6 LOCKED,0.63
+dev_folds1_6,As,KXBTC15M-26SEP042045-45,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-5.07
+dev_folds1_6,As,KXBTC15M-26SEP050230-30,UP,,UP at T-25,coverage gain: correct LOCKED where 2.6 had none,11.16
+dev_folds1_6,As,KXBTC15M-26SEP050715-15,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,3.7
+dev_folds1_6,As,KXBTC15M-26SEP050745-45,DOWN,,DOWN at T-23,coverage gain: correct LOCKED where 2.6 had none,-9.07
+dev_folds1_6,As,KXBTC15M-26SEP050800-00,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-4.14
+dev_folds1_6,As,KXBTC15M-26SEP050830-30,UP,,UP at T-26,coverage gain: correct LOCKED where 2.6 had none,3.47
+dev_folds1_6,As,KXBTC15M-26SEP050915-15,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,4.96
+dev_folds1_6,As,KXBTC15M-26SEP051845-45,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-5.27
+dev_folds1_6,As,KXBTC15M-26SEP051900-00,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,6.5
+dev_folds1_6,As,KXBTC15M-26SEP060045-45,DOWN,,DOWN at T-18,coverage gain: correct LOCKED where 2.6 had none,-7.19
+dev_folds1_6,As,KXBTC15M-26SEP060345-45,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,3.22
+dev_folds1_6,As,KXBTC15M-26SEP060900-00,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-6.82
+dev_folds1_6,As,KXBTC15M-26SEP061215-15,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-4.5
+dev_folds1_6,As,KXBTC15M-26SEP062015-15,DOWN,,DOWN at T-7,coverage gain: correct LOCKED where 2.6 had none,-4.76
+dev_folds1_6,As,KXBTC15M-26SEP070300-00,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-5.74
+dev_folds1_6,As,KXBTC15M-26SEP071300-00,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,7.25
+dev_folds1_6,As,KXBTC15M-26SEP071330-30,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-9.69
+dev_folds1_6,As,KXBTC15M-26SEP071600-00,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,2.72
+dev_folds1_6,As,KXBTC15M-26SEP071800-00,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-10.63
+dev_folds1_6,As,KXBTC15M-26SEP080030-30,DOWN,,DOWN at T-24,coverage gain: correct LOCKED where 2.6 had none,-10.3
+dev_folds1_6,As,KXBTC15M-26SEP080215-15,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-5.03
+dev_folds1_6,As,KXBTC15M-26SEP080745-45,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-1.72
+dev_folds1_6,As,KXBTC15M-26SEP080800-00,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-6.45
+dev_folds1_6,As,KXBTC15M-26SEP081530-30,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-6.57
+dev_folds1_6,As,KXBTC15M-26SEP081630-30,UP,,UP at T-3,coverage gain: correct LOCKED where 2.6 had none,0.73
+dev_folds1_6,As,KXBTC15M-26SEP081815-15,DOWN,,DOWN at T-20,coverage gain: correct LOCKED where 2.6 had none,-5.01
+dev_folds1_6,As,KXBTC15M-26SEP082000-00,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,3.8
+dev_folds1_6,As,KXBTC15M-26SEP082130-30,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,5.29
+dev_folds1_6,As,KXBTC15M-26SEP082230-30,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,4.54
+dev_folds1_6,As,KXBTC15M-26SEP090000-00,DOWN,,DOWN at T-18,coverage gain: correct LOCKED where 2.6 had none,-8.71
+dev_folds1_6,As,KXBTC15M-26SEP090200-00,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-0.91
+dev_folds1_6,As,KXBTC15M-26SEP090830-30,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,3.68
+dev_folds1_6,As,KXBTC15M-26SEP100600-00,DOWN,,DOWN at T-21,coverage gain: correct LOCKED where 2.6 had none,-5.54
+dev_folds1_6,As,KXBTC15M-26SEP100745-45,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-4.86
+dev_folds1_6,As,KXBTC15M-26SEP102315-15,UP,UP at T-26,DOWN at T-136,deterioration: wrong LOCKED where 2.6 was not wrong,27.92
+dev_folds1_6,As,KXBTC15M-26SEP110115-15,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,6.64
+dev_folds1_6,As,KXBTC15M-26SEP110700-00,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-3.95
+dev_folds1_6,As,KXBTC15M-26SEP111645-45,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,3.31
+dev_folds1_6,As,KXBTC15M-26SEP111715-15,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,1.47
+dev_folds1_6,As,KXBTC15M-26SEP111900-00,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-2.73
+dev_folds1_6,As,KXBTC15M-26SEP112030-30,DOWN,,DOWN at T-20,coverage gain: correct LOCKED where 2.6 had none,-7.5
+dev_folds1_6,As,KXBTC15M-26SEP112200-00,DOWN,,DOWN at T-7,coverage gain: correct LOCKED where 2.6 had none,-2.55
+dev_folds1_6,As,KXBTC15M-26SEP112300-00,UP,,DOWN at T-23,deterioration: wrong LOCKED where 2.6 was not wrong,3.04
+dev_folds1_6,As,KXBTC15M-26SEP120045-45,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,4.09
+dev_folds1_6,As,KXBTC15M-26SEP120215-15,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-4.2
+dev_folds1_6,As,KXBTC15M-26SEP120400-00,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-3.05
+dev_folds1_6,As,KXBTC15M-26SEP120415-15,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,1.82
+dev_folds1_6,As,KXBTC15M-26SEP120515-15,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,4.61
+dev_folds1_6,As,KXBTC15M-26SEP120600-00,UP,,UP at T-24,coverage gain: correct LOCKED where 2.6 had none,9.69
+dev_folds1_6,As,KXBTC15M-26SEP120715-15,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-4.66
+dev_folds1_6,As,KXBTC15M-26SEP120830-30,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,4.37
+dev_folds1_6,As,KXBTC15M-26SEP120845-45,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-4.67
+dev_folds1_6,As,KXBTC15M-26SEP120900-00,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.6
+dev_folds1_6,As,KXBTC15M-26SEP120915-15,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-4.13
+dev_folds1_6,As,KXBTC15M-26SEP121015-15,UP,,UP at T-51,coverage gain: correct LOCKED where 2.6 had none,9.25
+dev_folds1_6,As,KXBTC15M-26SEP121100-00,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-1.99
+dev_folds1_6,As,KXBTC15M-26SEP121300-00,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-1.19
+dev_folds1_6,As,KXBTC15M-26SEP121445-45,DOWN,,DOWN at T-28,coverage gain: correct LOCKED where 2.6 had none,-11.86
+dev_folds1_6,As,KXBTC15M-26SEP121645-45,DOWN,,DOWN at T-1,coverage gain: correct LOCKED where 2.6 had none,-0.18
+dev_folds1_6,As,KXBTC15M-26SEP121715-15,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-4.64
+dev_folds1_6,As,KXBTC15M-26SEP121945-45,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-5.17
+dev_folds1_6,As,KXBTC15M-26SEP122115-15,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,4.31
+dev_folds1_6,As,KXBTC15M-26SEP122315-15,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-5.77
+dev_folds1_6,As,KXBTC15M-26SEP130215-15,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-3.47
+dev_folds1_6,As,KXBTC15M-26SEP130345-45,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,2.78
+dev_folds1_6,As,KXBTC15M-26SEP130615-15,UP,,UP at T-19,coverage gain: correct LOCKED where 2.6 had none,8.34
+dev_folds1_6,As,KXBTC15M-26SEP130800-00,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,4.26
+dev_folds1_6,As,KXBTC15M-26SEP131645-45,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,1.85
+dev_folds1_6,As,KXBTC15M-26SEP131915-15,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,2.34
+dev_folds1_6,As,KXBTC15M-26SEP131930-30,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,1.59
+dev_folds1_6,As,KXBTC15M-26SEP140015-15,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,4.02
+dev_folds1_6,As,KXBTC15M-26SEP140430-30,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,4.92
+dev_folds1_6,As,KXBTC15M-26SEP140515-15,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-3.8
+dev_folds1_6,As,KXBTC15M-26SEP140530-30,UP,,DOWN at T-23,deterioration: wrong LOCKED where 2.6 was not wrong,2.28
+dev_folds1_6,As,KXBTC15M-26SEP141200-00,UP,,UP at T-3,coverage gain: correct LOCKED where 2.6 had none,1.2
+dev_folds1_6,As,KXBTC15M-26SEP150015-15,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-3.55
+dev_folds1_6,As,KXBTC15M-26SEP150045-45,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,5.99
+dev_folds1_6,As,KXBTC15M-26SEP150145-45,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,6.44
+dev_folds1_6,As,KXBTC15M-26SEP150530-30,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,3.72
+dev_folds1_6,As,KXBTC15M-26SEP150600-00,UP,,UP at T-2,coverage gain: correct LOCKED where 2.6 had none,0.49
+dev_folds1_6,As,KXBTC15M-26SEP150715-15,DOWN,DOWN at T-38,UP at T-145,deterioration: wrong LOCKED where 2.6 was not wrong,-29.72
+dev_folds1_6,As,KXBTC15M-26SEP150900-00,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,2.33
+dev_folds1_6,As,KXBTC15M-26SEP150930-30,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-5.36
+dev_folds1_6,As,KXBTC15M-26SEP151545-45,DOWN,,DOWN at T-7,coverage gain: correct LOCKED where 2.6 had none,-4.55
+dev_folds1_6,As,KXBTC15M-26SEP152115-15,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-1.23
+dev_folds1_6,As,KXBTC15M-26SEP160200-00,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-3.71
+dev_folds1_6,As,KXBTC15M-26SEP160245-45,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,5.39
+dev_folds1_6,As,KXBTC15M-26SEP160345-45,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-4.05
+dev_folds1_6,As,KXBTC15M-26SEP160715-15,DOWN,,DOWN at T-4,coverage gain: correct LOCKED where 2.6 had none,-1.15
+dev_folds1_6,As,KXBTC15M-26SEP160945-45,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-5.8
+dev_folds1_6,As,KXBTC15M-26SEP162000-00,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-1.93
+dev_folds1_6,As,KXBTC15M-26SEP171245-45,DOWN,,DOWN at T-24,coverage gain: correct LOCKED where 2.6 had none,-10.74
+dev_folds1_6,As,KXBTC15M-26SEP171530-30,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,3.47
+dev_folds1_6,As,KXBTC15M-26SEP171600-00,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,2.27
+dev_folds1_6,As,KXBTC15M-26SEP171930-30,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-6.02
+dev_folds1_6,As,KXBTC15M-26SEP172015-15,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,5.07
+dev_folds1_6,As,KXBTC15M-26SEP180145-45,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,1.16
+dev_folds1_6,As,KXBTC15M-26SEP180215-15,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,8.76
+dev_folds1_6,As,KXBTC15M-26SEP180300-00,UP,UP at T-51,DOWN at T-155,deterioration: wrong LOCKED where 2.6 was not wrong,63.37
+dev_folds1_6,As,KXBTC15M-26SEP181045-45,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-5.23
+dev_folds1_6,As,KXBTC15M-26SEP181200-00,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,8.75
+dev_folds1_6,As,KXBTC15M-26SEP181500-00,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-5.2
+dev_folds1_6,As,KXBTC15M-26SEP181600-00,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,3.13
+dev_folds1_6,As,KXBTC15M-26SEP182315-15,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-2.88
+dev_folds1_6,As,KXBTC15M-26SEP190200-00,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,2.34
+dev_folds1_6,As,KXBTC15M-26SEP190630-30,UP,,UP at T-2,coverage gain: correct LOCKED where 2.6 had none,0.64
+dev_folds1_6,As,KXBTC15M-26SEP190930-30,DOWN,,DOWN at T-4,coverage gain: correct LOCKED where 2.6 had none,-1.0
+dev_folds1_6,As,KXBTC15M-26SEP191245-45,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,2.26
+dev_folds1_6,As,KXBTC15M-26SEP200215-15,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,7.37
+dev_folds1_6,As,KXBTC15M-26SEP200500-00,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,4.27
+dev_folds1_6,As,KXBTC15M-26SEP200630-30,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,4.24
+dev_folds1_6,As,KXBTC15M-26SEP200645-45,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-2.73
+dev_folds1_6,As,KXBTC15M-26SEP200730-30,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-3.8
+dev_folds1_6,As,KXBTC15M-26SEP200815-15,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-3.59
+dev_folds1_6,As,KXBTC15M-26SEP211245-45,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-4.93
+dev_folds1_6,As,KXBTC15M-26SEP211315-15,DOWN,,DOWN at T-4,coverage gain: correct LOCKED where 2.6 had none,-2.6
+dev_folds1_6,As,KXBTC15M-26SEP211345-45,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-2.38
+dev_folds1_6,As,KXBTC15M-26SEP211515-15,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-7.47
+dev_folds1_6,As,KXBTC15M-26SEP221130-30,UP,,UP at T-1,coverage gain: correct LOCKED where 2.6 had none,0.29
+dev_folds1_6,As,KXBTC15M-26SEP221615-15,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,2.87
+dev_folds1_6,As,KXBTC15M-26SEP221730-30,DOWN,,DOWN at T-7,coverage gain: correct LOCKED where 2.6 had none,-2.8
+dev_folds1_6,As,KXBTC15M-26SEP222045-45,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-3.74
+dev_folds1_6,As,KXBTC15M-26SEP230615-15,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-3.23
+dev_folds1_6,As,KXBTC15M-26SEP230830-30,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-5.1
+dev_folds1_6,As,KXBTC15M-26SEP231845-45,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,5.3
+dev_folds1_6,As,KXBTC15M-26SEP232030-30,DOWN,,DOWN at T-7,coverage gain: correct LOCKED where 2.6 had none,-3.37
+dev_folds1_6,As,KXBTC15M-26SEP232045-45,UP,,UP at T-1,coverage gain: correct LOCKED where 2.6 had none,0.36
+dev_folds1_6,As,KXBTC15M-26SEP242000-00,DOWN,,DOWN at T-20,coverage gain: correct LOCKED where 2.6 had none,-11.71
+dev_folds1_6,As,KXBTC15M-26SEP250000-00,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-6.52
+dev_folds1_6,As,KXBTC15M-26SEP250130-30,DOWN,,DOWN at T-28,coverage gain: correct LOCKED where 2.6 had none,-16.63
+dev_folds1_6,As,KXBTC15M-26SEP251230-30,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,5.02
+dev_folds1_6,As,KXBTC15M-26SEP251500-00,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-5.37
+dev_folds1_6,As,KXBTC15M-26SEP251900-00,UP,,UP at T-3,coverage gain: correct LOCKED where 2.6 had none,0.85
+dev_folds1_6,As,KXBTC15M-26SEP252245-45,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-4.43
+dev_folds1_6,As,KXBTC15M-26SEP260100-00,UP,,UP at T-23,coverage gain: correct LOCKED where 2.6 had none,7.38
+dev_folds1_6,As,KXBTC15M-26SEP260600-00,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-4.66
+dev_folds1_6,As,KXBTC15M-26SEP260645-45,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,6.82
+dev_folds1_6,As,KXBTC15M-26SEP260715-15,UP,,UP at T-3,coverage gain: correct LOCKED where 2.6 had none,0.62
+dev_folds1_6,As,KXBTC15M-26SEP260800-00,UP,,UP at T-19,coverage gain: correct LOCKED where 2.6 had none,3.76
+dev_folds1_6,As,KXBTC15M-26SEP261015-15,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,4.76
+dev_folds1_6,As,KXBTC15M-26SEP261100-00,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,6.59
+dev_folds1_6,As,KXBTC15M-26SEP261115-15,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,1.63
+dev_folds1_6,As,KXBTC15M-26SEP261530-30,UP,,UP at T-27,coverage gain: correct LOCKED where 2.6 had none,5.48
+dev_folds1_6,As,KXBTC15M-26SEP261600-00,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,4.29
+dev_folds1_6,As,KXBTC15M-26SEP261615-15,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-3.7
+dev_folds1_6,As,KXBTC15M-26SEP270000-00,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-3.14
+dev_folds1_6,As,KXBTC15M-26SEP270300-00,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,6.5
+dev_folds1_6,As,KXBTC15M-26SEP270330-30,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,6.07
+dev_folds1_6,As,KXBTC15M-26SEP270430-30,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,1.43
+dev_folds1_6,As,KXBTC15M-26SEP270700-00,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,5.34
+dev_folds1_6,As,KXBTC15M-26SEP270730-30,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-2.53
+dev_folds1_6,As,KXBTC15M-26SEP270800-00,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-5.81
+dev_folds1_6,As,KXBTC15M-26SEP271200-00,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,5.25
+dev_folds1_6,As,KXBTC15M-26SEP280800-00,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,7.23
+dev_folds1_6,As,KXBTC15M-26SEP290330-30,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,8.61
+dev_folds1_6,As,KXBTC15M-26SEP290500-00,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-4.81
+dev_folds1_6,As,KXBTC15M-26SEP291330-30,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,1.35
+dev_folds1_6,As,KXBTC15M-26SEP291700-00,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-6.2
+dev_folds1_6,As,KXBTC15M-26SEP291845-45,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,5.53
+dev_folds1_6,As,KXBTC15M-26SEP291900-00,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,1.43
+dev_folds1_6,As,KXBTC15M-26SEP292000-00,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,6.35
+dev_folds1_6,As,KXBTC15M-26SEP300030-30,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-3.45
+dev_folds1_6,As,KXBTC15M-26SEP300230-30,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-1.47
+dev_folds1_6,As,KXBTC15M-26SEP300300-00,DOWN,DOWN at T-20,UP at T-30,deterioration: wrong LOCKED where 2.6 was not wrong,-15.43
+dev_folds1_6,As,KXBTC15M-26SEP300500-00,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,4.18
+dev_folds1_6,As,KXBTC15M-26SEP301415-15,DOWN,,DOWN at T-2,coverage gain: correct LOCKED where 2.6 had none,-0.71
+dev_folds1_6,As,KXBTC15M-26SEP301530-30,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-3.89
+dev_folds1_6,As,KXBTC15M-26SEP301730-30,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-6.87
+dev_folds1_6,As,KXBTC15M-26OCT011000-00,UP,,UP at T-2,coverage gain: correct LOCKED where 2.6 had none,0.78
+dev_folds1_6,As,KXBTC15M-26OCT011100-00,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-7.57
+dev_folds1_6,As,KXBTC15M-26OCT011515-15,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-2.55
+dev_folds1_6,As,KXBTC15M-26OCT011715-15,UP,,UP at T-22,coverage gain: correct LOCKED where 2.6 had none,6.53
+dev_folds1_6,As,KXBTC15M-26OCT020300-00,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,2.5
+dev_folds1_6,As,KXBTC15M-26OCT021530-30,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,6.16
+dev_folds1_6,As,KXBTC15M-26OCT021800-00,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,5.73
+dev_folds1_6,As,KXBTC15M-26OCT021845-45,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-4.65
+dev_folds1_6,As,KXBTC15M-26OCT021945-45,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-1.85
+dev_folds1_6,As,KXBTC15M-26OCT022015-15,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-6.19
+dev_folds1_6,As,KXBTC15M-26OCT030200-00,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-3.63
+dev_folds1_6,As,KXBTC15M-26OCT030215-15,DOWN,,DOWN at T-7,coverage gain: correct LOCKED where 2.6 had none,-2.0
+dev_folds1_6,As,KXBTC15M-26OCT030400-00,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,1.48
+dev_folds1_6,As,KXBTC15M-26OCT030500-00,DOWN,,UP at T-69,deterioration: wrong LOCKED where 2.6 was not wrong,-1.05
+dev_folds1_6,As,KXBTC15M-26OCT030600-00,UP,,UP at T-20,coverage gain: correct LOCKED where 2.6 had none,5.58
+dev_folds1_6,As,KXBTC15M-26OCT030645-45,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-0.94
+dev_folds1_6,As,KXBTC15M-26OCT030715-15,DOWN,,DOWN at T-19,coverage gain: correct LOCKED where 2.6 had none,-5.18
+dev_folds1_6,As,KXBTC15M-26OCT031115-15,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-2.85
+dev_folds1_6,As,KXBTC15M-26OCT031145-45,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,0.98
+dev_folds1_6,As,KXBTC15M-26OCT031430-30,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-2.59
+dev_folds1_6,As,KXBTC15M-26OCT031500-00,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,3.05
+dev_folds1_6,As,KXBTC15M-26OCT031745-45,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-4.95
+dev_folds1_6,As,KXBTC15M-26OCT032030-30,DOWN,,DOWN at T-21,coverage gain: correct LOCKED where 2.6 had none,-8.46
+dev_folds1_6,As,KXBTC15M-26OCT032045-45,DOWN,,DOWN at T-23,coverage gain: correct LOCKED where 2.6 had none,-6.41
+dev_folds1_6,As,KXBTC15M-26OCT032230-30,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,5.39
+dev_folds1_6,As,KXBTC15M-26OCT032300-00,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,1.44
+dev_folds1_6,As,KXBTC15M-26OCT032315-15,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,2.95
+dev_folds1_6,As,KXBTC15M-26OCT040030-30,UP,,UP at T-70,coverage gain: correct LOCKED where 2.6 had none,6.97
+dev_folds1_6,As,KXBTC15M-26OCT040045-45,DOWN,,DOWN at T-55,coverage gain: correct LOCKED where 2.6 had none,-1.91
+dev_folds1_6,As,KXBTC15M-26OCT040100-00,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-0.72
+dev_folds1_6,As,KXBTC15M-26OCT040200-00,DOWN,,DOWN at T-20,coverage gain: correct LOCKED where 2.6 had none,-4.71
+dev_folds1_6,As,KXBTC15M-26OCT040215-15,UP,,UP at T-19,coverage gain: correct LOCKED where 2.6 had none,4.13
+dev_folds1_6,As,KXBTC15M-26OCT040345-45,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-7.73
+dev_folds1_6,As,KXBTC15M-26OCT040615-15,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,8.08
+dev_folds1_6,As,KXBTC15M-26OCT040945-45,UP,,UP at T-23,coverage gain: correct LOCKED where 2.6 had none,9.75
+dev_folds1_6,As,KXBTC15M-26OCT041130-30,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-4.89
+dev_folds1_6,As,KXBTC15M-26OCT041215-15,DOWN,,DOWN at T-19,coverage gain: correct LOCKED where 2.6 had none,-5.48
+dev_folds1_6,As,KXBTC15M-26OCT041415-15,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-1.62
+dev_folds1_6,As,KXBTC15M-26OCT041430-30,UP,,UP at T-22,coverage gain: correct LOCKED where 2.6 had none,6.17
+dev_folds1_6,As,KXBTC15M-26OCT041600-00,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-3.14
+dev_folds1_6,As,KXBTC15M-26OCT041615-15,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,1.06
+dev_folds1_6,As,KXBTC15M-26OCT050430-30,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,6.35
+dev_folds1_6,As,KXBTC15M-26OCT051130-30,DOWN,,DOWN at T-19,coverage gain: correct LOCKED where 2.6 had none,-7.59
+dev_folds1_6,As,KXBTC15M-26OCT051700-00,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,3.76
+dev_folds1_6,As,KXBTC15M-26OCT052315-15,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,2.28
+dev_folds1_6,As,KXBTC15M-26OCT052345-45,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-9.66
+dev_folds1_6,As,KXBTC15M-26OCT060045-45,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,5.76
+dev_folds1_6,As,KXBTC15M-26OCT060300-00,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-7.25
+dev_folds1_6,As,KXBTC15M-26OCT060730-30,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,6.93
+dev_folds1_6,As,KXBTC15M-26OCT061115-15,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,3.64
+dev_folds1_6,As,KXBTC15M-26OCT061545-45,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.75
+dev_folds1_6,As,KXBTC15M-26OCT061615-15,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.61
+dev_folds1_6,As,KXBTC15M-26OCT061730-30,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,3.15
+dev_folds1_6,As,KXBTC15M-26OCT062000-00,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-6.79
+dev_folds1_6,As,KXBTC15M-26OCT070015-15,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,2.41
+dev_folds1_6,As,KXBTC15M-26OCT070030-30,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,1.21
+dev_folds1_6,As,KXBTC15M-26OCT070430-30,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,5.72
+dev_folds1_6,As,KXBTC15M-26OCT071100-00,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-3.66
+dev_folds1_6,As,KXBTC15M-26OCT071545-45,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-4.31
+dev_folds1_6,As,KXBTC15M-26OCT071845-45,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-4.42
+dev_folds1_6,As,KXBTC15M-26OCT071945-45,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,4.02
+dev_folds1_6,As,KXBTC15M-26OCT072030-30,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,6.49
+dev_folds1_6,As,KXBTC15M-26OCT072045-45,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,8.22
+dev_folds1_6,As,KXBTC15M-26OCT081215-15,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,8.77
+dev_folds1_6,As,KXBTC15M-26OCT081315-15,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-8.55
+dev_folds1_6,As,KXBTC15M-26OCT081515-15,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,8.56
+dev_folds1_6,As,KXBTC15M-26OCT090300-00,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-4.35
+dev_folds1_6,As,KXBTC15M-26OCT090330-30,DOWN,,DOWN at T-2,coverage gain: correct LOCKED where 2.6 had none,-0.46
+dev_folds1_6,As,KXBTC15M-26OCT090445-45,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,2.95
+dev_folds1_6,As,KXBTC15M-26OCT091730-30,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,6.07
+dev_folds1_6,As,KXBTC15M-26OCT091900-00,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,4.96
+dev_folds1_6,As,KXBTC15M-26OCT092000-00,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-7.42
+dev_folds1_6,As,KXBTC15M-26OCT092015-15,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,1.8
+dev_folds1_6,As,KXBTC15M-26OCT092245-45,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-2.6
+dev_folds1_6,As,KXBTC15M-26OCT092300-00,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-4.35
+dev_folds1_6,As,KXBTC15M-26OCT092330-30,UP,,UP at T-30,coverage gain: correct LOCKED where 2.6 had none,5.24
+dev_folds1_6,As,KXBTC15M-26OCT100530-30,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,2.59
+dev_folds1_6,As,KXBTC15M-26OCT100645-45,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-0.53
+dev_folds1_6,As,KXBTC15M-26OCT100730-30,UP,,UP at T-27,coverage gain: correct LOCKED where 2.6 had none,5.13
+dev_folds1_6,As,KXBTC15M-26OCT101130-30,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,4.78
+dev_folds1_6,As,KXBTC15M-26OCT101200-00,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,3.25
+dev_folds1_6,As,KXBTC15M-26OCT101330-30,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-3.58
+dev_folds1_6,As,KXBTC15M-26OCT101500-00,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,3.13
+dev_folds1_6,As,KXBTC15M-26OCT101600-00,UP,,UP at T-29,coverage gain: correct LOCKED where 2.6 had none,6.41
+dev_folds1_6,As,KXBTC15M-26OCT102145-45,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-6.4
+dev_folds1_6,As,KXBTC15M-26OCT102230-30,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,1.06
+dev_folds1_6,As,KXBTC15M-26OCT110215-15,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-0.63
+dev_folds1_6,As,KXBTC15M-26OCT110400-00,UP,,UP at T-26,coverage gain: correct LOCKED where 2.6 had none,7.78
+dev_folds1_6,As,KXBTC15M-26OCT110515-15,DOWN,,UP at T-108,deterioration: wrong LOCKED where 2.6 was not wrong,-2.81
+dev_folds1_6,As,KXBTC15M-26OCT110545-45,UP,,UP at T-26,coverage gain: correct LOCKED where 2.6 had none,5.22
+dev_folds1_6,As,KXBTC15M-26OCT110600-00,UP,,UP at T-1,coverage gain: correct LOCKED where 2.6 had none,0.15
+dev_folds1_6,As,KXBTC15M-26OCT110715-15,UP,,UP at T-26,coverage gain: correct LOCKED where 2.6 had none,9.61
+dev_folds1_6,As,KXBTC15M-26OCT110745-45,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-1.76
+dev_folds1_6,As,KXBTC15M-26OCT110930-30,DOWN,,DOWN at T-23,coverage gain: correct LOCKED where 2.6 had none,-10.79
+dev_folds1_6,As,KXBTC15M-26OCT110945-45,DOWN,,DOWN at T-20,coverage gain: correct LOCKED where 2.6 had none,-4.97
+dev_folds1_6,As,KXBTC15M-26OCT111000-00,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,2.24
+dev_folds1_6,As,KXBTC15M-26OCT111015-15,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,4.61
+dev_folds1_6,As,KXBTC15M-26OCT111030-30,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-4.92
+dev_folds1_6,As,KXBTC15M-26OCT111100-00,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-3.7
+dev_folds1_6,As,KXBTC15M-26OCT111115-15,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,3.98
+dev_folds1_6,As,KXBTC15M-26OCT111300-00,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,3.93
+dev_folds1_6,As,KXBTC15M-26OCT111345-45,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,9.2
+dev_folds1_6,As,KXBTC15M-26OCT120700-00,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-3.48
+dev_folds1_6,As,KXBTC15M-26OCT121200-00,DOWN,,DOWN at T-1,coverage gain: correct LOCKED where 2.6 had none,-0.32
+dev_folds1_6,As,KXBTC15M-26OCT121345-45,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-3.94
+dev_folds1_6,As,KXBTC15M-26OCT121415-15,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-9.15
+dev_folds1_6,As,KXBTC15M-26OCT121445-45,DOWN,,DOWN at T-20,coverage gain: correct LOCKED where 2.6 had none,-10.37
+dev_folds1_6,As,KXBTC15M-26OCT121930-30,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,5.41
+dev_folds1_6,As,KXBTC15M-26OCT122045-45,DOWN,,UP at T-19,deterioration: wrong LOCKED where 2.6 was not wrong,-2.55
+dev_folds1_6,As,KXBTC15M-26OCT130015-15,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,6.77
+dev_folds1_6,As,KXBTC15M-26OCT130245-45,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,6.15
+dev_folds1_6,Cs,KXBTC15M-26SEP040800-00,DOWN,,DOWN at T-18,coverage gain: correct LOCKED where 2.6 had none,-11.48
+dev_folds1_6,Cs,KXBTC15M-26SEP040815-15,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,2.45
+dev_folds1_6,Cs,KXBTC15M-26SEP041500-00,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-4.54
+dev_folds1_6,Cs,KXBTC15M-26SEP041730-30,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,2.36
+dev_folds1_6,Cs,KXBTC15M-26SEP041745-45,UP,DOWN at T-10,UP at T-3,improvement: avoided a wrong 2.6 LOCKED,0.63
+dev_folds1_6,Cs,KXBTC15M-26SEP042045-45,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-5.07
+dev_folds1_6,Cs,KXBTC15M-26SEP050230-30,UP,,UP at T-26,coverage gain: correct LOCKED where 2.6 had none,11.16
+dev_folds1_6,Cs,KXBTC15M-26SEP050715-15,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,3.7
+dev_folds1_6,Cs,KXBTC15M-26SEP050745-45,DOWN,,DOWN at T-22,coverage gain: correct LOCKED where 2.6 had none,-9.07
+dev_folds1_6,Cs,KXBTC15M-26SEP050800-00,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-4.14
+dev_folds1_6,Cs,KXBTC15M-26SEP050830-30,UP,,UP at T-29,coverage gain: correct LOCKED where 2.6 had none,3.47
+dev_folds1_6,Cs,KXBTC15M-26SEP050915-15,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,4.96
+dev_folds1_6,Cs,KXBTC15M-26SEP051845-45,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-5.27
+dev_folds1_6,Cs,KXBTC15M-26SEP051900-00,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,6.5
+dev_folds1_6,Cs,KXBTC15M-26SEP060045-45,DOWN,,DOWN at T-20,coverage gain: correct LOCKED where 2.6 had none,-7.19
+dev_folds1_6,Cs,KXBTC15M-26SEP060345-45,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,3.22
+dev_folds1_6,Cs,KXBTC15M-26SEP060900-00,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-6.82
+dev_folds1_6,Cs,KXBTC15M-26SEP061215-15,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-4.5
+dev_folds1_6,Cs,KXBTC15M-26SEP062015-15,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-4.76
+dev_folds1_6,Cs,KXBTC15M-26SEP070300-00,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-5.74
+dev_folds1_6,Cs,KXBTC15M-26SEP071300-00,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,7.25
+dev_folds1_6,Cs,KXBTC15M-26SEP071330-30,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-9.69
+dev_folds1_6,Cs,KXBTC15M-26SEP071600-00,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,2.72
+dev_folds1_6,Cs,KXBTC15M-26SEP071800-00,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-10.63
+dev_folds1_6,Cs,KXBTC15M-26SEP080030-30,DOWN,,DOWN at T-21,coverage gain: correct LOCKED where 2.6 had none,-10.3
+dev_folds1_6,Cs,KXBTC15M-26SEP080215-15,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-5.03
+dev_folds1_6,Cs,KXBTC15M-26SEP080745-45,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-1.72
+dev_folds1_6,Cs,KXBTC15M-26SEP080800-00,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-6.45
+dev_folds1_6,Cs,KXBTC15M-26SEP081530-30,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-6.57
+dev_folds1_6,Cs,KXBTC15M-26SEP081630-30,UP,,UP at T-2,coverage gain: correct LOCKED where 2.6 had none,0.73
+dev_folds1_6,Cs,KXBTC15M-26SEP081730-30,DOWN,UP at T-100,DOWN at T-4,improvement: avoided a wrong 2.6 LOCKED,-1.62
+dev_folds1_6,Cs,KXBTC15M-26SEP081815-15,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-5.01
+dev_folds1_6,Cs,KXBTC15M-26SEP082000-00,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,3.8
+dev_folds1_6,Cs,KXBTC15M-26SEP082130-30,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,5.29
+dev_folds1_6,Cs,KXBTC15M-26SEP082230-30,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,4.54
+dev_folds1_6,Cs,KXBTC15M-26SEP090000-00,DOWN,,DOWN at T-19,coverage gain: correct LOCKED where 2.6 had none,-8.71
+dev_folds1_6,Cs,KXBTC15M-26SEP090200-00,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-0.91
+dev_folds1_6,Cs,KXBTC15M-26SEP090830-30,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,3.68
+dev_folds1_6,Cs,KXBTC15M-26SEP100600-00,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-5.54
+dev_folds1_6,Cs,KXBTC15M-26SEP100745-45,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-4.86
+dev_folds1_6,Cs,KXBTC15M-26SEP110115-15,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,6.64
+dev_folds1_6,Cs,KXBTC15M-26SEP110700-00,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-3.95
+dev_folds1_6,Cs,KXBTC15M-26SEP111645-45,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,3.31
+dev_folds1_6,Cs,KXBTC15M-26SEP111715-15,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,1.47
+dev_folds1_6,Cs,KXBTC15M-26SEP111900-00,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-2.73
+dev_folds1_6,Cs,KXBTC15M-26SEP112030-30,DOWN,,DOWN at T-22,coverage gain: correct LOCKED where 2.6 had none,-7.5
+dev_folds1_6,Cs,KXBTC15M-26SEP112200-00,DOWN,,DOWN at T-7,coverage gain: correct LOCKED where 2.6 had none,-2.55
+dev_folds1_6,Cs,KXBTC15M-26SEP112300-00,UP,,DOWN at T-26,deterioration: wrong LOCKED where 2.6 was not wrong,3.04
+dev_folds1_6,Cs,KXBTC15M-26SEP120045-45,UP,,UP at T-267,coverage gain: correct LOCKED where 2.6 had none,4.09
+dev_folds1_6,Cs,KXBTC15M-26SEP120215-15,DOWN,,DOWN at T-19,coverage gain: correct LOCKED where 2.6 had none,-4.2
+dev_folds1_6,Cs,KXBTC15M-26SEP120400-00,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-3.05
+dev_folds1_6,Cs,KXBTC15M-26SEP120415-15,UP,,UP at T-105,coverage gain: correct LOCKED where 2.6 had none,1.82
+dev_folds1_6,Cs,KXBTC15M-26SEP120515-15,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,4.61
+dev_folds1_6,Cs,KXBTC15M-26SEP120600-00,UP,,UP at T-26,coverage gain: correct LOCKED where 2.6 had none,9.69
+dev_folds1_6,Cs,KXBTC15M-26SEP120715-15,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-4.66
+dev_folds1_6,Cs,KXBTC15M-26SEP120830-30,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,4.37
+dev_folds1_6,Cs,KXBTC15M-26SEP120845-45,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-4.67
+dev_folds1_6,Cs,KXBTC15M-26SEP120900-00,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.6
+dev_folds1_6,Cs,KXBTC15M-26SEP120915-15,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-4.13
+dev_folds1_6,Cs,KXBTC15M-26SEP121015-15,UP,,UP at T-52,coverage gain: correct LOCKED where 2.6 had none,9.25
+dev_folds1_6,Cs,KXBTC15M-26SEP121100-00,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-1.99
+dev_folds1_6,Cs,KXBTC15M-26SEP121300-00,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-1.19
+dev_folds1_6,Cs,KXBTC15M-26SEP121445-45,DOWN,,DOWN at T-31,coverage gain: correct LOCKED where 2.6 had none,-11.86
+dev_folds1_6,Cs,KXBTC15M-26SEP121645-45,DOWN,,DOWN at T-1,coverage gain: correct LOCKED where 2.6 had none,-0.18
+dev_folds1_6,Cs,KXBTC15M-26SEP121715-15,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-4.64
+dev_folds1_6,Cs,KXBTC15M-26SEP121945-45,DOWN,,DOWN at T-19,coverage gain: correct LOCKED where 2.6 had none,-5.17
+dev_folds1_6,Cs,KXBTC15M-26SEP122115-15,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,4.31
+dev_folds1_6,Cs,KXBTC15M-26SEP122315-15,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-5.77
+dev_folds1_6,Cs,KXBTC15M-26SEP130215-15,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-3.47
+dev_folds1_6,Cs,KXBTC15M-26SEP130345-45,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,2.78
+dev_folds1_6,Cs,KXBTC15M-26SEP130615-15,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,8.34
+dev_folds1_6,Cs,KXBTC15M-26SEP130800-00,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,4.26
+dev_folds1_6,Cs,KXBTC15M-26SEP131645-45,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,1.85
+dev_folds1_6,Cs,KXBTC15M-26SEP131915-15,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,2.34
+dev_folds1_6,Cs,KXBTC15M-26SEP131930-30,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,1.59
+dev_folds1_6,Cs,KXBTC15M-26SEP140015-15,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,4.02
+dev_folds1_6,Cs,KXBTC15M-26SEP140430-30,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,4.92
+dev_folds1_6,Cs,KXBTC15M-26SEP140515-15,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-3.8
+dev_folds1_6,Cs,KXBTC15M-26SEP140530-30,UP,,DOWN at T-22,deterioration: wrong LOCKED where 2.6 was not wrong,2.28
+dev_folds1_6,Cs,KXBTC15M-26SEP141200-00,UP,,UP at T-3,coverage gain: correct LOCKED where 2.6 had none,1.2
+dev_folds1_6,Cs,KXBTC15M-26SEP141445-45,UP,DOWN at T-145,UP at T-38,improvement: avoided a wrong 2.6 LOCKED,49.16
+dev_folds1_6,Cs,KXBTC15M-26SEP150015-15,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-3.55
+dev_folds1_6,Cs,KXBTC15M-26SEP150045-45,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,5.99
+dev_folds1_6,Cs,KXBTC15M-26SEP150145-45,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,6.44
+dev_folds1_6,Cs,KXBTC15M-26SEP150530-30,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,3.72
+dev_folds1_6,Cs,KXBTC15M-26SEP150600-00,UP,,UP at T-2,coverage gain: correct LOCKED where 2.6 had none,0.49
+dev_folds1_6,Cs,KXBTC15M-26SEP150715-15,DOWN,DOWN at T-38,UP at T-152,deterioration: wrong LOCKED where 2.6 was not wrong,-29.72
+dev_folds1_6,Cs,KXBTC15M-26SEP150900-00,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,2.33
+dev_folds1_6,Cs,KXBTC15M-26SEP150930-30,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-5.36
+dev_folds1_6,Cs,KXBTC15M-26SEP151545-45,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-4.55
+dev_folds1_6,Cs,KXBTC15M-26SEP152115-15,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-1.23
+dev_folds1_6,Cs,KXBTC15M-26SEP160200-00,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-3.71
+dev_folds1_6,Cs,KXBTC15M-26SEP160245-45,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,5.39
+dev_folds1_6,Cs,KXBTC15M-26SEP160345-45,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-4.05
+dev_folds1_6,Cs,KXBTC15M-26SEP160715-15,DOWN,,DOWN at T-4,coverage gain: correct LOCKED where 2.6 had none,-1.15
+dev_folds1_6,Cs,KXBTC15M-26SEP160945-45,DOWN,,DOWN at T-7,coverage gain: correct LOCKED where 2.6 had none,-5.8
+dev_folds1_6,Cs,KXBTC15M-26SEP162000-00,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-1.93
+dev_folds1_6,Cs,KXBTC15M-26SEP171245-45,DOWN,,DOWN at T-24,coverage gain: correct LOCKED where 2.6 had none,-10.74
+dev_folds1_6,Cs,KXBTC15M-26SEP171530-30,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,3.47
+dev_folds1_6,Cs,KXBTC15M-26SEP171600-00,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,2.27
+dev_folds1_6,Cs,KXBTC15M-26SEP171930-30,DOWN,,DOWN at T-19,coverage gain: correct LOCKED where 2.6 had none,-6.02
+dev_folds1_6,Cs,KXBTC15M-26SEP172015-15,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,5.07
+dev_folds1_6,Cs,KXBTC15M-26SEP180145-45,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,1.16
+dev_folds1_6,Cs,KXBTC15M-26SEP180215-15,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,8.76
+dev_folds1_6,Cs,KXBTC15M-26SEP180300-00,UP,UP at T-51,DOWN at T-197,deterioration: wrong LOCKED where 2.6 was not wrong,63.37
+dev_folds1_6,Cs,KXBTC15M-26SEP181045-45,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-5.23
+dev_folds1_6,Cs,KXBTC15M-26SEP181200-00,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,8.75
+dev_folds1_6,Cs,KXBTC15M-26SEP181500-00,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-5.2
+dev_folds1_6,Cs,KXBTC15M-26SEP181600-00,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,3.13
+dev_folds1_6,Cs,KXBTC15M-26SEP182315-15,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-2.88
+dev_folds1_6,Cs,KXBTC15M-26SEP190200-00,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,2.34
+dev_folds1_6,Cs,KXBTC15M-26SEP190630-30,UP,,UP at T-2,coverage gain: correct LOCKED where 2.6 had none,0.64
+dev_folds1_6,Cs,KXBTC15M-26SEP190930-30,DOWN,,DOWN at T-4,coverage gain: correct LOCKED where 2.6 had none,-1.0
+dev_folds1_6,Cs,KXBTC15M-26SEP191245-45,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,2.26
+dev_folds1_6,Cs,KXBTC15M-26SEP200215-15,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,7.37
+dev_folds1_6,Cs,KXBTC15M-26SEP200500-00,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,4.27
+dev_folds1_6,Cs,KXBTC15M-26SEP200630-30,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,4.24
+dev_folds1_6,Cs,KXBTC15M-26SEP200645-45,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-2.73
+dev_folds1_6,Cs,KXBTC15M-26SEP200730-30,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-3.8
+dev_folds1_6,Cs,KXBTC15M-26SEP200815-15,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-3.59
+dev_folds1_6,Cs,KXBTC15M-26SEP211245-45,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-4.93
+dev_folds1_6,Cs,KXBTC15M-26SEP211315-15,DOWN,,DOWN at T-4,coverage gain: correct LOCKED where 2.6 had none,-2.6
+dev_folds1_6,Cs,KXBTC15M-26SEP211345-45,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-2.38
+dev_folds1_6,Cs,KXBTC15M-26SEP211515-15,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-7.47
+dev_folds1_6,Cs,KXBTC15M-26SEP221130-30,UP,,UP at T-1,coverage gain: correct LOCKED where 2.6 had none,0.29
+dev_folds1_6,Cs,KXBTC15M-26SEP221615-15,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,2.87
+dev_folds1_6,Cs,KXBTC15M-26SEP221730-30,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-2.8
+dev_folds1_6,Cs,KXBTC15M-26SEP222045-45,DOWN,,DOWN at T-7,coverage gain: correct LOCKED where 2.6 had none,-3.74
+dev_folds1_6,Cs,KXBTC15M-26SEP230615-15,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-3.23
+dev_folds1_6,Cs,KXBTC15M-26SEP230830-30,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-5.1
+dev_folds1_6,Cs,KXBTC15M-26SEP231845-45,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,5.3
+dev_folds1_6,Cs,KXBTC15M-26SEP232030-30,DOWN,,DOWN at T-7,coverage gain: correct LOCKED where 2.6 had none,-3.37
+dev_folds1_6,Cs,KXBTC15M-26SEP232045-45,UP,,UP at T-1,coverage gain: correct LOCKED where 2.6 had none,0.36
+dev_folds1_6,Cs,KXBTC15M-26SEP242000-00,DOWN,,DOWN at T-23,coverage gain: correct LOCKED where 2.6 had none,-11.71
+dev_folds1_6,Cs,KXBTC15M-26SEP250000-00,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-6.52
+dev_folds1_6,Cs,KXBTC15M-26SEP250130-30,DOWN,,DOWN at T-28,coverage gain: correct LOCKED where 2.6 had none,-16.63
+dev_folds1_6,Cs,KXBTC15M-26SEP251230-30,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,5.02
+dev_folds1_6,Cs,KXBTC15M-26SEP251500-00,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-5.37
+dev_folds1_6,Cs,KXBTC15M-26SEP251900-00,UP,,UP at T-3,coverage gain: correct LOCKED where 2.6 had none,0.85
+dev_folds1_6,Cs,KXBTC15M-26SEP252245-45,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-4.43
+dev_folds1_6,Cs,KXBTC15M-26SEP260100-00,UP,,UP at T-26,coverage gain: correct LOCKED where 2.6 had none,7.38
+dev_folds1_6,Cs,KXBTC15M-26SEP260600-00,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-4.66
+dev_folds1_6,Cs,KXBTC15M-26SEP260645-45,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,6.82
+dev_folds1_6,Cs,KXBTC15M-26SEP260715-15,UP,,UP at T-3,coverage gain: correct LOCKED where 2.6 had none,0.62
+dev_folds1_6,Cs,KXBTC15M-26SEP260800-00,UP,,UP at T-22,coverage gain: correct LOCKED where 2.6 had none,3.76
+dev_folds1_6,Cs,KXBTC15M-26SEP261015-15,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,4.76
+dev_folds1_6,Cs,KXBTC15M-26SEP261100-00,UP,,UP at T-19,coverage gain: correct LOCKED where 2.6 had none,6.59
+dev_folds1_6,Cs,KXBTC15M-26SEP261115-15,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,1.63
+dev_folds1_6,Cs,KXBTC15M-26SEP261530-30,UP,,UP at T-36,coverage gain: correct LOCKED where 2.6 had none,5.48
+dev_folds1_6,Cs,KXBTC15M-26SEP261600-00,UP,,UP at T-20,coverage gain: correct LOCKED where 2.6 had none,4.29
+dev_folds1_6,Cs,KXBTC15M-26SEP261615-15,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-3.7
+dev_folds1_6,Cs,KXBTC15M-26SEP270000-00,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-3.14
+dev_folds1_6,Cs,KXBTC15M-26SEP270300-00,UP,,UP at T-20,coverage gain: correct LOCKED where 2.6 had none,6.5
+dev_folds1_6,Cs,KXBTC15M-26SEP270330-30,UP,,UP at T-30,coverage gain: correct LOCKED where 2.6 had none,6.07
+dev_folds1_6,Cs,KXBTC15M-26SEP270430-30,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,1.43
+dev_folds1_6,Cs,KXBTC15M-26SEP270700-00,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,5.34
+dev_folds1_6,Cs,KXBTC15M-26SEP270730-30,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-2.53
+dev_folds1_6,Cs,KXBTC15M-26SEP270800-00,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-5.81
+dev_folds1_6,Cs,KXBTC15M-26SEP271200-00,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,5.25
+dev_folds1_6,Cs,KXBTC15M-26SEP280800-00,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,7.23
+dev_folds1_6,Cs,KXBTC15M-26SEP290330-30,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,8.61
+dev_folds1_6,Cs,KXBTC15M-26SEP290500-00,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-4.81
+dev_folds1_6,Cs,KXBTC15M-26SEP291330-30,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,1.35
+dev_folds1_6,Cs,KXBTC15M-26SEP291700-00,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-6.2
+dev_folds1_6,Cs,KXBTC15M-26SEP291845-45,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,5.53
+dev_folds1_6,Cs,KXBTC15M-26SEP291900-00,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,1.43
+dev_folds1_6,Cs,KXBTC15M-26SEP292000-00,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,6.35
+dev_folds1_6,Cs,KXBTC15M-26SEP300030-30,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-3.45
+dev_folds1_6,Cs,KXBTC15M-26SEP300230-30,DOWN,,DOWN at T-4,coverage gain: correct LOCKED where 2.6 had none,-1.47
+dev_folds1_6,Cs,KXBTC15M-26SEP300300-00,DOWN,DOWN at T-20,UP at T-31,deterioration: wrong LOCKED where 2.6 was not wrong,-15.43
+dev_folds1_6,Cs,KXBTC15M-26SEP300500-00,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,4.18
+dev_folds1_6,Cs,KXBTC15M-26SEP301415-15,DOWN,,DOWN at T-1,coverage gain: correct LOCKED where 2.6 had none,-0.71
+dev_folds1_6,Cs,KXBTC15M-26SEP301530-30,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-3.89
+dev_folds1_6,Cs,KXBTC15M-26SEP301730-30,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-6.87
+dev_folds1_6,Cs,KXBTC15M-26OCT011000-00,UP,,UP at T-2,coverage gain: correct LOCKED where 2.6 had none,0.78
+dev_folds1_6,Cs,KXBTC15M-26OCT011100-00,DOWN,,DOWN at T-7,coverage gain: correct LOCKED where 2.6 had none,-7.57
+dev_folds1_6,Cs,KXBTC15M-26OCT011515-15,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-2.55
+dev_folds1_6,Cs,KXBTC15M-26OCT011715-15,UP,,UP at T-25,coverage gain: correct LOCKED where 2.6 had none,6.53
+dev_folds1_6,Cs,KXBTC15M-26OCT020300-00,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,2.5
+dev_folds1_6,Cs,KXBTC15M-26OCT021530-30,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,6.16
+dev_folds1_6,Cs,KXBTC15M-26OCT021630-30,DOWN,UP at T-167,DOWN at T-21,improvement: avoided a wrong 2.6 LOCKED,-23.2
+dev_folds1_6,Cs,KXBTC15M-26OCT021800-00,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,5.73
+dev_folds1_6,Cs,KXBTC15M-26OCT021845-45,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-4.65
+dev_folds1_6,Cs,KXBTC15M-26OCT021945-45,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-1.85
+dev_folds1_6,Cs,KXBTC15M-26OCT022015-15,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-6.19
+dev_folds1_6,Cs,KXBTC15M-26OCT030200-00,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-3.63
+dev_folds1_6,Cs,KXBTC15M-26OCT030215-15,DOWN,,DOWN at T-8,coverage gain: correct LOCKED where 2.6 had none,-2.0
+dev_folds1_6,Cs,KXBTC15M-26OCT030400-00,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,1.48
+dev_folds1_6,Cs,KXBTC15M-26OCT030500-00,DOWN,,UP at T-75,deterioration: wrong LOCKED where 2.6 was not wrong,-1.05
+dev_folds1_6,Cs,KXBTC15M-26OCT030600-00,UP,,UP at T-22,coverage gain: correct LOCKED where 2.6 had none,5.58
+dev_folds1_6,Cs,KXBTC15M-26OCT030645-45,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-0.94
+dev_folds1_6,Cs,KXBTC15M-26OCT030715-15,DOWN,,DOWN at T-21,coverage gain: correct LOCKED where 2.6 had none,-5.18
+dev_folds1_6,Cs,KXBTC15M-26OCT031115-15,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-2.85
+dev_folds1_6,Cs,KXBTC15M-26OCT031145-45,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,0.98
+dev_folds1_6,Cs,KXBTC15M-26OCT031430-30,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-2.59
+dev_folds1_6,Cs,KXBTC15M-26OCT031500-00,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,3.05
+dev_folds1_6,Cs,KXBTC15M-26OCT031745-45,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-4.95
+dev_folds1_6,Cs,KXBTC15M-26OCT032030-30,DOWN,,DOWN at T-23,coverage gain: correct LOCKED where 2.6 had none,-8.46
+dev_folds1_6,Cs,KXBTC15M-26OCT032045-45,DOWN,,DOWN at T-25,coverage gain: correct LOCKED where 2.6 had none,-6.41
+dev_folds1_6,Cs,KXBTC15M-26OCT032230-30,UP,,UP at T-13,coverage gain: correct LOCKED where 2.6 had none,5.39
+dev_folds1_6,Cs,KXBTC15M-26OCT032300-00,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,1.44
+dev_folds1_6,Cs,KXBTC15M-26OCT032315-15,UP,,UP at T-20,coverage gain: correct LOCKED where 2.6 had none,2.95
+dev_folds1_6,Cs,KXBTC15M-26OCT040030-30,UP,,UP at T-78,coverage gain: correct LOCKED where 2.6 had none,6.97
+dev_folds1_6,Cs,KXBTC15M-26OCT040045-45,DOWN,,DOWN at T-60,coverage gain: correct LOCKED where 2.6 had none,-1.91
+dev_folds1_6,Cs,KXBTC15M-26OCT040100-00,DOWN,,DOWN at T-18,coverage gain: correct LOCKED where 2.6 had none,-0.72
+dev_folds1_6,Cs,KXBTC15M-26OCT040200-00,DOWN,,DOWN at T-22,coverage gain: correct LOCKED where 2.6 had none,-4.71
+dev_folds1_6,Cs,KXBTC15M-26OCT040215-15,UP,,UP at T-21,coverage gain: correct LOCKED where 2.6 had none,4.13
+dev_folds1_6,Cs,KXBTC15M-26OCT040345-45,DOWN,,DOWN at T-19,coverage gain: correct LOCKED where 2.6 had none,-7.73
+dev_folds1_6,Cs,KXBTC15M-26OCT040615-15,UP,,UP at T-19,coverage gain: correct LOCKED where 2.6 had none,8.08
+dev_folds1_6,Cs,KXBTC15M-26OCT040945-45,UP,,UP at T-24,coverage gain: correct LOCKED where 2.6 had none,9.75
+dev_folds1_6,Cs,KXBTC15M-26OCT041130-30,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-4.89
+dev_folds1_6,Cs,KXBTC15M-26OCT041215-15,DOWN,,DOWN at T-21,coverage gain: correct LOCKED where 2.6 had none,-5.48
+dev_folds1_6,Cs,KXBTC15M-26OCT041415-15,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-1.62
+dev_folds1_6,Cs,KXBTC15M-26OCT041430-30,UP,,UP at T-24,coverage gain: correct LOCKED where 2.6 had none,6.17
+dev_folds1_6,Cs,KXBTC15M-26OCT041600-00,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-3.14
+dev_folds1_6,Cs,KXBTC15M-26OCT041615-15,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,1.06
+dev_folds1_6,Cs,KXBTC15M-26OCT050430-30,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,6.35
+dev_folds1_6,Cs,KXBTC15M-26OCT051130-30,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-7.59
+dev_folds1_6,Cs,KXBTC15M-26OCT051700-00,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,3.76
+dev_folds1_6,Cs,KXBTC15M-26OCT051830-30,UP,UP at T-19,DOWN at T-108,deterioration: wrong LOCKED where 2.6 was not wrong,16.19
+dev_folds1_6,Cs,KXBTC15M-26OCT051915-15,DOWN,DOWN at T-40,UP at T-106,deterioration: wrong LOCKED where 2.6 was not wrong,-57.14
+dev_folds1_6,Cs,KXBTC15M-26OCT052315-15,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,2.28
+dev_folds1_6,Cs,KXBTC15M-26OCT052345-45,DOWN,,DOWN at T-16,coverage gain: correct LOCKED where 2.6 had none,-9.66
+dev_folds1_6,Cs,KXBTC15M-26OCT060045-45,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,5.76
+dev_folds1_6,Cs,KXBTC15M-26OCT060300-00,DOWN,,DOWN at T-13,coverage gain: correct LOCKED where 2.6 had none,-7.25
+dev_folds1_6,Cs,KXBTC15M-26OCT060530-30,DOWN,UP at T-264,DOWN at T-58,improvement: avoided a wrong 2.6 LOCKED,-182.02
+dev_folds1_6,Cs,KXBTC15M-26OCT060730-30,UP,,UP at T-12,coverage gain: correct LOCKED where 2.6 had none,6.93
+dev_folds1_6,Cs,KXBTC15M-26OCT061115-15,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,3.64
+dev_folds1_6,Cs,KXBTC15M-26OCT061545-45,DOWN,,DOWN at T-4,coverage gain: correct LOCKED where 2.6 had none,-0.75
+dev_folds1_6,Cs,KXBTC15M-26OCT061615-15,DOWN,,DOWN at T-3,coverage gain: correct LOCKED where 2.6 had none,-0.61
+dev_folds1_6,Cs,KXBTC15M-26OCT061730-30,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,3.15
+dev_folds1_6,Cs,KXBTC15M-26OCT062000-00,DOWN,,DOWN at T-19,coverage gain: correct LOCKED where 2.6 had none,-6.79
+dev_folds1_6,Cs,KXBTC15M-26OCT070015-15,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,2.41
+dev_folds1_6,Cs,KXBTC15M-26OCT070030-30,UP,,UP at T-4,coverage gain: correct LOCKED where 2.6 had none,1.21
+dev_folds1_6,Cs,KXBTC15M-26OCT070430-30,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,5.72
+dev_folds1_6,Cs,KXBTC15M-26OCT071100-00,DOWN,,DOWN at T-7,coverage gain: correct LOCKED where 2.6 had none,-3.66
+dev_folds1_6,Cs,KXBTC15M-26OCT071545-45,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-4.31
+dev_folds1_6,Cs,KXBTC15M-26OCT071845-45,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-4.42
+dev_folds1_6,Cs,KXBTC15M-26OCT071945-45,UP,,UP at T-11,coverage gain: correct LOCKED where 2.6 had none,4.02
+dev_folds1_6,Cs,KXBTC15M-26OCT072030-30,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,6.49
+dev_folds1_6,Cs,KXBTC15M-26OCT072045-45,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,8.22
+dev_folds1_6,Cs,KXBTC15M-26OCT081215-15,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,8.77
+dev_folds1_6,Cs,KXBTC15M-26OCT081315-15,DOWN,,DOWN at T-11,coverage gain: correct LOCKED where 2.6 had none,-8.55
+dev_folds1_6,Cs,KXBTC15M-26OCT081515-15,UP,,UP at T-16,coverage gain: correct LOCKED where 2.6 had none,8.56
+dev_folds1_6,Cs,KXBTC15M-26OCT090300-00,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-4.35
+dev_folds1_6,Cs,KXBTC15M-26OCT090330-30,DOWN,,DOWN at T-2,coverage gain: correct LOCKED where 2.6 had none,-0.46
+dev_folds1_6,Cs,KXBTC15M-26OCT090445-45,UP,,UP at T-8,coverage gain: correct LOCKED where 2.6 had none,2.95
+dev_folds1_6,Cs,KXBTC15M-26OCT091730-30,UP,,UP at T-18,coverage gain: correct LOCKED where 2.6 had none,6.07
+dev_folds1_6,Cs,KXBTC15M-26OCT091900-00,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,4.96
+dev_folds1_6,Cs,KXBTC15M-26OCT092000-00,DOWN,,DOWN at T-15,coverage gain: correct LOCKED where 2.6 had none,-7.42
+dev_folds1_6,Cs,KXBTC15M-26OCT092015-15,UP,,UP at T-5,coverage gain: correct LOCKED where 2.6 had none,1.8
+dev_folds1_6,Cs,KXBTC15M-26OCT092245-45,DOWN,,DOWN at T-9,coverage gain: correct LOCKED where 2.6 had none,-2.6
+dev_folds1_6,Cs,KXBTC15M-26OCT092300-00,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-4.35
+dev_folds1_6,Cs,KXBTC15M-26OCT092330-30,UP,,UP at T-35,coverage gain: correct LOCKED where 2.6 had none,5.24
+dev_folds1_6,Cs,KXBTC15M-26OCT100530-30,UP,,UP at T-7,coverage gain: correct LOCKED where 2.6 had none,2.59
+dev_folds1_6,Cs,KXBTC15M-26OCT100645-45,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-0.53
+dev_folds1_6,Cs,KXBTC15M-26OCT100730-30,UP,,UP at T-31,coverage gain: correct LOCKED where 2.6 had none,5.13
+dev_folds1_6,Cs,KXBTC15M-26OCT101130-30,UP,,UP at T-19,coverage gain: correct LOCKED where 2.6 had none,4.78
+dev_folds1_6,Cs,KXBTC15M-26OCT101200-00,UP,,DOWN at T-68,deterioration: wrong LOCKED where 2.6 was not wrong,3.25
+dev_folds1_6,Cs,KXBTC15M-26OCT101330-30,DOWN,,DOWN at T-14,coverage gain: correct LOCKED where 2.6 had none,-3.58
+dev_folds1_6,Cs,KXBTC15M-26OCT101500-00,UP,,UP at T-17,coverage gain: correct LOCKED where 2.6 had none,3.13
+dev_folds1_6,Cs,KXBTC15M-26OCT101600-00,UP,,UP at T-33,coverage gain: correct LOCKED where 2.6 had none,6.41
+dev_folds1_6,Cs,KXBTC15M-26OCT102145-45,DOWN,,DOWN at T-20,coverage gain: correct LOCKED where 2.6 had none,-6.4
+dev_folds1_6,Cs,KXBTC15M-26OCT102230-30,UP,,UP at T-6,coverage gain: correct LOCKED where 2.6 had none,1.06
+dev_folds1_6,Cs,KXBTC15M-26OCT110215-15,DOWN,,DOWN at T-6,coverage gain: correct LOCKED where 2.6 had none,-0.63
+dev_folds1_6,Cs,KXBTC15M-26OCT110400-00,UP,,UP at T-30,coverage gain: correct LOCKED where 2.6 had none,7.78
+dev_folds1_6,Cs,KXBTC15M-26OCT110515-15,DOWN,,UP at T-114,deterioration: wrong LOCKED where 2.6 was not wrong,-2.81
+dev_folds1_6,Cs,KXBTC15M-26OCT110545-45,UP,,UP at T-29,coverage gain: correct LOCKED where 2.6 had none,5.22
+dev_folds1_6,Cs,KXBTC15M-26OCT110600-00,UP,,UP at T-1,coverage gain: correct LOCKED where 2.6 had none,0.15
+dev_folds1_6,Cs,KXBTC15M-26OCT110715-15,UP,,UP at T-30,coverage gain: correct LOCKED where 2.6 had none,9.61
+dev_folds1_6,Cs,KXBTC15M-26OCT110745-45,DOWN,,DOWN at T-7,coverage gain: correct LOCKED where 2.6 had none,-1.76
+dev_folds1_6,Cs,KXBTC15M-26OCT110930-30,DOWN,,DOWN at T-26,coverage gain: correct LOCKED where 2.6 had none,-10.79
+dev_folds1_6,Cs,KXBTC15M-26OCT110945-45,DOWN,,DOWN at T-23,coverage gain: correct LOCKED where 2.6 had none,-4.97
+dev_folds1_6,Cs,KXBTC15M-26OCT111000-00,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,2.24
+dev_folds1_6,Cs,KXBTC15M-26OCT111015-15,UP,,DOWN at T-65,deterioration: wrong LOCKED where 2.6 was not wrong,4.61
+dev_folds1_6,Cs,KXBTC15M-26OCT111030-30,DOWN,,DOWN at T-18,coverage gain: correct LOCKED where 2.6 had none,-4.92
+dev_folds1_6,Cs,KXBTC15M-26OCT111100-00,DOWN,,DOWN at T-17,coverage gain: correct LOCKED where 2.6 had none,-3.7
+dev_folds1_6,Cs,KXBTC15M-26OCT111115-15,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,3.98
+dev_folds1_6,Cs,KXBTC15M-26OCT111300-00,UP,,UP at T-10,coverage gain: correct LOCKED where 2.6 had none,3.93
+dev_folds1_6,Cs,KXBTC15M-26OCT111345-45,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,9.2
+dev_folds1_6,Cs,KXBTC15M-26OCT120700-00,DOWN,,DOWN at T-12,coverage gain: correct LOCKED where 2.6 had none,-3.48
+dev_folds1_6,Cs,KXBTC15M-26OCT121200-00,DOWN,,DOWN at T-1,coverage gain: correct LOCKED where 2.6 had none,-0.32
+dev_folds1_6,Cs,KXBTC15M-26OCT121345-45,DOWN,,DOWN at T-10,coverage gain: correct LOCKED where 2.6 had none,-3.94
+dev_folds1_6,Cs,KXBTC15M-26OCT121415-15,DOWN,,DOWN at T-18,coverage gain: correct LOCKED where 2.6 had none,-9.15
+dev_folds1_6,Cs,KXBTC15M-26OCT121445-45,DOWN,,DOWN at T-23,coverage gain: correct LOCKED where 2.6 had none,-10.37
+dev_folds1_6,Cs,KXBTC15M-26OCT121930-30,UP,,UP at T-9,coverage gain: correct LOCKED where 2.6 had none,5.41
+dev_folds1_6,Cs,KXBTC15M-26OCT122045-45,DOWN,,DOWN at T-5,coverage gain: correct LOCKED where 2.6 had none,-2.55
+dev_folds1_6,Cs,KXBTC15M-26OCT130015-15,UP,,UP at T-15,coverage gain: correct LOCKED where 2.6 had none,6.77
+dev_folds1_6,Cs,KXBTC15M-26OCT130245-45,UP,,UP at T-14,coverage gain: correct LOCKED where 2.6 had none,6.15

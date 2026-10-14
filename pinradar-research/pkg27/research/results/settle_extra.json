@@ -1,0 +1,2841 @@
+{
+ "asr_ratios_by_fold": {
+  "-1": {
+   "ratios_quiet_normal_active": [
+    2.051,
+    0.992,
+    0.563
+   ],
+   "obs": [
+    25.0,
+    16.0,
+    6.0
+   ],
+   "pred": [
+    11.16,
+    16.14,
+    12.22
+   ]
+  },
+  "0": {
+   "ratios_quiet_normal_active": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "obs": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "pred": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "1": {
+   "ratios_quiet_normal_active": [
+    1.156,
+    0.452,
+    0.734
+   ],
+   "obs": [
+    2.0,
+    0.0,
+    1.0
+   ],
+   "pred": [
+    1.46,
+    2.42,
+    2.09
+   ]
+  },
+  "2": {
+   "ratios_quiet_normal_active": [
+    1.326,
+    0.704,
+    0.542
+   ],
+   "obs": [
+    5.0,
+    3.0,
+    1.0
+   ],
+   "pred": [
+    3.28,
+    5.11,
+    3.53
+   ]
+  },
+  "3": {
+   "ratios_quiet_normal_active": [
+    1.735,
+    0.955,
+    0.671
+   ],
+   "obs": [
+    10.0,
+    7.0,
+    3.0
+   ],
+   "pred": [
+    4.92,
+    7.42,
+    5.45
+   ]
+  },
+  "4": {
+   "ratios_quiet_normal_active": [
+    1.825,
+    1.001,
+    0.499
+   ],
+   "obs": [
+    12.0,
+    10.0,
+    3.0
+   ],
+   "pred": [
+    5.67,
+    9.99,
+    8.02
+   ]
+  },
+  "5": {
+   "ratios_quiet_normal_active": [
+    1.744,
+    0.96,
+    0.422
+   ],
+   "obs": [
+    14.0,
+    12.0,
+    3.0
+   ],
+   "pred": [
+    7.18,
+    12.59,
+    9.84
+   ]
+  },
+  "6": {
+   "ratios_quiet_normal_active": [
+    2.12,
+    0.96,
+    0.517
+   ],
+   "obs": [
+    22.0,
+    14.0,
+    5.0
+   ],
+   "pred": [
+    9.32,
+    14.67,
+    11.55
+   ]
+  }
+ },
+ "holdout": {
+  "Asr": {
+   "locked": {
+    "n": 2118,
+    "lost": 2,
+    "acc_pct": 99.906,
+    "false_pct": 0.094,
+    "ci95_pct": [
+     0.011,
+     0.341
+    ]
+   },
+   "coverage_pct": 99.91,
+   "lead_mean_s": 90.5,
+   "lead_median_s": 67.0,
+   "first_lock_under_60s": {
+    "n": 927,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     0.397
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 1191,
+    "lost": 2,
+    "acc_pct": 99.832,
+    "false_pct": 0.168,
+    "ci95_pct": [
+     0.02,
+     0.605
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 82,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     4.399
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 65,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     5.517
+    ]
+   },
+   "missed_windows": 2,
+   "wrong_contracts": [
+    "KXBTC15M-26JUL270815-15 UP@T-271",
+    "KXBTC15M-26JUL301945-45 UP@T-300"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 1161,
+     "lost": 0,
+     "share_pct": 54.76
+    },
+    "45": {
+     "locked": 1466,
+     "lost": 0,
+     "share_pct": 69.15
+    },
+    "30": {
+     "locked": 1753,
+     "lost": 0,
+     "share_pct": 82.69
+    },
+    "20": {
+     "locked": 1920,
+     "lost": 0,
+     "share_pct": 90.57
+    },
+    "15": {
+     "locked": 1987,
+     "lost": 0,
+     "share_pct": 93.73
+    },
+    "10": {
+     "locked": 2052,
+     "lost": 0,
+     "share_pct": 96.79
+    },
+    "5": {
+     "locked": 2099,
+     "lost": 0,
+     "share_pct": 99.01
+    },
+    "3": {
+     "locked": 2114,
+     "lost": 0,
+     "share_pct": 99.72
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 1.6549,
+    "45": 0.9211,
+    "30": 0.4883,
+    "20": 0.2701,
+    "15": 0.1086,
+    "10": 0.0508,
+    "5": 0.0535,
+    "3": 0.0139
+   },
+   "trade_now_CONS": {
+    "trades": 67,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     5.357
+    ],
+    "avg_px_c": 98.43,
+    "pnl_c_per_contract": 1.416,
+    "pnl_ci95_c": [
+     1.266,
+     1.567
+    ],
+    "usd_per_10lot": 9.49,
+    "median_tau": 24.0
+   },
+   "trade_now_VISIBLE": {
+    "trades": 104,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     3.485
+    ],
+    "avg_px_c": 97.88,
+    "pnl_c_per_contract": 1.927,
+    "pnl_ci95_c": [
+     1.632,
+     2.221
+    ],
+    "usd_per_10lot": 20.04,
+    "median_tau": 21.5
+   }
+  },
+  "AgS": {
+   "locked": {
+    "n": 1879,
+    "lost": 3,
+    "acc_pct": 99.84,
+    "false_pct": 0.16,
+    "ci95_pct": [
+     0.033,
+     0.466
+    ]
+   },
+   "coverage_pct": 88.63,
+   "lead_mean_s": 100.1,
+   "lead_median_s": 77.0,
+   "first_lock_under_60s": {
+    "n": 686,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     0.536
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 1193,
+    "lost": 3,
+    "acc_pct": 99.749,
+    "false_pct": 0.251,
+    "ci95_pct": [
+     0.052,
+     0.733
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 40,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     8.81
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 10,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     30.85
+    ]
+   },
+   "missed_windows": 241,
+   "wrong_contracts": [
+    "KXBTC15M-26JUL270815-15 UP@T-270",
+    "KXBTC15M-26JUL301945-45 UP@T-300",
+    "KXBTC15M-26AUG080815-15 DOWN@T-87"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 1157,
+     "lost": 0,
+     "share_pct": 54.58
+    },
+    "45": {
+     "locked": 1434,
+     "lost": 0,
+     "share_pct": 67.64
+    },
+    "30": {
+     "locked": 1686,
+     "lost": 0,
+     "share_pct": 79.53
+    },
+    "20": {
+     "locked": 1810,
+     "lost": 0,
+     "share_pct": 85.38
+    },
+    "15": {
+     "locked": 1844,
+     "lost": 0,
+     "share_pct": 86.98
+    },
+    "10": {
+     "locked": 1860,
+     "lost": 0,
+     "share_pct": 87.74
+    },
+    "5": {
+     "locked": 1864,
+     "lost": 0,
+     "share_pct": 87.92
+    },
+    "3": {
+     "locked": 1864,
+     "lost": 0,
+     "share_pct": 87.92
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 1.4153,
+    "45": 0.6812,
+    "30": 0.345,
+    "20": 0.7238,
+    "15": 0.6458,
+    "10": 0.545,
+    "5": 0.5861,
+    "3": 0.6963
+   },
+   "trade_now_CONS": {
+    "trades": 32,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     10.888
+    ],
+    "avg_px_c": 97.75,
+    "pnl_c_per_contract": 2.05,
+    "pnl_ci95_c": [
+     1.375,
+     2.725
+    ],
+    "usd_per_10lot": 6.56,
+    "median_tau": 57.5
+   },
+   "trade_now_VISIBLE": {
+    "trades": 43,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     8.221
+    ],
+    "avg_px_c": 97.68,
+    "pnl_c_per_contract": 2.114,
+    "pnl_ci95_c": [
+     1.633,
+     2.595
+    ],
+    "usd_per_10lot": 9.09,
+    "median_tau": 58.0
+   }
+  },
+  "AnAs": {
+   "locked": {
+    "n": 1879,
+    "lost": 2,
+    "acc_pct": 99.894,
+    "false_pct": 0.106,
+    "ci95_pct": [
+     0.013,
+     0.384
+    ]
+   },
+   "coverage_pct": 88.63,
+   "lead_mean_s": 98.1,
+   "lead_median_s": 75.0,
+   "first_lock_under_60s": {
+    "n": 721,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     0.51
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 1158,
+    "lost": 2,
+    "acc_pct": 99.827,
+    "false_pct": 0.173,
+    "ci95_pct": [
+     0.021,
+     0.622
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 44,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     8.042
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 10,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     30.85
+    ]
+   },
+   "missed_windows": 241,
+   "wrong_contracts": [
+    "KXBTC15M-26JUL270815-15 UP@T-270",
+    "KXBTC15M-26JUL301945-45 UP@T-300"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 1129,
+     "lost": 0,
+     "share_pct": 53.25
+    },
+    "45": {
+     "locked": 1412,
+     "lost": 0,
+     "share_pct": 66.6
+    },
+    "30": {
+     "locked": 1669,
+     "lost": 0,
+     "share_pct": 78.73
+    },
+    "20": {
+     "locked": 1799,
+     "lost": 0,
+     "share_pct": 84.86
+    },
+    "15": {
+     "locked": 1840,
+     "lost": 0,
+     "share_pct": 86.79
+    },
+    "10": {
+     "locked": 1860,
+     "lost": 0,
+     "share_pct": 87.74
+    },
+    "5": {
+     "locked": 1864,
+     "lost": 0,
+     "share_pct": 87.92
+    },
+    "3": {
+     "locked": 1864,
+     "lost": 0,
+     "share_pct": 87.92
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 2.0674,
+    "45": 1.2485,
+    "30": 0.7708,
+    "20": 0.7869,
+    "15": 0.855,
+    "10": 0.7621,
+    "5": 0.8231,
+    "3": 0.8929
+   },
+   "trade_now_CONS": {
+    "trades": 29,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     11.944
+    ],
+    "avg_px_c": 97.96,
+    "pnl_c_per_contract": 1.859,
+    "pnl_ci95_c": [
+     1.138,
+     2.579
+    ],
+    "usd_per_10lot": 5.39,
+    "median_tau": 57.0
+   },
+   "trade_now_VISIBLE": {
+    "trades": 41,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     8.604
+    ],
+    "avg_px_c": 97.8,
+    "pnl_c_per_contract": 2.007,
+    "pnl_ci95_c": [
+     1.515,
+     2.5
+    ],
+    "usd_per_10lot": 8.23,
+    "median_tau": 57.0
+   }
+  },
+  "A@0.2%": {
+   "locked": {
+    "n": 1870,
+    "lost": 1,
+    "acc_pct": 99.947,
+    "false_pct": 0.053,
+    "ci95_pct": [
+     0.001,
+     0.298
+    ]
+   },
+   "coverage_pct": 88.21,
+   "lead_mean_s": 78.7,
+   "lead_median_s": 62.5,
+   "first_lock_under_60s": {
+    "n": 877,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     0.42
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 993,
+    "lost": 1,
+    "acc_pct": 99.899,
+    "false_pct": 0.101,
+    "ci95_pct": [
+     0.003,
+     0.56
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 67,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     5.357
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 20,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     16.843
+    ]
+   },
+   "missed_windows": 250,
+   "wrong_contracts": [
+    "KXBTC15M-26JUL301945-45 UP@T-291"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 980,
+     "lost": 0,
+     "share_pct": 46.23
+    },
+    "45": {
+     "locked": 1302,
+     "lost": 0,
+     "share_pct": 61.42
+    },
+    "30": {
+     "locked": 1603,
+     "lost": 0,
+     "share_pct": 75.61
+    },
+    "20": {
+     "locked": 1768,
+     "lost": 0,
+     "share_pct": 83.4
+    },
+    "15": {
+     "locked": 1820,
+     "lost": 0,
+     "share_pct": 85.85
+    },
+    "10": {
+     "locked": 1847,
+     "lost": 0,
+     "share_pct": 87.12
+    },
+    "5": {
+     "locked": 1863,
+     "lost": 0,
+     "share_pct": 87.88
+    },
+    "3": {
+     "locked": 1864,
+     "lost": 0,
+     "share_pct": 87.92
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 1.4029,
+    "45": 0.671,
+    "30": 0.3371,
+    "20": 0.5514,
+    "15": 0.6262,
+    "10": 0.5062,
+    "5": 0.512,
+    "3": 0.6276
+   },
+   "trade_now_CONS": {
+    "trades": 25,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     13.719
+    ],
+    "avg_px_c": 98.33,
+    "pnl_c_per_contract": 1.52,
+    "pnl_ci95_c": [
+     0.711,
+     2.329
+    ],
+    "usd_per_10lot": 3.8,
+    "median_tau": 56.0
+   },
+   "trade_now_VISIBLE": {
+    "trades": 35,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     10.003
+    ],
+    "avg_px_c": 98.45,
+    "pnl_c_per_contract": 1.411,
+    "pnl_ci95_c": [
+     0.933,
+     1.89
+    ],
+    "usd_per_10lot": 4.94,
+    "median_tau": 56.0
+   }
+  },
+  "A@0.3%": {
+   "locked": {
+    "n": 1872,
+    "lost": 1,
+    "acc_pct": 99.947,
+    "false_pct": 0.053,
+    "ci95_pct": [
+     0.001,
+     0.297
+    ]
+   },
+   "coverage_pct": 88.3,
+   "lead_mean_s": 87.8,
+   "lead_median_s": 68.0,
+   "first_lock_under_60s": {
+    "n": 786,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     0.468
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 1086,
+    "lost": 1,
+    "acc_pct": 99.908,
+    "false_pct": 0.092,
+    "ci95_pct": [
+     0.002,
+     0.512
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 46,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     7.706
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 14,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     23.164
+    ]
+   },
+   "missed_windows": 248,
+   "wrong_contracts": [
+    "KXBTC15M-26JUL301945-45 UP@T-291"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 1064,
+     "lost": 0,
+     "share_pct": 50.19
+    },
+    "45": {
+     "locked": 1369,
+     "lost": 0,
+     "share_pct": 64.58
+    },
+    "30": {
+     "locked": 1642,
+     "lost": 0,
+     "share_pct": 77.45
+    },
+    "20": {
+     "locked": 1792,
+     "lost": 0,
+     "share_pct": 84.53
+    },
+    "15": {
+     "locked": 1829,
+     "lost": 0,
+     "share_pct": 86.27
+    },
+    "10": {
+     "locked": 1855,
+     "lost": 0,
+     "share_pct": 87.5
+    },
+    "5": {
+     "locked": 1864,
+     "lost": 0,
+     "share_pct": 87.92
+    },
+    "3": {
+     "locked": 1864,
+     "lost": 0,
+     "share_pct": 87.92
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 1.4029,
+    "45": 0.671,
+    "30": 0.3371,
+    "20": 0.5514,
+    "15": 0.6262,
+    "10": 0.5062,
+    "5": 0.512,
+    "3": 0.6276
+   },
+   "trade_now_CONS": {
+    "trades": 27,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     12.77
+    ],
+    "avg_px_c": 98.19,
+    "pnl_c_per_contract": 1.652,
+    "pnl_ci95_c": [
+     0.893,
+     2.41
+    ],
+    "usd_per_10lot": 4.46,
+    "median_tau": 56.0
+   },
+   "trade_now_VISIBLE": {
+    "trades": 36,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     9.739
+    ],
+    "avg_px_c": 98.11,
+    "pnl_c_per_contract": 1.722,
+    "pnl_ci95_c": [
+     1.226,
+     2.219
+    ],
+    "usd_per_10lot": 6.2,
+    "median_tau": 59.5
+   }
+  },
+  "A@1.0%": {
+   "locked": {
+    "n": 1885,
+    "lost": 5,
+    "acc_pct": 99.735,
+    "false_pct": 0.265,
+    "ci95_pct": [
+     0.086,
+     0.618
+    ]
+   },
+   "coverage_pct": 88.92,
+   "lead_mean_s": 120.2,
+   "lead_median_s": 94.0,
+   "first_lock_under_60s": {
+    "n": 549,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     0.67
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 1336,
+    "lost": 5,
+    "acc_pct": 99.626,
+    "false_pct": 0.374,
+    "ci95_pct": [
+     0.122,
+     0.871
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 28,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     12.344
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 4,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     60.236
+    ]
+   },
+   "missed_windows": 235,
+   "wrong_contracts": [
+    "KXBTC15M-26JUL270815-15 UP@T-300",
+    "KXBTC15M-26JUL300945-45 DOWN@T-262",
+    "KXBTC15M-26JUL301945-45 UP@T-300",
+    "KXBTC15M-26AUG030930-30 UP@T-128",
+    "KXBTC15M-26AUG080815-15 DOWN@T-156"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 1302,
+     "lost": 0,
+     "share_pct": 61.42
+    },
+    "45": {
+     "locked": 1542,
+     "lost": 0,
+     "share_pct": 72.74
+    },
+    "30": {
+     "locked": 1750,
+     "lost": 0,
+     "share_pct": 82.55
+    },
+    "20": {
+     "locked": 1836,
+     "lost": 0,
+     "share_pct": 86.6
+    },
+    "15": {
+     "locked": 1858,
+     "lost": 0,
+     "share_pct": 87.64
+    },
+    "10": {
+     "locked": 1865,
+     "lost": 0,
+     "share_pct": 87.97
+    },
+    "5": {
+     "locked": 1865,
+     "lost": 0,
+     "share_pct": 87.97
+    },
+    "3": {
+     "locked": 1865,
+     "lost": 0,
+     "share_pct": 87.97
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 1.4029,
+    "45": 0.671,
+    "30": 0.3371,
+    "20": 0.5514,
+    "15": 0.6262,
+    "10": 0.5062,
+    "5": 0.512,
+    "3": 0.6276
+   },
+   "trade_now_CONS": {
+    "trades": 40,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     8.81
+    ],
+    "avg_px_c": 97.29,
+    "pnl_c_per_contract": 2.468,
+    "pnl_ci95_c": [
+     1.865,
+     3.07
+    ],
+    "usd_per_10lot": 9.87,
+    "median_tau": 62.5
+   },
+   "trade_now_VISIBLE": {
+    "trades": 56,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     6.375
+    ],
+    "avg_px_c": 97.01,
+    "pnl_c_per_contract": 2.739,
+    "pnl_ci95_c": [
+     2.237,
+     3.241
+    ],
+    "usd_per_10lot": 15.34,
+    "median_tau": 64.0
+   }
+  },
+  "As@0.2%": {
+   "locked": {
+    "n": 2117,
+    "lost": 1,
+    "acc_pct": 99.953,
+    "false_pct": 0.047,
+    "ci95_pct": [
+     0.001,
+     0.263
+    ]
+   },
+   "coverage_pct": 99.86,
+   "lead_mean_s": 71.6,
+   "lead_median_s": 57.0,
+   "first_lock_under_60s": {
+    "n": 1113,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     0.331
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 1004,
+    "lost": 1,
+    "acc_pct": 99.9,
+    "false_pct": 0.1,
+    "ci95_pct": [
+     0.003,
+     0.554
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 102,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     3.552
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 96,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     3.77
+    ]
+   },
+   "missed_windows": 3,
+   "wrong_contracts": [
+    "KXBTC15M-26JUL301945-45 UP@T-291"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 987,
+     "lost": 0,
+     "share_pct": 46.56
+    },
+    "45": {
+     "locked": 1320,
+     "lost": 0,
+     "share_pct": 62.26
+    },
+    "30": {
+     "locked": 1649,
+     "lost": 0,
+     "share_pct": 77.78
+    },
+    "20": {
+     "locked": 1866,
+     "lost": 0,
+     "share_pct": 88.02
+    },
+    "15": {
+     "locked": 1945,
+     "lost": 0,
+     "share_pct": 91.75
+    },
+    "10": {
+     "locked": 2020,
+     "lost": 0,
+     "share_pct": 95.28
+    },
+    "5": {
+     "locked": 2084,
+     "lost": 0,
+     "share_pct": 98.3
+    },
+    "3": {
+     "locked": 2106,
+     "lost": 0,
+     "share_pct": 99.34
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 1.6462,
+    "45": 0.9149,
+    "30": 0.4847,
+    "20": 0.2681,
+    "15": 0.1074,
+    "10": 0.0513,
+    "5": 0.0536,
+    "3": 0.0138
+   },
+   "trade_now_CONS": {
+    "trades": 56,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     6.375
+    ],
+    "avg_px_c": 98.92,
+    "pnl_c_per_contract": 0.977,
+    "pnl_ci95_c": [
+     0.901,
+     1.053
+    ],
+    "usd_per_10lot": 5.47,
+    "median_tau": 21.0
+   },
+   "trade_now_VISIBLE": {
+    "trades": 92,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     3.93
+    ],
+    "avg_px_c": 98.43,
+    "pnl_c_per_contract": 1.426,
+    "pnl_ci95_c": [
+     1.132,
+     1.72
+    ],
+    "usd_per_10lot": 13.12,
+    "median_tau": 15.5
+   }
+  },
+  "As@0.3%": {
+   "locked": {
+    "n": 2118,
+    "lost": 1,
+    "acc_pct": 99.953,
+    "false_pct": 0.047,
+    "ci95_pct": [
+     0.001,
+     0.263
+    ]
+   },
+   "coverage_pct": 99.91,
+   "lead_mean_s": 79.9,
+   "lead_median_s": 61.0,
+   "first_lock_under_60s": {
+    "n": 1032,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     0.357
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 1086,
+    "lost": 1,
+    "acc_pct": 99.908,
+    "false_pct": 0.092,
+    "ci95_pct": [
+     0.002,
+     0.512
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 99,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     3.658
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 78,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     4.619
+    ]
+   },
+   "missed_windows": 2,
+   "wrong_contracts": [
+    "KXBTC15M-26JUL301945-45 UP@T-291"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 1064,
+     "lost": 0,
+     "share_pct": 50.19
+    },
+    "45": {
+     "locked": 1390,
+     "lost": 0,
+     "share_pct": 65.57
+    },
+    "30": {
+     "locked": 1694,
+     "lost": 0,
+     "share_pct": 79.91
+    },
+    "20": {
+     "locked": 1890,
+     "lost": 0,
+     "share_pct": 89.15
+    },
+    "15": {
+     "locked": 1970,
+     "lost": 0,
+     "share_pct": 92.92
+    },
+    "10": {
+     "locked": 2039,
+     "lost": 0,
+     "share_pct": 96.18
+    },
+    "5": {
+     "locked": 2091,
+     "lost": 0,
+     "share_pct": 98.63
+    },
+    "3": {
+     "locked": 2110,
+     "lost": 0,
+     "share_pct": 99.53
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 1.6462,
+    "45": 0.9149,
+    "30": 0.4847,
+    "20": 0.2681,
+    "15": 0.1074,
+    "10": 0.0513,
+    "5": 0.0536,
+    "3": 0.0138
+   },
+   "trade_now_CONS": {
+    "trades": 61,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     5.868
+    ],
+    "avg_px_c": 98.66,
+    "pnl_c_per_contract": 1.211,
+    "pnl_ci95_c": [
+     1.08,
+     1.343
+    ],
+    "usd_per_10lot": 7.39,
+    "median_tau": 21.0
+   },
+   "trade_now_VISIBLE": {
+    "trades": 94,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     3.848
+    ],
+    "avg_px_c": 98.21,
+    "pnl_c_per_contract": 1.623,
+    "pnl_ci95_c": [
+     1.331,
+     1.916
+    ],
+    "usd_per_10lot": 15.26,
+    "median_tau": 15.5
+   }
+  },
+  "Asr@0.3%": {
+   "locked": {
+    "n": 2118,
+    "lost": 1,
+    "acc_pct": 99.953,
+    "false_pct": 0.047,
+    "ci95_pct": [
+     0.001,
+     0.263
+    ]
+   },
+   "coverage_pct": 99.91,
+   "lead_mean_s": 79.4,
+   "lead_median_s": 61.0,
+   "first_lock_under_60s": {
+    "n": 1035,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     0.356
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 1083,
+    "lost": 1,
+    "acc_pct": 99.908,
+    "false_pct": 0.092,
+    "ci95_pct": [
+     0.002,
+     0.513
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 99,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     3.658
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 78,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     4.619
+    ]
+   },
+   "missed_windows": 2,
+   "wrong_contracts": [
+    "KXBTC15M-26JUL301945-45 UP@T-291"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 1063,
+     "lost": 0,
+     "share_pct": 50.14
+    },
+    "45": {
+     "locked": 1392,
+     "lost": 0,
+     "share_pct": 65.66
+    },
+    "30": {
+     "locked": 1693,
+     "lost": 0,
+     "share_pct": 79.86
+    },
+    "20": {
+     "locked": 1891,
+     "lost": 0,
+     "share_pct": 89.2
+    },
+    "15": {
+     "locked": 1969,
+     "lost": 0,
+     "share_pct": 92.88
+    },
+    "10": {
+     "locked": 2039,
+     "lost": 0,
+     "share_pct": 96.18
+    },
+    "5": {
+     "locked": 2091,
+     "lost": 0,
+     "share_pct": 98.63
+    },
+    "3": {
+     "locked": 2109,
+     "lost": 0,
+     "share_pct": 99.48
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 1.6549,
+    "45": 0.9211,
+    "30": 0.4883,
+    "20": 0.2701,
+    "15": 0.1086,
+    "10": 0.0508,
+    "5": 0.0535,
+    "3": 0.0139
+   },
+   "trade_now_CONS": {
+    "trades": 60,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     5.963
+    ],
+    "avg_px_c": 98.67,
+    "pnl_c_per_contract": 1.202,
+    "pnl_ci95_c": [
+     1.069,
+     1.334
+    ],
+    "usd_per_10lot": 7.21,
+    "median_tau": 21.0
+   },
+   "trade_now_VISIBLE": {
+    "trades": 94,
+    "losses": 0,
+    "loss_ci95_pct": [
+     0.0,
+     3.848
+    ],
+    "avg_px_c": 98.21,
+    "pnl_c_per_contract": 1.628,
+    "pnl_ci95_c": [
+     1.335,
+     1.92
+    ],
+    "usd_per_10lot": 15.3,
+    "median_tau": 15.5
+   }
+  }
+ },
+ "dev_folds1_6": {
+  "Asr": {
+   "locked": {
+    "n": 3763,
+    "lost": 19,
+    "acc_pct": 99.495,
+    "false_pct": 0.505,
+    "ci95_pct": [
+     0.304,
+     0.787
+    ]
+   },
+   "coverage_pct": 99.95,
+   "lead_mean_s": 96.0,
+   "lead_median_s": 72.0,
+   "first_lock_under_60s": {
+    "n": 1537,
+    "lost": 5,
+    "acc_pct": 99.675,
+    "false_pct": 0.325,
+    "ci95_pct": [
+     0.106,
+     0.758
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 2226,
+    "lost": 14,
+    "acc_pct": 99.371,
+    "false_pct": 0.629,
+    "ci95_pct": [
+     0.344,
+     1.053
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 155,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     2.352
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 98,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     3.694
+    ]
+   },
+   "missed_windows": 2,
+   "wrong_contracts": [
+    "KXBTC15M-26SEP042130-30 DOWN@T-68",
+    "KXBTC15M-26SEP051615-15 UP@T-117",
+    "KXBTC15M-26SEP061745-45 UP@T-95",
+    "KXBTC15M-26SEP081730-30 UP@T-100",
+    "KXBTC15M-26SEP092330-30 DOWN@T-109",
+    "KXBTC15M-26SEP102315-15 DOWN@T-139",
+    "KXBTC15M-26SEP112300-00 DOWN@T-25",
+    "KXBTC15M-26SEP130245-45 DOWN@T-72",
+    "KXBTC15M-26SEP140530-30 DOWN@T-24",
+    "KXBTC15M-26SEP141445-45 DOWN@T-145",
+    "KXBTC15M-26SEP150715-15 UP@T-163",
+    "KXBTC15M-26SEP151430-30 DOWN@T-283",
+    "KXBTC15M-26SEP220200-00 UP@T-78",
+    "KXBTC15M-26SEP300300-00 UP@T-31",
+    "KXBTC15M-26OCT021630-30 UP@T-167",
+    "KXBTC15M-26OCT030500-00 UP@T-67",
+    "KXBTC15M-26OCT042115-15 DOWN@T-55",
+    "KXBTC15M-26OCT060530-30 UP@T-264",
+    "KXBTC15M-26OCT122045-45 UP@T-23"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 2138,
+     "lost": 2,
+     "share_pct": 56.79
+    },
+    "45": {
+     "locked": 2621,
+     "lost": 2,
+     "share_pct": 69.61
+    },
+    "30": {
+     "locked": 3090,
+     "lost": 2,
+     "share_pct": 82.07
+    },
+    "20": {
+     "locked": 3393,
+     "lost": 2,
+     "share_pct": 90.12
+    },
+    "15": {
+     "locked": 3529,
+     "lost": 2,
+     "share_pct": 93.73
+    },
+    "10": {
+     "locked": 3651,
+     "lost": 0,
+     "share_pct": 96.97
+    },
+    "5": {
+     "locked": 3729,
+     "lost": 0,
+     "share_pct": 99.04
+    },
+    "3": {
+     "locked": 3752,
+     "lost": 0,
+     "share_pct": 99.65
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 0.8219,
+    "45": 0.4339,
+    "30": 0.2838,
+    "20": 0.3036,
+    "15": 0.2775,
+    "10": 0.1457,
+    "5": 0.0904,
+    "3": 0.0453
+   },
+   "trade_now_CONS": {
+    "trades": 349,
+    "losses": 5,
+    "loss_ci95_pct": [
+     0.467,
+     3.312
+    ],
+    "avg_px_c": 98.27,
+    "pnl_c_per_contract": 0.128,
+    "pnl_ci95_c": [
+     -1.121,
+     1.377
+    ],
+    "usd_per_10lot": 4.46,
+    "median_tau": 64.0
+   },
+   "trade_now_VISIBLE": {
+    "trades": 450,
+    "losses": 5,
+    "loss_ci95_pct": [
+     0.362,
+     2.574
+    ],
+    "avg_px_c": 97.84,
+    "pnl_c_per_contract": 0.855,
+    "pnl_ci95_c": [
+     -0.126,
+     1.836
+    ],
+    "usd_per_10lot": 38.47,
+    "median_tau": 55.0
+   }
+  },
+  "AgS": {
+   "locked": {
+    "n": 3483,
+    "lost": 12,
+    "acc_pct": 99.655,
+    "false_pct": 0.345,
+    "ci95_pct": [
+     0.178,
+     0.601
+    ]
+   },
+   "coverage_pct": 92.51,
+   "lead_mean_s": 100.5,
+   "lead_median_s": 77.0,
+   "first_lock_under_60s": {
+    "n": 1276,
+    "lost": 1,
+    "acc_pct": 99.922,
+    "false_pct": 0.078,
+    "ci95_pct": [
+     0.002,
+     0.436
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 2207,
+    "lost": 11,
+    "acc_pct": 99.502,
+    "false_pct": 0.498,
+    "ci95_pct": [
+     0.249,
+     0.89
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 101,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     3.586
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 24,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     14.247
+    ]
+   },
+   "missed_windows": 282,
+   "wrong_contracts": [
+    "KXBTC15M-26SEP042130-30 DOWN@T-70",
+    "KXBTC15M-26SEP051615-15 UP@T-117",
+    "KXBTC15M-26SEP061745-45 UP@T-94",
+    "KXBTC15M-26SEP081730-30 UP@T-100",
+    "KXBTC15M-26SEP092330-30 DOWN@T-103",
+    "KXBTC15M-26SEP130245-45 DOWN@T-82",
+    "KXBTC15M-26SEP141445-45 DOWN@T-145",
+    "KXBTC15M-26SEP151430-30 DOWN@T-156",
+    "KXBTC15M-26SEP220200-00 UP@T-73",
+    "KXBTC15M-26OCT021630-30 UP@T-167",
+    "KXBTC15M-26OCT042115-15 DOWN@T-54",
+    "KXBTC15M-26OCT060530-30 UP@T-264"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 2123,
+     "lost": 2,
+     "share_pct": 56.39
+    },
+    "45": {
+     "locked": 2599,
+     "lost": 1,
+     "share_pct": 69.03
+    },
+    "30": {
+     "locked": 3046,
+     "lost": 0,
+     "share_pct": 80.9
+    },
+    "20": {
+     "locked": 3295,
+     "lost": 0,
+     "share_pct": 87.52
+    },
+    "15": {
+     "locked": 3373,
+     "lost": 0,
+     "share_pct": 89.59
+    },
+    "10": {
+     "locked": 3440,
+     "lost": 0,
+     "share_pct": 91.37
+    },
+    "5": {
+     "locked": 3459,
+     "lost": 0,
+     "share_pct": 91.87
+    },
+    "3": {
+     "locked": 3463,
+     "lost": 0,
+     "share_pct": 91.98
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 0.4981,
+    "45": 0.7425,
+    "30": 0.3724,
+    "20": 0.526,
+    "15": 0.4418,
+    "10": 0.5505,
+    "5": 0.4969,
+    "3": 0.4943
+   },
+   "trade_now_CONS": {
+    "trades": 261,
+    "losses": 2,
+    "loss_ci95_pct": [
+     0.093,
+     2.741
+    ],
+    "avg_px_c": 98.2,
+    "pnl_c_per_contract": 0.855,
+    "pnl_ci95_c": [
+     -0.21,
+     1.92
+    ],
+    "usd_per_10lot": 22.32,
+    "median_tau": 76.0
+   },
+   "trade_now_VISIBLE": {
+    "trades": 336,
+    "losses": 2,
+    "loss_ci95_pct": [
+     0.072,
+     2.134
+    ],
+    "avg_px_c": 97.9,
+    "pnl_c_per_contract": 1.315,
+    "pnl_ci95_c": [
+     0.477,
+     2.153
+    ],
+    "usd_per_10lot": 44.19,
+    "median_tau": 70.0
+   }
+  },
+  "AnAs": {
+   "locked": {
+    "n": 3483,
+    "lost": 12,
+    "acc_pct": 99.655,
+    "false_pct": 0.345,
+    "ci95_pct": [
+     0.178,
+     0.601
+    ]
+   },
+   "coverage_pct": 92.51,
+   "lead_mean_s": 98.8,
+   "lead_median_s": 75.0,
+   "first_lock_under_60s": {
+    "n": 1322,
+    "lost": 1,
+    "acc_pct": 99.924,
+    "false_pct": 0.076,
+    "ci95_pct": [
+     0.002,
+     0.421
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 2161,
+    "lost": 11,
+    "acc_pct": 99.491,
+    "false_pct": 0.509,
+    "ci95_pct": [
+     0.254,
+     0.909
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 111,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     3.269
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 27,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     12.77
+    ]
+   },
+   "missed_windows": 282,
+   "wrong_contracts": [
+    "KXBTC15M-26SEP042130-30 DOWN@T-68",
+    "KXBTC15M-26SEP051615-15 UP@T-117",
+    "KXBTC15M-26SEP061745-45 UP@T-94",
+    "KXBTC15M-26SEP081730-30 UP@T-100",
+    "KXBTC15M-26SEP092330-30 DOWN@T-101",
+    "KXBTC15M-26SEP130245-45 DOWN@T-67",
+    "KXBTC15M-26SEP141445-45 DOWN@T-145",
+    "KXBTC15M-26SEP151430-30 DOWN@T-156",
+    "KXBTC15M-26SEP220200-00 UP@T-73",
+    "KXBTC15M-26OCT021630-30 UP@T-167",
+    "KXBTC15M-26OCT042115-15 DOWN@T-54",
+    "KXBTC15M-26OCT060530-30 UP@T-264"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 2079,
+     "lost": 2,
+     "share_pct": 55.22
+    },
+    "45": {
+     "locked": 2553,
+     "lost": 1,
+     "share_pct": 67.81
+    },
+    "30": {
+     "locked": 3022,
+     "lost": 0,
+     "share_pct": 80.27
+    },
+    "20": {
+     "locked": 3276,
+     "lost": 0,
+     "share_pct": 87.01
+    },
+    "15": {
+     "locked": 3369,
+     "lost": 0,
+     "share_pct": 89.48
+    },
+    "10": {
+     "locked": 3438,
+     "lost": 0,
+     "share_pct": 91.31
+    },
+    "5": {
+     "locked": 3459,
+     "lost": 0,
+     "share_pct": 91.87
+    },
+    "3": {
+     "locked": 3463,
+     "lost": 0,
+     "share_pct": 91.98
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 0.1842,
+    "45": 1.1481,
+    "30": 0.6954,
+    "20": 0.7544,
+    "15": 0.6078,
+    "10": 0.7086,
+    "5": 0.6269,
+    "3": 0.6316
+   },
+   "trade_now_CONS": {
+    "trades": 240,
+    "losses": 2,
+    "loss_ci95_pct": [
+     0.101,
+     2.978
+    ],
+    "avg_px_c": 98.29,
+    "pnl_c_per_contract": 0.713,
+    "pnl_ci95_c": [
+     -0.446,
+     1.872
+    ],
+    "usd_per_10lot": 17.11,
+    "median_tau": 76.5
+   },
+   "trade_now_VISIBLE": {
+    "trades": 306,
+    "losses": 2,
+    "loss_ci95_pct": [
+     0.079,
+     2.341
+    ],
+    "avg_px_c": 98.03,
+    "pnl_c_per_contract": 1.132,
+    "pnl_ci95_c": [
+     0.213,
+     2.05
+    ],
+    "usd_per_10lot": 34.63,
+    "median_tau": 71.5
+   }
+  },
+  "A@0.2%": {
+   "locked": {
+    "n": 3471,
+    "lost": 5,
+    "acc_pct": 99.856,
+    "false_pct": 0.144,
+    "ci95_pct": [
+     0.047,
+     0.336
+    ]
+   },
+   "coverage_pct": 92.19,
+   "lead_mean_s": 77.9,
+   "lead_median_s": 62.0,
+   "first_lock_under_60s": {
+    "n": 1639,
+    "lost": 2,
+    "acc_pct": 99.878,
+    "false_pct": 0.122,
+    "ci95_pct": [
+     0.015,
+     0.44
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 1832,
+    "lost": 3,
+    "acc_pct": 99.836,
+    "false_pct": 0.164,
+    "ci95_pct": [
+     0.034,
+     0.478
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 150,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     2.429
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 62,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     5.776
+    ]
+   },
+   "missed_windows": 294,
+   "wrong_contracts": [
+    "KXBTC15M-26SEP042130-30 DOWN@T-54",
+    "KXBTC15M-26SEP051615-15 UP@T-70",
+    "KXBTC15M-26SEP061745-45 UP@T-79",
+    "KXBTC15M-26SEP151430-30 DOWN@T-111",
+    "KXBTC15M-26OCT042115-15 DOWN@T-37"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 1780,
+     "lost": 0,
+     "share_pct": 47.28
+    },
+    "45": {
+     "locked": 2360,
+     "lost": 1,
+     "share_pct": 62.68
+    },
+    "30": {
+     "locked": 2909,
+     "lost": 0,
+     "share_pct": 77.26
+    },
+    "20": {
+     "locked": 3197,
+     "lost": 0,
+     "share_pct": 84.91
+    },
+    "15": {
+     "locked": 3329,
+     "lost": 0,
+     "share_pct": 88.42
+    },
+    "10": {
+     "locked": 3400,
+     "lost": 0,
+     "share_pct": 90.31
+    },
+    "5": {
+     "locked": 3453,
+     "lost": 0,
+     "share_pct": 91.71
+    },
+    "3": {
+     "locked": 3460,
+     "lost": 0,
+     "share_pct": 91.9
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 0.5069,
+    "45": 0.7366,
+    "30": 0.3633,
+    "20": 0.5204,
+    "15": 0.5355,
+    "10": 0.5936,
+    "5": 0.4956,
+    "3": 0.4928
+   },
+   "trade_now_CONS": {
+    "trades": 170,
+    "losses": 1,
+    "loss_ci95_pct": [
+     0.015,
+     3.234
+    ],
+    "avg_px_c": 98.69,
+    "pnl_c_per_contract": 0.596,
+    "pnl_ci95_c": [
+     -0.564,
+     1.757
+    ],
+    "usd_per_10lot": 10.14,
+    "median_tau": 68.5
+   },
+   "trade_now_VISIBLE": {
+    "trades": 226,
+    "losses": 1,
+    "loss_ci95_pct": [
+     0.011,
+     2.441
+    ],
+    "avg_px_c": 98.55,
+    "pnl_c_per_contract": 0.87,
+    "pnl_ci95_c": [
+     -0.01,
+     1.751
+    ],
+    "usd_per_10lot": 19.67,
+    "median_tau": 64.0
+   }
+  },
+  "A@0.3%": {
+   "locked": {
+    "n": 3477,
+    "lost": 8,
+    "acc_pct": 99.77,
+    "false_pct": 0.23,
+    "ci95_pct": [
+     0.099,
+     0.453
+    ]
+   },
+   "coverage_pct": 92.35,
+   "lead_mean_s": 86.8,
+   "lead_median_s": 68.0,
+   "first_lock_under_60s": {
+    "n": 1479,
+    "lost": 1,
+    "acc_pct": 99.932,
+    "false_pct": 0.068,
+    "ci95_pct": [
+     0.002,
+     0.376
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 1998,
+    "lost": 7,
+    "acc_pct": 99.65,
+    "false_pct": 0.35,
+    "ci95_pct": [
+     0.141,
+     0.721
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 131,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     2.777
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 44,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     8.042
+    ]
+   },
+   "missed_windows": 288,
+   "wrong_contracts": [
+    "KXBTC15M-26SEP042130-30 DOWN@T-62",
+    "KXBTC15M-26SEP051615-15 UP@T-85",
+    "KXBTC15M-26SEP061745-45 UP@T-86",
+    "KXBTC15M-26SEP092330-30 DOWN@T-94",
+    "KXBTC15M-26SEP130245-45 DOWN@T-68",
+    "KXBTC15M-26SEP141445-45 DOWN@T-143",
+    "KXBTC15M-26SEP151430-30 DOWN@T-141",
+    "KXBTC15M-26OCT042115-15 DOWN@T-52"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 1932,
+     "lost": 1,
+     "share_pct": 51.31
+    },
+    "45": {
+     "locked": 2464,
+     "lost": 1,
+     "share_pct": 65.44
+    },
+    "30": {
+     "locked": 2974,
+     "lost": 0,
+     "share_pct": 78.99
+    },
+    "20": {
+     "locked": 3242,
+     "lost": 0,
+     "share_pct": 86.11
+    },
+    "15": {
+     "locked": 3347,
+     "lost": 0,
+     "share_pct": 88.9
+    },
+    "10": {
+     "locked": 3417,
+     "lost": 0,
+     "share_pct": 90.76
+    },
+    "5": {
+     "locked": 3459,
+     "lost": 0,
+     "share_pct": 91.87
+    },
+    "3": {
+     "locked": 3462,
+     "lost": 0,
+     "share_pct": 91.95
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 0.5069,
+    "45": 0.7366,
+    "30": 0.3633,
+    "20": 0.5204,
+    "15": 0.5355,
+    "10": 0.5936,
+    "5": 0.4956,
+    "3": 0.4928
+   },
+   "trade_now_CONS": {
+    "trades": 184,
+    "losses": 2,
+    "loss_ci95_pct": [
+     0.132,
+     3.871
+    ],
+    "avg_px_c": 98.54,
+    "pnl_c_per_contract": 0.23,
+    "pnl_ci95_c": [
+     -1.274,
+     1.735
+    ],
+    "usd_per_10lot": 4.24,
+    "median_tau": 69.5
+   },
+   "trade_now_VISIBLE": {
+    "trades": 255,
+    "losses": 2,
+    "loss_ci95_pct": [
+     0.095,
+     2.804
+    ],
+    "avg_px_c": 98.25,
+    "pnl_c_per_contract": 0.804,
+    "pnl_ci95_c": [
+     -0.293,
+     1.901
+    ],
+    "usd_per_10lot": 20.5,
+    "median_tau": 64.0
+   }
+  },
+  "A@1.0%": {
+   "locked": {
+    "n": 3512,
+    "lost": 40,
+    "acc_pct": 98.861,
+    "false_pct": 1.139,
+    "ci95_pct": [
+     0.815,
+     1.548
+    ]
+   },
+   "coverage_pct": 93.28,
+   "lead_mean_s": 122.0,
+   "lead_median_s": 95.0,
+   "first_lock_under_60s": {
+    "n": 1043,
+    "lost": 5,
+    "acc_pct": 99.521,
+    "false_pct": 0.479,
+    "ci95_pct": [
+     0.156,
+     1.115
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 2469,
+    "lost": 35,
+    "acc_pct": 98.582,
+    "false_pct": 1.418,
+    "ci95_pct": [
+     0.989,
+     1.966
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 69,
+    "lost": 1,
+    "acc_pct": 98.551,
+    "false_pct": 1.449,
+    "ci95_pct": [
+     0.037,
+     7.812
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 14,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     23.164
+    ]
+   },
+   "missed_windows": 253,
+   "wrong_contracts": [
+    "KXBTC15M-26SEP040815-15 DOWN@T-89",
+    "KXBTC15M-26SEP041745-45 DOWN@T-10",
+    "KXBTC15M-26SEP042130-30 DOWN@T-86",
+    "KXBTC15M-26SEP051615-15 UP@T-128",
+    "KXBTC15M-26SEP051630-30 UP@T-132",
+    "KXBTC15M-26SEP061745-45 UP@T-98",
+    "KXBTC15M-26SEP071300-00 DOWN@T-72",
+    "KXBTC15M-26SEP080345-45 UP@T-238",
+    "KXBTC15M-26SEP081730-30 UP@T-106",
+    "KXBTC15M-26SEP082115-15 UP@T-148",
+    "KXBTC15M-26SEP092330-30 DOWN@T-122",
+    "KXBTC15M-26SEP100130-30 DOWN@T-132",
+    "KXBTC15M-26SEP102315-15 DOWN@T-173",
+    "KXBTC15M-26SEP110115-15 DOWN@T-58",
+    "KXBTC15M-26SEP130245-45 DOWN@T-97",
+    "KXBTC15M-26SEP140530-30 DOWN@T-16",
+    "KXBTC15M-26SEP141445-45 DOWN@T-145",
+    "KXBTC15M-26SEP150715-15 UP@T-171",
+    "KXBTC15M-26SEP150900-00 DOWN@T-62",
+    "KXBTC15M-26SEP151430-30 DOWN@T-296",
+    "KXBTC15M-26SEP160345-45 UP@T-151",
+    "KXBTC15M-26SEP172015-15 DOWN@T-108",
+    "KXBTC15M-26SEP180130-30 DOWN@T-139",
+    "KXBTC15M-26SEP180300-00 DOWN@T-204",
+    "KXBTC15M-26SEP220200-00 UP@T-128",
+    "KXBTC15M-26SEP280145-45 DOWN@T-227",
+    "KXBTC15M-26SEP291300-00 DOWN@T-185",
+    "KXBTC15M-26SEP300300-00 UP@T-29",
+    "KXBTC15M-26OCT021630-30 UP@T-209",
+    "KXBTC15M-26OCT030500-00 UP@T-70",
+    "KXBTC15M-26OCT041345-45 DOWN@T-134",
+    "KXBTC15M-26OCT042115-15 DOWN@T-93",
+    "KXBTC15M-26OCT051830-30 DOWN@T-112",
+    "KXBTC15M-26OCT052030-30 UP@T-96",
+    "KXBTC15M-26OCT060530-30 UP@T-264",
+    "KXBTC15M-26OCT092130-30 UP@T-106",
+    "KXBTC15M-26OCT110515-15 UP@T-113",
+    "KXBTC15M-26OCT111015-15 DOWN@T-63",
+    "KXBTC15M-26OCT112045-45 UP@T-149",
+    "KXBTC15M-26OCT122045-45 UP@T-34"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 2326,
+     "lost": 3,
+     "share_pct": 61.78
+    },
+    "45": {
+     "locked": 2773,
+     "lost": 2,
+     "share_pct": 73.65
+    },
+    "30": {
+     "locked": 3155,
+     "lost": 1,
+     "share_pct": 83.8
+    },
+    "20": {
+     "locked": 3357,
+     "lost": 1,
+     "share_pct": 89.16
+    },
+    "15": {
+     "locked": 3421,
+     "lost": 1,
+     "share_pct": 90.86
+    },
+    "10": {
+     "locked": 3456,
+     "lost": 1,
+     "share_pct": 91.79
+    },
+    "5": {
+     "locked": 3464,
+     "lost": 0,
+     "share_pct": 92.01
+    },
+    "3": {
+     "locked": 3465,
+     "lost": 0,
+     "share_pct": 92.03
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 0.5069,
+    "45": 0.7366,
+    "30": 0.3633,
+    "20": 0.5204,
+    "15": 0.5355,
+    "10": 0.5936,
+    "5": 0.4956,
+    "3": 0.4928
+   },
+   "trade_now_CONS": {
+    "trades": 336,
+    "losses": 6,
+    "loss_ci95_pct": [
+     0.658,
+     3.846
+    ],
+    "avg_px_c": 97.53,
+    "pnl_c_per_contract": 0.455,
+    "pnl_ci95_c": [
+     -0.961,
+     1.872
+    ],
+    "usd_per_10lot": 15.3,
+    "median_tau": 81.5
+   },
+   "trade_now_VISIBLE": {
+    "trades": 413,
+    "losses": 6,
+    "loss_ci95_pct": [
+     0.535,
+     3.135
+    ],
+    "avg_px_c": 97.11,
+    "pnl_c_per_contract": 1.183,
+    "pnl_ci95_c": [
+     0.017,
+     2.349
+    ],
+    "usd_per_10lot": 48.85,
+    "median_tau": 78.0
+   }
+  },
+  "As@0.2%": {
+   "locked": {
+    "n": 3760,
+    "lost": 7,
+    "acc_pct": 99.814,
+    "false_pct": 0.186,
+    "ci95_pct": [
+     0.075,
+     0.383
+    ]
+   },
+   "coverage_pct": 99.87,
+   "lead_mean_s": 72.8,
+   "lead_median_s": 58.0,
+   "first_lock_under_60s": {
+    "n": 1933,
+    "lost": 4,
+    "acc_pct": 99.793,
+    "false_pct": 0.207,
+    "ci95_pct": [
+     0.056,
+     0.529
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 1827,
+    "lost": 3,
+    "acc_pct": 99.836,
+    "false_pct": 0.164,
+    "ci95_pct": [
+     0.034,
+     0.479
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 192,
+    "lost": 2,
+    "acc_pct": 98.958,
+    "false_pct": 1.042,
+    "ci95_pct": [
+     0.126,
+     3.712
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 161,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     2.265
+    ]
+   },
+   "missed_windows": 5,
+   "wrong_contracts": [
+    "KXBTC15M-26SEP042130-30 DOWN@T-52",
+    "KXBTC15M-26SEP051615-15 UP@T-70",
+    "KXBTC15M-26SEP061745-45 UP@T-75",
+    "KXBTC15M-26SEP112300-00 DOWN@T-20",
+    "KXBTC15M-26SEP140530-30 DOWN@T-18",
+    "KXBTC15M-26SEP151430-30 DOWN@T-138",
+    "KXBTC15M-26OCT042115-15 DOWN@T-52"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 1770,
+     "lost": 0,
+     "share_pct": 47.01
+    },
+    "45": {
+     "locked": 2371,
+     "lost": 1,
+     "share_pct": 62.97
+    },
+    "30": {
+     "locked": 2921,
+     "lost": 0,
+     "share_pct": 77.58
+    },
+    "20": {
+     "locked": 3275,
+     "lost": 1,
+     "share_pct": 86.99
+    },
+    "15": {
+     "locked": 3437,
+     "lost": 2,
+     "share_pct": 91.29
+    },
+    "10": {
+     "locked": 3590,
+     "lost": 0,
+     "share_pct": 95.35
+    },
+    "5": {
+     "locked": 3710,
+     "lost": 0,
+     "share_pct": 98.54
+    },
+    "3": {
+     "locked": 3746,
+     "lost": 0,
+     "share_pct": 99.5
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 0.8112,
+    "45": 0.4554,
+    "30": 0.244,
+    "20": 0.3091,
+    "15": 0.2814,
+    "10": 0.1472,
+    "5": 0.0908,
+    "3": 0.0447
+   },
+   "trade_now_CONS": {
+    "trades": 219,
+    "losses": 1,
+    "loss_ci95_pct": [
+     0.012,
+     2.518
+    ],
+    "avg_px_c": 98.78,
+    "pnl_c_per_contract": 0.647,
+    "pnl_ci95_c": [
+     -0.254,
+     1.547
+    ],
+    "usd_per_10lot": 14.16,
+    "median_tau": 41.0
+   },
+   "trade_now_VISIBLE": {
+    "trades": 310,
+    "losses": 1,
+    "loss_ci95_pct": [
+     0.008,
+     1.784
+    ],
+    "avg_px_c": 98.45,
+    "pnl_c_per_contract": 1.081,
+    "pnl_ci95_c": [
+     0.434,
+     1.728
+    ],
+    "usd_per_10lot": 33.51,
+    "median_tau": 38.0
+   }
+  },
+  "As@0.3%": {
+   "locked": {
+    "n": 3760,
+    "lost": 10,
+    "acc_pct": 99.734,
+    "false_pct": 0.266,
+    "ci95_pct": [
+     0.128,
+     0.489
+    ]
+   },
+   "coverage_pct": 99.87,
+   "lead_mean_s": 80.8,
+   "lead_median_s": 62.0,
+   "first_lock_under_60s": {
+    "n": 1776,
+    "lost": 4,
+    "acc_pct": 99.775,
+    "false_pct": 0.225,
+    "ci95_pct": [
+     0.061,
+     0.576
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 1984,
+    "lost": 6,
+    "acc_pct": 99.698,
+    "false_pct": 0.302,
+    "ci95_pct": [
+     0.111,
+     0.657
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 185,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     1.974
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 132,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     2.756
+    ]
+   },
+   "missed_windows": 5,
+   "wrong_contracts": [
+    "KXBTC15M-26SEP042130-30 DOWN@T-61",
+    "KXBTC15M-26SEP051615-15 UP@T-85",
+    "KXBTC15M-26SEP061745-45 UP@T-83",
+    "KXBTC15M-26SEP092330-30 DOWN@T-93",
+    "KXBTC15M-26SEP112300-00 DOWN@T-21",
+    "KXBTC15M-26SEP140530-30 DOWN@T-21",
+    "KXBTC15M-26SEP151430-30 DOWN@T-144",
+    "KXBTC15M-26SEP300300-00 UP@T-28",
+    "KXBTC15M-26OCT030500-00 UP@T-61",
+    "KXBTC15M-26OCT042115-15 DOWN@T-54"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 1923,
+     "lost": 1,
+     "share_pct": 51.08
+    },
+    "45": {
+     "locked": 2467,
+     "lost": 1,
+     "share_pct": 65.52
+    },
+    "30": {
+     "locked": 2996,
+     "lost": 1,
+     "share_pct": 79.58
+    },
+    "20": {
+     "locked": 3322,
+     "lost": 2,
+     "share_pct": 88.23
+    },
+    "15": {
+     "locked": 3484,
+     "lost": 2,
+     "share_pct": 92.54
+    },
+    "10": {
+     "locked": 3619,
+     "lost": 0,
+     "share_pct": 96.12
+    },
+    "5": {
+     "locked": 3718,
+     "lost": 0,
+     "share_pct": 98.75
+    },
+    "3": {
+     "locked": 3750,
+     "lost": 0,
+     "share_pct": 99.6
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 0.8112,
+    "45": 0.4554,
+    "30": 0.244,
+    "20": 0.3091,
+    "15": 0.2814,
+    "10": 0.1472,
+    "5": 0.0908,
+    "3": 0.0447
+   },
+   "trade_now_CONS": {
+    "trades": 230,
+    "losses": 2,
+    "loss_ci95_pct": [
+     0.105,
+     3.106
+    ],
+    "avg_px_c": 98.56,
+    "pnl_c_per_contract": 0.428,
+    "pnl_ci95_c": [
+     -0.777,
+     1.633
+    ],
+    "usd_per_10lot": 9.84,
+    "median_tau": 42.0
+   },
+   "trade_now_VISIBLE": {
+    "trades": 322,
+    "losses": 2,
+    "loss_ci95_pct": [
+     0.075,
+     2.226
+    ],
+    "avg_px_c": 98.21,
+    "pnl_c_per_contract": 1.008,
+    "pnl_ci95_c": [
+     0.135,
+     1.881
+    ],
+    "usd_per_10lot": 32.47,
+    "median_tau": 39.0
+   }
+  },
+  "Asr@0.3%": {
+   "locked": {
+    "n": 3761,
+    "lost": 11,
+    "acc_pct": 99.708,
+    "false_pct": 0.292,
+    "ci95_pct": [
+     0.146,
+     0.523
+    ]
+   },
+   "coverage_pct": 99.89,
+   "lead_mean_s": 82.7,
+   "lead_median_s": 63.0,
+   "first_lock_under_60s": {
+    "n": 1750,
+    "lost": 4,
+    "acc_pct": 99.771,
+    "false_pct": 0.229,
+    "ci95_pct": [
+     0.062,
+     0.584
+    ]
+   },
+   "first_lock_60s_plus": {
+    "n": 2011,
+    "lost": 7,
+    "acc_pct": 99.652,
+    "false_pct": 0.348,
+    "ci95_pct": [
+     0.14,
+     0.716
+    ]
+   },
+   "first_lock_15_20s": {
+    "n": 183,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     1.996
+    ]
+   },
+   "first_lock_under_10s": {
+    "n": 130,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     2.798
+    ]
+   },
+   "missed_windows": 4,
+   "wrong_contracts": [
+    "KXBTC15M-26SEP042130-30 DOWN@T-61",
+    "KXBTC15M-26SEP051615-15 UP@T-87",
+    "KXBTC15M-26SEP061745-45 UP@T-87",
+    "KXBTC15M-26SEP092330-30 DOWN@T-97",
+    "KXBTC15M-26SEP112300-00 DOWN@T-22",
+    "KXBTC15M-26SEP130245-45 DOWN@T-64",
+    "KXBTC15M-26SEP140530-30 DOWN@T-22",
+    "KXBTC15M-26SEP150715-15 UP@T-137",
+    "KXBTC15M-26SEP151430-30 DOWN@T-146",
+    "KXBTC15M-26SEP300300-00 UP@T-29",
+    "KXBTC15M-26OCT042115-15 DOWN@T-54"
+   ],
+   "locked_at_fixed_times": {
+    "60": {
+     "locked": 1947,
+     "lost": 1,
+     "share_pct": 51.71
+    },
+    "45": {
+     "locked": 2473,
+     "lost": 1,
+     "share_pct": 65.68
+    },
+    "30": {
+     "locked": 3011,
+     "lost": 1,
+     "share_pct": 79.97
+    },
+    "20": {
+     "locked": 3334,
+     "lost": 2,
+     "share_pct": 88.55
+    },
+    "15": {
+     "locked": 3486,
+     "lost": 2,
+     "share_pct": 92.59
+    },
+    "10": {
+     "locked": 3622,
+     "lost": 0,
+     "share_pct": 96.2
+    },
+    "5": {
+     "locked": 3719,
+     "lost": 0,
+     "share_pct": 98.78
+    },
+    "3": {
+     "locked": 3751,
+     "lost": 0,
+     "share_pct": 99.63
+    }
+   },
+   "ece_pct_at_fixed_times": {
+    "60": 0.8219,
+    "45": 0.4339,
+    "30": 0.2838,
+    "20": 0.3036,
+    "15": 0.2775,
+    "10": 0.1457,
+    "5": 0.0904,
+    "3": 0.0453
+   },
+   "trade_now_CONS": {
+    "trades": 275,
+    "losses": 2,
+    "loss_ci95_pct": [
+     0.088,
+     2.602
+    ],
+    "avg_px_c": 98.57,
+    "pnl_c_per_contract": 0.562,
+    "pnl_ci95_c": [
+     -0.446,
+     1.57
+    ],
+    "usd_per_10lot": 15.45,
+    "median_tau": 54.0
+   },
+   "trade_now_VISIBLE": {
+    "trades": 364,
+    "losses": 2,
+    "loss_ci95_pct": [
+     0.067,
+     1.971
+    ],
+    "avg_px_c": 98.19,
+    "pnl_c_per_contract": 1.098,
+    "pnl_ci95_c": [
+     0.324,
+     1.871
+    ],
+    "usd_per_10lot": 39.95,
+    "median_tau": 45.0
+   }
+  }
+ }
+}

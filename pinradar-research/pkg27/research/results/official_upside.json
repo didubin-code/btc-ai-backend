@@ -1,0 +1,51 @@
+{
+ "holdout": {
+  "windows_2_6_never_locked": 241,
+  "official_locks_le_20s": 227,
+  "won": 227,
+  "with_visible_ask": 214,
+  "ask_quartiles_c": [
+   99.3,
+   99.7,
+   99.9
+  ],
+  "pnl_c_per_contract_any_ask": 1.09,
+  "n_any_ask": 214,
+  "pnl_c_per_contract_ask_ge_90": 1.0,
+  "n_ask_ge_90": 213,
+  "losers": []
+ },
+ "dev_folds1_6": {
+  "windows_2_6_never_locked": 281,
+  "official_locks_le_20s": 263,
+  "won": 261,
+  "with_visible_ask": 263,
+  "ask_quartiles_c": [
+   99.1,
+   99.6,
+   99.9
+  ],
+  "pnl_c_per_contract_any_ask": 0.31,
+  "n_any_ask": 263,
+  "pnl_c_per_contract_ask_ge_90": 0.26,
+  "n_ask_ge_90": 262,
+  "losers": [
+   {
+    "contract": "KXBTC15M-26SEP112300-00",
+    "tau": 20,
+    "side": "DOWN",
+    "won": false,
+    "ask": 0.9990000128746033,
+    "margin": 3.04
+   },
+   {
+    "contract": "KXBTC15M-26SEP140530-30",
+    "tau": 18,
+    "side": "DOWN",
+    "won": false,
+    "ask": 0.9959999918937683,
+    "margin": 2.28
+   }
+  ]
+ }
+}

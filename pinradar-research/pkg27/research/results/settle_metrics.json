@@ -1,0 +1,2333 @@
+{
+ "holdout": {
+  "windows": 2120,
+  "days": 22.47,
+  "variants": {
+   "A": {
+    "locked": {
+     "n": 1879,
+     "lost": 3,
+     "acc_pct": 99.84,
+     "false_pct": 0.16,
+     "ci95_pct": [
+      0.033,
+      0.466
+     ]
+    },
+    "coverage_pct": 88.63,
+    "lead_mean_s": 100.1,
+    "lead_median_s": 77.0,
+    "first_lock_under_60s": {
+     "n": 686,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      0.536
+     ]
+    },
+    "first_lock_60s_plus": {
+     "n": 1193,
+     "lost": 3,
+     "acc_pct": 99.749,
+     "false_pct": 0.251,
+     "ci95_pct": [
+      0.052,
+      0.733
+     ]
+    },
+    "first_lock_15_20s": {
+     "n": 40,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      8.81
+     ]
+    },
+    "first_lock_under_10s": {
+     "n": 10,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      30.85
+     ]
+    },
+    "missed_windows": 241,
+    "missed_by_official_margin": {
+     "<$5": 157,
+     "$5-20": 84
+    },
+    "locked_at_fixed_times": {
+     "60": {
+      "locked": 1157,
+      "lost": 0,
+      "share_pct": 54.58
+     },
+     "45": {
+      "locked": 1434,
+      "lost": 0,
+      "share_pct": 67.64
+     },
+     "30": {
+      "locked": 1686,
+      "lost": 0,
+      "share_pct": 79.53
+     },
+     "20": {
+      "locked": 1810,
+      "lost": 0,
+      "share_pct": 85.38
+     },
+     "15": {
+      "locked": 1844,
+      "lost": 0,
+      "share_pct": 86.98
+     },
+     "10": {
+      "locked": 1860,
+      "lost": 0,
+      "share_pct": 87.74
+     },
+     "5": {
+      "locked": 1864,
+      "lost": 0,
+      "share_pct": 87.92
+     },
+     "3": {
+      "locked": 1864,
+      "lost": 0,
+      "share_pct": 87.92
+     }
+    },
+    "ece_pct_at_fixed_times": {
+     "60": 1.4029,
+     "45": 0.671,
+     "30": 0.3371,
+     "20": 0.5514,
+     "15": 0.6262,
+     "10": 0.5062,
+     "5": 0.512,
+     "3": 0.6276
+    },
+    "trade_now_CONS": {
+     "trades": 32,
+     "losses": 0,
+     "loss_ci95_pct": [
+      0.0,
+      10.888
+     ],
+     "avg_px_c": 97.75,
+     "pnl_c_per_contract": 2.05,
+     "pnl_ci95_c": [
+      1.375,
+      2.725
+     ],
+     "usd_per_10lot": 6.56,
+     "median_tau": 57.5
+    },
+    "trade_now_VISIBLE": {
+     "trades": 43,
+     "losses": 0,
+     "loss_ci95_pct": [
+      0.0,
+      8.221
+     ],
+     "avg_px_c": 97.68,
+     "pnl_c_per_contract": 2.114,
+     "pnl_ci95_c": [
+      1.633,
+      2.595
+     ],
+     "usd_per_10lot": 9.09,
+     "median_tau": 58.0
+    }
+   },
+   "C": {
+    "locked": {
+     "n": 1883,
+     "lost": 3,
+     "acc_pct": 99.841,
+     "false_pct": 0.159,
+     "ci95_pct": [
+      0.033,
+      0.465
+     ]
+    },
+    "coverage_pct": 88.82,
+    "lead_mean_s": 103.7,
+    "lead_median_s": 83.0,
+    "first_lock_under_60s": {
+     "n": 604,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      0.609
+     ]
+    },
+    "first_lock_60s_plus": {
+     "n": 1279,
+     "lost": 3,
+     "acc_pct": 99.765,
+     "false_pct": 0.235,
+     "ci95_pct": [
+      0.048,
+      0.684
+     ]
+    },
+    "first_lock_15_20s": {
+     "n": 36,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      9.739
+     ]
+    },
+    "first_lock_under_10s": {
+     "n": 8,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      36.942
+     ]
+    },
+    "missed_windows": 237,
+    "missed_by_official_margin": {
+     "<$5": 157,
+     "$5-20": 80
+    },
+    "locked_at_fixed_times": {
+     "60": {
+      "locked": 1243,
+      "lost": 0,
+      "share_pct": 58.63
+     },
+     "45": {
+      "locked": 1502,
+      "lost": 0,
+      "share_pct": 70.85
+     },
+     "30": {
+      "locked": 1725,
+      "lost": 0,
+      "share_pct": 81.37
+     },
+     "20": {
+      "locked": 1822,
+      "lost": 0,
+      "share_pct": 85.94
+     },
+     "15": {
+      "locked": 1854,
+      "lost": 0,
+      "share_pct": 87.45
+     },
+     "10": {
+      "locked": 1862,
+      "lost": 0,
+      "share_pct": 87.83
+     },
+     "5": {
+      "locked": 1864,
+      "lost": 0,
+      "share_pct": 87.92
+     },
+     "3": {
+      "locked": 1864,
+      "lost": 0,
+      "share_pct": 87.92
+     }
+    },
+    "ece_pct_at_fixed_times": {
+     "60": 1.1691,
+     "45": 0.5049,
+     "30": 0.2852,
+     "20": 0.5993,
+     "15": 0.5981,
+     "10": 0.5037,
+     "5": 0.4933,
+     "3": 0.6724
+    },
+    "trade_now_CONS": {
+     "trades": 46,
+     "losses": 0,
+     "loss_ci95_pct": [
+      0.0,
+      7.706
+     ],
+     "avg_px_c": 97.9,
+     "pnl_c_per_contract": 1.909,
+     "pnl_ci95_c": [
+      1.431,
+      2.386
+     ],
+     "usd_per_10lot": 8.78,
+     "median_tau": 78.5
+    },
+    "trade_now_VISIBLE": {
+     "trades": 63,
+     "losses": 0,
+     "loss_ci95_pct": [
+      0.0,
+      5.687
+     ],
+     "avg_px_c": 97.7,
+     "pnl_c_per_contract": 2.097,
+     "pnl_ci95_c": [
+      1.7,
+      2.493
+     ],
+     "usd_per_10lot": 13.21,
+     "median_tau": 65.0
+    },
+    "vs_2_6": {
+     "agree, both right": 1876,
+     "coverage gain: correct LOCKED where 2.6 had none": 4,
+     "agree, both wrong": 3
+    }
+   },
+   "Aq": {
+    "locked": {
+     "n": 1879,
+     "lost": 3,
+     "acc_pct": 99.84,
+     "false_pct": 0.16,
+     "ci95_pct": [
+      0.033,
+      0.466
+     ]
+    },
+    "coverage_pct": 88.63,
+    "lead_mean_s": 96.1,
+    "lead_median_s": 76.0,
+    "first_lock_under_60s": {
+     "n": 697,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      0.528
+     ]
+    },
+    "first_lock_60s_plus": {
+     "n": 1182,
+     "lost": 3,
+     "acc_pct": 99.746,
+     "false_pct": 0.254,
+     "ci95_pct": [
+      0.052,
+      0.74
+     ]
+    },
+    "first_lock_15_20s": {
+     "n": 44,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      8.042
+     ]
+    },
+    "first_lock_under_10s": {
+     "n": 10,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      30.85
+     ]
+    },
+    "missed_windows": 241,
+    "missed_by_official_margin": {
+     "<$5": 157,
+     "$5-20": 84
+    },
+    "locked_at_fixed_times": {
+     "60": {
+      "locked": 1147,
+      "lost": 0,
+      "share_pct": 54.1
+     },
+     "45": {
+      "locked": 1430,
+      "lost": 0,
+      "share_pct": 67.45
+     },
+     "30": {
+      "locked": 1679,
+      "lost": 0,
+      "share_pct": 79.2
+     },
+     "20": {
+      "locked": 1808,
+      "lost": 0,
+      "share_pct": 85.28
+     },
+     "15": {
+      "locked": 1844,
+      "lost": 0,
+      "share_pct": 86.98
+     },
+     "10": {
+      "locked": 1860,
+      "lost": 0,
+      "share_pct": 87.74
+     },
+     "5": {
+      "locked": 1864,
+      "lost": 0,
+      "share_pct": 87.92
+     },
+     "3": {
+      "locked": 1864,
+      "lost": 0,
+      "share_pct": 87.92
+     }
+    },
+    "ece_pct_at_fixed_times": {
+     "60": 1.4219,
+     "45": 0.6811,
+     "30": 0.3436,
+     "20": 0.5536,
+     "15": 0.6259,
+     "10": 0.515,
+     "5": 0.5159,
+     "3": 0.6268
+    },
+    "trade_now_CONS": {
+     "trades": 27,
+     "losses": 0,
+     "loss_ci95_pct": [
+      0.0,
+      12.77
+     ],
+     "avg_px_c": 97.63,
+     "pnl_c_per_contract": 2.163,
+     "pnl_ci95_c": [
+      1.371,
+      2.955
+     ],
+     "usd_per_10lot": 5.84,
+     "median_tau": 58.0
+    },
+    "trade_now_VISIBLE": {
+     "trades": 38,
+     "losses": 0,
+     "loss_ci95_pct": [
+      0.0,
+      9.251
+     ],
+     "avg_px_c": 97.71,
+     "pnl_c_per_contract": 2.092,
+     "pnl_ci95_c": [
+      1.584,
+      2.6
+     ],
+     "usd_per_10lot": 7.95,
+     "median_tau": 57.0
+    },
+    "vs_2_6": {
+     "agree, both right": 1876,
+     "agree, both wrong": 3
+    }
+   },
+   "B": {
+    "locked": {
+     "n": 1928,
+     "lost": 50,
+     "acc_pct": 97.407,
+     "false_pct": 2.593,
+     "ci95_pct": [
+      1.931,
+      3.405
+     ]
+    },
+    "coverage_pct": 90.94,
+    "lead_mean_s": 201.2,
+    "lead_median_s": 219.0,
+    "first_lock_under_60s": {
+     "n": 194,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      1.884
+     ]
+    },
+    "first_lock_60s_plus": {
+     "n": 1734,
+     "lost": 50,
+     "acc_pct": 97.116,
+     "false_pct": 2.884,
+     "ci95_pct": [
+      2.148,
+      3.784
+     ]
+    },
+    "first_lock_15_20s": {
+     "n": 8,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      36.942
+     ]
+    },
+    "first_lock_under_10s": {
+     "n": 3,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      70.76
+     ]
+    },
+    "missed_windows": 192,
+    "missed_by_official_margin": {
+     "<$5": 121,
+     "$5-20": 71
+    },
+    "locked_at_fixed_times": {
+     "60": {
+      "locked": 1595,
+      "lost": 1,
+      "share_pct": 75.24
+     },
+     "45": {
+      "locked": 1725,
+      "lost": 0,
+      "share_pct": 81.37
+     },
+     "30": {
+      "locked": 1807,
+      "lost": 0,
+      "share_pct": 85.24
+     },
+     "20": {
+      "locked": 1835,
+      "lost": 0,
+      "share_pct": 86.56
+     },
+     "15": {
+      "locked": 1842,
+      "lost": 0,
+      "share_pct": 86.89
+     },
+     "10": {
+      "locked": 1847,
+      "lost": 0,
+      "share_pct": 87.12
+     },
+     "5": {
+      "locked": 1842,
+      "lost": 0,
+      "share_pct": 86.89
+     },
+     "3": {
+      "locked": 1843,
+      "lost": 0,
+      "share_pct": 86.93
+     }
+    },
+    "ece_pct_at_fixed_times": {
+     "60": 0.5612,
+     "45": 0.4248,
+     "30": 0.3406,
+     "20": 0.5312,
+     "15": 0.5838,
+     "10": 0.5021,
+     "5": 0.5299,
+     "3": 0.6373
+    },
+    "trade_now_CONS": {
+     "trades": 945,
+     "losses": 31,
+     "loss_ci95_pct": [
+      2.24,
+      4.624
+     ],
+     "avg_px_c": 97.81,
+     "pnl_c_per_contract": -1.289,
+     "pnl_ci95_c": [
+      -2.414,
+      -0.165
+     ],
+     "usd_per_10lot": -121.84,
+     "median_tau": 182.0
+    },
+    "trade_now_VISIBLE": {
+     "trades": 1017,
+     "losses": 31,
+     "loss_ci95_pct": [
+      2.08,
+      4.299
+     ],
+     "avg_px_c": 97.67,
+     "pnl_c_per_contract": -0.927,
+     "pnl_ci95_c": [
+      -1.974,
+      0.121
+     ],
+     "usd_per_10lot": -94.24,
+     "median_tau": 181.0
+    },
+    "vs_2_6": {
+     "agree, both right": 1836,
+     "coverage gain: correct LOCKED where 2.6 had none": 42,
+     "deterioration: wrong LOCKED where 2.6 was not wrong": 47,
+     "coverage loss: no LOCKED where 2.6 was right": 10,
+     "agree, both wrong": 3
+    }
+   },
+   "As": {
+    "locked": {
+     "n": 2118,
+     "lost": 2,
+     "acc_pct": 99.906,
+     "false_pct": 0.094,
+     "ci95_pct": [
+      0.011,
+      0.341
+     ]
+    },
+    "coverage_pct": 99.91,
+    "lead_mean_s": 91.0,
+    "lead_median_s": 67.0,
+    "first_lock_under_60s": {
+     "n": 921,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      0.4
+     ]
+    },
+    "first_lock_60s_plus": {
+     "n": 1197,
+     "lost": 2,
+     "acc_pct": 99.833,
+     "false_pct": 0.167,
+     "ci95_pct": [
+      0.02,
+      0.602
+     ]
+    },
+    "first_lock_15_20s": {
+     "n": 83,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      4.347
+     ]
+    },
+    "first_lock_under_10s": {
+     "n": 65,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      5.517
+     ]
+    },
+    "missed_windows": 2,
+    "missed_by_official_margin": {
+     "<$5": 2
+    },
+    "locked_at_fixed_times": {
+     "60": {
+      "locked": 1166,
+      "lost": 0,
+      "share_pct": 55.0
+     },
+     "45": {
+      "locked": 1466,
+      "lost": 0,
+      "share_pct": 69.15
+     },
+     "30": {
+      "locked": 1754,
+      "lost": 0,
+      "share_pct": 82.74
+     },
+     "20": {
+      "locked": 1920,
+      "lost": 0,
+      "share_pct": 90.57
+     },
+     "15": {
+      "locked": 1988,
+      "lost": 0,
+      "share_pct": 93.77
+     },
+     "10": {
+      "locked": 2052,
+      "lost": 0,
+      "share_pct": 96.79
+     },
+     "5": {
+      "locked": 2099,
+      "lost": 0,
+      "share_pct": 99.01
+     },
+     "3": {
+      "locked": 2114,
+      "lost": 0,
+      "share_pct": 99.72
+     }
+    },
+    "ece_pct_at_fixed_times": {
+     "60": 1.6462,
+     "45": 0.9149,
+     "30": 0.4847,
+     "20": 0.2681,
+     "15": 0.1074,
+     "10": 0.0513,
+     "5": 0.0536,
+     "3": 0.0138
+    },
+    "trade_now_CONS": {
+     "trades": 68,
+     "losses": 0,
+     "loss_ci95_pct": [
+      0.0,
+      5.28
+     ],
+     "avg_px_c": 98.44,
+     "pnl_c_per_contract": 1.409,
+     "pnl_ci95_c": [
+      1.26,
+      1.558
+     ],
+     "usd_per_10lot": 9.58,
+     "median_tau": 23.5
+    },
+    "trade_now_VISIBLE": {
+     "trades": 104,
+     "losses": 0,
+     "loss_ci95_pct": [
+      0.0,
+      3.485
+     ],
+     "avg_px_c": 97.86,
+     "pnl_c_per_contract": 1.95,
+     "pnl_ci95_c": [
+      1.653,
+      2.247
+     ],
+     "usd_per_10lot": 20.28,
+     "median_tau": 21.5
+    },
+    "vs_2_6": {
+     "agree, both right": 1876,
+     "coverage gain: correct LOCKED where 2.6 had none": 239,
+     "agree, both wrong": 2,
+     "improvement: avoided a wrong 2.6 LOCKED": 1
+    }
+   },
+   "Cs": {
+    "locked": {
+     "n": 2119,
+     "lost": 3,
+     "acc_pct": 99.858,
+     "false_pct": 0.142,
+     "ci95_pct": [
+      0.029,
+      0.413
+     ]
+    },
+    "coverage_pct": 99.95,
+    "lead_mean_s": 94.5,
+    "lead_median_s": 74.0,
+    "first_lock_under_60s": {
+     "n": 840,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      0.438
+     ]
+    },
+    "first_lock_60s_plus": {
+     "n": 1279,
+     "lost": 3,
+     "acc_pct": 99.765,
+     "false_pct": 0.235,
+     "ci95_pct": [
+      0.048,
+      0.684
+     ]
+    },
+    "first_lock_15_20s": {
+     "n": 69,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      5.206
+     ]
+    },
+    "first_lock_under_10s": {
+     "n": 55,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      6.487
+     ]
+    },
+    "missed_windows": 1,
+    "missed_by_official_margin": {
+     "<$5": 1
+    },
+    "locked_at_fixed_times": {
+     "60": {
+      "locked": 1241,
+      "lost": 0,
+      "share_pct": 58.54
+     },
+     "45": {
+      "locked": 1533,
+      "lost": 0,
+      "share_pct": 72.31
+     },
+     "30": {
+      "locked": 1798,
+      "lost": 0,
+      "share_pct": 84.81
+     },
+     "20": {
+      "locked": 1947,
+      "lost": 0,
+      "share_pct": 91.84
+     },
+     "15": {
+      "locked": 2006,
+      "lost": 0,
+      "share_pct": 94.62
+     },
+     "10": {
+      "locked": 2063,
+      "lost": 0,
+      "share_pct": 97.31
+     },
+     "5": {
+      "locked": 2102,
+      "lost": 0,
+      "share_pct": 99.15
+     },
+     "3": {
+      "locked": 2114,
+      "lost": 0,
+      "share_pct": 99.72
+     }
+    },
+    "ece_pct_at_fixed_times": {
+     "60": 1.3991,
+     "45": 0.724,
+     "30": 0.3719,
+     "20": 0.2568,
+     "15": 0.134,
+     "10": 0.0696,
+     "5": 0.0593,
+     "3": 0.0113
+    },
+    "trade_now_CONS": {
+     "trades": 86,
+     "losses": 0,
+     "loss_ci95_pct": [
+      0.0,
+      4.199
+     ],
+     "avg_px_c": 98.42,
+     "pnl_c_per_contract": 1.421,
+     "pnl_ci95_c": [
+      1.306,
+      1.535
+     ],
+     "usd_per_10lot": 12.22,
+     "median_tau": 27.0
+    },
+    "trade_now_VISIBLE": {
+     "trades": 130,
+     "losses": 0,
+     "loss_ci95_pct": [
+      0.0,
+      2.798
+     ],
+     "avg_px_c": 97.87,
+     "pnl_c_per_contract": 1.938,
+     "pnl_ci95_c": [
+      1.661,
+      2.216
+     ],
+     "usd_per_10lot": 25.2,
+     "median_tau": 24.0
+    },
+    "vs_2_6": {
+     "agree, both right": 1876,
+     "coverage gain: correct LOCKED where 2.6 had none": 240,
+     "agree, both wrong": 3
+    }
+   }
+  }
+ },
+ "dev_folds1_6": {
+  "windows": 3765,
+  "days": 39.62,
+  "variants": {
+   "A": {
+    "locked": {
+     "n": 3484,
+     "lost": 13,
+     "acc_pct": 99.627,
+     "false_pct": 0.373,
+     "ci95_pct": [
+      0.199,
+      0.637
+     ]
+    },
+    "coverage_pct": 92.54,
+    "lead_mean_s": 100.5,
+    "lead_median_s": 77.0,
+    "first_lock_under_60s": {
+     "n": 1277,
+     "lost": 2,
+     "acc_pct": 99.843,
+     "false_pct": 0.157,
+     "ci95_pct": [
+      0.019,
+      0.565
+     ]
+    },
+    "first_lock_60s_plus": {
+     "n": 2207,
+     "lost": 11,
+     "acc_pct": 99.502,
+     "false_pct": 0.498,
+     "ci95_pct": [
+      0.249,
+      0.89
+     ]
+    },
+    "first_lock_15_20s": {
+     "n": 101,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      3.586
+     ]
+    },
+    "first_lock_under_10s": {
+     "n": 24,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      14.247
+     ]
+    },
+    "missed_windows": 281,
+    "missed_by_official_margin": {
+     "$5-20": 109,
+     "<$5": 172
+    },
+    "locked_at_fixed_times": {
+     "60": {
+      "locked": 2123,
+      "lost": 2,
+      "share_pct": 56.39
+     },
+     "45": {
+      "locked": 2599,
+      "lost": 1,
+      "share_pct": 69.03
+     },
+     "30": {
+      "locked": 3046,
+      "lost": 0,
+      "share_pct": 80.9
+     },
+     "20": {
+      "locked": 3296,
+      "lost": 0,
+      "share_pct": 87.54
+     },
+     "15": {
+      "locked": 3374,
+      "lost": 0,
+      "share_pct": 89.61
+     },
+     "10": {
+      "locked": 3441,
+      "lost": 1,
+      "share_pct": 91.39
+     },
+     "5": {
+      "locked": 3459,
+      "lost": 0,
+      "share_pct": 91.87
+     },
+     "3": {
+      "locked": 3463,
+      "lost": 0,
+      "share_pct": 91.98
+     }
+    },
+    "ece_pct_at_fixed_times": {
+     "60": 0.5069,
+     "45": 0.7366,
+     "30": 0.3633,
+     "20": 0.5204,
+     "15": 0.5355,
+     "10": 0.5936,
+     "5": 0.4956,
+     "3": 0.4928
+    },
+    "trade_now_CONS": {
+     "trades": 261,
+     "losses": 2,
+     "loss_ci95_pct": [
+      0.093,
+      2.741
+     ],
+     "avg_px_c": 98.2,
+     "pnl_c_per_contract": 0.855,
+     "pnl_ci95_c": [
+      -0.21,
+      1.92
+     ],
+     "usd_per_10lot": 22.32,
+     "median_tau": 76.0
+    },
+    "trade_now_VISIBLE": {
+     "trades": 336,
+     "losses": 2,
+     "loss_ci95_pct": [
+      0.072,
+      2.134
+     ],
+     "avg_px_c": 97.9,
+     "pnl_c_per_contract": 1.315,
+     "pnl_ci95_c": [
+      0.477,
+      2.153
+     ],
+     "usd_per_10lot": 44.19,
+     "median_tau": 70.0
+    }
+   },
+   "C": {
+    "locked": {
+     "n": 3486,
+     "lost": 15,
+     "acc_pct": 99.57,
+     "false_pct": 0.43,
+     "ci95_pct": [
+      0.241,
+      0.709
+     ]
+    },
+    "coverage_pct": 92.59,
+    "lead_mean_s": 95.8,
+    "lead_median_s": 75.0,
+    "first_lock_under_60s": {
+     "n": 1289,
+     "lost": 2,
+     "acc_pct": 99.845,
+     "false_pct": 0.155,
+     "ci95_pct": [
+      0.019,
+      0.559
+     ]
+    },
+    "first_lock_60s_plus": {
+     "n": 2197,
+     "lost": 13,
+     "acc_pct": 99.408,
+     "false_pct": 0.592,
+     "ci95_pct": [
+      0.315,
+      1.01
+     ]
+    },
+    "first_lock_15_20s": {
+     "n": 102,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      3.552
+     ]
+    },
+    "first_lock_under_10s": {
+     "n": 29,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      11.944
+     ]
+    },
+    "missed_windows": 279,
+    "missed_by_official_margin": {
+     "$5-20": 110,
+     "<$5": 169
+    },
+    "locked_at_fixed_times": {
+     "60": {
+      "locked": 2115,
+      "lost": 0,
+      "share_pct": 56.18
+     },
+     "45": {
+      "locked": 2589,
+      "lost": 1,
+      "share_pct": 68.76
+     },
+     "30": {
+      "locked": 3031,
+      "lost": 0,
+      "share_pct": 80.5
+     },
+     "20": {
+      "locked": 3285,
+      "lost": 0,
+      "share_pct": 87.25
+     },
+     "15": {
+      "locked": 3378,
+      "lost": 0,
+      "share_pct": 89.72
+     },
+     "10": {
+      "locked": 3438,
+      "lost": 0,
+      "share_pct": 91.31
+     },
+     "5": {
+      "locked": 3460,
+      "lost": 0,
+      "share_pct": 91.9
+     },
+     "3": {
+      "locked": 3464,
+      "lost": 0,
+      "share_pct": 92.01
+     }
+    },
+    "ece_pct_at_fixed_times": {
+     "60": 0.5942,
+     "45": 0.6862,
+     "30": 0.3662,
+     "20": 0.4826,
+     "15": 0.4381,
+     "10": 0.5875,
+     "5": 0.4869,
+     "3": 0.4847
+    },
+    "trade_now_CONS": {
+     "trades": 233,
+     "losses": 3,
+     "loss_ci95_pct": [
+      0.266,
+      3.716
+     ],
+     "avg_px_c": 98.17,
+     "pnl_c_per_contract": 0.37,
+     "pnl_ci95_c": [
+      -1.083,
+      1.823
+     ],
+     "usd_per_10lot": 8.62,
+     "median_tau": 85.0
+    },
+    "trade_now_VISIBLE": {
+     "trades": 314,
+     "losses": 3,
+     "loss_ci95_pct": [
+      0.197,
+      2.767
+     ],
+     "avg_px_c": 97.92,
+     "pnl_c_per_contract": 0.933,
+     "pnl_ci95_c": [
+      -0.155,
+      2.02
+     ],
+     "usd_per_10lot": 29.29,
+     "median_tau": 73.5
+    },
+    "vs_2_6": {
+     "agree, both right": 3465,
+     "improvement: avoided a wrong 2.6 LOCKED": 5,
+     "agree, both wrong": 8,
+     "coverage loss: no LOCKED where 2.6 was right": 2,
+     "coverage gain: correct LOCKED where 2.6 had none": 3,
+     "deterioration: wrong LOCKED where 2.6 was not wrong": 7
+    }
+   },
+   "Aq": {
+    "locked": {
+     "n": 3480,
+     "lost": 8,
+     "acc_pct": 99.77,
+     "false_pct": 0.23,
+     "ci95_pct": [
+      0.099,
+      0.452
+     ]
+    },
+    "coverage_pct": 92.43,
+    "lead_mean_s": 92.6,
+    "lead_median_s": 72.0,
+    "first_lock_under_60s": {
+     "n": 1353,
+     "lost": 2,
+     "acc_pct": 99.852,
+     "false_pct": 0.148,
+     "ci95_pct": [
+      0.018,
+      0.533
+     ]
+    },
+    "first_lock_60s_plus": {
+     "n": 2127,
+     "lost": 6,
+     "acc_pct": 99.718,
+     "false_pct": 0.282,
+     "ci95_pct": [
+      0.104,
+      0.613
+     ]
+    },
+    "first_lock_15_20s": {
+     "n": 108,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      3.358
+     ]
+    },
+    "first_lock_under_10s": {
+     "n": 31,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      11.219
+     ]
+    },
+    "missed_windows": 285,
+    "missed_by_official_margin": {
+     "$5-20": 110,
+     "<$5": 175
+    },
+    "locked_at_fixed_times": {
+     "60": {
+      "locked": 2060,
+      "lost": 0,
+      "share_pct": 54.71
+     },
+     "45": {
+      "locked": 2546,
+      "lost": 1,
+      "share_pct": 67.62
+     },
+     "30": {
+      "locked": 3013,
+      "lost": 0,
+      "share_pct": 80.03
+     },
+     "20": {
+      "locked": 3272,
+      "lost": 0,
+      "share_pct": 86.91
+     },
+     "15": {
+      "locked": 3366,
+      "lost": 0,
+      "share_pct": 89.4
+     },
+     "10": {
+      "locked": 3432,
+      "lost": 0,
+      "share_pct": 91.16
+     },
+     "5": {
+      "locked": 3459,
+      "lost": 0,
+      "share_pct": 91.87
+     },
+     "3": {
+      "locked": 3463,
+      "lost": 0,
+      "share_pct": 91.98
+     }
+    },
+    "ece_pct_at_fixed_times": {
+     "60": 0.5014,
+     "45": 0.7476,
+     "30": 0.3934,
+     "20": 0.5058,
+     "15": 0.4497,
+     "10": 0.6045,
+     "5": 0.5047,
+     "3": 0.5018
+    },
+    "trade_now_CONS": {
+     "trades": 177,
+     "losses": 1,
+     "loss_ci95_pct": [
+      0.014,
+      3.107
+     ],
+     "avg_px_c": 98.27,
+     "pnl_c_per_contract": 0.994,
+     "pnl_ci95_c": [
+      -0.112,
+      2.1
+     ],
+     "usd_per_10lot": 17.59,
+     "median_tau": 73.0
+    },
+    "trade_now_VISIBLE": {
+     "trades": 241,
+     "losses": 1,
+     "loss_ci95_pct": [
+      0.011,
+      2.29
+     ],
+     "avg_px_c": 97.99,
+     "pnl_c_per_contract": 1.406,
+     "pnl_ci95_c": [
+      0.582,
+      2.231
+     ],
+     "usd_per_10lot": 33.89,
+     "median_tau": 66.0
+    },
+    "vs_2_6": {
+     "agree, both right": 3469,
+     "improvement: avoided a wrong 2.6 LOCKED": 5,
+     "agree, both wrong": 8,
+     "coverage loss: no LOCKED where 2.6 was right": 2
+    }
+   },
+   "B": {
+    "locked": {
+     "n": 3563,
+     "lost": 160,
+     "acc_pct": 95.509,
+     "false_pct": 4.491,
+     "ci95_pct": [
+      3.834,
+      5.223
+     ]
+    },
+    "coverage_pct": 94.63,
+    "lead_mean_s": 186.9,
+    "lead_median_s": 194.0,
+    "first_lock_under_60s": {
+     "n": 493,
+     "lost": 10,
+     "acc_pct": 97.972,
+     "false_pct": 2.028,
+     "ci95_pct": [
+      0.977,
+      3.699
+     ]
+    },
+    "first_lock_60s_plus": {
+     "n": 3070,
+     "lost": 150,
+     "acc_pct": 95.114,
+     "false_pct": 4.886,
+     "ci95_pct": [
+      4.15,
+      5.709
+     ]
+    },
+    "first_lock_15_20s": {
+     "n": 27,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      12.77
+     ]
+    },
+    "first_lock_under_10s": {
+     "n": 11,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      28.491
+     ]
+    },
+    "missed_windows": 202,
+    "missed_by_official_margin": {
+     "$5-20": 86,
+     "<$5": 116
+    },
+    "locked_at_fixed_times": {
+     "60": {
+      "locked": 2760,
+      "lost": 17,
+      "share_pct": 73.31
+     },
+     "45": {
+      "locked": 3017,
+      "lost": 5,
+      "share_pct": 80.13
+     },
+     "30": {
+      "locked": 3262,
+      "lost": 4,
+      "share_pct": 86.64
+     },
+     "20": {
+      "locked": 3367,
+      "lost": 2,
+      "share_pct": 89.43
+     },
+     "15": {
+      "locked": 3399,
+      "lost": 0,
+      "share_pct": 90.28
+     },
+     "10": {
+      "locked": 3418,
+      "lost": 0,
+      "share_pct": 90.78
+     },
+     "5": {
+      "locked": 3430,
+      "lost": 0,
+      "share_pct": 91.1
+     },
+     "3": {
+      "locked": 3434,
+      "lost": 0,
+      "share_pct": 91.21
+     }
+    },
+    "ece_pct_at_fixed_times": {
+     "60": 1.7081,
+     "45": 0.6685,
+     "30": 0.2991,
+     "20": 0.5058,
+     "15": 0.5289,
+     "10": 0.5569,
+     "5": 0.5364,
+     "3": 0.5095
+    },
+    "trade_now_CONS": {
+     "trades": 2234,
+     "losses": 101,
+     "loss_ci95_pct": [
+      3.697,
+      5.467
+     ],
+     "avg_px_c": 97.25,
+     "pnl_c_per_contract": -2.01,
+     "pnl_ci95_c": [
+      -2.857,
+      -1.164
+     ],
+     "usd_per_10lot": -449.07,
+     "median_tau": 166.0
+    },
+    "trade_now_VISIBLE": {
+     "trades": 2376,
+     "losses": 101,
+     "loss_ci95_pct": [
+      3.475,
+      5.141
+     ],
+     "avg_px_c": 96.84,
+     "pnl_c_per_contract": -1.36,
+     "pnl_ci95_c": [
+      -2.161,
+      -0.559
+     ],
+     "usd_per_10lot": -323.11,
+     "median_tau": 162.0
+    },
+    "vs_2_6": {
+     "agree, both right": 3358,
+     "deterioration: wrong LOCKED where 2.6 was not wrong": 148,
+     "coverage loss: no LOCKED where 2.6 was right": 11,
+     "improvement: avoided a wrong 2.6 LOCKED": 1,
+     "agree, both wrong": 12,
+     "coverage gain: correct LOCKED where 2.6 had none": 44
+    }
+   },
+   "As": {
+    "locked": {
+     "n": 3763,
+     "lost": 21,
+     "acc_pct": 99.442,
+     "false_pct": 0.558,
+     "ci95_pct": [
+      0.346,
+      0.852
+     ]
+    },
+    "coverage_pct": 99.95,
+    "lead_mean_s": 93.7,
+    "lead_median_s": 70.0,
+    "first_lock_under_60s": {
+     "n": 1567,
+     "lost": 5,
+     "acc_pct": 99.681,
+     "false_pct": 0.319,
+     "ci95_pct": [
+      0.104,
+      0.743
+     ]
+    },
+    "first_lock_60s_plus": {
+     "n": 2196,
+     "lost": 16,
+     "acc_pct": 99.271,
+     "false_pct": 0.729,
+     "ci95_pct": [
+      0.417,
+      1.181
+     ]
+    },
+    "first_lock_15_20s": {
+     "n": 163,
+     "lost": 1,
+     "acc_pct": 99.387,
+     "false_pct": 0.613,
+     "ci95_pct": [
+      0.016,
+      3.371
+     ]
+    },
+    "first_lock_under_10s": {
+     "n": 103,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      3.518
+     ]
+    },
+    "missed_windows": 2,
+    "missed_by_official_margin": {
+     "<$5": 2
+    },
+    "locked_at_fixed_times": {
+     "60": {
+      "locked": 2109,
+      "lost": 2,
+      "share_pct": 56.02
+     },
+     "45": {
+      "locked": 2601,
+      "lost": 2,
+      "share_pct": 69.08
+     },
+     "30": {
+      "locked": 3082,
+      "lost": 2,
+      "share_pct": 81.86
+     },
+     "20": {
+      "locked": 3385,
+      "lost": 2,
+      "share_pct": 89.91
+     },
+     "15": {
+      "locked": 3527,
+      "lost": 2,
+      "share_pct": 93.68
+     },
+     "10": {
+      "locked": 3647,
+      "lost": 0,
+      "share_pct": 96.87
+     },
+     "5": {
+      "locked": 3729,
+      "lost": 0,
+      "share_pct": 99.04
+     },
+     "3": {
+      "locked": 3753,
+      "lost": 0,
+      "share_pct": 99.68
+     }
+    },
+    "ece_pct_at_fixed_times": {
+     "60": 0.8112,
+     "45": 0.4554,
+     "30": 0.244,
+     "20": 0.3091,
+     "15": 0.2814,
+     "10": 0.1472,
+     "5": 0.0908,
+     "3": 0.0447
+    },
+    "trade_now_CONS": {
+     "trades": 307,
+     "losses": 4,
+     "loss_ci95_pct": [
+      0.356,
+      3.302
+     ],
+     "avg_px_c": 98.25,
+     "pnl_c_per_contract": 0.279,
+     "pnl_ci95_c": [
+      -0.994,
+      1.552
+     ],
+     "usd_per_10lot": 8.56,
+     "median_tau": 61.0
+    },
+    "trade_now_VISIBLE": {
+     "trades": 409,
+     "losses": 4,
+     "loss_ci95_pct": [
+      0.267,
+      2.485
+     ],
+     "avg_px_c": 97.82,
+     "pnl_c_per_contract": 1.005,
+     "pnl_ci95_c": [
+      0.036,
+      1.974
+     ],
+     "usd_per_10lot": 41.12,
+     "median_tau": 52.0
+    },
+    "vs_2_6": {
+     "agree, both right": 3467,
+     "coverage gain: correct LOCKED where 2.6 had none": 274,
+     "improvement: avoided a wrong 2.6 LOCKED": 1,
+     "agree, both wrong": 12,
+     "deterioration: wrong LOCKED where 2.6 was not wrong": 9
+    }
+   },
+   "Cs": {
+    "locked": {
+     "n": 3763,
+     "lost": 19,
+     "acc_pct": 99.495,
+     "false_pct": 0.505,
+     "ci95_pct": [
+      0.304,
+      0.787
+     ]
+    },
+    "coverage_pct": 99.95,
+    "lead_mean_s": 89.2,
+    "lead_median_s": 69.0,
+    "first_lock_under_60s": {
+     "n": 1579,
+     "lost": 5,
+     "acc_pct": 99.683,
+     "false_pct": 0.317,
+     "ci95_pct": [
+      0.103,
+      0.737
+     ]
+    },
+    "first_lock_60s_plus": {
+     "n": 2184,
+     "lost": 14,
+     "acc_pct": 99.359,
+     "false_pct": 0.641,
+     "ci95_pct": [
+      0.351,
+      1.073
+     ]
+    },
+    "first_lock_15_20s": {
+     "n": 165,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      2.211
+     ]
+    },
+    "first_lock_under_10s": {
+     "n": 107,
+     "lost": 0,
+     "acc_pct": 100.0,
+     "false_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      3.389
+     ]
+    },
+    "missed_windows": 2,
+    "missed_by_official_margin": {
+     "<$5": 2
+    },
+    "locked_at_fixed_times": {
+     "60": {
+      "locked": 2102,
+      "lost": 0,
+      "share_pct": 55.83
+     },
+     "45": {
+      "locked": 2602,
+      "lost": 2,
+      "share_pct": 69.11
+     },
+     "30": {
+      "locked": 3084,
+      "lost": 1,
+      "share_pct": 81.91
+     },
+     "20": {
+      "locked": 3373,
+      "lost": 2,
+      "share_pct": 89.59
+     },
+     "15": {
+      "locked": 3530,
+      "lost": 2,
+      "share_pct": 93.76
+     },
+     "10": {
+      "locked": 3641,
+      "lost": 0,
+      "share_pct": 96.71
+     },
+     "5": {
+      "locked": 3727,
+      "lost": 0,
+      "share_pct": 98.99
+     },
+     "3": {
+      "locked": 3752,
+      "lost": 0,
+      "share_pct": 99.65
+     }
+    },
+    "ece_pct_at_fixed_times": {
+     "60": 0.9123,
+     "45": 0.4468,
+     "30": 0.239,
+     "20": 0.2671,
+     "15": 0.2771,
+     "10": 0.1466,
+     "5": 0.0915,
+     "3": 0.0447
+    },
+    "trade_now_CONS": {
+     "trades": 292,
+     "losses": 5,
+     "loss_ci95_pct": [
+      0.558,
+      3.951
+     ],
+     "avg_px_c": 98.19,
+     "pnl_c_per_contract": -0.08,
+     "pnl_ci95_c": [
+      -1.569,
+      1.41
+     ],
+     "usd_per_10lot": -2.33,
+     "median_tau": 57.5
+    },
+    "trade_now_VISIBLE": {
+     "trades": 390,
+     "losses": 5,
+     "loss_ci95_pct": [
+      0.418,
+      2.966
+     ],
+     "avg_px_c": 97.9,
+     "pnl_c_per_contract": 0.631,
+     "pnl_ci95_c": [
+      -0.494,
+      1.756
+     ],
+     "usd_per_10lot": 24.61,
+     "median_tau": 52.0
+    },
+    "vs_2_6": {
+     "agree, both right": 3466,
+     "coverage gain: correct LOCKED where 2.6 had none": 273,
+     "improvement: avoided a wrong 2.6 LOCKED": 5,
+     "agree, both wrong": 8,
+     "deterioration: wrong LOCKED where 2.6 was not wrong": 11
+    }
+   }
+  }
+ },
+ "momentum_at_first_2_6_lock": {
+  "holdout": {
+   "adverse >= 2\u03c3": {
+    "n": 5,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     52.182
+    ]
+   },
+   "adverse 1-2\u03c3": {
+    "n": 39,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     9.025
+    ]
+   },
+   "flat": {
+    "n": 1290,
+    "lost": 3,
+    "acc_pct": 99.767,
+    "false_pct": 0.233,
+    "ci95_pct": [
+     0.048,
+     0.678
+    ]
+   },
+   "favourable": {
+    "n": 545,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     0.675
+    ]
+   }
+  },
+  "dev_folds1_6": {
+   "adverse >= 2\u03c3": {
+    "n": 7,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     40.962
+    ]
+   },
+   "adverse 1-2\u03c3": {
+    "n": 77,
+    "lost": 0,
+    "acc_pct": 100.0,
+    "false_pct": 0.0,
+    "ci95_pct": [
+     0.0,
+     4.678
+    ]
+   },
+   "flat": {
+    "n": 2327,
+    "lost": 8,
+    "acc_pct": 99.656,
+    "false_pct": 0.344,
+    "ci95_pct": [
+     0.149,
+     0.676
+    ]
+   },
+   "favourable": {
+    "n": 1073,
+    "lost": 5,
+    "acc_pct": 99.534,
+    "false_pct": 0.466,
+    "ci95_pct": [
+     0.151,
+     1.084
+    ]
+   }
+  }
+ },
+ "q4_calibration_by_vol_group": {
+  "holdout": {
+   "A": {
+    "active 0.2-0.5%": {
+     "n": 281,
+     "mean_pred_pct": 0.438,
+     "observed_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      1.304
+     ]
+    },
+    "active 0.5-1.0%": {
+     "n": 257,
+     "mean_pred_pct": 0.861,
+     "observed_pct": 0.389,
+     "ci95_pct": [
+      0.01,
+      2.149
+     ]
+    },
+    "active 1.0-2.0%": {
+     "n": 223,
+     "mean_pred_pct": 1.714,
+     "observed_pct": 2.691,
+     "ci95_pct": [
+      0.994,
+      5.764
+     ]
+    },
+    "active 2.0-5.0%": {
+     "n": 201,
+     "mean_pred_pct": 4.047,
+     "observed_pct": 3.483,
+     "ci95_pct": [
+      1.411,
+      7.044
+     ]
+    },
+    "normal 0.2-0.5%": {
+     "n": 668,
+     "mean_pred_pct": 0.454,
+     "observed_pct": 0.15,
+     "ci95_pct": [
+      0.004,
+      0.831
+     ]
+    },
+    "normal 0.5-1.0%": {
+     "n": 670,
+     "mean_pred_pct": 0.905,
+     "observed_pct": 0.448,
+     "ci95_pct": [
+      0.092,
+      1.303
+     ]
+    },
+    "normal 1.0-2.0%": {
+     "n": 663,
+     "mean_pred_pct": 1.781,
+     "observed_pct": 0.452,
+     "ci95_pct": [
+      0.093,
+      1.317
+     ]
+    },
+    "normal 2.0-5.0%": {
+     "n": 666,
+     "mean_pred_pct": 4.286,
+     "observed_pct": 2.853,
+     "ci95_pct": [
+      1.726,
+      4.419
+     ]
+    },
+    "quiet 0.2-0.5%": {
+     "n": 899,
+     "mean_pred_pct": 0.465,
+     "observed_pct": 0.222,
+     "ci95_pct": [
+      0.027,
+      0.801
+     ]
+    },
+    "quiet 0.5-1.0%": {
+     "n": 886,
+     "mean_pred_pct": 0.936,
+     "observed_pct": 0.113,
+     "ci95_pct": [
+      0.003,
+      0.627
+     ]
+    },
+    "quiet 1.0-2.0%": {
+     "n": 888,
+     "mean_pred_pct": 1.871,
+     "observed_pct": 0.338,
+     "ci95_pct": [
+      0.07,
+      0.984
+     ]
+    },
+    "quiet 2.0-5.0%": {
+     "n": 920,
+     "mean_pred_pct": 4.664,
+     "observed_pct": 1.304,
+     "ci95_pct": [
+      0.676,
+      2.267
+     ]
+    }
+   },
+   "C": {
+    "active 0.2-0.5%": {
+     "n": 269,
+     "mean_pred_pct": 0.454,
+     "observed_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      1.362
+     ]
+    },
+    "active 0.5-1.0%": {
+     "n": 256,
+     "mean_pred_pct": 0.888,
+     "observed_pct": 0.0,
+     "ci95_pct": [
+      0.0,
+      1.431
+     ]
+    },
+    "active 1.0-2.0%": {
+     "n": 246,
+     "mean_pred_pct": 1.728,
+     "observed_pct": 1.22,
+     "ci95_pct": [
+      0.252,
+      3.522
+     ]
+    },
+    "active 2.0-5.0%": {
+     "n": 211,
+     "mean_pred_pct": 4.213,
+     "observed_pct": 3.318,
+     "ci95_pct": [
+      1.344,
+      6.716
+     ]
+    },
+    "normal 0.2-0.5%": {
+     "n": 673,
+     "mean_pred_pct": 0.456,
+     "observed_pct": 0.149,
+     "ci95_pct": [
+      0.004,
+      0.825
+     ]
+    },
+    "normal 0.5-1.0%": {
+     "n": 655,
+     "mean_pred_pct": 0.914,
+     "observed_pct": 0.458,
+     "ci95_pct": [
+      0.095,
+      1.333
+     ]
+    },
+    "normal 1.0-2.0%": {
+     "n": 642,
+     "mean_pred_pct": 1.79,
+     "observed_pct": 0.467,
+     "ci95_pct": [
+      0.096,
+      1.359
+     ]
+    },
+    "normal 2.0-5.0%": {
+     "n": 632,
+     "mean_pred_pct": 4.332,
+     "observed_pct": 3.006,
+     "ci95_pct": [
+      1.82,
+      4.655
+     ]
+    },
+    "quiet 0.2-0.5%": {
+     "n": 922,
+     "mean_pred_pct": 0.467,
+     "observed_pct": 0.217,
+     "ci95_pct": [
+      0.026,
+      0.781
+     ]
+    },
+    "quiet 0.5-1.0%": {
+     "n": 927,
+     "mean_pred_pct": 0.933,
+     "observed_pct": 0.324,
+     "ci95_pct": [
+      0.067,
+      0.943
+     ]
+    },
+    "quiet 1.0-2.0%": {
+     "n": 914,
+     "mean_pred_pct": 1.849,
+     "observed_pct": 0.656,
+     "ci95_pct": [
+      0.241,
+      1.423
+     ]
+    },
+    "quiet 2.0-5.0%": {
+     "n": 950,
+     "mean_pred_pct": 4.512,
+     "observed_pct": 2.526,
+     "ci95_pct": [
+      1.625,
+      3.736
+     ]
+    }
+   }
+  },
+  "dev_folds1_6": {
+   "A": {
+    "active 0.2-0.5%": {
+     "n": 1124,
+     "mean_pred_pct": 0.445,
+     "observed_pct": 0.445,
+     "ci95_pct": [
+      0.145,
+      1.035
+     ]
+    },
+    "active 0.5-1.0%": {
+     "n": 1098,
+     "mean_pred_pct": 0.875,
+     "observed_pct": 0.82,
+     "ci95_pct": [
+      0.375,
+      1.55
+     ]
+    },
+    "active 1.0-2.0%": {
+     "n": 1031,
+     "mean_pred_pct": 1.702,
+     "observed_pct": 1.649,
+     "ci95_pct": [
+      0.963,
+      2.627
+     ]
+    },
+    "active 2.0-5.0%": {
+     "n": 973,
+     "mean_pred_pct": 4.082,
+     "observed_pct": 3.392,
+     "ci95_pct": [
+      2.346,
+      4.73
+     ]
+    },
+    "normal 0.2-0.5%": {
+     "n": 1427,
+     "mean_pred_pct": 0.455,
+     "observed_pct": 0.35,
+     "ci95_pct": [
+      0.114,
+      0.816
+     ]
+    },
+    "normal 0.5-1.0%": {
+     "n": 1422,
+     "mean_pred_pct": 0.909,
+     "observed_pct": 1.336,
+     "ci95_pct": [
+      0.806,
+      2.079
+     ]
+    },
+    "normal 1.0-2.0%": {
+     "n": 1412,
+     "mean_pred_pct": 1.806,
+     "observed_pct": 2.337,
+     "ci95_pct": [
+      1.614,
+      3.267
+     ]
+    },
+    "normal 2.0-5.0%": {
+     "n": 1387,
+     "mean_pred_pct": 4.398,
+     "observed_pct": 4.398,
+     "ci95_pct": [
+      3.381,
+      5.614
+     ]
+    },
+    "quiet 0.2-0.5%": {
+     "n": 890,
+     "mean_pred_pct": 0.464,
+     "observed_pct": 0.337,
+     "ci95_pct": [
+      0.07,
+      0.982
+     ]
+    },
+    "quiet 0.5-1.0%": {
+     "n": 892,
+     "mean_pred_pct": 0.935,
+     "observed_pct": 1.009,
+     "ci95_pct": [
+      0.462,
+      1.907
+     ]
+    },
+    "quiet 1.0-2.0%": {
+     "n": 874,
+     "mean_pred_pct": 1.869,
+     "observed_pct": 2.746,
+     "ci95_pct": [
+      1.767,
+      4.058
+     ]
+    },
+    "quiet 2.0-5.0%": {
+     "n": 952,
+     "mean_pred_pct": 4.657,
+     "observed_pct": 5.777,
+     "ci95_pct": [
+      4.382,
+      7.454
+     ]
+    }
+   },
+   "C": {
+    "active 0.2-0.5%": {
+     "n": 1100,
+     "mean_pred_pct": 0.449,
+     "observed_pct": 0.091,
+     "ci95_pct": [
+      0.002,
+      0.505
+     ]
+    },
+    "active 0.5-1.0%": {
+     "n": 1094,
+     "mean_pred_pct": 0.895,
+     "observed_pct": 0.366,
+     "ci95_pct": [
+      0.1,
+      0.933
+     ]
+    },
+    "active 1.0-2.0%": {
+     "n": 1064,
+     "mean_pred_pct": 1.748,
+     "observed_pct": 0.846,
+     "ci95_pct": [
+      0.387,
+      1.6
+     ]
+    },
+    "active 2.0-5.0%": {
+     "n": 1028,
+     "mean_pred_pct": 4.162,
+     "observed_pct": 3.016,
+     "ci95_pct": [
+      2.058,
+      4.253
+     ]
+    },
+    "normal 0.2-0.5%": {
+     "n": 1435,
+     "mean_pred_pct": 0.457,
+     "observed_pct": 0.279,
+     "ci95_pct": [
+      0.076,
+      0.712
+     ]
+    },
+    "normal 0.5-1.0%": {
+     "n": 1418,
+     "mean_pred_pct": 0.913,
+     "observed_pct": 1.058,
+     "ci95_pct": [
+      0.593,
+      1.739
+     ]
+    },
+    "normal 1.0-2.0%": {
+     "n": 1405,
+     "mean_pred_pct": 1.812,
+     "observed_pct": 2.135,
+     "ci95_pct": [
+      1.445,
+      3.034
+     ]
+    },
+    "normal 2.0-5.0%": {
+     "n": 1369,
+     "mean_pred_pct": 4.425,
+     "observed_pct": 4.018,
+     "ci95_pct": [
+      3.041,
+      5.198
+     ]
+    },
+    "quiet 0.2-0.5%": {
+     "n": 928,
+     "mean_pred_pct": 0.466,
+     "observed_pct": 1.078,
+     "ci95_pct": [
+      0.518,
+      1.973
+     ]
+    },
+    "quiet 0.5-1.0%": {
+     "n": 927,
+     "mean_pred_pct": 0.935,
+     "observed_pct": 2.05,
+     "ci95_pct": [
+      1.238,
+      3.182
+     ]
+    },
+    "quiet 1.0-2.0%": {
+     "n": 925,
+     "mean_pred_pct": 1.852,
+     "observed_pct": 3.892,
+     "ci95_pct": [
+      2.74,
+      5.348
+     ]
+    },
+    "quiet 2.0-5.0%": {
+     "n": 985,
+     "mean_pred_pct": 4.516,
+     "observed_pct": 7.411,
+     "ci95_pct": [
+      5.854,
+      9.229
+     ]
+    }
+   }
+  }
+ }
+}

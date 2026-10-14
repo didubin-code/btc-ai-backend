@@ -1,0 +1,40 @@
+{
+ "contracts": 2049,
+ "evals": 616749,
+ "proxy": {
+  "mismatches": 0,
+  "examples": []
+ },
+ "official": {
+  "evals": 616749,
+  "gateWithheld": 0,
+  "officialReversals": 5,
+  "stateDiffs": 5,
+  "panelArithErrMax": 0.005000000004656613,
+  "accumulatorErrMax": 3.434251993894577e-9,
+  "windowsWithGate": [],
+  "windowsWithOfficialRev": [
+   {
+    "ticker": "KXBTC15M-26SEP032045-45",
+    "yes": true,
+    "A_minus_K": 15.49
+   }
+  ],
+  "refCounts": {
+   "OFFICIAL": 616749
+  }
+ },
+ "timing": {
+  "engine26_ms": {
+   "p50": 0.1864,
+   "p99": 1.482,
+   "max": 22.4043
+  },
+  "engine27_ms": {
+   "p50": 0.1918,
+   "p99": 1.5246,
+   "max": 31.9099
+  }
+ },
+ "wall_s": 1101.276
+}
