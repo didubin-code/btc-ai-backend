@@ -792,7 +792,7 @@ function renderCall(d){
   let vtxt='';
   const vl=sg.validation&&sg.validation.lines;
   if(vl&&vl.length)vtxt+=vl.join('\n');
-  else if(a&&a.n!=null)vtxt+='Backtest record for '+(st==='PROVEN LOCKED'?'LOCKED':st)+' calls (out of sample): '+a.losses+' flips in '+a.n
+  else if(a&&a.n!=null)vtxt+='Backtest record for '+(st==='PROVEN LOCKED'?'LOCKED':st)+' calls ('+(a.label||'out of sample')+'): '+a.losses+' flips in '+a.n
     +(a.upper95!=null?' · 95% upper bound '+(100*a.upper95).toFixed(2)+'%':'')+(a.period?' · '+a.period:'');
   if(lv&&lv.n)vtxt+=(vtxt?'\n':'')+'Live since restart: '+lv.losses+' flips in '+lv.n;
   if(rel.notes&&rel.notes.length)vtxt+=(vtxt?'\n':'')+'Model notes: '+rel.notes.join(' · ');

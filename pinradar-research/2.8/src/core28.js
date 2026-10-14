@@ -112,7 +112,7 @@ function r4(x) { return Number.isFinite(x) ? Math.round(x * 1e4) / 1e4 : null; }
 const UNC28 = Object.freeze({ quiet: [0.15, 1.53], normal: [0.34, 1.33], active: [0.50, 1.53], unknown: [0.15, 1.53],
   source: 'research28 reanalysis: calibration drift between Jul 22-Aug 13 and Sep 4-Oct 13 2026' });
 function band28(pFlip, group) {
-  if (!Number.isFinite(pFlip)) return null;
+  if (!Number.isFinite(pFlip) || pFlip > 0.5) return null;       // defined for the leader's flip risk only
   const f = UNC28[group] || UNC28.unknown;
   const lo = Math.max(0, pFlip * f[0]), hi = Math.min(0.5, pFlip * f[1]);
   return { flip: pFlip, lo, hi, factors: f, group: UNC28[group] ? group : 'unknown', label: fmtBand28(pFlip, lo, hi) };
@@ -165,7 +165,7 @@ function sha28(s) { return crypto28.createHash('sha256').update(s).digest('hex')
 function entryHash28(prev, e) { return sha28(prev + '|' + canon28({ seq: e.seq, ts: e.ts, type: e.type, body: e.body })); }
 function mkLedger28({ genesisSeed = 'pinradar-2.8', file = '', maxMem = 50000, fs = null, maxPending = 100000 } = {}) {
   const genesis = sha28('genesis|' + genesisSeed);
-  return { genesis, head: genesis, seq: 0, rows: [], dropped: 0, file, maxMem, fs, fileErr: null, fileBytes: null, pending: [], maxPending, writeFailures: 0, fileStopped: null };
+  return { genesis, head: genesis, seq: 0, rows: [], dropped: 0, file, maxMem, fs, fileErr: null, fileBytes: null, fileSeq: 0, pending: [], maxPending, writeFailures: 0, fileStopped: null };
 }
 function ledgerAppend28(L, type, body, ts = Date.now()) {
   /* the body is copied before hashing: a later change to the caller's object (e.g. the live fee schedule) must never
@@ -173,7 +173,7 @@ function ledgerAppend28(L, type, body, ts = Date.now()) {
   const e = { seq: ++L.seq, ts, type, body: body === undefined ? null : JSON.parse(JSON.stringify(body)), prev: L.head };
   e.hash = entryHash28(L.head, e); L.head = e.hash;
   L.rows.push(e); if (L.rows.length > L.maxMem) { L.rows.shift(); L.dropped++; }
-  if (L.file && L.fs && !L.fileStopped) { L.pending.push(JSON.stringify(e) + '\n'); ledgerFlush28(L); }
+  if (L.file && L.fs && !L.fileStopped) { L.pending.push([e.seq, JSON.stringify(e) + '\n']); ledgerFlush28(L); }
   return e;
 }
 /* The file is always a contiguous prefix of the chain. A failed write is retried, in order, before any later entry
@@ -184,12 +184,12 @@ function ledgerFlush28(L) {
     try {
       if (L.fileBytes == null) L.fileBytes = L.fs.existsSync(L.file) ? L.fs.statSync(L.file).size : 0;
       if (L.fileErr) { const sz = L.fs.statSync(L.file).size; if (sz > L.fileBytes) L.fs.truncateSync(L.file, L.fileBytes); }
-      L.fs.appendFileSync(L.file, L.pending[0]);
-      L.fileBytes += Buffer.byteLength(L.pending[0]); L.pending.shift();
+      L.fs.appendFileSync(L.file, L.pending[0][1]);
+      L.fileBytes += Buffer.byteLength(L.pending[0][1]); L.fileSeq = L.pending[0][0]; L.pending.shift();   // fileSeq = last durable seq
       if (L.fileErr) { L.lastRecovered = { ts: Date.now(), after: L.fileErr }; L.fileErr = null; }
     } catch (err) {
       L.fileErr = String(err && err.message || err); L.writeFailures++;
-      if (L.pending.length > L.maxPending) { L.fileStopped = { ts: Date.now(), why: L.fileErr, atSeq: JSON.parse(L.pending[0]).seq }; L.pending = []; }
+      if (L.pending.length > L.maxPending) { L.fileStopped = { ts: Date.now(), why: L.fileErr, atSeq: L.pending[0][0] }; L.pending = []; }
       return;
     }
   }
@@ -231,6 +231,14 @@ function ledgerResume28(L, fs, file, onRow = null, now = Date.now()) {
     }
   } finally { fs.closeSync(fd); }
   if (!stop && rest.length) {
+    let e = null; try { e = JSON.parse(rest.toString('utf8')); } catch (_) { e = null; }
+    if (e && typeof e === 'object' && (prev === null ? e.seq === 1 : (e.seq === lastSeq + 1 && e.prev === prev)) && entryHash28(e.prev, e) === e.hash) {
+      fs.appendFileSync(file, '\n'); good += rest.length + 1; info.n++; info.completedLastLine = e.seq;      // only the newline was missing
+      if (prev === null) { info.firstSeq = e.seq; L.genesis = e.prev; }
+      prev = e.hash; lastSeq = e.seq; keep.push(e); if (onRow) onRow(e); rest = Buffer.alloc(0);
+    }
+  }
+  if (!stop && rest.length) {
     info.tornTail = { bytes: rest.length, movedTo: file + '.torn-' + now };
     try { fs.writeFileSync(info.tornTail.movedTo, rest); } catch (_) { info.tornTail.movedTo = null; }
     fs.truncateSync(file, good);
@@ -239,7 +247,7 @@ function ledgerResume28(L, fs, file, onRow = null, now = Date.now()) {
     const bad = file + '.broken-' + now; fs.renameSync(file, bad); fs.copyFileSync(bad, file); fs.truncateSync(file, good);
     info.broken.originalKeptAs = bad;
   }
-  if (info.n) { L.head = prev; L.seq = lastSeq; L.rows = keep.slice(-L.maxMem); info.head = prev; info.lastSeq = lastSeq; }
+  if (info.n) { L.head = prev; L.seq = lastSeq; L.fileSeq = lastSeq; L.rows = keep.slice(-L.maxMem); info.head = prev; info.lastSeq = lastSeq; }
   L.fileBytes = good;
   return info;
 }
@@ -447,10 +455,28 @@ function holm28(pmap) {
 }
 
 /* ---------------------------------------------------------------- latency percentiles */
-function mkLat28(cap = 2000) { return { cap, series: {} }; }
-function latNote28(L, key, ms) {
+/* Each series keeps the last `cap` values (rolling percentiles for /latency) AND a log-bucket histogram since the last
+   flush (20 buckets per decade from 1 us; upper edge of bucket i = 0.001 * 10^((i+1)/20) ms, i.e. <= 12 % wide), which
+   the server commits to the ledger every hour so the forward test's latency gate covers the whole test period. */
+function mkLat28(cap = 2000) { return { cap, series: {}, hist: {}, histSince: null }; }
+function latBucket28(ms) { return ms <= 0.001 ? 0 : Math.min(199, Math.max(0, Math.floor(20 * Math.log10(ms / 0.001)))); }
+function latEdge28(i) { return 0.001 * Math.pow(10, (i + 1) / 20); }
+function latNote28(L, key, ms, now = null) {
   if (!Number.isFinite(ms)) return; const a = L.series[key] || (L.series[key] = []);
   a.push(ms); if (a.length > L.cap) a.shift();
+  if (L.hist) { const h = L.hist[key] || (L.hist[key] = {}); const b = latBucket28(ms); h[b] = (h[b] || 0) + 1; if (L.histSince == null) L.histSince = now; }
+}
+/* take (and reset) the histogram: {key: [[bucket, count], ...]} */
+function latFlush28(L) {
+  const out = {}; for (const [k, h] of Object.entries(L.hist || {})) out[k] = Object.entries(h).map(([b, c]) => [Number(b), c]).sort((x, y) => x[0] - y[0]);
+  L.hist = {}; L.histSince = null; return out;
+}
+/* p-quantile of merged histograms (upper bucket edge: conservative) */
+function latHistQuantile28(pairs, p) {
+  const m = new Map(); let n = 0; for (const [b, c] of pairs) { m.set(b, (m.get(b) || 0) + c); n += c; }
+  if (!n) return null; const target = Math.ceil(p * n); let cum = 0;
+  for (const b of [...m.keys()].sort((x, y) => x - y)) { cum += m.get(b); if (cum >= target) return { n, value: r4(latEdge28(b)) }; }
+  return null;
 }
 function latSummary28(L) {
   const o = {};
@@ -464,5 +490,6 @@ function latSummary28(L) {
 const CORE28 = { CORE28_VERSION, feeCfg28, feeDollars28, feeCentsPerContract28, walk28, walkFeeCents28, evLadder28, UNC28, band28, fmtBand28, sig1,
   designation28, canon28, sha28, entryHash28, mkLedger28, ledgerAppend28, ledgerFlush28, ledgerResume28, verifyLedger28, FAIL_ALTS28, mkFailMonitor28, failE28, failUpdate28, failState28,
   EDGE_LAMBDAS28, mkEdgeMonitor28, edgeUpdate28, edgeState28, binomCdf28, cpUpper28, POOL28, marketPooledFlip28, SHADOW_POLICIES28,
-  shadowDecide28, shadowNote28, shadowScore28, mkShadowStats28, shadowAccumulate28, shadowSummary28, holm28, mkLat28, latNote28, latSummary28 };
+  shadowDecide28, shadowNote28, shadowScore28, mkShadowStats28, shadowAccumulate28, shadowSummary28, holm28, mkLat28, latNote28, latSummary28,
+  latBucket28, latEdge28, latFlush28, latHistQuantile28 };
 if (typeof module !== 'undefined' && module.exports && !globalThis.__CORE28_INLINE__) module.exports = CORE28;

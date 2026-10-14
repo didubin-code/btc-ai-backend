@@ -8,7 +8,7 @@ import hashlib, os, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 R28 = os.path.abspath(os.path.join(HERE, '..'))
 SRC = os.path.abspath(os.path.join(R28, '..', 'versions', '2.7', 'pinradar_server.js'))
-OUT = os.path.join(R28, 'dist', 'pinradar_server.js')
+OUT = os.path.join(os.environ.get('BUILD28_OUT_DIR') or os.path.join(R28, 'dist'), 'pinradar_server.js')   # run_all builds into a temp dir
 s = open(SRC, encoding='utf8').read()
 sha = hashlib.sha256(s.encode()).hexdigest()
 if not sha.startswith('bd7cacbb7144edbe'):
@@ -58,6 +58,29 @@ s = rep(s, "  const age = now - last.localTs;\n",
         "  /* v2.8 D2: a tick is as old as its SOURCE timestamp says (Kalshi can deliver a backlog), not just its arrival */\n"
         "  const srcAge = Number.isFinite(last.sourceTs) ? (now - (Number.isFinite(SKEW.estMs) ? SKEW.estMs : 0)) - last.sourceTs : NaN;\n"
         "  const age = Number.isFinite(srcAge) ? Math.max(now - last.localTs, srcAge) : now - last.localTs;\n")
+
+# evidence shown with every call: the settlement-aware record (AUDIT28, server28.js), labelled for what it is
+s = rep(s, "  const A = AUDIT_25 || {}, L = A.LOCKED, H = A['HIGH CONFIDENCE'], T = A['TRADE NOW'], out = [];",
+        "  const A = (typeof AUDIT28 !== 'undefined' && AUDIT28) || AUDIT_25 || {}, L = A.LOCKED, H = A['HIGH CONFIDENCE'], T = A['TRADE NOW'], out = [];   // v2.8")
+s = rep(s, ".toFixed(1)}%. Out of sample: ${L.losses} of ${L.n} first LOCKED calls lost (${pct26(L.losses, L.n)}; 95% upper bound",
+        ".toFixed(1)}%. ${L.label || 'Out of sample'}: ${L.losses} of ${L.n} first LOCKED calls lost (${pct26(L.losses, L.n)}; one-sided 95% upper bound")
+s = rep(s, "per contract after fees (conservative / visible-price fills). Fills estimated",
+        "per contract after fees (conservative / visible-price fills${T.CONS.pnlCi95Cents ? '; conservative 95% CI ' + T.CONS.pnlCi95Cents[0] + ' to +' + T.CONS.pnlCi95Cents[1] + '¢, i.e. the edge is not established' : ''}). Fills estimated")
+s = rep(s, "Out of sample: ${H.losses} of ${H.n} first calls at this level lost", "${H.label || 'Out of sample'}: ${H.losses} of ${H.n} first calls at this level lost")
+s = rep(s, "    validation: { audit: AUDIT_25[d.state === 'PROVEN LOCKED' ? 'LOCKED' : d.state] || null,",
+        "    validation: { audit: ((typeof AUDIT28 !== 'undefined' && AUDIT28) || AUDIT_25)[d.state === 'PROVEN LOCKED' ? 'LOCKED' : d.state] || null,")
+s = rep(s, "live: ledgerStats(), audit: AUDIT_25,", "live: ledgerStats(), audit: AUDIT28, audit25: AUDIT_25,")
+s = rep(s, """    push('2.6 every LOCKED call carries its evidence (standard, regime record, price bucket, not-a-guarantee)',
+      Array.isArray(lines) && lines.length >= 4 && /LOCKED standard/.test(lines[0]) && lines.some(l => /regime/.test(l)) && lines.some(l => /Not a guarantee/.test(l)),""",
+        """    push('2.6/2.8 every LOCKED call carries its evidence (standard + settlement-aware record + holdout, TRADE NOW record with CI, not-a-guarantee)',
+      Array.isArray(lines) && lines.length >= 3 && /LOCKED standard/.test(lines[0]) && /13 of 3484/.test(lines[0]) && /holdout/.test(lines[0]) && !/Out of sample/.test(lines[0])
+        && lines.some(l => /not established/.test(l)) && lines.some(l => /Not a guarantee/.test(l)),""")
+# settleMath: the projected leader at an exact half-cent tie uses the same epsilon as settleRound2 (display only)
+s = rep(s, "  const leader = expected >= thr ? 'UP' : 'DOWN';", "  const leader = expected >= thr - 1e-9 ? 'UP' : 'DOWN';   // v2.8: same tie epsilon as settleRound2")
+
+# the WAIT reason names the real cause when a LOCKED-grade probability is withheld by a gate (2.6 always said "confidence")
+s = rep(s, "  } else if (out.state === M25_STATE.HIGH) { tr.action = 'WAIT'; tr.why = 'confidence below the LOCKED threshold'; }",
+        "  } else if (out.state === M25_STATE.HIGH) { tr.action = 'WAIT'; tr.why = out.pFlip <= cfg.lockMaxFlip && gates.soft.length ? 'LOCKED withheld: ' + gates.soft.join('; ') : 'confidence below the LOCKED threshold'; }")
 
 # D4: a PROVEN (price-only) bound must not override the official reference: when the official BRTI disagrees with the
 # proxy (official flip gate or the divergence gate), PROVEN LOCKED is withheld like an ordinary LOCKED (2.6/2.7 let it through)

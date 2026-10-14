@@ -19,7 +19,7 @@ process.env.LEDGER_FILE = path.join(TMP, 'ledger.ndjson');
 const SRV = path.resolve(process.argv[2]);
 const realNow = Date.now; let NOW = 0; Date.now = () => NOW;
 const S = require(SRV);
-const { replayTape } = require(path.join(__dirname, '..', 'tools', 'replay_tape28.js'));
+const { replayTape, restoreAndDecide, outKey } = require(path.join(__dirname, '..', 'tools', 'replay_tape28.js'));
 const W = fs.readFileSync(process.argv[3], 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l)).sort((a, b) => a.C - b.C);
 let seed = 28; const R = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
 const px = new Map(); for (const w of W) w.idx.forEach((v, i) => { if (v != null) px.set(w.T_first + i, v); });
@@ -127,6 +127,20 @@ process.env.LEDGER_FILE = ''; process.env.TAPE_FILE = '';          // the replay
 const S2 = require(SRV);
 const rp = replayTape(S2, tapeLines);
 ok('LIVE == REPLAY: every recorded decision reproduced exactly by the production function', rp.records > 3000 && rp.mismatches === 0, { records: rp.records, mismatches: rp.mismatches, ex: rp.examples.slice(0, 3) });
+/* 2.8 vs 2.7 on the SAME live inputs: the recorded tape replayed through the preserved 2.7 production computeLockSnapshot.
+   Decisions must be identical except where 2.8 fixes a defect that this tape exercises (D1: live index unavailable). */
+{
+  const S27 = require(path.resolve(__dirname, '..', '..', 'versions', '2.7', 'pinradar_server.js'));
+  const recs = tapeLines.filter(o => o.k === 'd'), samples27 = tapeLines.filter(o => o.k === 's').map(o => [o.t, o.v]).sort((a, b) => a[0] - b[0]);
+  let diff = 0, diffD1 = 0; const ex = [];
+  for (const rec of recs) {
+    const s = restoreAndDecide(S27, rec, samples27).signal;
+    const got = { state: s.state, side: s.side, pWin: s.pWin, pFlip: s.pFlip, pFlipCons: s.pFlipCons, action: s.trade ? s.trade.action : null, ev: s.trade ? s.trade.evConsCents : null };
+    if (outKey(got) !== outKey(rec.out)) { if (!rec.liveIdx) diffD1++; else { diff++; if (ex.length < 3) ex.push({ ts: rec.ts, live28: outKey(rec.out), replay27: outKey(got) }); } }
+  }
+  results.vs27 = { records: recs.length, differences: diff, differencesAtD1: diffD1 };
+  ok('2.8 == 2.7 on the same live tape (production computeLockSnapshot), except at D1 seconds (live index unavailable)', recs.length > 3000 && diff === 0 && diffD1 > 0, { records: recs.length, diff, diffD1, ex });
+}
 /* the in-memory rolling /tape (the no-disk path) replays too: it keeps the 960 s ring history of every record it holds */
 const memLines = S.TAPE28.samples.map(p => ({ k: 's', t: p[0], v: p[1] })).concat(S.TAPE28.rows);
 const rpm = replayTape(S2, memLines);
@@ -150,7 +164,7 @@ const get = (port, p) => new Promise((res, rej) => http.get({ host: '127.0.0.1',
   ok('GET /tape and /ledger answer', tp.code === 200 && lg.code === 200 && lg.j.rows.length === 5, [tp.code, lg.code]);
   S.server.close();
   const lat = S.latSummary28(S.LAT28);
-  console.log(JSON.stringify({ ticks: results.ticks, decisions: results.decisions, faults: results.faults, ledgerTypes: types, replay: { records: rp.records, mismatches: rp.mismatches, byState: rp.byState },
+  console.log(JSON.stringify({ ticks: results.ticks, decisions: results.decisions, faults: results.faults, vs27: results.vs27, ledgerTypes: types, replay: { records: rp.records, mismatches: rp.mismatches, byState: rp.byState },
     shadow: Object.fromEntries(Object.entries(sm).map(([k, s]) => [k, { windows: s.windows, locked: s.locked, lost: s.lost, leadMeanS: s.leadMeanS, trades: s.trades, tradeLosses: s.tradeLosses, pnl: s.pnlCentsPerContractMean }])),
     latencyMs: { bgSnapshot: lat.bgSnapshotMs, decisionIndexInputAge: lat.decisionIndexInputAgeMs, decisionBookAge: lat.decisionBookAgeMs } }));
   console.log(`live_sim28: ${fail ? fail + ' FAILED' : 'all checks passed'}` + (fail ? '\n  FAIL ' + fails.join('\n  FAIL ') : ''));

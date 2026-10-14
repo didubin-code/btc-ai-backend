@@ -12,8 +12,7 @@ cp $R/2.8/dist/btc_pin_radar_28.html $P/upload/Btc-signal/btc_pin_radar_28.html
 cp $R/versions/2.3/pinradar_server.js $P/rollback/btc-ai-backend/pinradar_server.js
 cp $SIG/pinradar-research/versions/2.3/btc_pin_radar.html $P/rollback/Btc-signal/btc_pin_radar.html
 (cd $R/.. && tar --exclude=node_modules --exclude=package-lock.json -cf - pinradar-research) | (cd $P && tar -xf -)
-mkdir -p $P/pinradar-research/pkg27_page $P/pinradar-research/versions/pages
-cp $SIG/pinradar-research/versions/2.7/btc_pin_radar_27.html $P/pinradar-research/pkg27_page/
+mkdir -p $P/pinradar-research/versions/pages      # pkg27_page (the 2.7 page source) is part of the tree
 for v in 2.3 2.4 2.7; do mkdir -p $P/pinradar-research/versions/pages/$v && cp $SIG/pinradar-research/versions/$v/*.html $P/pinradar-research/versions/pages/$v/; done
 cp $R/2.8/README_2.8.md $P/README.md
 cp $R/REPORT_2.8.md $R/RESEARCH_REGISTER.md $R/2.8/PREREGISTRATION.md $P/

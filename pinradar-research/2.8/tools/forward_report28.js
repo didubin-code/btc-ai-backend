@@ -6,9 +6,12 @@
    earlier than the outcome), never the outcome's own copy; calibration (G5) is read from the committed 'calib'
    entries (the tape is only a fallback). A chain may restart only at seq 1 from its boot genesis: any other break,
    gap, unparsable row or unanchored start fails G2.
-   usage: node tools/forward_report28.js --ledger ledger28.ndjson [--tape tape.ndjson] [--latency latency.json]
+   No gate passes by default: missing evidence (G1 not attested, too little calibration coverage, a missing latency
+   series) makes the verdict INCOMPLETE, never PASS. Only the first 90 days of outcomes are scored.
+   usage: node tools/forward_report28.js --ledger ledger28.ndjson [--g1 PASS] [--tape tape.ndjson] [--latency latency.json]
                                          [--config <CONFIG28_HASH>] [--since <ms epoch>] [--anchor <hash>[,<hash>...]]
-                                         [--out report.json]                                                        */
+                                         [--out report.json]
+   --g1 PASS = you ran run_all28.sh and GET /selftest on the deployed build and both passed (G1 is an attestation).   */
 'use strict';
 const fs = require('fs'), path = require('path');
 const C = require(path.join(__dirname, '..', 'src', 'core28.js'));
@@ -36,6 +39,7 @@ const ND = readNd(LEDGER), rows = ND.rows, SINCE = Number(arg('since') || 0), CO
 const ANCHORS = (arg('anchor') || '').split(',').map(x => x.trim()).filter(Boolean);
 /* ---- chain segments: a new chain begins only at seq 1, anchored at its boot entry's genesis ---- */
 const segs = []; let cur = null;
+rows.forEach((e, i) => { Object.defineProperty(e, '_i', { value: i, enumerable: false }); });   // file position: the only order valid across restarts (seq restarts at 1)
 for (const e of rows) { if (!cur || e.seq === 1) { cur = []; segs.push(cur); } cur.push(e); }
 const segVerify = segs.map(s => {
   const v = C.verifyLedger28(s, s[0].seq === 1 ? s[0].prev : null);
@@ -43,48 +47,63 @@ const segVerify = segs.map(s => {
   const anchored = s[0].seq === 1 && s[0].type === 'boot' && s[0].prev === C.sha28('genesis|pinradar-2.8|' + b.configHash);
   return { ...v, firstSeq: s[0].seq, lastSeq: s[s.length - 1].seq, head: s[s.length - 1].hash, anchored, ok: v.ok && anchored, ...(anchored ? {} : { why: v.ok ? 'segment does not start at a boot genesis (earlier entries missing)' : v.why }) };
 });
-const hashes = new Set(rows.map(e => e.hash));
-const anchorsMissing = ANCHORS.filter(h => !hashes.has(h));
+const hashIdx = new Map(rows.map(e => [e.hash, e._i]));
+const anchorsMissing = ANCHORS.filter(h => !hashIdx.has(h));
+/* a chain proves internal consistency only: a whole segment can be deleted or fabricated by whoever holds the file
+   (the genesis formula is public). Only heads published outside the file (--anchor) rule that out: every segment
+   must contain one, and the last one must come after the last scored outcome. Segments must also be in time order. */
+const anchorIdx = ANCHORS.filter(h => hashIdx.has(h)).map(h => hashIdx.get(h));
+segVerify.forEach((v, k) => { const a = segs[k][0]._i, z = segs[k][segs[k].length - 1]._i; v.hasAnchor = anchorIdx.some(i => i >= a && i <= z); });
+const segOrderOk = segs.every((sg, k) => k === 0 || (sg[0].ts || 0) >= (segs[k - 1][segs[k - 1].length - 1].ts || 0));
 /* ---- windows: first committed call per ticker|policy|event (across segments, i.e. across restarts) ---- */
-const issues = { callAfterOutcome: 0, missingCommit: 0, recordMismatch: 0, wrongConfig: 0, unresolved: 0, droppedWindows: 0, duplicateOutcome: 0,
+const issues = { callAfterOutcome: 0, missingCommit: 0, recordMismatch: 0, wrongConfig: 0, configSpan: 0, unresolved: 0, droppedWindows: 0, duplicateOutcome: 0, segmentsOutOfOrder: segOrderOk ? 0 : 1,
   unparsableRows: ND.bad.length, tornFinalLine: ND.tornTail, anchorsMissing: anchorsMissing.length };
 const calls = new Map(), opened = new Map(), outcomeTickers = new Set(), resolvedOrUnres = new Set();
 const calibs = new Map();                                  // ticker -> [{seq, body}]
 let lastTs = 0, boot = null;
-const scored = [];
+let scored = [];
+const latencyEntries = [];
 for (const seg of segs) {
   boot = null;
   for (const e of seg) {
     lastTs = Math.max(lastTs, e.ts || 0);
     const b = e.body || {};
     if (e.type === 'boot') boot = b;
-    if (e.type === 'window' && !opened.has(b.ticker)) opened.set(b.ticker, { closeMs: b.closeMs, seq: e.seq });
-    if (e.type === 'call') { const k = b.ticker + '|' + b.policy + '|' + b.event; if (!calls.has(k)) calls.set(k, e); if (!opened.has(b.ticker)) opened.set(b.ticker, { closeMs: b.closeMs, seq: e.seq }); }
+    /* a window belongs to the configuration in force when it was opened (its calls were made under it) */
+    if (e.type === 'window' && !opened.has(b.ticker)) opened.set(b.ticker, { closeMs: b.closeMs, idx: e._i, config: boot ? boot.configHash : null });
+    if (e.type === 'call') { const k = b.ticker + '|' + b.policy + '|' + b.event; if (!calls.has(k)) calls.set(k, e); if (!opened.has(b.ticker)) opened.set(b.ticker, { closeMs: b.closeMs, idx: e._i, config: boot ? boot.configHash : null }); }
     if (e.type === 'calib') (calibs.get(b.ticker) || calibs.set(b.ticker, []).get(b.ticker)).push(e);
+    if (e.type === 'latency' && e.ts >= SINCE && (!CONF || (boot && boot.configHash === CONF))) latencyEntries.push(e);
     if (e.type === 'unresolved') { resolvedOrUnres.add(b.ticker); if (e.ts >= SINCE) issues.unresolved++; }
     if (e.type !== 'outcome') continue;
     resolvedOrUnres.add(b.ticker);
     if (outcomeTickers.has(b.ticker)) { issues.duplicateOutcome++; continue; }   // a re-pulled or forked copy never counts twice
     outcomeTickers.add(b.ticker);
     if (e.ts < SINCE) continue;
-    if (CONF && (!boot || boot.configHash !== CONF)) { issues.wrongConfig++; continue; }
+    const op = opened.get(b.ticker), wConf = op && op.config != null ? op.config : (boot ? boot.configHash : null);
+    if (op && boot && op.config != null && op.config !== boot.configHash) issues.configSpan++;   // calls under one config, outcome under another (reported)
+    if (CONF && wConf !== CONF) { issues.wrongConfig++; continue; }
     const recs = {};
     for (const pid of C.SHADOW_POLICIES28.map(p => p.id)) {
       const own = (b.records || {})[pid] || null, r = { firstLock: null, firstTrade: null, firstReversal: null };
       for (const ev of ['firstLock', 'firstTrade', 'firstReversal']) {
         const c = calls.get(b.ticker + '|' + pid + '|' + ev);
-        if (c && c.seq < e.seq) r[ev] = c.body.rec; else if (c) issues.callAfterOutcome++;
+        if (c && c._i < e._i) r[ev] = c.body.rec; else if (c) issues.callAfterOutcome++;
         if (own && own[ev] && !c) issues.missingCommit++;                         // scored by the server but never committed
-        if (ev !== 'firstReversal' && c && c.seq < e.seq && C.canon28(own && own[ev] || null) !== C.canon28(c.body.rec)) issues.recordMismatch++;
+        if (ev !== 'firstReversal' && c && c._i < e._i && C.canon28(own && own[ev] || null) !== C.canon28(c.body.rec)) issues.recordMismatch++;
       }
       recs[pid] = r.firstLock || r.firstTrade || r.firstReversal ? r : null;
     }
-    scored.push({ ...b, records: recs, outcomeSeq: e.seq });
+    scored.push({ ...b, records: recs, outcomeSeq: e.seq, outcomeIdx: e._i });
   }
 }
 /* a window with committed calls (or a window entry) but neither an outcome nor an 'unresolved' entry, 45 min after
    its close, was dropped (e.g. by a restart): it counts as unresolved */
 for (const [tk, w] of opened) if (!resolvedOrUnres.has(tk) && Number.isFinite(w.closeMs) && lastTs - w.closeMs > 45 * 60000 && w.closeMs >= SINCE) { issues.droppedWindows++; issues.unresolved++; }
+/* pre-registered maximum: 90 days from the first scored window */
+const T90 = scored.length ? scored[0].closeMs + 90 * 86400000 : Infinity;
+issues.beyond90Days = scored.filter(o => o.closeMs > T90).length;
+scored = scored.filter(o => o.closeMs <= T90);
 const policies = C.SHADOW_POLICIES28.map(p => p.id);
 const stats = C.mkShadowStats28(C.SHADOW_POLICIES28, 0.005);
 for (const o of scored) for (const pid of policies) C.shadowAccumulate28(stats, pid, o.records[pid] || null, o.winner);
@@ -132,7 +151,7 @@ const holm = C.holm28(objP);
 /* ---- calibration (G5): committed 'calib' entries; the tape only when the ledger has none ---- */
 let calib = null;
 const TAPE = arg('tape');
-const winner = new Map(scored.map(o => [o.ticker, o.winner])), outSeq = new Map(scored.map(o => [o.ticker, o.outcomeSeq]));
+const winner = new Map(scored.map(o => [o.ticker, o.winner])), outIdx = new Map(scored.map(o => [o.ticker, o.outcomeIdx]));
 const fromLedger = scored.some(o => calibs.has(o.ticker));
 if (fromLedger || TAPE) {
   const tauPts = { 60: [], 30: [], 10: [] }, bandFirst = new Map();     // ticker -> {band: pUp}
@@ -141,7 +160,7 @@ if (fromLedger || TAPE) {
       if (!winner.has(tk)) continue;
       const seen = new Set();
       for (const e of arr) {
-        if (e.seq > outSeq.get(tk)) continue;                              // committed before the outcome only
+        if (e._i > outIdx.get(tk)) continue;                               // committed before the outcome only (file order)
         const b = e.body; if (b.pUp == null || b.state === 'DATA UNRELIABLE') continue;
         const key = b.kind === 'tau' ? 't' + b.target : 'b' + b.band; if (seen.has(key)) continue; seen.add(key);
         if (b.kind === 'tau' && tauPts[b.target]) tauPts[b.target].push([b.pUp, winner.get(tk) === 'UP' ? 1 : 0]);
@@ -182,38 +201,79 @@ if (fromLedger || TAPE) {
   }
   const ci = poisCi(O); calib.pooled = { observed: O, expected: +E.toFixed(3), oOverE: E ? +(O / E).toFixed(3) : null, ci95: E ? [+(ci[0] / E).toFixed(3), +(ci[1] / E).toFixed(3)] : null };
 }
-/* ---- latency ---- */
-let lat = null; const LAT = arg('latency');
-if (LAT) { const j = JSON.parse(fs.readFileSync(LAT, 'utf8')); lat = j.latency || j; }
+/* ---- latency: hourly histograms committed to the ledger (whole period); a /latency snapshot only as a fallback ---- */
+let lat = null, latSource = null; const LAT = arg('latency');
+const LAT_KEYS = ['decisionIndexInputAgeMs', 'bgSnapshotMs', 'radarComputeMs', 'clientSignalAgeAtDisplayMs'];
+if (latencyEntries.length) {
+  lat = {}; latSource = `ledger: ${latencyEntries.length} hourly histograms`;
+  for (const k of LAT_KEYS) { const pairs = latencyEntries.flatMap(e => (e.body.hist || {})[k] || []); const q = C.latHistQuantile28(pairs, 0.99); if (q) lat[k] = { n: q.n, p99: q.value }; }
+} else if (LAT) { const j = JSON.parse(fs.readFileSync(LAT, 'utf8')); lat = j.latency || j; latSource = 'snapshot of GET /latency (rolling buffer: covers only the last ~3,000 samples)'; }
 /* ---- gates (PREREGISTRATION.md section 4) ---- */
 const A = summary['A-2.6'], g = {};
 const windowsScored = scored.length;
-g.G1 = { status: 'run separately', how: 'bash pinradar-research/2.8/test/run_all28.sh and GET /selftest' };
-g.G2 = { pass: segVerify.length > 0 && segVerify.every(v => v.ok) && issues.unparsableRows === 0 && issues.anchorsMissing === 0 && issues.callAfterOutcome === 0 && issues.missingCommit === 0
+const G1 = String(arg('g1') || '').toUpperCase();
+g.G1 = { attested: G1 === 'PASS', failed: G1 === 'FAIL', how: 'bash pinradar-research/2.8/test/run_all28.sh and GET /selftest on the deployed build; then --g1 PASS (or FAIL)' };
+const lastScoredIdx = scored.length ? scored[scored.length - 1].outcomeIdx : -1;
+const anchoredAll = ANCHORS.length > 0 && segVerify.every(v => v.hasAnchor) && Math.max(-1, ...anchorIdx) >= lastScoredIdx;
+g.G2 = { anchoredAll, anchorsGiven: ANCHORS.length,
+  pass: segVerify.length > 0 && segVerify.every(v => v.ok) && segOrderOk && issues.unparsableRows === 0 && issues.anchorsMissing === 0 && issues.callAfterOutcome === 0 && issues.missingCommit === 0
   && (windowsScored ? issues.unresolved / (windowsScored + issues.unresolved) < 0.02 : true),
   segments: segVerify, issues, anchorsMissing, note: 'recordMismatch/duplicateOutcome are reported, not failed: windows are scored from the committed calls, each ticker once' };
 let lossRun = 0; { const seq = scored.filter(o => lockedOf(o, 'A-2.6')).map(o => lostOf(o, 'A-2.6') ? 1 : 0); for (let i = 0; i < seq.length; i++) { let s = 0; for (let j = Math.max(0, i - 199); j <= i; j++) s += seq[j]; lossRun = Math.max(lossRun, s); } }
+/* G3 (prereg v2): FAIL only on evidence of harm (stop rule); success = one-sided 95 % CP upper <= 0.75 % at >= 3,000
+   LOCKED windows (85 % power at the dev rate 0.37 %); fewer windows at the 90-day cap or a higher bound = NOT DEMONSTRATED */
 g.G3 = { locked: A.locked, lost: A.lost, cp95UpperPct: A.lossCp95UpperPct,
-  stage1: A.locked >= 700 ? (A.lossCp95UpperPct <= 1.0 ? 'PASS' : 'FAIL') : `pending (${A.locked}/700 LOCKED windows)`,
-  stage2: A.locked >= 1500 ? (A.lossCp95UpperPct <= 0.75 ? 'PASS' : 'FAIL') : `pending (${A.locked}/1500)`,
+  interim700: A.locked >= 700 ? `upper ${A.lossCp95UpperPct}% (informational)` : `pending (${A.locked}/700)`,
+  final: A.locked >= 3000 || issues.beyond90Days > 0 ? (A.lossCp95UpperPct != null && A.lossCp95UpperPct <= 0.75 ? 'PASS' : 'NOT DEMONSTRATED') : `pending (${A.locked}/3000 LOCKED windows)`,
   stopRule: { failureAlarm: A.failure.alarm, eValue: A.failure.eValue, supEValue: A.failure.supEValue, firstAlarmAtWindow: A.failure.firstAlarmAtWindow, maxLossesIn200: lossRun,
     triggered: A.failure.alarm || lossRun > 3 } };                       // alarm = latched: e reached 20 at ANY point (Ville)
 g.G4 = { coveragePct: A.coveragePct, leadMeanS: A.leadMeanS, pass: windowsScored ? (A.coveragePct >= 85 && A.leadMeanS >= 60) : null };
-g.G5 = calib ? { ...calib, pass: Object.values(calib.fixedTau).every(x => x.ecePp <= 1.5) && (!calib.pooled.ci95 || calib.pooled.ci95[0] <= 1.25) } : { status: 'needs --tape' };
-g.G6 = lat ? { pass: (lat.decisionIndexInputAgeMs ? lat.decisionIndexInputAgeMs.p99 <= 3000 : true) && (lat.bgSnapshotMs ? lat.bgSnapshotMs.p99 <= 25 : true)
-  && (lat.radarComputeMs ? lat.radarComputeMs.p99 <= 50 : true) && (lat.clientSignalAgeAtDisplayMs ? lat.clientSignalAgeAtDisplayMs.p99 <= 1500 : true), latency: lat } : { status: 'needs --latency (save GET /latency)' };
+/* G5 needs calibration points for >= 85 % of scored windows at each of tau 60/30/10 s */
+const g5cov = calib ? Object.fromEntries([60, 30, 10].map(t => [t, windowsScored ? +(100 * ((calib.fixedTau[t] || {}).n || 0) / windowsScored).toFixed(2) : 0])) : null;
+const g5ok = !!calib && windowsScored > 0 && Object.values(g5cov).every(c => c >= 85) && !!calib.pooled;
+g.G5 = calib ? { ...calib, coverageByTauPct: g5cov, sufficient: g5ok,
+  pass: g5ok ? Object.values(calib.fixedTau).every(x => x.ecePp <= 1.5) && (!calib.pooled.ci95 || calib.pooled.ci95[0] <= 1.25) : null } : { sufficient: false, pass: null, status: 'no calibration evidence (ledger calib entries or --tape)' };
+const G6_KEYS = ['decisionIndexInputAgeMs', 'bgSnapshotMs', 'radarComputeMs'];
+const latMissing = G6_KEYS.filter(k => !(lat && lat[k] && Number.isFinite(lat[k].p99)));
+g.G6 = { source: latSource, missing: latMissing, sufficient: !!lat && latMissing.length === 0,
+  pass: lat && latMissing.length === 0 ? lat.decisionIndexInputAgeMs.p99 <= 3000 && lat.bgSnapshotMs.p99 <= 25 && lat.radarComputeMs.p99 <= 50 : null,
+  informational: { clientSignalAgeAtDisplayMs: lat && lat.clientSignalAgeAtDisplayMs || null, target: 'p99 <= 1500 ms', note: 'reported by browsers: unauthenticated, so it cannot decide a gate (any client can post values); clamped and rate-limited by the server' },
+  latency: lat };
 g.G7 = { edge: A.edge, trades: A.trades, tradeLosses: A.tradeLosses, meanCents: A.pnlCentsPerContractMean, claim: A.edge.proven ? 'edge established on visible-book (hypothetical) fills' : 'TRADE NOW profitability UNPROVEN' };
-const minPeriodMet = A.locked >= 1500 && scored.length && (scored[scored.length - 1].closeMs - scored[0].closeMs) >= 21 * 86400000;
-const verdict = (!g.G2.pass || g.G3.stopRule.triggered || g.G3.stage1 === 'FAIL') ? 'FAIL'
-  : (!minPeriodMet ? 'IN PROGRESS (minimum period: 21 days and 1,500 LOCKED windows)'
-    : (g.G3.stage2 === 'PASS' && g.G4.pass && g.G5.pass !== false && g.G6.pass !== false ? 'PASS (decision support)' + (A.edge.proven ? ' + edge on hypothetical fills' : '; TRADE NOW profitability unproven') : 'FAIL'));
+const spanDays = scored.length ? (scored[scored.length - 1].closeMs - scored[0].closeMs) / 86400000 : 0;
+const ended = issues.beyond90Days > 0 || (A.locked >= 3000 && spanDays >= 21);
+const missing = [!g.G1.attested && 'G1 attestation (--g1 PASS)', !g.G2.anchoredAll && 'G2 published anchors (--anchor: one per chain segment, the last after the last outcome)',
+  !g.G5.sufficient && 'G5 calibration coverage', !g.G6.sufficient && `G6 latency (${latMissing.join(', ') || 'no data'})`].filter(Boolean);
+const failed = [g.G1.failed && 'G1', g.G4.pass === false && 'G4', g.G5.pass === false && 'G5', g.G6.pass === false && 'G6'].filter(Boolean);
+const verdict = (!g.G2.pass || g.G3.stopRule.triggered) ? 'FAIL' + (!g.G2.pass ? ' (G2 integrity)' : ' (G3c stop rule)')
+  : (!ended ? `IN PROGRESS (${A.locked}/3,000 LOCKED windows, ${spanDays.toFixed(1)}/21 days; maximum 90 days)`
+    : (failed.length ? `FAIL (${failed.join(', ')})`
+      : (g.G3.final !== 'PASS' ? 'NOT DEMONSTRATED (G3: reliability bound not reached)'
+        : (missing.length ? `INCOMPLETE (missing: ${missing.join('; ')})`
+          : 'PASS (decision support)' + (A.edge.proven ? ' + edge on hypothetical fills' : '; TRADE NOW profitability unproven')))));
+/* ---- candidate verdicts (PREREGISTRATION section 5): not worse on discordant pairs, the stated constraints, the
+   objective at Holm-adjusted 0.05 over five, and the candidate's own G3 and G4; G1, G2 and G6 are shared system gates;
+   G5 cannot be measured per candidate (only production's displayed probability is committed) ---- */
+const candidates = {};
+for (const pid of policies.filter(p => p !== 'A-2.6')) {
+  const pr = paired[pid], sC = summary[pid];
+  const notWorse = !(pr.pCandidateWorse != null && pr.pCandidateWorse <= 0.05);
+  const constraints = { 'C1-strict-0.2': pr.coverageDeltaPp != null && pr.coverageDeltaPp >= -2 && pr.leadDeltaS != null && pr.leadDeltaS >= -25,
+    'C2-no-active-recal': pr.tradesRatio != null && pr.tradesRatio >= 0.85, 'D-impulse-veto': true,
+    'E-official-ensemble': pr.coverageDeltaPp != null && pr.coverageDeltaPp >= -1, 'F-market-pooled-value': true }[pid];
+  const G3c = sC.locked >= 3000 || issues.beyond90Days > 0 ? sC.lossCp95UpperPct != null && sC.lossCp95UpperPct <= 0.75 : null;
+  const G4c = windowsScored ? sC.coveragePct >= 85 && sC.leadMeanS >= 60 : null;
+  const objective = holm[pid] <= 0.05;
+  candidates[pid] = { notWorse, pCandidateWorse: pr.pCandidateWorse, constraints, objectiveHolmP: holm[pid], objective, G3: G3c, G4: G4c,
+    adopt: !!(notWorse && constraints && objective && G3c === true && G4c === true && g.G1.attested && g.G2.pass && g.G2.anchoredAll && g.G6.pass === true) };
+}
 const report = { prereg: 'pinradar-2.8-prereg-v2', generated: new Date().toISOString(), ledgerRows: rows.length, segments: segs.length, windowsScored, since: SINCE || null, configRequired: CONF || null,
-  verdict, gates: g, policies: summary, paired, holmAdjusted: holm };
+  verdict, gates: g, policies: summary, paired, holmAdjusted: holm, candidates };
 if (arg('out')) fs.writeFileSync(arg('out'), JSON.stringify(report, null, 1));
 console.log(`forward report (${report.prereg}): ${windowsScored} scored windows, ${segs.length} chain segment(s), verdict: ${verdict}`);
 if (!g.G2.pass) console.log(`  G2 FAIL: ${JSON.stringify({ segments: segVerify.filter(v => !v.ok).map(v => ({ first: v.firstSeq, at: v.at, why: v.why })), ...issues })}`);
 console.log(`  A-2.6: LOCKED ${A.locked}, lost ${A.lost}, CP95 upper ${A.lossCp95UpperPct}% · coverage ${A.coveragePct}% · lead ${A.leadMeanS}s · failure e=${A.failure.eValue}${A.failure.alarm ? ' ALARM' : ''}`);
 console.log(`  TRADE NOW (hypothetical fills): ${A.trades} trades, ${A.tradeLosses} lost, mean ${A.pnlCentsPerContractMean}c/contract, edge e=${A.edge.eValue} -> ${g.G7.claim}`);
 for (const pid of policies.filter(p => p !== 'A-2.6')) { const s = summary[pid], pr = paired[pid]; console.log(`  ${pid.padEnd(22)} LOCKED ${s.locked} lost ${s.lost} · lead ${s.leadMeanS}s · trades ${s.trades} · discordant A-only ${pr.discordantLosses.aOnly} / cand-only ${pr.discordantLosses.candidateOnly}`); }
-console.log(`  gates: G2 ${g.G2.pass ? 'PASS' : 'FAIL'} · G3 stage1 ${g.G3.stage1} · stage2 ${g.G3.stage2} · G4 ${g.G4.pass} · G5 ${g.G5.pass ?? g.G5.status} · G6 ${g.G6.pass ?? g.G6.status}`);
-process.exit(verdict === 'FAIL' ? 1 : 0);
+console.log(`  gates: G1 ${g.G1.attested ? 'attested' : (g.G1.failed ? 'FAIL' : 'not attested')} · G2 ${g.G2.pass ? 'PASS' : 'FAIL'} · G3 ${g.G3.final} (interim ${g.G3.interim700}) · G4 ${g.G4.pass} · G5 ${g.G5.sufficient ? g.G5.pass : 'insufficient'} · G6 ${g.G6.sufficient ? g.G6.pass : 'insufficient: ' + latMissing.join(',')}`);
+process.exit(/^FAIL/.test(verdict) ? 1 : 0);

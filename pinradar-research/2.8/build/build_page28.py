@@ -8,10 +8,9 @@ import hashlib, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 R28 = os.path.abspath(os.path.join(HERE, '..'))
-SRC = os.environ.get('PAGE27', os.path.abspath(os.path.join(R28, '..', '..', '..', 'Btc-signal', 'pinradar-research', 'versions', '2.7', 'btc_pin_radar_27.html')))
-if not os.path.exists(SRC):
-    SRC = os.path.abspath(os.path.join(R28, '..', 'pkg27_page', 'btc_pin_radar_27.html'))
-OUT = os.path.join(R28, 'dist', 'btc_pin_radar_28.html')
+# the preserved 2.7 page is vendored in pinradar-research/pkg27_page (sha-checked below); PAGE27 may point elsewhere
+SRC = os.environ.get('PAGE27') or os.path.abspath(os.path.join(R28, '..', 'pkg27_page', 'btc_pin_radar_27.html'))
+OUT = os.path.join(os.environ.get('BUILD28_OUT_DIR') or os.path.join(R28, 'dist'), 'btc_pin_radar_28.html')   # run_all builds into a temp dir
 s = open(SRC, encoding='utf8').read()
 sha = hashlib.sha256(s.encode()).hexdigest()
 if not sha.startswith('804638ddafb40f8a'):
@@ -28,6 +27,8 @@ def rep(s, old, new, count=1):
 s = rep(s, '<title>BTC Pin Radar 2.7 — settlement-aware LOCKED call</title>', '<title>BTC Pin Radar 2.8 — predicted LOCKED call, trade value, forward evidence</title>')
 s = rep(s, 'BTC <span>Pin Radar 2.7</span> · settlement-aware LOCKED call', 'BTC <span>Pin Radar 2.8</span> · predicted LOCKED · trade value · forward evidence')
 s = rep(s, 'Pin Radar 2.7 · KXBTC15M settles', 'Pin Radar 2.8 · KXBTC15M settles')
+# the backtest line under the call: the record's own label (development, not independent) instead of "out of sample"
+s = rep(s, "calls (out of sample): '+a.losses+' flips in '+a.n", "calls ('+(a.label||'out of sample')+'): '+a.losses+' flips in '+a.n")
 s = rep(s, "const VERSION='pin-radar-2.7';", "const VERSION='pin-radar-2.8';")
 s = rep(s, "pinradar27", "pinradar28", count=2)
 s = rep(s, """<span class="flip">FLIP RISK '+(sg.pFlipLabel||'—')+'</span>'""",

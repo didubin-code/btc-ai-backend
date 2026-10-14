@@ -162,7 +162,7 @@ const writeNd = (f, rows, tail = '') => fs.writeFileSync(f, rows.map(r => JSON.s
 
   /* ======================= forward_report28 (the evaluation tool) ======================= */
   const mkChain = (spec) => {      // spec: [{ticker, a: {lockSide, tradeSide, ask}, winner}]
-    const H8 = 'cafe' + '0'.repeat(60), L = S.mkLedger28({ genesisSeed: 'pinradar-2.8|' + H8 });
+    const H8 = 'cafe' + '0'.repeat(60), L = S.mkLedger28({ genesisSeed: 'pinradar-2.8|' + H8, maxMem: 1e7 });   // keep every row (the default cap is 50,000)
     const t0 = 1.8e12; let t = t0;
     S.ledgerAppend28(L, 'boot', { boot: 'rg', configHash: H8 }, t);
     for (const w of spec) {
@@ -176,10 +176,13 @@ const writeNd = (f, rows, tail = '') => fs.writeFileSync(f, rows.map(r => JSON.s
         if (a && a.tradeSide) { r.firstTrade = { side: a.tradeSide, tau: 90, askCents: a.ask, avgCents: a.ask, feeCents: 0.1, contracts: 10, depth: 50, evConsCents: 0.6, bookAgeMs: 100, ts: closeMs - 90000 }; S.ledgerAppend28(L, 'call', { ticker: w.ticker, closeMs, strike: 80000, policy: pid, event: 'firstTrade', rec: r.firstTrade }, closeMs - 90000); }
         recs[pid] = r.firstLock || r.firstTrade ? r : null;
       }
+      if (w.calib) for (const tt of [60, 30, 10]) S.ledgerAppend28(L, 'calib', { ticker: w.ticker, closeMs, kind: 'tau', target: tt, tau: tt - 0.3, pUp: w.winner === 'UP' ? 0.999 : 0.001, state: 'LOCKED' }, closeMs - tt * 1000);
       if (w.noOutcome) continue;
       const records = w.outcomeRecords ? w.outcomeRecords(recs) : recs;
       S.ledgerAppend28(L, 'outcome', { ticker: w.ticker, closeMs, strike: 80000, result: w.winner === 'UP' ? 'yes' : 'no', official: 80000, winner: w.winner, records, scores: {} }, closeMs + 5000);
     }
+    if (spec.latency) { const hb = ms => [[S.latBucket28 ? S.latBucket28(ms) : 0, 1000]];
+      S.ledgerAppend28(L, 'latency', { since: t0, until: t, hist: { decisionIndexInputAgeMs: hb(400), bgSnapshotMs: hb(2), radarComputeMs: hb(3), clientSignalAgeAtDisplayMs: hb(300) } }, t + 1000); }
     S.ledgerAppend28(L, 'heartbeat', {}, t + 3600000);
     return L.rows;
   };
@@ -213,7 +216,92 @@ const writeNd = (f, rows, tail = '') => fs.writeFileSync(f, rows.map(r => JSON.s
     const spec = Array.from({ length: 1200 }, (_, i) => win(i, i < 15 && i % 5 === 0 ? { winner: 'DOWN' } : {}));   // 3 losses: below the 3-in-200 operational rule
     const f = path.join(TMP, 'alarm.ndjson'); writeNd(f, mkChain(spec));
     const r = report(['--ledger', f]);
-    ok('F10', 'forward_report28 G3c: an alarm that fired (e >= 20) and later decayed still ends the test (FAIL)', !r.crashed && r.gates.G3.stopRule.maxLossesIn200 === 3 && r.gates.G3.stopRule.eValue < 20 && r.gates.G3.stopRule.triggered === true && r.verdict === 'FAIL', r.gates && r.gates.G3.stopRule);
+    ok('F10', 'forward_report28 G3c: an alarm that fired (e >= 20) and later decayed still ends the test (FAIL)', !r.crashed && r.gates.G3.stopRule.maxLossesIn200 === 3 && r.gates.G3.stopRule.eValue < 20 && r.gates.G3.stopRule.triggered === true && /^FAIL/.test(r.verdict), r.gates && r.gates.G3.stopRule);
+  }
+  { /* CVE-03: 3,000 clean LOCKED windows over 31 days but no calibration, latency or G1 evidence -> never PASS; with them -> PASS */
+    const spec = Array.from({ length: 3050 }, (_, i) => win(i));
+    const f = path.join(TMP, 'noev.ndjson'); writeNd(f, mkChain(spec));
+    const r = report(['--ledger', f]);
+    ok('CVE-03', 'forward_report28: missing G1/G5/G6 evidence gives INCOMPLETE, not PASS', !r.crashed && !/^PASS/.test(r.verdict), r.verdict || r.stderr);
+    const spec2 = Array.from({ length: 3050 }, (_, i) => win(i, { calib: true })); spec2.latency = true;
+    const rows2 = mkChain(spec2), f2 = path.join(TMP, 'fullev.ndjson'); writeNd(f2, rows2);
+    const r2 = report(['--ledger', f2, '--g1', 'PASS', '--anchor', rows2[rows2.length - 1].hash]);
+    ok('CVE-03b', 'forward_report28: with ledger calibration + latency histograms + G1 attestation the same record PASSes', !r2.crashed && /^PASS/.test(r2.verdict), { v: r2.verdict, g2: r2.gates && r2.gates.G2.issues, g5: r2.gates && r2.gates.G5.coverageByTauPct, g6: r2.gates && r2.gates.G6 });
+  }
+  { /* CVE-06: 3 losses in the first 700 LOCKED windows is not evidence of harm (rate 0.43 %): no FAIL at the interim */
+    const spec = Array.from({ length: 760 }, (_, i) => win(i, i % 250 === 100 ? { winner: 'DOWN' } : {}));
+    const f = path.join(TMP, 'interim.ndjson'); writeNd(f, mkChain(spec));
+    const r = report(['--ledger', f]);
+    ok('CVE-06', 'forward_report28: 3/760 losses at the interim look ends nothing (IN PROGRESS), only the stop rule can FAIL early', !r.crashed && /^IN PROGRESS/.test(r.verdict) && r.gates.G3.stopRule.triggered === false, { v: r.verdict, stop: r.gates && r.gates.G3.stopRule });
+  }
+  { /* NEW-band28-reversal + CVE-13 + CVE-09 */
+    const b = S.band28(0.9, 'normal');
+    ok('BAND', 'band28 is not defined for a flip risk above 50 % (a breaking call)', b === null, b);
+    const sm = S.settleMath({ strike: 80000.01, recordedAvg: 80000.005, recordedN: 30, remaining: 30, spot: 80000.005 });
+    ok('CVE-13', 'settleMath: an exact half-cent tie projects UP (settles UP)', sm && sm.leader === 'UP', sm && { leader: sm.leader, exp: sm.expectedSettle });
+    const ev = S.evidence26({ state: 'LOCKED', side: 'UP', trade: { askCents: 97 } }, { recal: { group: 'normal' } });
+    ok('CVE-09', 'the evidence shown with LOCKED is the settlement-aware 13 of 3,484, labelled development (not "out of sample")', /13 of 3484/.test(ev[0] || '') && !/Out of sample/.test(ev[0] || ''), ev[0]);
+  }
+  { /* fix-review R1: a no-disk restart inside a window (calls in segment 1, outcome in segment 2) is scored from the calls */
+    const a = mkChain([win(1), win(2, { winner: 'DOWN', noOutcome: true })]);
+    const H8 = 'cafe' + '0'.repeat(60), L2 = S.mkLedger28({ genesisSeed: 'pinradar-2.8|' + H8, maxMem: 1e7 });
+    const c2 = a.find(e => e.type === 'window' && e.body.ticker === 'W2').body.closeMs;
+    S.ledgerAppend28(L2, 'boot', { boot: 'rg2', configHash: H8 }, c2 - 30000);
+    S.ledgerAppend28(L2, 'outcome', { ticker: 'W2', closeMs: c2, strike: 80000, result: 'no', official: 79999, winner: 'DOWN', records: {}, scores: {} }, c2 + 5000);
+    const f = path.join(TMP, 'r1.ndjson'); writeNd(f, a.slice(0, -1).concat(L2.rows));   // drop seg-1 heartbeat so seg 2 follows in time
+    const r = report(['--ledger', f]);
+    ok('R1', 'calls before a no-disk restart precede the outcome after it (file order, not seq): scored, no G2 failure', !r.crashed && r.gates.G2.issues.callAfterOutcome === 0 && r.policies['A-2.6'].lost === 1 && r.gates.G2.pass, r.gates && { iss: r.gates.G2.issues, A: r.policies['A-2.6'].lost });
+    /* R5: a deleted whole segment is caught by the published anchors; without anchors the verdict can never be PASS */
+    const f5 = path.join(TMP, 'r5.ndjson'); writeNd(f5, a.slice(0, -1));
+    const r5 = report(['--ledger', f5, '--anchor', a[a.length - 2].hash + ',' + L2.rows[L2.rows.length - 1].hash]);
+    ok('R5', 'a deleted chain segment fails G2 when its published head is missing', !r5.crashed && r5.gates.G2.pass === false && r5.gates.G2.issues.anchorsMissing === 1, r5.gates && r5.gates.G2.issues);
+  }
+  { /* R2: the TAPE_FILE restart marker is written at boot (no temporal-dead-zone error) */
+    const f = path.join(TMP, 'tb.ndjson');
+    const b = child({ TAPE_FILE: f }, `process.env.PINRADAR_REPLAY='';const S=require(${JSON.stringify(SRV)});console.log(JSON.stringify({ err: S.TAPE28.fileErr }))`);
+    const first = fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8').split('\n')[0]) : null;
+    ok('R2', 'TAPE_FILE starts with a boot marker and no tape error', !!first && first.k === 'boot' && !b.err, { first, b });
+  }
+  { /* R3: no green value for a refused or not-LOCKED call (here: LOCKED-grade proxy withheld by the official gate) */
+    const sig = { ts: Date.now(), ticker: 'RG-W', tau: 30, strike: 80000, state: 'HIGH CONFIDENCE', side: 'UP', pWin: 0.99999, pFlip: 0.00001, pFlipCons: 0.0001, reasons: [],
+      trade: { action: 'WAIT', askCents: 97, avgCents: 97, feeCents: 0.2, evCents: 2.8, evConsCents: 2.7, depth: 50, contracts: 10 } };
+    S.enrich28(sig, { geo: { recal: { group: 'normal' } }, settle: null, kal: null, now: Date.now(), tau: 30 });
+    ok('R3', 'TRADE VALUE is never positive for a call that is not LOCKED (veto names the state)', sig.v28.value.positive === false && /not LOCKED/.test(sig.v28.value.veto || ''), sig.v28.value);
+    const d = S.m25Decide({ tau: 20, pUp: 0.99999, pUpCons: 0.9999, gates: { hard: [], soft: ['official BRTI disagrees: x'], official: ['official flip risk'] }, book: { ok: true, ageMs: 100, yesAsks: [[97, 50]], noAsks: [[4, 50]] }, cfg: S.m25Cfg(10), hist: [] });
+    ok('R3b', 'a WAIT caused by a gate says so (not "confidence below the LOCKED threshold")', /LOCKED withheld/.test(d.trade && d.trade.why || ''), d.trade && d.trade.why);
+  }
+  { /* R4: with a ledger file, /ledger serves only rows already on disk (a restart cannot fork a pulled copy) */
+    const f = path.join(TMP, 'r4.ndjson');
+    const b = child({ LEDGER_FILE: f }, `process.env.PINRADAR_REPLAY='';const S=require(${JSON.stringify(SRV)});const http=require('http');
+      for (let i = 0; i < 5; i++) S.ledgerAppend28(S.L28, 't', { i });
+      const good = S.L28.seq; S.L28.fs = { ...require('fs'), appendFileSync() { throw new Error('ENOSPC: no space left on device'); }, statSync: require('fs').statSync, truncateSync: require('fs').truncateSync };
+      for (let i = 0; i < 5; i++) S.ledgerAppend28(S.L28, 't', { j: i });
+      S.server.listen(0, '127.0.0.1', () => { http.get({ host: '127.0.0.1', port: S.server.address().port, path: '/ledger?since=0&n=100' }, r => { let d = ''; r.on('data', c => d += c); r.on('end', () => { const j = JSON.parse(d);
+        console.log(JSON.stringify({ good, seq: S.L28.seq, maxServed: Math.max(...j.rows.map(e => e.seq)), durable: j.durableSeq })); process.exit(0); }); }); });`);
+    ok('R4', 'rows not yet written to disk are never served by /ledger', b.maxServed === b.good && b.seq === b.good + 5, b);
+  }
+  { /* R7: a final row complete except for its newline is kept, its seq is not reused */
+    const f = path.join(TMP, 'r7.ndjson');
+    child({ LEDGER_FILE: f }, `process.env.PINRADAR_REPLAY='';const S=require(${JSON.stringify(SRV)});S.ledgerAppend28(S.L28,'outcome',{x:1});console.log('{}')`);
+    fs.truncateSync(f, fs.statSync(f).size - 1);                                     // cut only the last newline
+    const b = child({ LEDGER_FILE: f }, `process.env.PINRADAR_REPLAY='';const S=require(${JSON.stringify(SRV)});console.log(JSON.stringify({ seq: S.L28.seq, r: S.L28.resumed }))`);
+    ok('R7', 'a complete last row without its newline is kept (new boot is seq 3, not 2)', b.seq === 3 && b.r && b.r.completedLastLine === 2, b);
+  }
+  { /* R8: invalid client posts do not use the rate-limit tokens */
+    let accepted = 0;
+    if (S.clientLat28) { for (let i = 0; i < 50; i++) S.clientLat28({ clientRttMs: -5, clientDisplayDelayMs: -5 }, 2e12); accepted = S.clientLat28({ clientRttMs: 120, clientDisplayDelayMs: 300 }, 2e12) ? 1 : 0; }
+    ok('R8', 'a flood of invalid latency posts does not lock out a valid one', accepted === 1, accepted);
+  }
+  { /* R9 + R10 */
+    const realFetch = globalThis.fetch, cfg0 = S.FEE28.cfg;
+    globalThis.fetch = async () => ({ ok: true, status: 200, json: async () => ({ series: { fee_type: 'quadratic', fee_multiplier: 1e-9 } }) });
+    try { S.FEE28.cfg = { ...cfg0 }; S.fee28Recompute(); await S.fee28Refresh(); ok('R9', 'fee_multiplier 1e-9 is rejected (decision fee unchanged)', Math.abs(S.kalshiFeeCents(98, 10) - 0.2) < 1e-9 && !S.FEE28.verified, S.FEE28.cfg.seriesMultiplier); }
+    finally { globalThis.fetch = realFetch; S.FEE28.cfg = cfg0; S.fee28Recompute(); }
+    const { privateKey } = require('crypto').generateKeyPairSync('rsa', { modulusLength: 2048 });
+    const pem = privateKey.export({ type: 'pkcs8', format: 'pem' });
+    const h = env => child(env, `const S=require(${JSON.stringify(SRV)});console.log(JSON.stringify({ h: S.CONFIG28_HASH, feed: S.CONFIG28 && S.CONFIG28.officialFeed }))`);
+    const h0 = h({}), h1 = h({ KALSHI_KEY_ID: 'regress-key', KALSHI_PRIVATE_KEY: pem });
+    ok('R10', 'Kalshi credentials (official gates on) change CONFIG28_HASH', h0.h && h1.h && h0.h !== h1.h && h1.feed === true, [h0, h1]);
   }
   { /* F12: Holm step-down is monotone (textbook): p = .011, .012 with m = 5 -> both 0.055 */
     const h = S.holm28 ? S.holm28({ a: 0.011, b: 0.012, c: 0.5, d: 0.9, e: null }) : null;

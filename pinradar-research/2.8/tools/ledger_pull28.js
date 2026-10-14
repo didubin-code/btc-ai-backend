@@ -19,6 +19,12 @@ async function main() {
   if (last && info.seq >= last.seq) {
     /* same chain? fetch the entry with our last seq and compare hashes */
     const chk = await (await fetch(`${base}/ledger?since=${last.seq - 1}&n=1`)).json();
+    /* same chain (same genesis) but a different entry at our last seq = a FORK (the server resumed from a shorter file
+       after serving rows it had not stored): never append across it; report and stop */
+    let segGen = null; for (let i = have.length - 1; i >= 0; i--) if (have[i].seq === 1) { segGen = have[i].prev; break; }
+    if (chk.rows && chk.rows[0] && chk.rows[0].seq === last.seq && chk.rows[0].hash !== last.hash && segGen && info.genesis === segGen) {
+      console.error(`FORK: the server's entry ${last.seq} differs from ours on the same chain; nothing appended. Keep this file as evidence and investigate (G2 will fail).`); process.exit(3);
+    }
     if (chk.rows && chk.rows[0] && chk.rows[0].hash === last.hash) since = last.seq;
     else if (chk.inMemoryFrom && chk.inMemoryFrom > last.seq) { console.error('GAP: the server no longer holds the entries after our last one (in-memory window moved on). The gap is kept visible and fails G2 integrity in forward_report28; pull more often or set LEDGER_FILE on a persistent disk'); since = chk.inMemoryFrom - 1; }
   }

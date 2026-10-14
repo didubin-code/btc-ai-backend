@@ -3,9 +3,12 @@
     /* hash-chained ledger: predictions committed before outcomes; ?since=<seq>&n=&format=ndjson */
     if (req.method === 'GET' && u.pathname === '/ledger') {
       const since = Number(u.searchParams.get('since') || 0), n = clamp(Number(u.searchParams.get('n') || 5000), 1, 5000);   // pages of <= 5,000 (event loop)
-      const rows = L28.rows.filter(e => e.seq > since).slice(0, n);
+      /* with a ledger file, only rows already on disk are served: a row that a restart could still lose (pending write)
+         is never handed to a puller, so a resumed chain can never fork from a pulled copy */
+      const lim = LEDGER28_FILE && !L28.resumeFailed ? L28.fileSeq : Infinity;
+      const rows = L28.rows.filter(e => e.seq > since && e.seq <= lim).slice(0, n);
       if (u.searchParams.get('format') === 'ndjson') { cors(res); res.setHeader('Content-Type', 'application/x-ndjson'); return res.end(rows.map(r => JSON.stringify(r)).join('\n') + (rows.length ? '\n' : '')); }
-      return send(res, 200, { ok: true, version: SERVER_VERSION, genesis: L28.genesis, head: L28.head, seq: L28.seq, inMemoryFrom: L28.rows.length ? L28.rows[0].seq : null, n: rows.length, rows });
+      return send(res, 200, { ok: true, version: SERVER_VERSION, genesis: L28.genesis, head: L28.head, seq: L28.seq, durableSeq: Number.isFinite(lim) ? lim : null, inMemoryFrom: L28.rows.length ? L28.rows[0].seq : null, n: rows.length, rows });
     }
     if (req.method === 'GET' && u.pathname === '/ledger/verify') {
       const first = L28.rows[0];

@@ -1509,7 +1509,7 @@ function m25Decide({ tau, pUp, pUpCons, gates, book, cfg, hist = [], lockedSide 
     else if (tr.depth < cfg.contracts) { tr.action = 'LOCKED — TOO THIN'; tr.why = `only ${Math.floor(tr.depth)} contracts offered`; }
     else if (!(tr.evConsCents >= cfg.minEdgeCents)) { tr.action = 'LOCKED — DO NOT TRADE'; tr.why = `price ${tr.avgCents}¢ + fee ${tr.feeCents}¢ leaves ${tr.evConsCents}¢ conservative edge (< ${cfg.minEdgeCents}¢)`; }
     else { tr.action = 'TRADE NOW'; tr.why = `buy ${out.side} at ≤ ${tr.askCents}¢: edge ${tr.evConsCents}¢ per contract after fees (conservative)`; }
-  } else if (out.state === M25_STATE.HIGH) { tr.action = 'WAIT'; tr.why = 'confidence below the LOCKED threshold'; }
+  } else if (out.state === M25_STATE.HIGH) { tr.action = 'WAIT'; tr.why = out.pFlip <= cfg.lockMaxFlip && gates.soft.length ? 'LOCKED withheld: ' + gates.soft.join('; ') : 'confidence below the LOCKED threshold'; }
   else { tr.action = 'SIT OUT'; tr.why = out.state === M25_STATE.LEAN ? 'directional lean only' : 'no reliable direction'; }
   out.trade = tr;
   return out;
@@ -1642,21 +1642,21 @@ function lockGeometry25({ indexNow, strike, closeMs, now = Date.now(), inputAgeM
 /* v2.6: the evidence behind the current call, from the embedded out-of-sample audit */
 function pct26(k, n) { return n ? (100 * k / n).toFixed(2) + '%' : '—'; }
 function evidence26(d, geo) {
-  const A = AUDIT_25 || {}, L = A.LOCKED, H = A['HIGH CONFIDENCE'], T = A['TRADE NOW'], out = [];
+  const A = (typeof AUDIT28 !== 'undefined' && AUDIT28) || AUDIT_25 || {}, L = A.LOCKED, H = A['HIGH CONFIDENCE'], T = A['TRADE NOW'], out = [];   // v2.8
   if (!L || !d) return out;
   const locked = d.state === 'LOCKED' || d.state === 'PROVEN LOCKED';
   if (locked || d.state === 'REVERSAL WARNING') {
-    out.push(`LOCKED standard: the leading side's recalibrated flip risk ≤ ${(100 * LOCK_MAX_FLIP).toFixed(1)}%. Out of sample: ${L.losses} of ${L.n} first LOCKED calls lost (${pct26(L.losses, L.n)}; 95% upper bound ${(100 * L.upper95).toFixed(2)}%), ${L.period}.`);
+    out.push(`LOCKED standard: the leading side's recalibrated flip risk ≤ ${(100 * LOCK_MAX_FLIP).toFixed(1)}%. ${L.label || 'Out of sample'}: ${L.losses} of ${L.n} first LOCKED calls lost (${pct26(L.losses, L.n)}; one-sided 95% upper bound ${(100 * L.upper95).toFixed(2)}%), ${L.period}.`);
     const g = geo && geo.recal ? geo.recal.group : null, rg = g && L.byRegime ? L.byRegime[g] : null;
     if (rg) out.push(`This volatility regime (${g}): ${rg.losses} of ${rg.n} lost (95% upper bound ${(100 * rg.upper95).toFixed(2)}%).`);
     const ask = d.trade && d.trade.askCents != null ? d.trade.askCents / 100 : null;
     const b = ask != null && L.byAsk ? L.byAsk.find(x => ask >= x.lo - 1e-9 && (ask < x.hi - 1e-9 || x.hi >= 1)) : null;
     if (b) out.push(`LOCKED calls offered at ${Math.round(100 * b.lo)}–${Math.round(100 * b.hi)}¢: ${b.losses} of ${b.n} lost (market price implied ${(100 * b.marketImpliedLoss).toFixed(2)}%).`);
-    if (T && T.CONS && T.VISIBLE) out.push(`TRADE NOW record: ${T.CONS.n}–${T.VISIBLE.n} trades, ${T.CONS.losses}–${T.VISIBLE.losses} losses, ${T.CONS.pnlCentsPerContract}¢ to ${T.VISIBLE.pnlCentsPerContract}¢ per contract after fees (conservative / visible-price fills). Fills estimated from Kalshi's trade tape; Kalshi publishes no historical order book.`);
+    if (T && T.CONS && T.VISIBLE) out.push(`TRADE NOW record: ${T.CONS.n}–${T.VISIBLE.n} trades, ${T.CONS.losses}–${T.VISIBLE.losses} losses, ${T.CONS.pnlCentsPerContract}¢ to ${T.VISIBLE.pnlCentsPerContract}¢ per contract after fees (conservative / visible-price fills${T.CONS.pnlCi95Cents ? '; conservative 95% CI ' + T.CONS.pnlCi95Cents[0] + ' to +' + T.CONS.pnlCi95Cents[1] + '¢, i.e. the edge is not established' : ''}). Fills estimated from Kalshi's trade tape; Kalshi publishes no historical order book.`);
     out.push(d.state === 'PROVEN LOCKED' ? 'PROVEN: the settlement prints already recorded fix the outcome whatever the remaining prints do (price-only bound); still subject to CF Benchmarks data.'
       : 'Not a guarantee: before the close a large enough BTC move can still reverse any call. The flip risk is a validated probability, not certainty.');
   } else if (d.state === 'HIGH CONFIDENCE' && H) {
-    out.push(`HIGH CONFIDENCE = flip risk ≤ ${(100 * HIGH_MAX_FLIP).toFixed(0)}% (not LOCKED). Out of sample: ${H.losses} of ${H.n} first calls at this level lost (${pct26(H.losses, H.n)}).`);
+    out.push(`HIGH CONFIDENCE = flip risk ≤ ${(100 * HIGH_MAX_FLIP).toFixed(0)}% (not LOCKED). ${H.label || 'Out of sample'}: ${H.losses} of ${H.n} first calls at this level lost (${pct26(H.losses, H.n)}).`);
   }
   return out;
 }
@@ -1743,7 +1743,7 @@ function classify25({ now = Date.now(), tau, ticker, closeMs, strike, geo, gates
     projection: (d.state === 'HIGH CONFIDENCE' || d.state === 'LEANING') ? lockProjection(geo, tau) : null,
     reliability: { inValidatedRegime: !g.soft.length && !g.hard.length, notes: [...g.hard, ...g.soft] },
     reasons, gates: g,
-    validation: { audit: AUDIT_25[d.state === 'PROVEN LOCKED' ? 'LOCKED' : d.state] || null, live: null, lines: evidence26(d, geo) },
+    validation: { audit: ((typeof AUDIT28 !== 'undefined' && AUDIT28) || AUDIT_25)[d.state === 'PROVEN LOCKED' ? 'LOCKED' : d.state] || null, live: null, lines: evidence26(d, geo) },
     pUp: geo && geo.pUp != null ? round(geo.pUp, 6) : null, pUpModel: geo && geo.pUpModel != null ? round(geo.pUpModel, 6) : null,
     recal: geo && geo.recal ? geo.recal : null,
     geometry: geo ? { index: geo.index, expectedSettle: geo.expectedSettle, gapUsd: geo.gapUsd, gapPct: geo.gapPct,
@@ -2920,7 +2920,7 @@ function settleMath({ strike, recordedAvg = null, recordedN = 0, remaining, spot
   const sumRec = n > 0 ? recordedAvg * n : 0;
   const thr = strike - 0.005;
   const expected = r > 0 ? (sumRec + r * spot) / N : sumRec / N;
-  const leader = expected >= thr ? 'UP' : 'DOWN';
+  const leader = expected >= thr - 1e-9 ? 'UP' : 'DOWN';   // v2.8: same tie epsilon as settleRound2
   const out = { strike, N, recordedN: n, recordedAvg: n > 0 ? recordedAvg : null, remaining: r, spot,
     expectedSettle: expected, expectedRounded: settleRound2(expected), leader, decided: r === 0 };
   if (r === 0) { out.final = settleRound2(sumRec / N); out.result = out.final >= strike ? 'UP' : 'DOWN'; return out; }
@@ -3318,7 +3318,7 @@ function r4(x) { return Number.isFinite(x) ? Math.round(x * 1e4) / 1e4 : null; }
 const UNC28 = Object.freeze({ quiet: [0.15, 1.53], normal: [0.34, 1.33], active: [0.50, 1.53], unknown: [0.15, 1.53],
   source: 'research28 reanalysis: calibration drift between Jul 22-Aug 13 and Sep 4-Oct 13 2026' });
 function band28(pFlip, group) {
-  if (!Number.isFinite(pFlip)) return null;
+  if (!Number.isFinite(pFlip) || pFlip > 0.5) return null;       // defined for the leader's flip risk only
   const f = UNC28[group] || UNC28.unknown;
   const lo = Math.max(0, pFlip * f[0]), hi = Math.min(0.5, pFlip * f[1]);
   return { flip: pFlip, lo, hi, factors: f, group: UNC28[group] ? group : 'unknown', label: fmtBand28(pFlip, lo, hi) };
@@ -3371,7 +3371,7 @@ function sha28(s) { return crypto28.createHash('sha256').update(s).digest('hex')
 function entryHash28(prev, e) { return sha28(prev + '|' + canon28({ seq: e.seq, ts: e.ts, type: e.type, body: e.body })); }
 function mkLedger28({ genesisSeed = 'pinradar-2.8', file = '', maxMem = 50000, fs = null, maxPending = 100000 } = {}) {
   const genesis = sha28('genesis|' + genesisSeed);
-  return { genesis, head: genesis, seq: 0, rows: [], dropped: 0, file, maxMem, fs, fileErr: null, fileBytes: null, pending: [], maxPending, writeFailures: 0, fileStopped: null };
+  return { genesis, head: genesis, seq: 0, rows: [], dropped: 0, file, maxMem, fs, fileErr: null, fileBytes: null, fileSeq: 0, pending: [], maxPending, writeFailures: 0, fileStopped: null };
 }
 function ledgerAppend28(L, type, body, ts = Date.now()) {
   /* the body is copied before hashing: a later change to the caller's object (e.g. the live fee schedule) must never
@@ -3379,7 +3379,7 @@ function ledgerAppend28(L, type, body, ts = Date.now()) {
   const e = { seq: ++L.seq, ts, type, body: body === undefined ? null : JSON.parse(JSON.stringify(body)), prev: L.head };
   e.hash = entryHash28(L.head, e); L.head = e.hash;
   L.rows.push(e); if (L.rows.length > L.maxMem) { L.rows.shift(); L.dropped++; }
-  if (L.file && L.fs && !L.fileStopped) { L.pending.push(JSON.stringify(e) + '\n'); ledgerFlush28(L); }
+  if (L.file && L.fs && !L.fileStopped) { L.pending.push([e.seq, JSON.stringify(e) + '\n']); ledgerFlush28(L); }
   return e;
 }
 /* The file is always a contiguous prefix of the chain. A failed write is retried, in order, before any later entry
@@ -3390,12 +3390,12 @@ function ledgerFlush28(L) {
     try {
       if (L.fileBytes == null) L.fileBytes = L.fs.existsSync(L.file) ? L.fs.statSync(L.file).size : 0;
       if (L.fileErr) { const sz = L.fs.statSync(L.file).size; if (sz > L.fileBytes) L.fs.truncateSync(L.file, L.fileBytes); }
-      L.fs.appendFileSync(L.file, L.pending[0]);
-      L.fileBytes += Buffer.byteLength(L.pending[0]); L.pending.shift();
+      L.fs.appendFileSync(L.file, L.pending[0][1]);
+      L.fileBytes += Buffer.byteLength(L.pending[0][1]); L.fileSeq = L.pending[0][0]; L.pending.shift();   // fileSeq = last durable seq
       if (L.fileErr) { L.lastRecovered = { ts: Date.now(), after: L.fileErr }; L.fileErr = null; }
     } catch (err) {
       L.fileErr = String(err && err.message || err); L.writeFailures++;
-      if (L.pending.length > L.maxPending) { L.fileStopped = { ts: Date.now(), why: L.fileErr, atSeq: JSON.parse(L.pending[0]).seq }; L.pending = []; }
+      if (L.pending.length > L.maxPending) { L.fileStopped = { ts: Date.now(), why: L.fileErr, atSeq: L.pending[0][0] }; L.pending = []; }
       return;
     }
   }
@@ -3437,6 +3437,14 @@ function ledgerResume28(L, fs, file, onRow = null, now = Date.now()) {
     }
   } finally { fs.closeSync(fd); }
   if (!stop && rest.length) {
+    let e = null; try { e = JSON.parse(rest.toString('utf8')); } catch (_) { e = null; }
+    if (e && typeof e === 'object' && (prev === null ? e.seq === 1 : (e.seq === lastSeq + 1 && e.prev === prev)) && entryHash28(e.prev, e) === e.hash) {
+      fs.appendFileSync(file, '\n'); good += rest.length + 1; info.n++; info.completedLastLine = e.seq;      // only the newline was missing
+      if (prev === null) { info.firstSeq = e.seq; L.genesis = e.prev; }
+      prev = e.hash; lastSeq = e.seq; keep.push(e); if (onRow) onRow(e); rest = Buffer.alloc(0);
+    }
+  }
+  if (!stop && rest.length) {
     info.tornTail = { bytes: rest.length, movedTo: file + '.torn-' + now };
     try { fs.writeFileSync(info.tornTail.movedTo, rest); } catch (_) { info.tornTail.movedTo = null; }
     fs.truncateSync(file, good);
@@ -3445,7 +3453,7 @@ function ledgerResume28(L, fs, file, onRow = null, now = Date.now()) {
     const bad = file + '.broken-' + now; fs.renameSync(file, bad); fs.copyFileSync(bad, file); fs.truncateSync(file, good);
     info.broken.originalKeptAs = bad;
   }
-  if (info.n) { L.head = prev; L.seq = lastSeq; L.rows = keep.slice(-L.maxMem); info.head = prev; info.lastSeq = lastSeq; }
+  if (info.n) { L.head = prev; L.seq = lastSeq; L.fileSeq = lastSeq; L.rows = keep.slice(-L.maxMem); info.head = prev; info.lastSeq = lastSeq; }
   L.fileBytes = good;
   return info;
 }
@@ -3653,10 +3661,28 @@ function holm28(pmap) {
 }
 
 /* ---------------------------------------------------------------- latency percentiles */
-function mkLat28(cap = 2000) { return { cap, series: {} }; }
-function latNote28(L, key, ms) {
+/* Each series keeps the last `cap` values (rolling percentiles for /latency) AND a log-bucket histogram since the last
+   flush (20 buckets per decade from 1 us; upper edge of bucket i = 0.001 * 10^((i+1)/20) ms, i.e. <= 12 % wide), which
+   the server commits to the ledger every hour so the forward test's latency gate covers the whole test period. */
+function mkLat28(cap = 2000) { return { cap, series: {}, hist: {}, histSince: null }; }
+function latBucket28(ms) { return ms <= 0.001 ? 0 : Math.min(199, Math.max(0, Math.floor(20 * Math.log10(ms / 0.001)))); }
+function latEdge28(i) { return 0.001 * Math.pow(10, (i + 1) / 20); }
+function latNote28(L, key, ms, now = null) {
   if (!Number.isFinite(ms)) return; const a = L.series[key] || (L.series[key] = []);
   a.push(ms); if (a.length > L.cap) a.shift();
+  if (L.hist) { const h = L.hist[key] || (L.hist[key] = {}); const b = latBucket28(ms); h[b] = (h[b] || 0) + 1; if (L.histSince == null) L.histSince = now; }
+}
+/* take (and reset) the histogram: {key: [[bucket, count], ...]} */
+function latFlush28(L) {
+  const out = {}; for (const [k, h] of Object.entries(L.hist || {})) out[k] = Object.entries(h).map(([b, c]) => [Number(b), c]).sort((x, y) => x[0] - y[0]);
+  L.hist = {}; L.histSince = null; return out;
+}
+/* p-quantile of merged histograms (upper bucket edge: conservative) */
+function latHistQuantile28(pairs, p) {
+  const m = new Map(); let n = 0; for (const [b, c] of pairs) { m.set(b, (m.get(b) || 0) + c); n += c; }
+  if (!n) return null; const target = Math.ceil(p * n); let cum = 0;
+  for (const b of [...m.keys()].sort((x, y) => x - y)) { cum += m.get(b); if (cum >= target) return { n, value: r4(latEdge28(b)) }; }
+  return null;
 }
 function latSummary28(L) {
   const o = {};
@@ -3670,7 +3696,8 @@ function latSummary28(L) {
 const CORE28 = { CORE28_VERSION, feeCfg28, feeDollars28, feeCentsPerContract28, walk28, walkFeeCents28, evLadder28, UNC28, band28, fmtBand28, sig1,
   designation28, canon28, sha28, entryHash28, mkLedger28, ledgerAppend28, ledgerFlush28, ledgerResume28, verifyLedger28, FAIL_ALTS28, mkFailMonitor28, failE28, failUpdate28, failState28,
   EDGE_LAMBDAS28, mkEdgeMonitor28, edgeUpdate28, edgeState28, binomCdf28, cpUpper28, POOL28, marketPooledFlip28, SHADOW_POLICIES28,
-  shadowDecide28, shadowNote28, shadowScore28, mkShadowStats28, shadowAccumulate28, shadowSummary28, holm28, mkLat28, latNote28, latSummary28 };
+  shadowDecide28, shadowNote28, shadowScore28, mkShadowStats28, shadowAccumulate28, shadowSummary28, holm28, mkLat28, latNote28, latSummary28,
+  latBucket28, latEdge28, latFlush28, latHistQuantile28 };
 if (typeof module !== 'undefined' && module.exports && !globalThis.__CORE28_INLINE__) module.exports = CORE28;
 
 /* =====================================================================
@@ -3696,6 +3723,7 @@ const LADDER_SIZES28 = String(process.env.LADDER_SIZES || '1,5,10,25,50,100').sp
 const LEDGER28_FILE = String(process.env.LEDGER_FILE || '').trim();
 const TAPE28_FILE = String(process.env.TAPE_FILE || '').trim();
 const TAPE28_MAX = envNum28('TAPE_MAX', 3000, 200, 200000);
+const TAPE28_FILE_MAX = envNum28('TAPE_FILE_MAX_MB', 256, 1, 100000) * 1048576;          // rotation size of TAPE_FILE (see tapeWrite28)
 const SHADOW28_P0 = envNum28('MONITOR_P0', LOCK_MAX_FLIP, 0.0005, 0.1);          // failure alarm H0: loss rate <= the LOCKED standard
 const PREREG28_ID = 'pinradar-2.8-prereg-v2';                                     // PREREGISTRATION.md, frozen before any forward data
 
@@ -3713,11 +3741,11 @@ async function fee28Refresh() {
     const j = await fetchJson(`${KALSHI_BASE}/series/${encodeURIComponent(KALSHI_SERIES)}`, {}, 4000);
     const s = j && (j.series || j);
     if (!s || typeof s !== 'object') throw new Error('no series record');
-    /* strict: only a JSON number or a plain numeric string in (0, 10] is a multiplier (Number(null/''/false) is 0,
+    /* strict: only a JSON number or a plain numeric string in [0.1, 4] is a multiplier (Number(null/''/false) is 0,
        which would zero the decision fee); anything else keeps the current multiplier and is NOT "verified" */
     const raw = s.fee_multiplier, type = s.fee_type != null ? String(s.fee_type) : null;
     const mult = typeof raw === 'number' || (typeof raw === 'string' && /^\s*\d+(\.\d+)?\s*$/.test(raw)) ? Number(raw) : NaN;
-    const multOk = Number.isFinite(mult) && mult > 0 && mult <= 10;
+    const multOk = Number.isFinite(mult) && mult >= 0.1 && mult <= 4;   // a garbled tiny/huge value never reaches the decision fee
     const before = JSON.stringify(FEE28.cfg);
     const cfg = { ...FEE28.cfg };                       // replaced, never mutated in place (entries already hashed may hold the old one)
     if (multOk) cfg.seriesMultiplier = mult;
@@ -3728,7 +3756,7 @@ async function fee28Refresh() {
       if (!process.env.FEE_MAKER_MULT) cfg.makerMult = /maker/i.test(type) ? 0.0175 : 0;
     }
     cfg.source = `Kalshi series record ${KALSHI_SERIES}: fee_type ${type ?? 'absent'}, fee_multiplier ${raw === undefined ? 'absent' : JSON.stringify(raw)}`
-      + (raw !== undefined && !multOk ? ` (rejected: not a number in (0, 10]; multiplier ${cfg.seriesMultiplier ?? 1} kept)` : '')
+      + (raw !== undefined && !multOk ? ` (rejected: not a number in [0.1, 4]; multiplier ${cfg.seriesMultiplier ?? 1} kept)` : '')
       + ' (rounding unit and taker coefficient 0.07 are not in the record: ' + cfg.rounding + ' rounding assumed)';
     FEE28.cfg = cfg;
     FEE28.verified = multOk; FEE28.fetchedAt = Date.now(); FEE28.error = null;
@@ -3737,6 +3765,23 @@ async function fee28Refresh() {
     if (JSON.stringify(FEE28.cfg) !== before) { FEE28.history.push({ ts: Date.now(), cfg: { ...FEE28.cfg } }); if (typeof L28 !== 'undefined') ledgerAppend28(L28, 'fees', { cfg: { ...FEE28.cfg }, isDefault: FEE28.isDefault }); }
   } catch (e) { FEE28.error = String(e && e.message || e); FEE28.fetchedAt = Date.now(); }
 }
+
+/* ---------------------------------------------------------------- evidence shown with every call
+   The settlement-aware re-evaluation of the 2.6 rule (pkg27/research/results/settle_metrics.json, variant A), not the
+   earlier 2.5 audit embedded in AUDIT_25 (12 of 3,484). The development period is labelled for what it is: the tail
+   tables were fitted on Aug 13 - Oct 13, which overlaps it. Per-regime and per-ask splits of the old audit are not
+   shown (they sum to the old totals, and the per-ask rows count windows more than once). */
+const AUDIT28 = (() => {
+  const A = AUDIT_25 || {}, T = A['TRADE NOW'];
+  return Object.freeze({ ...A,
+    LOCKED: A.LOCKED ? { ...A.LOCKED, n: 3484, losses: 13, rate: 0.00373, upper95: 0.00593, byAsk: null, byRegime: null, coverage: 0.9254, medianFirstTau: 77,
+      label: 'Development (walk-forward Sep 4 - Oct 13 2026; not independent: the tail tables were fitted on Aug 13 - Oct 13)',
+      period: 'holdout Jul 22 - Aug 13 2026: 3 of 1,879 lost (one-sided 95% upper bound 0.41%). Settlement-aware re-evaluation; forward evidence: /shadow' } : null,
+    'TRADE NOW': T ? { ...T, CONS: { ...T.CONS, n: 261, losses: 2, avgPxCents: 98.2, pnlCentsPerContract: 0.86, pnlCi95Cents: [-0.21, 1.92] },
+      VISIBLE: { ...T.VISIBLE, n: 336, losses: 2, avgPxCents: 97.9, pnlCentsPerContract: 1.32 } } : null,
+    'HIGH CONFIDENCE': A['HIGH CONFIDENCE'] ? { ...A['HIGH CONFIDENCE'], label: 'Development (walk-forward, earlier 2.5 audit)' } : null,
+    source: 'pkg27/research/results/settle_metrics.json variant A (settlement-aware); REPORT_2.8.md sections B/E' });
+})();
 
 /* ---------------------------------------------------------------- ledger, shadow state, monitors, latency */
 const BOOT28 = { id: crypto.randomBytes(6).toString('hex'), ts: Date.now() };
@@ -3750,7 +3795,8 @@ const MODEL28_SHA = sha28(JSON.stringify(M25_MODEL ? { v: M25_MODEL.version, fit
 const CONFIG28 = { server: SERVER_VERSION, build: BUILD_ID, core: CORE28_VERSION, model: MODEL_VERSION, modelSha: MODEL28_SHA, env: config28Env(), prereg: PREREG28_ID,
   lockMaxFlip: LOCK_MAX_FLIP, highMaxFlip: HIGH_MAX_FLIP, revFlip: REV_FLIP, minEdgeCents: MIN_EDGE_CENTS, minExecTau: MIN_EXEC_TAU,
   contracts: DEFAULT_CONTRACTS, maxBookAgeMs: MAX_BOOK_AGE_MS, recal: [RECAL_QUIET, RECAL_NORMAL, RECAL_ACTIVE], liveVolScale: LIVE_VOL_SCALE,
-  minTradeAskCents: MIN_TRADE_ASK_CENTS, lockMaxTau: LOCK_MAX_TAU, policies: SHADOW_POLICIES28.map(p => p.id), pool: POOL28, unc: UNC28, monitorP0: SHADOW28_P0 };
+  minTradeAskCents: MIN_TRADE_ASK_CENTS, lockMaxTau: LOCK_MAX_TAU, policies: SHADOW_POLICIES28.map(p => p.id), pool: POOL28, unc: UNC28, monitorP0: SHADOW28_P0,
+  officialFeed: !!(KALSHI_HAVE_CREDS && BRTI_ENABLE), streaming: !!(WS_AVAILABLE && ENABLE_WS) };   // credentials switch the official gates (D4/D5, policy E)
 const CONFIG28_HASH = sha28(canon28(CONFIG28));
 const SHADOW28 = { windows: new Map(), stats: mkShadowStats28(SHADOW_POLICIES28, SHADOW28_P0), scored: 0, lastScore: null, restored: [] };
 /* one committed ledger row, replayed at boot: outcomes rebuild the monitors (the whole file counts, not just the
@@ -3785,7 +3831,7 @@ const L28 = (() => {
       if (live) Object.assign(LOCK25, { ticker: live.ticker, hist: [], lockedSide: live.recs['A-2.6'].firstLock.side, lockedAtTau: live.recs['A-2.6'].firstLock.tau, revNoted: false });
     } catch (e) {
       /* never append to a file that could not be read: keep it untouched, run in memory, say so */
-      L.fileErr = 'resume failed: ' + String(e && e.message || e); L.fileStopped = { ts: Date.now(), why: L.fileErr };
+      L.fileErr = 'resume failed: ' + String(e && e.message || e); L.fileStopped = { ts: Date.now(), why: L.fileErr }; L.resumeFailed = true;
       L.genesis = g0; L.head = g0; L.seq = 0; L.rows = []; L.fileBytes = null; SHADOW28.stats = mkShadowStats28(SHADOW_POLICIES28, SHADOW28_P0); SHADOW28.scored = 0;
     }
   }
@@ -3806,7 +3852,9 @@ function settledFor28(ticker) {
 function enrich28(sig, { geo, settle, kal, now, tau }) {
   if (!sig) return sig;
   const group = geo && geo.recal ? geo.recal.group : 'unknown';
-  const band = sig.pFlip != null && sig.state !== 'DATA UNRELIABLE' ? band28(sig.pFlip, group) : null;
+  const shown = sig.pFlip != null && sig.state !== 'DATA UNRELIABLE';
+  /* the calibration-drift band is measured on the leader's flip risk; it says nothing about a call that is breaking */
+  const band = shown && sig.state !== 'REVERSAL WARNING' ? band28(sig.pFlip, group) : null;
   const book = bookFromKal(kal, now);
   const lv = book.ok && sig.side ? (sig.side === 'UP' ? book.yesAsks : book.noAsks) : null;
   const pWin = sig.pWin, pWinCons = sig.pFlipCons != null ? 1 - sig.pFlipCons : null, pWinStress = band ? 1 - Math.max(band.hi, sig.pFlipCons || 0) : null;
@@ -3814,14 +3862,16 @@ function enrich28(sig, { geo, settle, kal, now, tau }) {
   /* the trade numbers are the proxy decision's: void once the call is breaking (REVERSAL WARNING, official or proxy)
      or the data are unreliable; a trade the guards refused is never shown as positive value */
   const voidValue = sig.state === 'REVERSAL WARNING' || sig.state === 'DATA UNRELIABLE' || sig.state === 'AWAITING SETTLEMENT' || !!sig.officialReversal;
-  const veto = voidValue ? sig.state : (tr.action && /MARKET DISAGREES|DO NOT TRADE|EXIT/.test(tr.action) ? tr.action : null);
+  const lockedState = sig.state === 'LOCKED' || sig.state === 'PROVEN LOCKED';
+  const veto = voidValue ? sig.state : (!lockedState ? `not LOCKED (${sig.state})` : (tr.action && /MARKET DISAGREES|DO NOT TRADE|EXIT/.test(tr.action) ? tr.action : null));
   const ladder = !voidValue && lv && lv.length ? evLadder28({ levels: lv, pWin, pWinCons, pWinStress, sizes: LADDER_SIZES28, cfg: FEE28.cfg }) : [];
   const locked = sig.state === 'LOCKED' || sig.state === 'PROVEN LOCKED';
   const bookFresh = !!(book.ok && book.ageMs != null && book.ageMs <= MAX_BOOK_AGE_MS);
   const contracts = tr.contracts || DEFAULT_CONTRACTS;
   sig.v28 = {
     outcome: { state: sig.state, side: sig.side, locked, winProbability: pWin, flipProbability: sig.pFlip,
-      flipBand: band, winLabel: band ? `${fmtWin(pWin)} (plausible ${fmtWin(1 - band.hi)}–${fmtWin(1 - band.lo)})` : null, flipLabel: band ? band.label : null,
+      flipBand: band, winLabel: band ? `${fmtWin(pWin)} (plausible ${fmtWin(1 - band.hi)}–${fmtWin(1 - band.lo)})` : (shown && pWin != null ? fmtWin(pWin) : null),
+      flipLabel: band ? band.label : (shown ? fmtFlip(sig.pFlip) : null),
       note: band ? 'band = range of realised loss rates this displayed probability has corresponded to (Jul-Oct 2026 calibration drift); decisions use the validated point rule' : null },
     value: { minEdgeCents: MIN_EDGE_CENTS, contracts, askCents: tr.askCents ?? null, avgCents: tr.avgCents ?? null, feeCents: tr.feeCents ?? null,
       evCents: voidValue ? null : (tr.evCents ?? null), evConsCents: voidValue ? null : (tr.evConsCents ?? null), veto,
@@ -3852,7 +3902,7 @@ function lastWindowDesignation28(w) {
 const CLAT28 = { tokens: 4, last: 0, dropped: 0 };
 function clientLat28(payload, now = Date.now()) {
   const rtt = Number(payload && payload.clientRttMs), disp = Number(payload && payload.clientDisplayDelayMs);
-  if (!Number.isFinite(rtt) && !Number.isFinite(disp)) return false;
+  if (!(Number.isFinite(rtt) && rtt >= 0) && !(Number.isFinite(disp) && disp >= 0)) return false;   // invalid posts never use a token
   CLAT28.tokens = Math.min(4, CLAT28.tokens + Math.max(0, now - CLAT28.last) * 4 / 1000); CLAT28.last = now;
   if (CLAT28.tokens < 1) { CLAT28.dropped++; return false; } CLAT28.tokens -= 1;
   if (Number.isFinite(rtt) && rtt >= 0) latNote28(LAT28, 'clientRoundTripMs', Math.min(60000, rtt));
@@ -3901,7 +3951,6 @@ function tapeSample28() {
 }
 /* the tape is diagnostic and large (~80 MB/day): it rotates at TAPE_FILE_MAX_MB (current + one .prev file) so it can
    never fill the disk the ledger is on; a new file starts with the 960 s ring history its first records need */
-const TAPE28_FILE_MAX = envNum28('TAPE_FILE_MAX_MB', 256, 1, 100000) * 1048576;
 function tapeWrite28(o) {
   try {
     const fs = require('fs'), line = JSON.stringify(o) + '\n';
@@ -3915,6 +3964,7 @@ function tapeWrite28(o) {
       } finally { TAPE28.rotating = false; }
     }
     fs.appendFileSync(TAPE28_FILE, line); TAPE28.fileBytes += Buffer.byteLength(line);
+    if (TAPE28.fileErr) { TAPE28.lastFileErr = TAPE28.fileErr; TAPE28.fileErr = null; }
   } catch (e) { TAPE28.fileErr = String(e && e.message || e); }
 }
 function tapeRecord28(pre, snap) {
@@ -3985,6 +4035,9 @@ function calib28(w, s, tau, now) {
 /* every 60 s whether or not a window is live: feed health goes on the record even when the engine is blind */
 function heartbeat28(now = Date.now()) {
   HB28.lastTs = now;
+  /* hourly latency histograms (G6 is evaluated on the whole test period from these, not on a rolling /latency snapshot) */
+  if (!HB28.latTs) HB28.latTs = now;
+  if (now - HB28.latTs >= 3600000) { ledgerAppend28(L28, 'latency', { since: HB28.latTs, until: now, hist: latFlush28(LAT28) }, now); HB28.latTs = now; }
   ledgerAppend28(L28, 'heartbeat', { uptimeSec: Math.round((now - BOOT28.ts) / 1000), live: VENUE_LIST().filter(v => venueFresh(v, now)).map(v => v.name),
     kalshi: KAL.market ? KAL.market.ticker : null, kalshiAgeMs: KAL.ts ? now - KAL.ts : null, brti: BRTI.state, bgTicks: BG.ticks, bgErr: BG.lastErr, scored: SHADOW28.scored }, now);
 }
@@ -4017,7 +4070,7 @@ async function settleRestored28(now = Date.now()) {
 function v28Summary(now = Date.now()) {
   return { ok: true, version: SERVER_VERSION, build: BUILD_ID, core: CORE28_VERSION, prereg: PREREG28_ID, configHash: CONFIG28_HASH, boot: BOOT28.id,
     ledger: { head: L28.head, seq: L28.seq, inMemory: L28.rows.length, dropped: L28.dropped, file: LEDGER28_FILE || null, fileErr: L28.fileErr, resumed: L28.resumed,
-      writeFailures: L28.writeFailures, pendingWrites: L28.pending.length, fileStopped: L28.fileStopped, lastRecovered: L28.lastRecovered || null },
+      writeFailures: L28.writeFailures, pendingWrites: L28.pending.length, durableSeq: LEDGER28_FILE ? L28.fileSeq : null, fileStopped: L28.fileStopped, lastRecovered: L28.lastRecovered || null },
     shadow: { openWindows: SHADOW28.windows.size, scoredWindows: SHADOW28.scored, lastScore: SHADOW28.lastScore, restoredAfterRestart: SHADOW28.restored },
     fees: { ...FEE28.cfg, isDefault: FEE28.isDefault, verified: FEE28.verified, error: FEE28.error, fetchedAt: FEE28.fetchedAt },
     tape: { records: TAPE28.rows.length, samples: TAPE28.samples.length, dropped: TAPE28.dropped, file: TAPE28_FILE || null, fileErr: TAPE28.fileErr, fileBytes: TAPE28.fileBytes ?? null, rotations: TAPE28.rotations || 0 },
@@ -4670,8 +4723,9 @@ function runSelfTest() {
       sCheap.state + ' ' + sCheap.trade.action + ' ask ' + sCheap.trade.askCents);
     push('2.6 the same call offered at 96c is still TRADE NOW', sFair.state === 'LOCKED' && sFair.trade.action === 'TRADE NOW', sFair.trade.action + ' ' + sFair.trade.evConsCents);
     const lines = sFair.validation && sFair.validation.lines;
-    push('2.6 every LOCKED call carries its evidence (standard, regime record, price bucket, not-a-guarantee)',
-      Array.isArray(lines) && lines.length >= 4 && /LOCKED standard/.test(lines[0]) && lines.some(l => /regime/.test(l)) && lines.some(l => /Not a guarantee/.test(l)),
+    push('2.6/2.8 every LOCKED call carries its evidence (standard + settlement-aware record + holdout, TRADE NOW record with CI, not-a-guarantee)',
+      Array.isArray(lines) && lines.length >= 3 && /LOCKED standard/.test(lines[0]) && /13 of 3484/.test(lines[0]) && /holdout/.test(lines[0]) && !/Out of sample/.test(lines[0])
+        && lines.some(l => /not established/.test(l)) && lines.some(l => /Not a guarantee/.test(l)),
       Array.isArray(lines) ? lines.length + ' lines' : 'none');
     const sFar = classify25({ now: Date.now(), tau: 420, ticker: 'SELFTEST26', closeMs: Date.now() + 420000, strike: 80000, geo,
       gates: { hard: [], soft: [] }, kal: { ok: true, ticker: 'SELFTEST26' }, contracts: 10, mutate: false });
@@ -4913,7 +4967,7 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true, version: SERVER_VERSION, model: MODEL_VERSION, signals: SIGNAL_LOG.slice(-n) });
     }
     if (req.method === 'GET' && u.pathname === '/calibration') {
-      return send(res, 200, { ok: true, version: SERVER_VERSION, model: MODEL_VERSION, live: ledgerStats(), audit: AUDIT_25,
+      return send(res, 200, { ok: true, version: SERVER_VERSION, model: MODEL_VERSION, live: ledgerStats(), audit: AUDIT28, audit25: AUDIT_25,
         tiers: { lockMaxFlip: LOCK_MAX_FLIP, highMaxFlip: HIGH_MAX_FLIP, leanMaxFlip: LEAN_MAX_FLIP }, records: u.searchParams.get('records') ? LEDGER.closed.slice(-2000) : undefined });
     }
     /* v2.7: official BRTI reference status (entitlement, ticks, accumulator vs Kalshi's official settlements, latency) */
@@ -4936,9 +4990,12 @@ const server = http.createServer(async (req, res) => {
     /* hash-chained ledger: predictions committed before outcomes; ?since=<seq>&n=&format=ndjson */
     if (req.method === 'GET' && u.pathname === '/ledger') {
       const since = Number(u.searchParams.get('since') || 0), n = clamp(Number(u.searchParams.get('n') || 5000), 1, 5000);   // pages of <= 5,000 (event loop)
-      const rows = L28.rows.filter(e => e.seq > since).slice(0, n);
+      /* with a ledger file, only rows already on disk are served: a row that a restart could still lose (pending write)
+         is never handed to a puller, so a resumed chain can never fork from a pulled copy */
+      const lim = LEDGER28_FILE && !L28.resumeFailed ? L28.fileSeq : Infinity;
+      const rows = L28.rows.filter(e => e.seq > since && e.seq <= lim).slice(0, n);
       if (u.searchParams.get('format') === 'ndjson') { cors(res); res.setHeader('Content-Type', 'application/x-ndjson'); return res.end(rows.map(r => JSON.stringify(r)).join('\n') + (rows.length ? '\n' : '')); }
-      return send(res, 200, { ok: true, version: SERVER_VERSION, genesis: L28.genesis, head: L28.head, seq: L28.seq, inMemoryFrom: L28.rows.length ? L28.rows[0].seq : null, n: rows.length, rows });
+      return send(res, 200, { ok: true, version: SERVER_VERSION, genesis: L28.genesis, head: L28.head, seq: L28.seq, durableSeq: Number.isFinite(lim) ? lim : null, inMemoryFrom: L28.rows.length ? L28.rows[0].seq : null, n: rows.length, rows });
     }
     if (req.method === 'GET' && u.pathname === '/ledger/verify') {
       const first = L28.rows[0];
