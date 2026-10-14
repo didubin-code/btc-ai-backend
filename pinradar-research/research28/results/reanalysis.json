@@ -1,0 +1,1891 @@
+{
+ "_note": "derived from the prior session's development/holdout aggregates; not independent evidence",
+ "locked_bounds": [
+  {
+   "period": "holdout",
+   "variant": "A",
+   "locked": 1879,
+   "lost": 3,
+   "rate_pct": 0.16,
+   "cp95_two_sided_pct": [
+    0.033,
+    0.466
+   ],
+   "cp95_upper_one_sided_pct": 0.412,
+   "reported_ci95_pct": [
+    0.033,
+    0.466
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 88.63,
+   "lead_mean_s": 100.1,
+   "lead_median_s": 77.0,
+   "trade_cons": {
+    "trades": 32,
+    "losses": 0,
+    "avg_px_c": 97.75,
+    "pnl_c_per_contract": 2.05,
+    "pnl_ci95_c": [
+     1.375,
+     2.725
+    ]
+   },
+   "trade_visible": {
+    "trades": 43,
+    "losses": 0,
+    "avg_px_c": 97.68,
+    "pnl_c_per_contract": 2.114,
+    "pnl_ci95_c": [
+     1.633,
+     2.595
+    ]
+   }
+  },
+  {
+   "period": "holdout",
+   "variant": "C",
+   "locked": 1883,
+   "lost": 3,
+   "rate_pct": 0.159,
+   "cp95_two_sided_pct": [
+    0.033,
+    0.465
+   ],
+   "cp95_upper_one_sided_pct": 0.411,
+   "reported_ci95_pct": [
+    0.033,
+    0.465
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 88.82,
+   "lead_mean_s": 103.7,
+   "lead_median_s": 83.0,
+   "trade_cons": {
+    "trades": 46,
+    "losses": 0,
+    "avg_px_c": 97.9,
+    "pnl_c_per_contract": 1.909,
+    "pnl_ci95_c": [
+     1.431,
+     2.386
+    ]
+   },
+   "trade_visible": {
+    "trades": 63,
+    "losses": 0,
+    "avg_px_c": 97.7,
+    "pnl_c_per_contract": 2.097,
+    "pnl_ci95_c": [
+     1.7,
+     2.493
+    ]
+   }
+  },
+  {
+   "period": "holdout",
+   "variant": "Aq",
+   "locked": 1879,
+   "lost": 3,
+   "rate_pct": 0.16,
+   "cp95_two_sided_pct": [
+    0.033,
+    0.466
+   ],
+   "cp95_upper_one_sided_pct": 0.412,
+   "reported_ci95_pct": [
+    0.033,
+    0.466
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 88.63,
+   "lead_mean_s": 96.1,
+   "lead_median_s": 76.0,
+   "trade_cons": {
+    "trades": 27,
+    "losses": 0,
+    "avg_px_c": 97.63,
+    "pnl_c_per_contract": 2.163,
+    "pnl_ci95_c": [
+     1.371,
+     2.955
+    ]
+   },
+   "trade_visible": {
+    "trades": 38,
+    "losses": 0,
+    "avg_px_c": 97.71,
+    "pnl_c_per_contract": 2.092,
+    "pnl_ci95_c": [
+     1.584,
+     2.6
+    ]
+   }
+  },
+  {
+   "period": "holdout",
+   "variant": "B",
+   "locked": 1928,
+   "lost": 50,
+   "rate_pct": 2.593,
+   "cp95_two_sided_pct": [
+    1.931,
+    3.405
+   ],
+   "cp95_upper_one_sided_pct": 3.271,
+   "reported_ci95_pct": [
+    1.931,
+    3.405
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 90.94,
+   "lead_mean_s": 201.2,
+   "lead_median_s": 219.0,
+   "trade_cons": {
+    "trades": 945,
+    "losses": 31,
+    "avg_px_c": 97.81,
+    "pnl_c_per_contract": -1.289,
+    "pnl_ci95_c": [
+     -2.414,
+     -0.165
+    ]
+   },
+   "trade_visible": {
+    "trades": 1017,
+    "losses": 31,
+    "avg_px_c": 97.67,
+    "pnl_c_per_contract": -0.927,
+    "pnl_ci95_c": [
+     -1.974,
+     0.121
+    ]
+   }
+  },
+  {
+   "period": "holdout",
+   "variant": "As",
+   "locked": 2118,
+   "lost": 2,
+   "rate_pct": 0.094,
+   "cp95_two_sided_pct": [
+    0.011,
+    0.341
+   ],
+   "cp95_upper_one_sided_pct": 0.297,
+   "reported_ci95_pct": [
+    0.011,
+    0.341
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 99.91,
+   "lead_mean_s": 91.0,
+   "lead_median_s": 67.0,
+   "trade_cons": {
+    "trades": 68,
+    "losses": 0,
+    "avg_px_c": 98.44,
+    "pnl_c_per_contract": 1.409,
+    "pnl_ci95_c": [
+     1.26,
+     1.558
+    ]
+   },
+   "trade_visible": {
+    "trades": 104,
+    "losses": 0,
+    "avg_px_c": 97.86,
+    "pnl_c_per_contract": 1.95,
+    "pnl_ci95_c": [
+     1.653,
+     2.247
+    ]
+   }
+  },
+  {
+   "period": "holdout",
+   "variant": "Cs",
+   "locked": 2119,
+   "lost": 3,
+   "rate_pct": 0.142,
+   "cp95_two_sided_pct": [
+    0.029,
+    0.413
+   ],
+   "cp95_upper_one_sided_pct": 0.366,
+   "reported_ci95_pct": [
+    0.029,
+    0.413
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 99.95,
+   "lead_mean_s": 94.5,
+   "lead_median_s": 74.0,
+   "trade_cons": {
+    "trades": 86,
+    "losses": 0,
+    "avg_px_c": 98.42,
+    "pnl_c_per_contract": 1.421,
+    "pnl_ci95_c": [
+     1.306,
+     1.535
+    ]
+   },
+   "trade_visible": {
+    "trades": 130,
+    "losses": 0,
+    "avg_px_c": 97.87,
+    "pnl_c_per_contract": 1.938,
+    "pnl_ci95_c": [
+     1.661,
+     2.216
+    ]
+   }
+  },
+  {
+   "period": "holdout",
+   "variant": "Asr",
+   "locked": 2118,
+   "lost": 2,
+   "rate_pct": 0.094,
+   "cp95_two_sided_pct": [
+    0.011,
+    0.341
+   ],
+   "cp95_upper_one_sided_pct": 0.297,
+   "reported_ci95_pct": [
+    0.011,
+    0.341
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 99.91,
+   "lead_mean_s": 90.5,
+   "lead_median_s": 67.0,
+   "trade_cons": {
+    "trades": 67,
+    "losses": 0,
+    "avg_px_c": 98.43,
+    "pnl_c_per_contract": 1.416,
+    "pnl_ci95_c": [
+     1.266,
+     1.567
+    ]
+   },
+   "trade_visible": {
+    "trades": 104,
+    "losses": 0,
+    "avg_px_c": 97.88,
+    "pnl_c_per_contract": 1.927,
+    "pnl_ci95_c": [
+     1.632,
+     2.221
+    ]
+   }
+  },
+  {
+   "period": "holdout",
+   "variant": "AgS",
+   "locked": 1879,
+   "lost": 3,
+   "rate_pct": 0.16,
+   "cp95_two_sided_pct": [
+    0.033,
+    0.466
+   ],
+   "cp95_upper_one_sided_pct": 0.412,
+   "reported_ci95_pct": [
+    0.033,
+    0.466
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 88.63,
+   "lead_mean_s": 100.1,
+   "lead_median_s": 77.0,
+   "trade_cons": {
+    "trades": 32,
+    "losses": 0,
+    "avg_px_c": 97.75,
+    "pnl_c_per_contract": 2.05,
+    "pnl_ci95_c": [
+     1.375,
+     2.725
+    ]
+   },
+   "trade_visible": {
+    "trades": 43,
+    "losses": 0,
+    "avg_px_c": 97.68,
+    "pnl_c_per_contract": 2.114,
+    "pnl_ci95_c": [
+     1.633,
+     2.595
+    ]
+   }
+  },
+  {
+   "period": "holdout",
+   "variant": "AnAs",
+   "locked": 1879,
+   "lost": 2,
+   "rate_pct": 0.106,
+   "cp95_two_sided_pct": [
+    0.013,
+    0.384
+   ],
+   "cp95_upper_one_sided_pct": 0.335,
+   "reported_ci95_pct": [
+    0.013,
+    0.384
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 88.63,
+   "lead_mean_s": 98.1,
+   "lead_median_s": 75.0,
+   "trade_cons": {
+    "trades": 29,
+    "losses": 0,
+    "avg_px_c": 97.96,
+    "pnl_c_per_contract": 1.859,
+    "pnl_ci95_c": [
+     1.138,
+     2.579
+    ]
+   },
+   "trade_visible": {
+    "trades": 41,
+    "losses": 0,
+    "avg_px_c": 97.8,
+    "pnl_c_per_contract": 2.007,
+    "pnl_ci95_c": [
+     1.515,
+     2.5
+    ]
+   }
+  },
+  {
+   "period": "holdout",
+   "variant": "A@0.2%",
+   "locked": 1870,
+   "lost": 1,
+   "rate_pct": 0.053,
+   "cp95_two_sided_pct": [
+    0.001,
+    0.298
+   ],
+   "cp95_upper_one_sided_pct": 0.253,
+   "reported_ci95_pct": [
+    0.001,
+    0.298
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 88.21,
+   "lead_mean_s": 78.7,
+   "lead_median_s": 62.5,
+   "trade_cons": {
+    "trades": 25,
+    "losses": 0,
+    "avg_px_c": 98.33,
+    "pnl_c_per_contract": 1.52,
+    "pnl_ci95_c": [
+     0.711,
+     2.329
+    ]
+   },
+   "trade_visible": {
+    "trades": 35,
+    "losses": 0,
+    "avg_px_c": 98.45,
+    "pnl_c_per_contract": 1.411,
+    "pnl_ci95_c": [
+     0.933,
+     1.89
+    ]
+   }
+  },
+  {
+   "period": "holdout",
+   "variant": "A@0.3%",
+   "locked": 1872,
+   "lost": 1,
+   "rate_pct": 0.053,
+   "cp95_two_sided_pct": [
+    0.001,
+    0.297
+   ],
+   "cp95_upper_one_sided_pct": 0.253,
+   "reported_ci95_pct": [
+    0.001,
+    0.297
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 88.3,
+   "lead_mean_s": 87.8,
+   "lead_median_s": 68.0,
+   "trade_cons": {
+    "trades": 27,
+    "losses": 0,
+    "avg_px_c": 98.19,
+    "pnl_c_per_contract": 1.652,
+    "pnl_ci95_c": [
+     0.893,
+     2.41
+    ]
+   },
+   "trade_visible": {
+    "trades": 36,
+    "losses": 0,
+    "avg_px_c": 98.11,
+    "pnl_c_per_contract": 1.722,
+    "pnl_ci95_c": [
+     1.226,
+     2.219
+    ]
+   }
+  },
+  {
+   "period": "holdout",
+   "variant": "A@1.0%",
+   "locked": 1885,
+   "lost": 5,
+   "rate_pct": 0.265,
+   "cp95_two_sided_pct": [
+    0.086,
+    0.618
+   ],
+   "cp95_upper_one_sided_pct": 0.557,
+   "reported_ci95_pct": [
+    0.086,
+    0.618
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 88.92,
+   "lead_mean_s": 120.2,
+   "lead_median_s": 94.0,
+   "trade_cons": {
+    "trades": 40,
+    "losses": 0,
+    "avg_px_c": 97.29,
+    "pnl_c_per_contract": 2.468,
+    "pnl_ci95_c": [
+     1.865,
+     3.07
+    ]
+   },
+   "trade_visible": {
+    "trades": 56,
+    "losses": 0,
+    "avg_px_c": 97.01,
+    "pnl_c_per_contract": 2.739,
+    "pnl_ci95_c": [
+     2.237,
+     3.241
+    ]
+   }
+  },
+  {
+   "period": "holdout",
+   "variant": "As@0.2%",
+   "locked": 2117,
+   "lost": 1,
+   "rate_pct": 0.047,
+   "cp95_two_sided_pct": [
+    0.001,
+    0.263
+   ],
+   "cp95_upper_one_sided_pct": 0.224,
+   "reported_ci95_pct": [
+    0.001,
+    0.263
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 99.86,
+   "lead_mean_s": 71.6,
+   "lead_median_s": 57.0,
+   "trade_cons": {
+    "trades": 56,
+    "losses": 0,
+    "avg_px_c": 98.92,
+    "pnl_c_per_contract": 0.977,
+    "pnl_ci95_c": [
+     0.901,
+     1.053
+    ]
+   },
+   "trade_visible": {
+    "trades": 92,
+    "losses": 0,
+    "avg_px_c": 98.43,
+    "pnl_c_per_contract": 1.426,
+    "pnl_ci95_c": [
+     1.132,
+     1.72
+    ]
+   }
+  },
+  {
+   "period": "holdout",
+   "variant": "As@0.3%",
+   "locked": 2118,
+   "lost": 1,
+   "rate_pct": 0.047,
+   "cp95_two_sided_pct": [
+    0.001,
+    0.263
+   ],
+   "cp95_upper_one_sided_pct": 0.224,
+   "reported_ci95_pct": [
+    0.001,
+    0.263
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 99.91,
+   "lead_mean_s": 79.9,
+   "lead_median_s": 61.0,
+   "trade_cons": {
+    "trades": 61,
+    "losses": 0,
+    "avg_px_c": 98.66,
+    "pnl_c_per_contract": 1.211,
+    "pnl_ci95_c": [
+     1.08,
+     1.343
+    ]
+   },
+   "trade_visible": {
+    "trades": 94,
+    "losses": 0,
+    "avg_px_c": 98.21,
+    "pnl_c_per_contract": 1.623,
+    "pnl_ci95_c": [
+     1.331,
+     1.916
+    ]
+   }
+  },
+  {
+   "period": "holdout",
+   "variant": "Asr@0.3%",
+   "locked": 2118,
+   "lost": 1,
+   "rate_pct": 0.047,
+   "cp95_two_sided_pct": [
+    0.001,
+    0.263
+   ],
+   "cp95_upper_one_sided_pct": 0.224,
+   "reported_ci95_pct": [
+    0.001,
+    0.263
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 99.91,
+   "lead_mean_s": 79.4,
+   "lead_median_s": 61.0,
+   "trade_cons": {
+    "trades": 60,
+    "losses": 0,
+    "avg_px_c": 98.67,
+    "pnl_c_per_contract": 1.202,
+    "pnl_ci95_c": [
+     1.069,
+     1.334
+    ]
+   },
+   "trade_visible": {
+    "trades": 94,
+    "losses": 0,
+    "avg_px_c": 98.21,
+    "pnl_c_per_contract": 1.628,
+    "pnl_ci95_c": [
+     1.335,
+     1.92
+    ]
+   }
+  },
+  {
+   "period": "dev_folds1_6",
+   "variant": "A",
+   "locked": 3484,
+   "lost": 13,
+   "rate_pct": 0.373,
+   "cp95_two_sided_pct": [
+    0.199,
+    0.637
+   ],
+   "cp95_upper_one_sided_pct": 0.593,
+   "reported_ci95_pct": [
+    0.199,
+    0.637
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 92.54,
+   "lead_mean_s": 100.5,
+   "lead_median_s": 77.0,
+   "trade_cons": {
+    "trades": 261,
+    "losses": 2,
+    "avg_px_c": 98.2,
+    "pnl_c_per_contract": 0.855,
+    "pnl_ci95_c": [
+     -0.21,
+     1.92
+    ]
+   },
+   "trade_visible": {
+    "trades": 336,
+    "losses": 2,
+    "avg_px_c": 97.9,
+    "pnl_c_per_contract": 1.315,
+    "pnl_ci95_c": [
+     0.477,
+     2.153
+    ]
+   }
+  },
+  {
+   "period": "dev_folds1_6",
+   "variant": "C",
+   "locked": 3486,
+   "lost": 15,
+   "rate_pct": 0.43,
+   "cp95_two_sided_pct": [
+    0.241,
+    0.709
+   ],
+   "cp95_upper_one_sided_pct": 0.662,
+   "reported_ci95_pct": [
+    0.241,
+    0.709
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 92.59,
+   "lead_mean_s": 95.8,
+   "lead_median_s": 75.0,
+   "trade_cons": {
+    "trades": 233,
+    "losses": 3,
+    "avg_px_c": 98.17,
+    "pnl_c_per_contract": 0.37,
+    "pnl_ci95_c": [
+     -1.083,
+     1.823
+    ]
+   },
+   "trade_visible": {
+    "trades": 314,
+    "losses": 3,
+    "avg_px_c": 97.92,
+    "pnl_c_per_contract": 0.933,
+    "pnl_ci95_c": [
+     -0.155,
+     2.02
+    ]
+   }
+  },
+  {
+   "period": "dev_folds1_6",
+   "variant": "Aq",
+   "locked": 3480,
+   "lost": 8,
+   "rate_pct": 0.23,
+   "cp95_two_sided_pct": [
+    0.099,
+    0.452
+   ],
+   "cp95_upper_one_sided_pct": 0.414,
+   "reported_ci95_pct": [
+    0.099,
+    0.452
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 92.43,
+   "lead_mean_s": 92.6,
+   "lead_median_s": 72.0,
+   "trade_cons": {
+    "trades": 177,
+    "losses": 1,
+    "avg_px_c": 98.27,
+    "pnl_c_per_contract": 0.994,
+    "pnl_ci95_c": [
+     -0.112,
+     2.1
+    ]
+   },
+   "trade_visible": {
+    "trades": 241,
+    "losses": 1,
+    "avg_px_c": 97.99,
+    "pnl_c_per_contract": 1.406,
+    "pnl_ci95_c": [
+     0.582,
+     2.231
+    ]
+   }
+  },
+  {
+   "period": "dev_folds1_6",
+   "variant": "B",
+   "locked": 3563,
+   "lost": 160,
+   "rate_pct": 4.491,
+   "cp95_two_sided_pct": [
+    3.834,
+    5.223
+   ],
+   "cp95_upper_one_sided_pct": 5.104,
+   "reported_ci95_pct": [
+    3.834,
+    5.223
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 94.63,
+   "lead_mean_s": 186.9,
+   "lead_median_s": 194.0,
+   "trade_cons": {
+    "trades": 2234,
+    "losses": 101,
+    "avg_px_c": 97.25,
+    "pnl_c_per_contract": -2.01,
+    "pnl_ci95_c": [
+     -2.857,
+     -1.164
+    ]
+   },
+   "trade_visible": {
+    "trades": 2376,
+    "losses": 101,
+    "avg_px_c": 96.84,
+    "pnl_c_per_contract": -1.36,
+    "pnl_ci95_c": [
+     -2.161,
+     -0.559
+    ]
+   }
+  },
+  {
+   "period": "dev_folds1_6",
+   "variant": "As",
+   "locked": 3763,
+   "lost": 21,
+   "rate_pct": 0.558,
+   "cp95_two_sided_pct": [
+    0.346,
+    0.852
+   ],
+   "cp95_upper_one_sided_pct": 0.803,
+   "reported_ci95_pct": [
+    0.346,
+    0.852
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 99.95,
+   "lead_mean_s": 93.7,
+   "lead_median_s": 70.0,
+   "trade_cons": {
+    "trades": 307,
+    "losses": 4,
+    "avg_px_c": 98.25,
+    "pnl_c_per_contract": 0.279,
+    "pnl_ci95_c": [
+     -0.994,
+     1.552
+    ]
+   },
+   "trade_visible": {
+    "trades": 409,
+    "losses": 4,
+    "avg_px_c": 97.82,
+    "pnl_c_per_contract": 1.005,
+    "pnl_ci95_c": [
+     0.036,
+     1.974
+    ]
+   }
+  },
+  {
+   "period": "dev_folds1_6",
+   "variant": "Cs",
+   "locked": 3763,
+   "lost": 19,
+   "rate_pct": 0.505,
+   "cp95_two_sided_pct": [
+    0.304,
+    0.787
+   ],
+   "cp95_upper_one_sided_pct": 0.74,
+   "reported_ci95_pct": [
+    0.304,
+    0.787
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 99.95,
+   "lead_mean_s": 89.2,
+   "lead_median_s": 69.0,
+   "trade_cons": {
+    "trades": 292,
+    "losses": 5,
+    "avg_px_c": 98.19,
+    "pnl_c_per_contract": -0.08,
+    "pnl_ci95_c": [
+     -1.569,
+     1.41
+    ]
+   },
+   "trade_visible": {
+    "trades": 390,
+    "losses": 5,
+    "avg_px_c": 97.9,
+    "pnl_c_per_contract": 0.631,
+    "pnl_ci95_c": [
+     -0.494,
+     1.756
+    ]
+   }
+  },
+  {
+   "period": "dev_folds1_6",
+   "variant": "Asr",
+   "locked": 3763,
+   "lost": 19,
+   "rate_pct": 0.505,
+   "cp95_two_sided_pct": [
+    0.304,
+    0.787
+   ],
+   "cp95_upper_one_sided_pct": 0.74,
+   "reported_ci95_pct": [
+    0.304,
+    0.787
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 99.95,
+   "lead_mean_s": 96.0,
+   "lead_median_s": 72.0,
+   "trade_cons": {
+    "trades": 349,
+    "losses": 5,
+    "avg_px_c": 98.27,
+    "pnl_c_per_contract": 0.128,
+    "pnl_ci95_c": [
+     -1.121,
+     1.377
+    ]
+   },
+   "trade_visible": {
+    "trades": 450,
+    "losses": 5,
+    "avg_px_c": 97.84,
+    "pnl_c_per_contract": 0.855,
+    "pnl_ci95_c": [
+     -0.126,
+     1.836
+    ]
+   }
+  },
+  {
+   "period": "dev_folds1_6",
+   "variant": "AgS",
+   "locked": 3483,
+   "lost": 12,
+   "rate_pct": 0.345,
+   "cp95_two_sided_pct": [
+    0.178,
+    0.601
+   ],
+   "cp95_upper_one_sided_pct": 0.558,
+   "reported_ci95_pct": [
+    0.178,
+    0.601
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 92.51,
+   "lead_mean_s": 100.5,
+   "lead_median_s": 77.0,
+   "trade_cons": {
+    "trades": 261,
+    "losses": 2,
+    "avg_px_c": 98.2,
+    "pnl_c_per_contract": 0.855,
+    "pnl_ci95_c": [
+     -0.21,
+     1.92
+    ]
+   },
+   "trade_visible": {
+    "trades": 336,
+    "losses": 2,
+    "avg_px_c": 97.9,
+    "pnl_c_per_contract": 1.315,
+    "pnl_ci95_c": [
+     0.477,
+     2.153
+    ]
+   }
+  },
+  {
+   "period": "dev_folds1_6",
+   "variant": "AnAs",
+   "locked": 3483,
+   "lost": 12,
+   "rate_pct": 0.345,
+   "cp95_two_sided_pct": [
+    0.178,
+    0.601
+   ],
+   "cp95_upper_one_sided_pct": 0.558,
+   "reported_ci95_pct": [
+    0.178,
+    0.601
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 92.51,
+   "lead_mean_s": 98.8,
+   "lead_median_s": 75.0,
+   "trade_cons": {
+    "trades": 240,
+    "losses": 2,
+    "avg_px_c": 98.29,
+    "pnl_c_per_contract": 0.713,
+    "pnl_ci95_c": [
+     -0.446,
+     1.872
+    ]
+   },
+   "trade_visible": {
+    "trades": 306,
+    "losses": 2,
+    "avg_px_c": 98.03,
+    "pnl_c_per_contract": 1.132,
+    "pnl_ci95_c": [
+     0.213,
+     2.05
+    ]
+   }
+  },
+  {
+   "period": "dev_folds1_6",
+   "variant": "A@0.2%",
+   "locked": 3471,
+   "lost": 5,
+   "rate_pct": 0.144,
+   "cp95_two_sided_pct": [
+    0.047,
+    0.336
+   ],
+   "cp95_upper_one_sided_pct": 0.303,
+   "reported_ci95_pct": [
+    0.047,
+    0.336
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 92.19,
+   "lead_mean_s": 77.9,
+   "lead_median_s": 62.0,
+   "trade_cons": {
+    "trades": 170,
+    "losses": 1,
+    "avg_px_c": 98.69,
+    "pnl_c_per_contract": 0.596,
+    "pnl_ci95_c": [
+     -0.564,
+     1.757
+    ]
+   },
+   "trade_visible": {
+    "trades": 226,
+    "losses": 1,
+    "avg_px_c": 98.55,
+    "pnl_c_per_contract": 0.87,
+    "pnl_ci95_c": [
+     -0.01,
+     1.751
+    ]
+   }
+  },
+  {
+   "period": "dev_folds1_6",
+   "variant": "A@0.3%",
+   "locked": 3477,
+   "lost": 8,
+   "rate_pct": 0.23,
+   "cp95_two_sided_pct": [
+    0.099,
+    0.453
+   ],
+   "cp95_upper_one_sided_pct": 0.415,
+   "reported_ci95_pct": [
+    0.099,
+    0.453
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 92.35,
+   "lead_mean_s": 86.8,
+   "lead_median_s": 68.0,
+   "trade_cons": {
+    "trades": 184,
+    "losses": 2,
+    "avg_px_c": 98.54,
+    "pnl_c_per_contract": 0.23,
+    "pnl_ci95_c": [
+     -1.274,
+     1.735
+    ]
+   },
+   "trade_visible": {
+    "trades": 255,
+    "losses": 2,
+    "avg_px_c": 98.25,
+    "pnl_c_per_contract": 0.804,
+    "pnl_ci95_c": [
+     -0.293,
+     1.901
+    ]
+   }
+  },
+  {
+   "period": "dev_folds1_6",
+   "variant": "A@1.0%",
+   "locked": 3512,
+   "lost": 40,
+   "rate_pct": 1.139,
+   "cp95_two_sided_pct": [
+    0.815,
+    1.548
+   ],
+   "cp95_upper_one_sided_pct": 1.48,
+   "reported_ci95_pct": [
+    0.815,
+    1.548
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 93.28,
+   "lead_mean_s": 122.0,
+   "lead_median_s": 95.0,
+   "trade_cons": {
+    "trades": 336,
+    "losses": 6,
+    "avg_px_c": 97.53,
+    "pnl_c_per_contract": 0.455,
+    "pnl_ci95_c": [
+     -0.961,
+     1.872
+    ]
+   },
+   "trade_visible": {
+    "trades": 413,
+    "losses": 6,
+    "avg_px_c": 97.11,
+    "pnl_c_per_contract": 1.183,
+    "pnl_ci95_c": [
+     0.017,
+     2.349
+    ]
+   }
+  },
+  {
+   "period": "dev_folds1_6",
+   "variant": "As@0.2%",
+   "locked": 3760,
+   "lost": 7,
+   "rate_pct": 0.186,
+   "cp95_two_sided_pct": [
+    0.075,
+    0.383
+   ],
+   "cp95_upper_one_sided_pct": 0.349,
+   "reported_ci95_pct": [
+    0.075,
+    0.383
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 99.87,
+   "lead_mean_s": 72.8,
+   "lead_median_s": 58.0,
+   "trade_cons": {
+    "trades": 219,
+    "losses": 1,
+    "avg_px_c": 98.78,
+    "pnl_c_per_contract": 0.647,
+    "pnl_ci95_c": [
+     -0.254,
+     1.547
+    ]
+   },
+   "trade_visible": {
+    "trades": 310,
+    "losses": 1,
+    "avg_px_c": 98.45,
+    "pnl_c_per_contract": 1.081,
+    "pnl_ci95_c": [
+     0.434,
+     1.728
+    ]
+   }
+  },
+  {
+   "period": "dev_folds1_6",
+   "variant": "As@0.3%",
+   "locked": 3760,
+   "lost": 10,
+   "rate_pct": 0.266,
+   "cp95_two_sided_pct": [
+    0.128,
+    0.489
+   ],
+   "cp95_upper_one_sided_pct": 0.451,
+   "reported_ci95_pct": [
+    0.128,
+    0.489
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 99.87,
+   "lead_mean_s": 80.8,
+   "lead_median_s": 62.0,
+   "trade_cons": {
+    "trades": 230,
+    "losses": 2,
+    "avg_px_c": 98.56,
+    "pnl_c_per_contract": 0.428,
+    "pnl_ci95_c": [
+     -0.777,
+     1.633
+    ]
+   },
+   "trade_visible": {
+    "trades": 322,
+    "losses": 2,
+    "avg_px_c": 98.21,
+    "pnl_c_per_contract": 1.008,
+    "pnl_ci95_c": [
+     0.135,
+     1.881
+    ]
+   }
+  },
+  {
+   "period": "dev_folds1_6",
+   "variant": "Asr@0.3%",
+   "locked": 3761,
+   "lost": 11,
+   "rate_pct": 0.292,
+   "cp95_two_sided_pct": [
+    0.146,
+    0.523
+   ],
+   "cp95_upper_one_sided_pct": 0.484,
+   "reported_ci95_pct": [
+    0.146,
+    0.523
+   ],
+   "reported_matches_two_sided_cp": true,
+   "coverage_pct": 99.89,
+   "lead_mean_s": 82.7,
+   "lead_median_s": 63.0,
+   "trade_cons": {
+    "trades": 275,
+    "losses": 2,
+    "avg_px_c": 98.57,
+    "pnl_c_per_contract": 0.562,
+    "pnl_ci95_c": [
+     -0.446,
+     1.57
+    ]
+   },
+   "trade_visible": {
+    "trades": 364,
+    "losses": 2,
+    "avg_px_c": 98.19,
+    "pnl_c_per_contract": 1.098,
+    "pnl_ci95_c": [
+     0.324,
+     1.871
+    ]
+   }
+  }
+ ],
+ "locked_2_6_pooled": {
+  "lost": 16,
+  "locked": 5363,
+  "rate_pct": 0.298,
+  "cp95_two_sided_pct": [
+   0.171,
+   0.484
+  ],
+  "cp95_upper_one_sided_pct": 0.453,
+  "claimed_standard_pct": 0.5,
+  "note": "holdout was examined during 2.7 model comparison; pooled figure is previously-examined evidence"
+ },
+ "locked_2_6_period_heterogeneity": {
+  "fisher_p_two_sided": 0.2
+ },
+ "trade_now_economics": {
+  "holdout:CONS": {
+   "trades": 32,
+   "losses": 0,
+   "avg_px_c": 97.75,
+   "fee_c_per_contract_10lot": 0.2,
+   "break_even_loss_pct": 2.05,
+   "observed_loss_pct": 0.0,
+   "loss_cp95_two_sided_pct": [
+    0.0,
+    10.888
+   ],
+   "loss_cp95_upper_pct": 8.937,
+   "edge_proven_at_95pct": false,
+   "jeffreys_P_true_loss_below_break_even": 0.7523,
+   "ev_c_per_contract_at_observed_loss": 2.05,
+   "ev_c_per_contract_at_cp95_upper_loss": -6.887
+  },
+  "holdout:VISIBLE": {
+   "trades": 43,
+   "losses": 0,
+   "avg_px_c": 97.68,
+   "fee_c_per_contract_10lot": 0.2,
+   "break_even_loss_pct": 2.12,
+   "observed_loss_pct": 0.0,
+   "loss_cp95_two_sided_pct": [
+    0.0,
+    8.221
+   ],
+   "loss_cp95_upper_pct": 6.73,
+   "edge_proven_at_95pct": false,
+   "jeffreys_P_true_loss_below_break_even": 0.8266,
+   "ev_c_per_contract_at_observed_loss": 2.12,
+   "ev_c_per_contract_at_cp95_upper_loss": -4.61
+  },
+  "dev_folds1_6:CONS": {
+   "trades": 261,
+   "losses": 2,
+   "avg_px_c": 98.2,
+   "fee_c_per_contract_10lot": 0.2,
+   "break_even_loss_pct": 1.6,
+   "observed_loss_pct": 0.766,
+   "loss_cp95_two_sided_pct": [
+    0.093,
+    2.741
+   ],
+   "loss_cp95_upper_pct": 2.392,
+   "edge_proven_at_95pct": false,
+   "jeffreys_P_true_loss_below_break_even": 0.8642,
+   "ev_c_per_contract_at_observed_loss": 0.834,
+   "ev_c_per_contract_at_cp95_upper_loss": -0.792
+  },
+  "dev_folds1_6:VISIBLE": {
+   "trades": 336,
+   "losses": 2,
+   "avg_px_c": 97.9,
+   "fee_c_per_contract_10lot": 0.2,
+   "break_even_loss_pct": 1.9,
+   "observed_loss_pct": 0.595,
+   "loss_cp95_two_sided_pct": [
+    0.072,
+    2.134
+   ],
+   "loss_cp95_upper_pct": 1.862,
+   "edge_proven_at_95pct": true,
+   "jeffreys_P_true_loss_below_break_even": 0.9753,
+   "ev_c_per_contract_at_observed_loss": 1.305,
+   "ev_c_per_contract_at_cp95_upper_loss": 0.038
+  },
+  "pooled:CONS": {
+   "trades": 293,
+   "losses": 2,
+   "avg_px_c": 98.15,
+   "fee_c_per_contract_10lot": 0.2,
+   "break_even_loss_pct": 1.65,
+   "observed_loss_pct": 0.683,
+   "loss_cp95_two_sided_pct": [
+    0.083,
+    2.444
+   ],
+   "loss_cp95_upper_pct": 2.133,
+   "edge_proven_at_95pct": false,
+   "jeffreys_P_true_loss_below_break_even": 0.9166,
+   "ev_c_per_contract_at_observed_loss": 0.967,
+   "ev_c_per_contract_at_cp95_upper_loss": -0.483
+  },
+  "scale": {
+   "days": 62.09,
+   "cons_trades_per_day": 4.72,
+   "cons_usd_per_day_10lot_at_reported_pnl": 0.465,
+   "note": "reported pnl per 10-lot summed over both periods / days"
+  }
+ },
+ "fee_cents_per_contract": {
+  "90": {
+   "1": 1.0,
+   "2": 1.0,
+   "5": 0.8,
+   "10": 0.7,
+   "25": 0.64,
+   "50": 0.64,
+   "100": 0.63
+  },
+  "95": {
+   "1": 1.0,
+   "2": 0.5,
+   "5": 0.4,
+   "10": 0.4,
+   "25": 0.36,
+   "50": 0.34,
+   "100": 0.34
+  },
+  "97": {
+   "1": 1.0,
+   "2": 0.5,
+   "5": 0.4,
+   "10": 0.3,
+   "25": 0.24,
+   "50": 0.22,
+   "100": 0.21
+  },
+  "98": {
+   "1": 1.0,
+   "2": 0.5,
+   "5": 0.2,
+   "10": 0.2,
+   "25": 0.16,
+   "50": 0.14,
+   "100": 0.14
+  },
+  "98.5": {
+   "1": 1.0,
+   "2": 0.5,
+   "5": 0.2,
+   "10": 0.2,
+   "25": 0.12,
+   "50": 0.12,
+   "100": 0.11
+  },
+  "99": {
+   "1": 1.0,
+   "2": 0.5,
+   "5": 0.2,
+   "10": 0.1,
+   "25": 0.08,
+   "50": 0.08,
+   "100": 0.07
+  },
+  "99.5": {
+   "1": 1.0,
+   "2": 0.5,
+   "5": 0.2,
+   "10": 0.1,
+   "25": 0.04,
+   "50": 0.04,
+   "100": 0.04
+  },
+  "99.8": {
+   "1": 1.0,
+   "2": 0.5,
+   "5": 0.2,
+   "10": 0.1,
+   "25": 0.04,
+   "50": 0.02,
+   "100": 0.02
+  },
+  "99.9": {
+   "1": 1.0,
+   "2": 0.5,
+   "5": 0.2,
+   "10": 0.1,
+   "25": 0.04,
+   "50": 0.02,
+   "100": 0.01
+  }
+ },
+ "max_gross_edge_cents": {
+  "90": 10,
+  "95": 5,
+  "97": 3,
+  "98": 2,
+  "98.5": 1.5,
+  "99": 1,
+  "99.5": 0.5,
+  "99.8": 0.2,
+  "99.9": 0.1
+ },
+ "adverse_selection": {
+  "data": [
+   {
+    "ask_lo": 0.0,
+    "ask_hi": 0.9,
+    "n": 10,
+    "losses": 1,
+    "market_implied_loss_pct": 27.49,
+    "observed_loss_pct": 10.0
+   },
+   {
+    "ask_lo": 0.9,
+    "ask_hi": 0.95,
+    "n": 32,
+    "losses": 0,
+    "market_implied_loss_pct": 6.92,
+    "observed_loss_pct": 0.0
+   },
+   {
+    "ask_lo": 0.95,
+    "ask_hi": 0.97,
+    "n": 86,
+    "losses": 1,
+    "market_implied_loss_pct": 3.89,
+    "observed_loss_pct": 1.16
+   },
+   {
+    "ask_lo": 0.97,
+    "ask_hi": 0.98,
+    "n": 206,
+    "losses": 1,
+    "market_implied_loss_pct": 2.47,
+    "observed_loss_pct": 0.49
+   },
+   {
+    "ask_lo": 0.98,
+    "ask_hi": 0.99,
+    "n": 748,
+    "losses": 2,
+    "market_implied_loss_pct": 1.45,
+    "observed_loss_pct": 0.27
+   },
+   {
+    "ask_lo": 0.99,
+    "ask_hi": 1.0,
+    "n": 3476,
+    "losses": 9,
+    "market_implied_loss_pct": 0.49,
+    "observed_loss_pct": 0.26
+   }
+  ],
+  "fit": {
+   "a": -2.609,
+   "b_pooling_weight_on_market": 0.659,
+   "b_profile_ci95": [
+    0.05,
+    1.135
+   ],
+   "LR_test_b_eq_0_p": 0.0367
+  },
+  "interpretation": "b > 0 means a cheaper ask is evidence the LOCKED call is weaker than the model says (adverse selection). Derived on development data (Sep 4-Oct 13) -> hypothesis for the forward test, not a validated parameter.",
+  "implied_loss_pct_at_ask": {
+   "90c": 1.702,
+   "95c": 1.047,
+   "97c": 0.74,
+   "98c": 0.564,
+   "99c": 0.355,
+   "99.5c": 0.225,
+   "99.8c": 0.123
+  }
+ },
+ "calibration_drift": [
+  {
+   "group": "quiet",
+   "band": "0.2-0.5%",
+   "holdout": {
+    "n": 899,
+    "obs_events": 2,
+    "expected": 4.18,
+    "obs_over_pred": 0.48,
+    "ratio_ci95": [
+     0.06,
+     1.72
+    ]
+   },
+   "dev_folds1_6": {
+    "n": 890,
+    "obs_events": 3,
+    "expected": 4.13,
+    "obs_over_pred": 0.73,
+    "ratio_ci95": [
+     0.15,
+     2.12
+    ]
+   }
+  },
+  {
+   "group": "quiet",
+   "band": "0.5-1.0%",
+   "holdout": {
+    "n": 886,
+    "obs_events": 1,
+    "expected": 8.29,
+    "obs_over_pred": 0.12,
+    "ratio_ci95": [
+     0.0,
+     0.67
+    ]
+   },
+   "dev_folds1_6": {
+    "n": 892,
+    "obs_events": 9,
+    "expected": 8.34,
+    "obs_over_pred": 1.08,
+    "ratio_ci95": [
+     0.49,
+     2.04
+    ]
+   }
+  },
+  {
+   "group": "quiet",
+   "band": "1.0-2.0%",
+   "holdout": {
+    "n": 888,
+    "obs_events": 3,
+    "expected": 16.61,
+    "obs_over_pred": 0.18,
+    "ratio_ci95": [
+     0.04,
+     0.53
+    ]
+   },
+   "dev_folds1_6": {
+    "n": 874,
+    "obs_events": 24,
+    "expected": 16.34,
+    "obs_over_pred": 1.47,
+    "ratio_ci95": [
+     0.95,
+     2.17
+    ]
+   }
+  },
+  {
+   "group": "quiet",
+   "band": "2.0-5.0%",
+   "holdout": {
+    "n": 920,
+    "obs_events": 12,
+    "expected": 42.91,
+    "obs_over_pred": 0.28,
+    "ratio_ci95": [
+     0.14,
+     0.49
+    ]
+   },
+   "dev_folds1_6": {
+    "n": 952,
+    "obs_events": 55,
+    "expected": 44.33,
+    "obs_over_pred": 1.24,
+    "ratio_ci95": [
+     0.94,
+     1.6
+    ]
+   }
+  },
+  {
+   "group": "normal",
+   "band": "0.2-0.5%",
+   "holdout": {
+    "n": 668,
+    "obs_events": 1,
+    "expected": 3.03,
+    "obs_over_pred": 0.33,
+    "ratio_ci95": [
+     0.01,
+     1.83
+    ]
+   },
+   "dev_folds1_6": {
+    "n": 1427,
+    "obs_events": 5,
+    "expected": 6.49,
+    "obs_over_pred": 0.77,
+    "ratio_ci95": [
+     0.25,
+     1.79
+    ]
+   }
+  },
+  {
+   "group": "normal",
+   "band": "0.5-1.0%",
+   "holdout": {
+    "n": 670,
+    "obs_events": 3,
+    "expected": 6.06,
+    "obs_over_pred": 0.49,
+    "ratio_ci95": [
+     0.1,
+     1.44
+    ]
+   },
+   "dev_folds1_6": {
+    "n": 1422,
+    "obs_events": 19,
+    "expected": 12.93,
+    "obs_over_pred": 1.47,
+    "ratio_ci95": [
+     0.89,
+     2.29
+    ]
+   }
+  },
+  {
+   "group": "normal",
+   "band": "1.0-2.0%",
+   "holdout": {
+    "n": 663,
+    "obs_events": 3,
+    "expected": 11.81,
+    "obs_over_pred": 0.25,
+    "ratio_ci95": [
+     0.05,
+     0.74
+    ]
+   },
+   "dev_folds1_6": {
+    "n": 1412,
+    "obs_events": 33,
+    "expected": 25.5,
+    "obs_over_pred": 1.29,
+    "ratio_ci95": [
+     0.89,
+     1.81
+    ]
+   }
+  },
+  {
+   "group": "normal",
+   "band": "2.0-5.0%",
+   "holdout": {
+    "n": 666,
+    "obs_events": 19,
+    "expected": 28.54,
+    "obs_over_pred": 0.67,
+    "ratio_ci95": [
+     0.4,
+     1.03
+    ]
+   },
+   "dev_folds1_6": {
+    "n": 1387,
+    "obs_events": 61,
+    "expected": 61.0,
+    "obs_over_pred": 1.0,
+    "ratio_ci95": [
+     0.77,
+     1.28
+    ]
+   }
+  },
+  {
+   "group": "active",
+   "band": "0.2-0.5%",
+   "holdout": {
+    "n": 281,
+    "obs_events": 0,
+    "expected": 1.23,
+    "obs_over_pred": 0.0,
+    "ratio_ci95": [
+     0.0,
+     2.98
+    ]
+   },
+   "dev_folds1_6": {
+    "n": 1124,
+    "obs_events": 5,
+    "expected": 5.0,
+    "obs_over_pred": 1.0,
+    "ratio_ci95": [
+     0.32,
+     2.33
+    ]
+   }
+  },
+  {
+   "group": "active",
+   "band": "0.5-1.0%",
+   "holdout": {
+    "n": 257,
+    "obs_events": 1,
+    "expected": 2.21,
+    "obs_over_pred": 0.45,
+    "ratio_ci95": [
+     0.01,
+     2.5
+    ]
+   },
+   "dev_folds1_6": {
+    "n": 1098,
+    "obs_events": 9,
+    "expected": 9.61,
+    "obs_over_pred": 0.94,
+    "ratio_ci95": [
+     0.43,
+     1.77
+    ]
+   }
+  },
+  {
+   "group": "active",
+   "band": "1.0-2.0%",
+   "holdout": {
+    "n": 223,
+    "obs_events": 6,
+    "expected": 3.82,
+    "obs_over_pred": 1.57,
+    "ratio_ci95": [
+     0.58,
+     3.36
+    ]
+   },
+   "dev_folds1_6": {
+    "n": 1031,
+    "obs_events": 17,
+    "expected": 17.55,
+    "obs_over_pred": 0.97,
+    "ratio_ci95": [
+     0.57,
+     1.54
+    ]
+   }
+  },
+  {
+   "group": "active",
+   "band": "2.0-5.0%",
+   "holdout": {
+    "n": 201,
+    "obs_events": 7,
+    "expected": 8.13,
+    "obs_over_pred": 0.86,
+    "ratio_ci95": [
+     0.35,
+     1.74
+    ]
+   },
+   "dev_folds1_6": {
+    "n": 973,
+    "obs_events": 33,
+    "expected": 39.72,
+    "obs_over_pred": 0.83,
+    "ratio_ci95": [
+     0.57,
+     1.16
+    ]
+   }
+  }
+ ],
+ "calibration_drift_pooled": {
+  "quiet:holdout": {
+   "O": 18,
+   "E": 72.0,
+   "O_over_E": 0.25,
+   "ci95": [
+    0.15,
+    0.4
+   ]
+  },
+  "quiet:dev_folds1_6": {
+   "O": 91,
+   "E": 73.1,
+   "O_over_E": 1.24,
+   "ci95": [
+    1.0,
+    1.53
+   ]
+  },
+  "normal:holdout": {
+   "O": 26,
+   "E": 49.4,
+   "O_over_E": 0.53,
+   "ci95": [
+    0.34,
+    0.77
+   ]
+  },
+  "normal:dev_folds1_6": {
+   "O": 118,
+   "E": 105.9,
+   "O_over_E": 1.11,
+   "ci95": [
+    0.92,
+    1.33
+   ]
+  },
+  "active:holdout": {
+   "O": 14,
+   "E": 15.4,
+   "O_over_E": 0.91,
+   "ci95": [
+    0.5,
+    1.53
+   ]
+  },
+  "active:dev_folds1_6": {
+   "O": 64,
+   "E": 71.9,
+   "O_over_E": 0.89,
+   "ci95": [
+    0.69,
+    1.14
+   ]
+  }
+ },
+ "calibration_drift_summary": {
+  "min_O_over_E": 0.25,
+  "max_O_over_E": 1.24,
+  "spread_factor": 4.96,
+  "note": "first-entry-per-band events, recalibrated 2.6 probabilities; the same displayed probability corresponded to realised rates differing by this factor across periods/regimes"
+ },
+ "forward_plan_locked": {
+  "true 0.20% -> CP95 upper < 0.50%": {
+   "locked_calls": 1565,
+   "days_at_85_per_day": 18.4
+  },
+  "true 0.20% -> CP95 upper < 0.75%": {
+   "locked_calls": 644,
+   "days_at_85_per_day": 7.6
+  },
+  "true 0.20% -> CP95 upper < 1.00%": {
+   "locked_calls": 478,
+   "days_at_85_per_day": 5.6
+  },
+  "true 0.37% -> CP95 upper < 0.50%": {
+   "locked_calls": 8686,
+   "days_at_85_per_day": 102.2
+  },
+  "true 0.37% -> CP95 upper < 0.75%": {
+   "locked_calls": 1419,
+   "days_at_85_per_day": 16.7
+  },
+  "true 0.37% -> CP95 upper < 1.00%": {
+   "locked_calls": 644,
+   "days_at_85_per_day": 7.6
+  },
+  "true 0.50% -> CP95 upper < 0.50%": {
+   "locked_calls": 207356,
+   "days_at_85_per_day": 2439.5
+  },
+  "true 0.50% -> CP95 upper < 0.75%": {
+   "locked_calls": 3267,
+   "days_at_85_per_day": 38.4
+  },
+  "true 0.50% -> CP95 upper < 1.00%": {
+   "locked_calls": 1056,
+   "days_at_85_per_day": 12.4
+  }
+ },
+ "forward_plan_trade_now": {
+  "edge 0.855c at 98.2c": {
+   "implied_loss_pct": 0.745,
+   "pnl_sd_c": 8.6,
+   "trades_for_z_1.645_at_expectation": 274,
+   "trades_for_80pct_power": 626,
+   "days_at_7_per_day": 89.4
+  },
+  "edge 1.315c at 97.9c": {
+   "implied_loss_pct": 0.585,
+   "pnl_sd_c": 7.63,
+   "trades_for_z_1.645_at_expectation": 92,
+   "trades_for_80pct_power": 208,
+   "days_at_7_per_day": 29.7
+  },
+  "edge 2.0c at 97.75c": {
+   "implied_loss_pct": 0.05,
+   "pnl_sd_c": 2.24,
+   "trades_for_z_1.645_at_expectation": 4,
+   "trades_for_80pct_power": 8,
+   "days_at_7_per_day": 1.1
+  }
+ }
+}
