@@ -75,6 +75,12 @@ ok('ladder: 200 contracts only 112 fillable, flagged not full', lad[3].fillable 
 ok('ladder: break-even win % = avg price + fee per contract', Math.abs(lad[1].breakEvenWinPct - 98.2) < 1e-6, lad[1].breakEvenWinPct);
 ok('ladder: empty book -> nulls, no NaN', C.evLadder28({ levels: [], pWin: 0.99, pWinCons: 0.98 })[0].evCents === null, 'ok');
 
+/* round 2: fractional contract counts (Kalshi fixed-point sizes) */
+ok('fee: 10.5 contracts at 98c computed on 0.01-contract units (ceil of 1.4406c -> 2c)', Math.abs(C.feeDollars28(98, 10.5, cfgC) - 0.02) < 1e-12, C.feeDollars28(98, 10.5, cfgC));
+const wf = C.walk28([[97, 2.5], [98, 100]], 4);
+ok('walk: fractional level sizes are used exactly (2.5 @97 + 1.5 @98)', Math.abs(wf.fillable - 4) < 1e-12 && Math.abs(wf.avgCents - (2.5 * 97 + 1.5 * 98) / 4) < 1e-9, wf);
+ok('fee: whole-order fee on fractional fills equals the reference', Math.abs(C.walkFeeCents28(wf.fills, cfgC) - Math.ceil((7 * (2.5 * 0.97 * 0.03 + 1.5 * 0.98 * 0.02)) - 1e-9)) < 1e-9, C.walkFeeCents28(wf.fills, cfgC));
+
 /* ---------------- uncertainty band ---------------- */
 let bandBad = 0;
 for (const g of ['quiet', 'normal', 'active', 'weird']) for (let i = 0; i < 1000; i++) { const p = R() * 0.3; const b = C.band28(p, g); if (!(b.lo <= p + 1e-15 && b.hi >= p * 1.0 - 1e-15 && b.lo >= 0 && b.hi <= 0.5)) bandBad++; }
@@ -87,8 +93,9 @@ const D = C.designation28;
 ok('designation: LOCKED -> PREDICTED LOCKED (not a guarantee)', D({ state: 'LOCKED', tau: 40 }).code === 'PREDICTED_LOCKED', D({ state: 'LOCKED', tau: 40 }));
 ok('designation: PROVEN LOCKED -> MATHEMATICALLY FINAL (price-only)', D({ state: 'PROVEN LOCKED', tau: 3 }).code === 'MATHEMATICALLY_FINAL', 'x');
 ok('designation: after the close on PROXY -> AWAITING SETTLEMENT, never FINAL', D({ state: 'LOCKED', tau: -1, panel: { reference: 'PROXY', decided: true, final: 100 }, strike: 99 }).code === 'AWAITING_SETTLEMENT', 'x');
-ok('designation: after the close on OFFICIAL 60/60 -> MATHEMATICALLY FINAL with side', /DOWN/.test(D({ state: 'LOCKED', tau: -1, panel: { reference: 'OFFICIAL', decided: true, final: 98.99 }, strike: 99 }).label), D({ state: 'LOCKED', tau: -1, panel: { reference: 'OFFICIAL', decided: true, final: 98.99 }, strike: 99 }).label);
-ok('designation: tie at exactly the strike -> UP', /— UP/.test(D({ tau: 0, panel: { reference: 'OFFICIAL', decided: true, final: 99 }, strike: 99 }).label), 'x');
+ok('designation: after the close on OFFICIAL 60/60 -> MATHEMATICALLY FINAL with side', /DOWN/.test(D({ state: 'LOCKED', tau: -1, panel: { reference: 'OFFICIAL', decided: true, recorded: 60, final: 98.99 }, strike: 99 }).label), D({ state: 'LOCKED', tau: -1, panel: { reference: 'OFFICIAL', decided: true, recorded: 60, final: 98.99 }, strike: 99 }).label);
+ok('designation: 58 or 59 official values after the close are never MATHEMATICALLY FINAL (60/60 only)', [58, 59, undefined].every(n => D({ tau: -1, panel: { reference: 'OFFICIAL', decided: true, recorded: n, final: 99.5 }, strike: 99 }).code === 'AWAITING_SETTLEMENT'), 'x');
+ok('designation: tie at exactly the strike -> UP', /— UP/.test(D({ tau: 0, panel: { reference: 'OFFICIAL', decided: true, recorded: 60, final: 99 }, strike: 99 }).label), 'x');
 ok('designation: Kalshi result -> OFFICIALLY SETTLED (overrides everything)', D({ state: 'LOCKED', tau: -5, settled: { result: 'no', official: 1 } }).code === 'OFFICIALLY_SETTLED', 'x');
 ok('designation: HIGH CONFIDENCE -> not locked', D({ state: 'HIGH CONFIDENCE', tau: 30 }).code === 'NOT_LOCKED', 'x');
 
@@ -170,6 +177,21 @@ ok('shadow C1 LOCKs only at flip <= 0.2 % and never where 2.6 does not', polBad.
 ok('shadow F can only remove TRADE NOW, never add one', polBad.F === 0, polBad.F);
 ok('shadow E is identical to A when the official feed is not live', polBad.E === 0, polBad.E);
 ok('shadow D never LOCKs inside 90 s while an adverse impulse is live', polBad.D === 0, polBad.D);
+{ /* round 2: candidates obey the same MARKET DISAGREES guard as production (ask < 90c -> no TRADE NOW) */
+  const geoG = { pUp: 0.9995, pUpCons: 0.999, pUpModel: 0.9995, pUpConsModel: 0.999, provenUp: false, recal: { group: 'normal', ratio: 1 } };
+  const bookG = { ok: true, ageMs: 100, yesAsks: [[85, 500]], noAsks: [[16, 500]] };
+  const cfgG = Object.assign(SRV.m25Cfg(10), { minTradeAskCents: 90 });
+  const baseG = SRV.m25Decide({ tau: 40, pUp: 0.9995, pUpCons: 0.999, gates: { hard: [], soft: [] }, book: bookG, cfg: cfgG, hist: [] });
+  const viewG = { geo: geoG, gates: { hard: [], soft: [] }, book: bookG, decision: baseG, panel: { reference: 'PROXY' } };
+  const c1 = C.shadowDecide28('C1-strict-0.2', { snap: viewG, deps, cfg: cfgG, tau: 40 }), c2 = C.shadowDecide28('C2-no-active-recal', { snap: viewG, deps, cfg: cfgG, tau: 40 });
+  ok('shadow C1/C2: LOCKED at an 85c ask -> MARKET DISAGREES, never TRADE NOW (same guard as production)', baseG.trade.action === 'TRADE NOW' && c1.trade.action === 'LOCKED — MARKET DISAGREES' && c2.trade.action === 'LOCKED — MARKET DISAGREES', [baseG.trade.action, c1.trade.action, c2.trade.action]);
+}
+{ /* round 2: the configuration hash changes with any decision override and with nothing else */
+  const cp = require('child_process'), srvPath = require.resolve(process.argv[2] ? path.resolve(process.argv[2]) : path.join(__dirname, '..', 'dist', 'pinradar_server.js'));
+  const h = env => cp.execFileSync(process.execPath, ['-e', `process.stdout.write(require(${JSON.stringify(srvPath)}).CONFIG28_HASH || 'none')`], { env: { PATH: process.env.PATH, ENABLE_WS: '0', PINRADAR_REPLAY: '1', ...env }, encoding: 'utf8' });
+  const h0 = h({}), h1 = h({ STALE_BUDGET_FRAC: '90' }), h2 = h({ FEE_PER_FILL: '1' }), h3 = h({ LEDGER_FILE: '' , PORT: '1234' });
+  ok('config hash: a staleness or fee override changes it; I/O-only settings do not', h0 !== 'none' && h0 !== h1 && h0 !== h2 && h0 === h3, [h0.slice(0, 8), h1.slice(0, 8), h2.slice(0, 8), h3.slice(0, 8)]);
+}
 ok('shadow: exercised real decisions', nTicks > 1000 && nLockA > 50, { nTicks, nLockA, nLockC1, nTradeA, nTradeF });
 ok('pooled flip: 99c -> 0.355 %, 95c -> 1.047 % (python reanalysis values)', Math.abs(C.marketPooledFlip28(99) - 0.00355) < 2e-5 && Math.abs(C.marketPooledFlip28(95) - 0.01047) < 5e-5, [C.marketPooledFlip28(99), C.marketPooledFlip28(95)]);
 

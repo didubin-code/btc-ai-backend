@@ -673,21 +673,34 @@
      "got": {
       "a": {
        "seq": 2,
-       "head": "56687f35686e2b7ded46658212c8f79f70a6e49b0b96a349ac156a4180ae0078",
-       "resumed": null
+       "head": "7fbee28a6859a12371d63bdfa16f75bab02ad69a7b126115958f9791e26b0c25",
+       "resumed": {
+        "n": 0,
+        "head": null,
+        "firstSeq": null,
+        "lastSeq": null,
+        "tornTail": null,
+        "broken": null,
+        "openWindowsRestored": 0
+       }
       },
       "b": {
        "seq": 4,
-       "head": "91e2df347f6939b127ed2714b43951afc0bc8eb564801b49f27ba9de4fb14900",
+       "head": "7fb03c3151698704067a8c053a5b224e00042a56899eea13ca33ce31b3a40760",
        "resumed": {
         "n": 2,
-        "head": "56687f35686e2b7ded46658212c8f79f70a6e49b0b96a349ac156a4180ae0078"
+        "head": "7fbee28a6859a12371d63bdfa16f75bab02ad69a7b126115958f9791e26b0c25",
+        "firstSeq": 1,
+        "lastSeq": 2,
+        "tornTail": null,
+        "broken": null,
+        "openWindowsRestored": 0
        }
       },
       "verify": {
        "ok": true,
        "n": 4,
-       "head": "91e2df347f6939b127ed2714b43951afc0bc8eb564801b49f27ba9de4fb14900"
+       "head": "7fb03c3151698704067a8c053a5b224e00042a56899eea13ca33ce31b3a40760"
       }
      }
     },
@@ -708,22 +721,22 @@
     {
      "name": "p99 full decision snapshot (incl. 2.8 enrichment) < 25 ms",
      "pass": true,
-     "got": 0.287
+     "got": 0.269
     },
     {
      "name": "worst-case impulse scan over 18,000 trades < 100 ms (it only runs inside 90 s, shadow policy D)",
      "pass": true,
-     "got": 6.918182
+     "got": 8.33576
     }
    ],
    "result": {
     "snapshotMs": {
-     "p50": 0.055,
-     "p95": 0.147,
-     "p99": 0.287,
-     "max": 1.877
+     "p50": 0.058,
+     "p95": 0.124,
+     "p99": 0.269,
+     "max": 1.977
     },
-    "impulseScan18kTradesMs": 6.92,
+    "impulseScan18kTradesMs": 8.34,
     "impulseOk": true
    }
   },
@@ -740,9 +753,12 @@
        "n": 3000,
        "losses": 61,
        "eValue": 33506446955633036,
+       "supEValue": 35561836826285384,
        "threshold": 20,
        "alarm": true,
-       "meaning": "ALARM: evidence (anytime-valid 95%) that the loss rate exceeds 0.50% — stop relying on LOCKED and investigate; do not retune on these few outcomes"
+       "alarmNow": true,
+       "firstAlarmAtWindow": 15,
+       "meaning": "ALARM (latched at LOCKED window 15, peak e 35561836826285384): anytime-valid 95% evidence that the loss rate exceeds 0.50% — stop relying on LOCKED and investigate; do not retune on these few outcomes"
       }
      }
     }
@@ -791,8 +807,11 @@
        "n": 1,
        "losses": 1,
        "eValue": 6.6429,
+       "supEValue": 6.6429,
        "threshold": 20,
        "alarm": false,
+       "alarmNow": false,
+       "firstAlarmAtWindow": null,
        "meaning": "no evidence the loss rate exceeds the standard (absence of alarm is not proof of safety)"
       },
       "edge": {

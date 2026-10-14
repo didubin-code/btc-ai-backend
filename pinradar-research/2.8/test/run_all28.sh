@@ -30,4 +30,6 @@ cp $R/pkg27/research/src/settle27.js $SM/src/; cp $R/pkg27/research/test/settlem
 cp dist/pinradar_server.js $SM/dist26/pinradar_server.js; cp $R/versions/2.3/pinradar_server.js $SM/srv23.js
 (cd $SM && node test/settlement_math_test.js | tail -1); rm -rf $SM
 (cd $R/pkg27/test && node brti_history_mock_test.js | tail -1)
+echo "== 9. regressions for the round-3 review findings (decisions, ledger restarts/write failures, forward_report28)"
+node test/regress28.js "$(cd $R && pwd)" | tail -1
 echo "ALL 2.8 CHECKS PASSED"

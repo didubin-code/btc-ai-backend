@@ -1,0 +1,93 @@
+# Pin Radar 2.8 — working checkpoint (resume file)
+
+Updated: 2026-10-14, round 3 in progress. **Nothing deployed. No orders. Production 2.3 untouched.**
+* `btc-ai-backend` `main` is still `c9e0df6`.
+* `Btc-signal` `main` is still `f3eb239`.
+
+## Where the code is
+
+| What | Where |
+|---|---|
+| Round-1 2.8 (reviewed build, dist sha 70a165b9…) | commit `266c3f3` on `claude/btc-pin-radar-research-xpe585` |
+| Round-2 + round-3 fixes (this WIP commit) | `pinradar-research/2.8/` on the same branch. The dist is rebuilt by `python3 2.8/build/build_server28.py`. |
+| Preserved baselines (never edited) | `pinradar-research/versions/{2.3,2.4,2.6,2.7}` (sha in `versions/VERSIONS.md`) |
+
+## Review status (round 3: independent adversarial review)
+
+The workflow `pinradar28-adversarial-review` (run `wf_cc847d80-36a`) is resumable with `Workflow({scriptPath, resumeFromRunId:'wf_cc847d80-36a'})`. Completed steps replay from cache.
+
+| Step | Status |
+|---|---|
+| triage-a, triage-b (re-ran the interrupted reviewer's 23 scripts) | done: 18 new candidates F1–F18 |
+| find-live-integration | done: LI-1…LI-11 (LI-1 = F9, LI-3 = F2, LI-4 = F7, LI-5 = F6, LI-6 = F11; new: LI-2, LI-7, LI-8, LI-9, LI-10, LI-11) |
+| find-claims-vs-evidence | done: CVE-01…CVE-18 (CVE-01 = F1, CVE-02 = F10, CVE-05 = F2/F5, CVE-07 = F12/F17, CVE-14 = F2; new: CVE-03, CVE-04 latency part, CVE-06, CVE-08, CVE-09, CVE-10, CVE-11, CVE-12, CVE-13, CVE-15, CVE-16, CVE-17) |
+| find-evidence-chain | dropped (duplicate coverage) |
+| verify-1 (F3, F4, F11, F15) | done: all four real; plus NEW-band28-reversal (minor, real) |
+| verify-2…verify-6 | interrupted by the usage limit, to be re-run |
+| fix review (separate agent) | interrupted, to be resumed on snapshot `snap_r3a` |
+
+## Fixed in this WIP (each has a check in `2.8/test/regress28.js` that FAILS on `266c3f3` and passes here)
+
+| Area | Findings |
+|---|---|
+| Decisions | D4 = F3 (PROVEN withheld when the official reference disagrees) · D5 = F4/F15 (official reversal numbers) · D6 = F11 (FINAL only at 60/60) |
+| Ledger and server | F9/LI-1 (entries are snapshots) · F13 (write retry, file stays a contiguous prefix) · F14 (torn line cut) · F2/F5 (open windows restored, settled after a restart, LOCKED side restored) · F18 (streaming resume) · K4 (monitors from the whole file) |
+| Forward report | F1/CVE-01 (segments only at seq 1 from the boot genesis) · F2/CVE-14 (score the committed calls) · F5 (dropped windows counted as unresolved) · F10/CVE-02 (latched alarm) · F12 and F17/CVE-07 (Holm step-down over 5 candidates, F's test) · F16 (DATA UNRELIABLE excluded) · F6/CVE-04 (G5 from the ledger's `calib` commitments) |
+| Tape and replay | F6/LI-5 (samples kept for the record span) · F7/LI-4 (fee schedule on the tape) · F8 (boot markers) |
+| Live integration | LI-2 (strict fee_multiplier parse) · LI-7/LI-9 (no +EV next to a refused or breaking call) · LI-8 (client latency clamped and rate-limited) · LI-10 (paged `/ledger`, incremental verify) · LI-11 (tape rotation) |
+| Round 2 | K1 (config hash covers every env override and the model) · K2 (per-fill fee in the decision) · K3 (shadow MIN_TRADE_ASK guard) · K5 (fractional contracts) · K6 (PROVEN wording) |
+| Pre-registration | amended to `pinradar-2.8-prereg-v2` before any forward data (section 7 lists the changes) |
+
+## Test results on this WIP (actually run)
+
+The full suite was run on the round-3 tree (`prcopy`) before the live-integration fixes:
+
+| Check | Result |
+|---|---|
+| run_all28.sh | ALL PASSED |
+| selftest | 134/134 |
+| core | 61/61 |
+| page | 38/38 |
+| fuzz | 0 / 20,000 |
+| parity 2.7 | 0 / 17,458 (official state diffs 0) |
+| live_sim | pass |
+| adversarial | 24/24 |
+| settle | 18/18 |
+| brti mock | 4/4 |
+| regress28 | 22/22 here; 22/22 fail on `266c3f3` |
+| soak 24 h | pass |
+| live_sim in-memory /tape replay | 0 mismatches here; 3,583 / 4,800 on `266c3f3` |
+| 90-day ledger resume (248 MB) | 4.0 s, RSS 313 MB, all 10,575 outcomes rebuilt. Old: 4.7 s, RSS 666 MB, 1,250 rebuilt |
+
+After the live-integration fixes (`prcopy3`) only part of the suite was re-run:
+* selftest 134/134
+* page 38/38
+* regress28 28/28; all 28 fail on `266c3f3`
+
+**The full run_all28 and the soak are still to be repeated on the final tree.**
+
+## Outstanding
+
+1. Re-run verify-2…6 (triage groups 2–4 + finder findings) and the fix review.
+2. Fix:
+   * NEW-band28-reversal;
+   * CVE-03 (no PASS without G1/G5/G6 evidence; 90-day cap);
+   * CVE-04 (latency summaries committed to the ledger);
+   * CVE-08 (cross-version computeLockSnapshot replay vs 2.7 in run_all);
+   * CVE-09 (AUDIT_25 text shown with LOCKED: 13/3,484, "development" label);
+   * CVE-13 (settleMath tie epsilon);
+   * CVE-16 (run_all must not rewrite tracked files; PAGE27 documented).
+3. Correct the report and register for CVE-06, CVE-10, CVE-11, CVE-12, CVE-15 and CVE-17.
+4. Final:
+   * full run_all28 + soak + regress on the final tree;
+   * SHA256SUMS, README, REPORT and REGISTER;
+   * package28.sh;
+   * push both repos; final report.
+
+## Resume commands
+
+```
+cd /home/user/btc-ai-backend && git fetch origin claude/btc-pin-radar-research-xpe585 && git checkout claude/btc-pin-radar-research-xpe585 && git pull
+cd pinradar-research && python3 2.8/build/build_server28.py && PAGE27=/home/user/Btc-signal/pinradar-research/versions/2.7/btc_pin_radar_27.html python3 2.8/build/build_page28.py
+PAGE27=… bash 2.8/test/run_all28.sh ; node 2.8/test/regress28.js "$(pwd)" ; (cd 2.8 && node test/soak28.js dist/pinradar_server.js 24)
+```

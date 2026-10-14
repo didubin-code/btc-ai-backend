@@ -44,7 +44,7 @@ const v = S.verifyLedger28(S.L28.rows, S.L28.rows[0].seq === 1 ? S.L28.genesis :
 const res = { hours: HOURS, ticks, scored: S.SHADOW28.scored, first, last, ledgerVerify: v.ok, shadow: S.shadowSummary28(S.SHADOW28.stats)['A-2.6'] };
 let fail = 0; const bad = [];
 const ok = (n, c, g) => { if (!c) { fail++; bad.push(n + ' :: ' + JSON.stringify(g)); } };
-ok('every bounded structure stays within its cap', last.ledger <= 50000 && last.tapeRows <= 3000 && last.tapeSamples <= 4000 && last.shadowOpen <= 3 && last.lat <= 3000 * 12 && last.pred <= 30000 && last.sig <= 5000 && last.settleDone <= 50, last);
+ok('every bounded structure stays within its cap', last.ledger <= 50000 && last.tapeRows <= 3000 && last.tapeSamples <= 4 * 3000 + 1000 && last.shadowOpen <= 3 && last.lat <= 3000 * 12 && last.pred <= 30000 && last.sig <= 5000 && last.settleDone <= 50, last);
 ok('per-tick p99 does not grow over the run (last hour <= 3x first hour + 0.5 ms)', last.p99 <= 3 * first.p99 + 0.5, { first: first.p99, last: last.p99 });
 ok('heap does not keep growing in the second half (last <= 1.5x the midpoint + 20 MB)', last.heapMB <= 1.5 * hourly[Math.floor(hourly.length / 2)].heapMB + 20, hourly.map(h => h.heapMB));
 ok('windows scored ~4 per hour and the chain verifies', S.SHADOW28.scored >= HOURS * 4 - 3 && v.ok, { scored: S.SHADOW28.scored, v });

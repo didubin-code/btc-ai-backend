@@ -2,14 +2,14 @@
     if (req.method === 'GET' && u.pathname === '/v28') { ensureStarted(); return send(res, 200, v28Summary(Date.now())); }
     /* hash-chained ledger: predictions committed before outcomes; ?since=<seq>&n=&format=ndjson */
     if (req.method === 'GET' && u.pathname === '/ledger') {
-      const since = Number(u.searchParams.get('since') || 0), n = clamp(Number(u.searchParams.get('n') || 5000), 1, 100000);
+      const since = Number(u.searchParams.get('since') || 0), n = clamp(Number(u.searchParams.get('n') || 5000), 1, 5000);   // pages of <= 5,000 (event loop)
       const rows = L28.rows.filter(e => e.seq > since).slice(0, n);
       if (u.searchParams.get('format') === 'ndjson') { cors(res); res.setHeader('Content-Type', 'application/x-ndjson'); return res.end(rows.map(r => JSON.stringify(r)).join('\n') + (rows.length ? '\n' : '')); }
       return send(res, 200, { ok: true, version: SERVER_VERSION, genesis: L28.genesis, head: L28.head, seq: L28.seq, inMemoryFrom: L28.rows.length ? L28.rows[0].seq : null, n: rows.length, rows });
     }
     if (req.method === 'GET' && u.pathname === '/ledger/verify') {
       const first = L28.rows[0];
-      const v = verifyLedger28(L28.rows, first && first.seq === 1 ? L28.genesis : null);
+      const v = ledgerVerify28(u.searchParams.get('full') === '1');
       return send(res, 200, { ok: v.ok, version: SERVER_VERSION, verify: v, head: L28.head, seq: L28.seq, inMemoryFrom: first ? first.seq : null,
         genesis: L28.genesis, file: LEDGER28_FILE || null, fileErr: L28.fileErr, resumed: L28.resumed,
         note: 'publish or screenshot `head` now and then: any later rewrite of an earlier entry changes every subsequent hash' });

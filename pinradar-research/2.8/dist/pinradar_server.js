@@ -81,7 +81,8 @@ const BUILD_FIXES = ['settlement-tail-law', 'impulse-onset-gate', 'index-resolut
   // v2.8 (Oct 14: decisions unchanged except three defect fixes; evidence, economics and forward-test layer)
   'D1-live-index-quorum-gate', 'D2-brti-source-age', 'D3-zero-size-ask-level', 'fee-schedule-from-series-record',
   'ev-ladder-by-order-size', 'probability-uncertainty-band', 'settlement-designations', 'hash-chained-ledger',
-  'anytime-valid-monitors', 'shadow-policies', 'record-replay-tape', 'latency-percentiles'];
+  'anytime-valid-monitors', 'shadow-policies', 'record-replay-tape', 'latency-percentiles',
+  'D4-proven-needs-official-agreement', 'D5-official-reversal-numbers', 'D6-final-needs-60-of-60'];
 const KALSHI_BASE = (process.env.KALSHI_BASE || 'https://api.elections.kalshi.com/trade-api/v2').replace(/\/+$/, '');
 const KALSHI_SERIES = String(process.env.KALSHI_SERIES || 'KXBTC15M');
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
@@ -1456,7 +1457,7 @@ function m25Decide({ tau, pUp, pUpCons, gates, book, cfg, hist = [], lockedSide 
   out.side = side; out.pWin = pWin; out.pFlip = 1 - pWin; out.pFlipCons = Math.max(1 - pWinCons, 1 - pWin);
   if (out.state === M25_STATE.AWAIT) return out;
   if (gates.hard.length) { out.state = M25_STATE.DATA; out.reasons.push(...gates.hard); }
-  else if (provenSide && provenSide === side) out.state = 'PROVEN LOCKED';
+  else if (provenSide && provenSide === side && !(gates.official && gates.official.length)) out.state = 'PROVEN LOCKED';   // v2.8 D4
   else if (out.pFlip <= cfg.lockMaxFlip && !gates.soft.length) out.state = M25_STATE.LOCKED;
   else if (out.pFlip <= cfg.highMaxFlip) { out.state = M25_STATE.HIGH; if (out.pFlip <= cfg.lockMaxFlip) out.reasons.push('LOCKED withheld: ' + gates.soft.join('; ')); }
   else if (out.pFlip <= cfg.leanMaxFlip) out.state = M25_STATE.LEAN;
@@ -1493,7 +1494,8 @@ function m25Decide({ tau, pUp, pUpCons, gates, book, cfg, hist = [], lockedSide 
   if (lv && lv.length) {
     const a = bookAsk(lv, cfg.contracts);
     tr.askCents = a.best; tr.avgCents = Math.round(a.avgCents * 100) / 100; tr.depth = a.fillable;
-    tr.feeCents = Math.round(kalshiFeeCents(a.avgCents, Math.max(1, a.fillable)) * 1000) / 1000;
+    tr.feeCents = Math.round(((typeof FEE28 !== 'undefined' && FEE28 && !FEE28.isDefault) ? walkFeeCents28(walk28(lv, cfg.contracts).fills, FEE28.cfg) / Math.max(1, a.fillable)
+      : kalshiFeeCents(a.avgCents, Math.max(1, a.fillable))) * 1000) / 1000;   // v2.8
     tr.evCents = Math.round((100 * out.pWin - a.avgCents - tr.feeCents) * 100) / 100;
     tr.evConsCents = Math.round((100 * (1 - out.pFlipCons) - a.avgCents - tr.feeCents) * 100) / 100;
   }
@@ -1697,7 +1699,7 @@ function classify25({ now = Date.now(), tau, ticker, closeMs, strike, geo, gates
   const ls = lock25For(ticker);
   const cfg = m25Cfg(contracts);
   const book = bookFromKal(kal, now);
-  const g = { hard: [...gates.hard], soft: [...gates.soft], budgetMs: gates.budgetMs };
+  const g = { hard: [...gates.hard], soft: [...gates.soft], official: [...(gates.official || [])], budgetMs: gates.budgetMs };
   if (geo && !geo.sigmaWarm) g.soft.push('volatility estimate warming up (needs ~5 min of index history after a restart)');
   if (Number.isFinite(tau) && tau > LOCK_MAX_TAU) g.soft.push(`more than ${LOCK_MAX_TAU} s to close: outside the validated LOCKED horizon`);
   if (geo && M25_MODEL.fit && M25_MODEL.fit.sigmaRange && geo.sigmaRawBps != null) {
@@ -3091,7 +3093,7 @@ function settlePanel27({ now = Date.now(), closeMs, strike, geo, tau }) {
     recAvg = n > 0 && Number.isFinite(geo.lockedMean) ? geo.lockedMean + mu : null; spot = geo.index + mu;
     if (n > 0 && recAvg == null) n = 0;
   } else return { reference: 'NONE', officialReasons: off.reasons };
-  const r = tau <= 0 ? 0 : SETTLE_TICKS - n;
+  const r = tau <= 0 && (reference !== 'OFFICIAL' || n >= SETTLE_TICKS) ? 0 : SETTLE_TICKS - n;   // v2.8 D6
   const sm = settleMath({ strike, recordedAvg: recAvg, recordedN: n, remaining: r, spot });
   if (!sm) return { reference: 'NONE', officialReasons: off.reasons };
   const R2 = x => (x == null || !Number.isFinite(x)) ? null : round(x, 2);
@@ -3123,11 +3125,11 @@ function settlePanel27({ now = Date.now(), closeMs, strike, geo, tau }) {
 function brtiGate27(gates, panel, geo) {
   if (!panel || panel.reference !== 'OFFICIAL' || !geo || geo.pUp == null) return;
   if (panel.divergenceUsd != null && Math.abs(panel.divergenceUsd) > BRTI_MAX_DIVERGENCE_USD)
-    gates.soft.push(`official BRTI and the proxy index differ by $${Math.abs(panel.divergenceUsd).toFixed(2)} (> $${BRTI_MAX_DIVERGENCE_USD})`);
+    (gates.official || (gates.official = [])).push('official/proxy divergence'), gates.soft.push(`official BRTI and the proxy index differ by $${Math.abs(panel.divergenceUsd).toFixed(2)} (> $${BRTI_MAX_DIVERGENCE_USD})`);
   if (!BRTI_GATE || panel.officialPUp == null) return;
   const side = geo.pUp >= 0.5 ? 'UP' : 'DOWN';
   const f = side === 'UP' ? 1 - panel.officialPUp : panel.officialPUp;
-  if (f > BRTI_GATE_MAX_FLIP) gates.soft.push(`official BRTI disagrees: ${side} flip risk ${fmtFlip(f)} on the official settlement reference`);
+  if (f > BRTI_GATE_MAX_FLIP) (gates.official || (gates.official = [])).push('official flip risk'), gates.soft.push(`official BRTI disagrees: ${side} flip risk ${fmtFlip(f)} on the official settlement reference`);
 }
 /* after classification: official REVERSAL WARNING (only adds warnings), the requested display lines, panel attached */
 function brtiAfterClassify27(sig, panel, ticker) {
@@ -3143,6 +3145,9 @@ function brtiAfterClassify27(sig, panel, ticker) {
       sig.reasons = [`official BRTI reference: ${ls.lockedSide} (LOCKED earlier) now has ${fmtFlip(f)} flip risk`, ...(sig.reasons || [])];
       sig.trade = { ...(sig.trade || {}), action: 'EXIT / NO TRADE', why: 'the LOCKED call is breaking down on the official settlement reference' };
       sig.officialReversal = true;
+      /* v2.8 D5: the probabilities shown are the official reference's for the LOCKED side, not the proxy's */
+      sig.pWin = round(1 - f, 6); sig.pFlip = round(f, 6); sig.pFlipCons = round(Math.max(f, sig.pFlipCons || 0), 6);
+      sig.pWinLabel = fmtWin(1 - f); sig.pFlipLabel = fmtFlip(f); sig.guarantee = null; sig.probabilityReference = 'OFFICIAL';
     }
   }
   const st = sig.state, side = sig.side;
@@ -3216,7 +3221,7 @@ globalThis.__CORE28_INLINE__ = true;
      OPERATIONS  latency percentiles, record-and-replay input tape.
    ===================================================================== */
 'use strict';
-const CORE28_VERSION = 'core28-1.0.0';
+const CORE28_VERSION = 'core28-1.1.0';
 const crypto28 = require('crypto');
 
 /* ---------------------------------------------------------------- fees
@@ -3233,29 +3238,30 @@ function feeCfg28(over = {}) {
     feeType: null, source: 'default (unverified: Kalshi series record not read)' }, over);
 }
 /* total fee in dollars for C contracts at price `priceCents` (may be fractional, e.g. 99.5) */
+/* contract counts may be fractional on Kalshi's fixed-point book (e.g. "1035.60"): counted in 0.01-contract units */
 function feeDollars28(priceCents, C, cfg = feeCfg28(), maker = false) {
-  const n = Math.round(Number(C));
-  if (!(n > 0) || !Number.isFinite(priceCents)) return 0;
+  const c100 = Math.round(Number(C) * 100);
+  if (!(c100 > 0) || !Number.isFinite(priceCents)) return 0;
   const pc4 = Math.round(priceCents * 100);                     // $0.0001 units
   if (pc4 <= 0 || pc4 >= 10000) return 0;
   const mult = (maker ? cfg.makerMult : cfg.takerMult) * (Number.isFinite(cfg.seriesMultiplier) ? cfg.seriesMultiplier : 1);
   if (!(mult > 0)) return 0;
   const m6 = BigInt(Math.round(mult * 1e6));                    // 1e-6 units
-  const num = m6 * BigInt(n) * BigInt(pc4) * BigInt(10000 - pc4); // dollars * 1e14
-  const unit = cfg.rounding === 'centicent' ? 10n ** 10n : 10n ** 12n;   // $0.0001 or $0.01 in 1e-14 dollars
+  const num = m6 * BigInt(c100) * BigInt(pc4) * BigInt(10000 - pc4); // dollars * 1e16
+  const unit = cfg.rounding === 'centicent' ? 10n ** 12n : 10n ** 14n;   // $0.0001 or $0.01 in 1e-16 dollars
   const q = (num + unit - 1n) / unit;                            // ceil
   return Number(q) * (cfg.rounding === 'centicent' ? 1e-4 : 1e-2);
 }
 function feeCentsPerContract28(priceCents, C, cfg, maker = false) {
-  const n = Math.round(Number(C)); if (!(n > 0)) return 0;
+  const n = Math.round(Number(C) * 100) / 100; if (!(n > 0)) return 0;
   return 100 * feeDollars28(priceCents, n, cfg, maker) / n;
 }
 /* Walk the ask ladder [[cents, size], ...] (best first) for `size` contracts. */
 function walk28(levels, size) {
-  let need = Math.max(0, Math.floor(size)), cost = 0, got = 0, worst = NaN; const fills = [];
+  let need = Math.max(0, Number(size) || 0), cost = 0, got = 0, worst = NaN; const fills = [];
   for (const [p, s] of (levels || [])) {
-    if (need <= 0) break;
-    const sz = Math.floor(Number(s));
+    if (need <= 1e-9) break;
+    const sz = Number(s);
     if (!(Number.isFinite(p) && p > 0 && p < 100 && sz > 0)) continue;
     const q = Math.min(need, sz); cost += q * p; got += q; need -= q; worst = p; fills.push([p, q]);
   }
@@ -3270,8 +3276,8 @@ function walkFeeCents28(fills, cfg, maker = false) {
   const mult = (maker ? cfg.makerMult : cfg.takerMult) * (Number.isFinite(cfg.seriesMultiplier) ? cfg.seriesMultiplier : 1);
   if (!(mult > 0)) return 0;
   const m6 = BigInt(Math.round(mult * 1e6)); let num = 0n;
-  for (const [p, q] of fills) { const pc4 = Math.round(p * 100); if (pc4 > 0 && pc4 < 10000) num += m6 * BigInt(q) * BigInt(pc4) * BigInt(10000 - pc4); }
-  const unit = cfg.rounding === 'centicent' ? 10n ** 10n : 10n ** 12n;
+  for (const [p, q] of fills) { const pc4 = Math.round(p * 100), c100 = Math.round(q * 100); if (pc4 > 0 && pc4 < 10000 && c100 > 0) num += m6 * BigInt(c100) * BigInt(pc4) * BigInt(10000 - pc4); }
+  const unit = cfg.rounding === 'centicent' ? 10n ** 12n : 10n ** 14n;
   return 100 * Number((num + unit - 1n) / unit) * (cfg.rounding === 'centicent' ? 1e-4 : 1e-2);
 }
 /* Expected value per contract and in total for each order size.
@@ -3336,7 +3342,8 @@ function designation28({ state, tau, panel, settled, strike }) {
     return { code: 'OFFICIALLY_SETTLED', label: `OFFICIALLY SETTLED — ${settled.result === 'yes' ? 'UP (YES)' : 'DOWN (NO)'}`,
       basis: `Kalshi published the result (expiration value $${settled.official})` };
   if (Number.isFinite(tau) && tau <= 0) {
-    if (panel && panel.reference === 'OFFICIAL' && panel.decided && Number.isFinite(panel.final) && Number.isFinite(strike))
+    /* 60/60 exactly: the clock tolerance (BRTI_COUNT_TOL) must never let 58-59 recorded values count as final */
+    if (panel && panel.reference === 'OFFICIAL' && panel.decided && panel.recorded === 60 && Number.isFinite(panel.final) && Number.isFinite(strike))
       return { code: 'MATHEMATICALLY_FINAL', label: `MATHEMATICALLY FINAL — ${panel.final >= strike ? 'UP' : 'DOWN'} (official accumulator 60/60, $${panel.final})`,
         basis: 'all 60 official BRTI observations are recorded; awaiting Kalshi publication' };
     return { code: 'AWAITING_SETTLEMENT', label: 'AWAITING SETTLEMENT — official value unknown',
@@ -3344,7 +3351,7 @@ function designation28({ state, tau, panel, settled, strike }) {
   }
   if (state === 'PROVEN LOCKED')
     return { code: 'MATHEMATICALLY_FINAL', label: 'MATHEMATICALLY FINAL (price-only bound)',
-      basis: 'recorded observations alone keep the average above the strike even if every remaining value were $0; subject only to CF Benchmarks data availability' };
+      basis: 'the recorded observations (proxy index, discounted by a 0.25 % margin for the proxy-official difference) keep the average above the strike even if every remaining value were $0; subject to CF Benchmarks data availability' };
   if (state === 'LOCKED')
     return { code: 'PREDICTED_LOCKED', label: 'PREDICTED LOCKED — not a guarantee', basis: 'validated statistical classification: calibrated flip risk ≤ the LOCKED standard; a large enough BTC move can still reverse it' };
   return { code: 'NOT_LOCKED', label: null, basis: null };
@@ -3362,16 +3369,85 @@ function canon28(v) {
 }
 function sha28(s) { return crypto28.createHash('sha256').update(s).digest('hex'); }
 function entryHash28(prev, e) { return sha28(prev + '|' + canon28({ seq: e.seq, ts: e.ts, type: e.type, body: e.body })); }
-function mkLedger28({ genesisSeed = 'pinradar-2.8', file = '', maxMem = 50000, fs = null } = {}) {
+function mkLedger28({ genesisSeed = 'pinradar-2.8', file = '', maxMem = 50000, fs = null, maxPending = 100000 } = {}) {
   const genesis = sha28('genesis|' + genesisSeed);
-  return { genesis, head: genesis, seq: 0, rows: [], dropped: 0, file, maxMem, fs, fileErr: null };
+  return { genesis, head: genesis, seq: 0, rows: [], dropped: 0, file, maxMem, fs, fileErr: null, fileBytes: null, pending: [], maxPending, writeFailures: 0, fileStopped: null };
 }
 function ledgerAppend28(L, type, body, ts = Date.now()) {
-  const e = { seq: ++L.seq, ts, type, body, prev: L.head };
+  /* the body is copied before hashing: a later change to the caller's object (e.g. the live fee schedule) must never
+     alter an entry that is already hashed (JSON copy = what canon28 and the file see: NaN/undefined -> null/absent) */
+  const e = { seq: ++L.seq, ts, type, body: body === undefined ? null : JSON.parse(JSON.stringify(body)), prev: L.head };
   e.hash = entryHash28(L.head, e); L.head = e.hash;
   L.rows.push(e); if (L.rows.length > L.maxMem) { L.rows.shift(); L.dropped++; }
-  if (L.file && L.fs) { try { L.fs.appendFileSync(L.file, JSON.stringify(e) + '\n'); } catch (err) { L.fileErr = String(err && err.message || err); } }
+  if (L.file && L.fs && !L.fileStopped) { L.pending.push(JSON.stringify(e) + '\n'); ledgerFlush28(L); }
   return e;
+}
+/* The file is always a contiguous prefix of the chain. A failed write is retried, in order, before any later entry
+   (never skipped), and a partial write is cut back to the last whole line first (fileBytes = bytes known good). */
+function ledgerFlush28(L) {
+  if (!L.file || !L.fs) return;
+  while (L.pending.length) {
+    try {
+      if (L.fileBytes == null) L.fileBytes = L.fs.existsSync(L.file) ? L.fs.statSync(L.file).size : 0;
+      if (L.fileErr) { const sz = L.fs.statSync(L.file).size; if (sz > L.fileBytes) L.fs.truncateSync(L.file, L.fileBytes); }
+      L.fs.appendFileSync(L.file, L.pending[0]);
+      L.fileBytes += Buffer.byteLength(L.pending[0]); L.pending.shift();
+      if (L.fileErr) { L.lastRecovered = { ts: Date.now(), after: L.fileErr }; L.fileErr = null; }
+    } catch (err) {
+      L.fileErr = String(err && err.message || err); L.writeFailures++;
+      if (L.pending.length > L.maxPending) { L.fileStopped = { ts: Date.now(), why: L.fileErr, atSeq: JSON.parse(L.pending[0]).seq }; L.pending = []; }
+      return;
+    }
+  }
+}
+/* Resume a chain from its file, streaming (bounded memory): every row is parsed and verified in order. A final
+   fragment without a newline (a write cut by a crash) is moved to <file>.torn-<ts> and cut off. Anything else that
+   does not verify stops the resume there: the original is kept as <file>.broken-<ts> and the file is cut back to
+   the verified prefix, so the chain continues from the last good entry and nothing verified is thrown away.
+   onRow(row) sees every verified row (monitor rebuild, open-window restore). Returns what happened. */
+function ledgerResume28(L, fs, file, onRow = null, now = Date.now()) {
+  const info = { n: 0, head: null, firstSeq: null, lastSeq: null, tornTail: null, broken: null };
+  if (!fs.existsSync(file)) return info;
+  const fd = fs.openSync(file, 'r'); const size = fs.fstatSync(fd).size;
+  const CH = 1 << 20; const buf = Buffer.alloc(CH);
+  let pos = 0, rest = Buffer.alloc(0), good = 0, prev = null, lastSeq = 0, stop = false;
+  const keep = [];
+  try {
+    while (pos < size && !stop) {
+      const nr = fs.readSync(fd, buf, 0, Math.min(CH, size - pos), pos); if (nr <= 0) break; pos += nr;
+      const data = rest.length ? Buffer.concat([rest, buf.subarray(0, nr)]) : Buffer.from(buf.subarray(0, nr));
+      let start = 0, nl;
+      while (!stop && (nl = data.indexOf(10, start)) !== -1) {
+        const text = data.toString('utf8', start, nl); const bytes = nl - start + 1; start = nl + 1;
+        if (!text.trim()) { good += bytes; continue; }
+        let e = null; try { e = JSON.parse(text); } catch (_) { e = null; }
+        let why = null;
+        if (!e || typeof e !== 'object') why = 'unparsable line';
+        else if (prev === null && e.seq !== 1) why = 'file does not start at seq 1';
+        else if (prev !== null && e.seq !== lastSeq + 1) why = 'sequence gap';
+        else if (prev !== null && e.prev !== prev) why = 'prev hash mismatch';
+        else if (entryHash28(e.prev, e) !== e.hash) why = 'hash mismatch (entry altered)';
+        if (why) { info.broken = { why, atSeq: e && e.seq != null ? e.seq : lastSeq + 1, afterBytes: good }; stop = true; break; }
+        if (prev === null) { info.firstSeq = e.seq; L.genesis = e.prev; }
+        prev = e.hash; lastSeq = e.seq; good += bytes; info.n++;
+        keep.push(e); if (keep.length > 2 * L.maxMem) keep.splice(0, keep.length - L.maxMem);
+        if (onRow) onRow(e);
+      }
+      rest = stop ? Buffer.alloc(0) : data.subarray(start);
+    }
+  } finally { fs.closeSync(fd); }
+  if (!stop && rest.length) {
+    info.tornTail = { bytes: rest.length, movedTo: file + '.torn-' + now };
+    try { fs.writeFileSync(info.tornTail.movedTo, rest); } catch (_) { info.tornTail.movedTo = null; }
+    fs.truncateSync(file, good);
+  }
+  if (stop) {
+    const bad = file + '.broken-' + now; fs.renameSync(file, bad); fs.copyFileSync(bad, file); fs.truncateSync(file, good);
+    info.broken.originalKeptAs = bad;
+  }
+  if (info.n) { L.head = prev; L.seq = lastSeq; L.rows = keep.slice(-L.maxMem); info.head = prev; info.lastSeq = lastSeq; }
+  L.fileBytes = good;
+  return info;
 }
 /* rows must be contiguous; `genesis` is the expected prev of the first row when it is seq 1 */
 function verifyLedger28(rows, genesis = null) {
@@ -3395,17 +3471,22 @@ function verifyLedger28(rows, genesis = null) {
                   prod(1 + lambda * x), x = P&L in dollars per contract. */
 const FAIL_ALTS28 = [1.5, 2, 3, 4, 6, 10, 20];                 // p1 = p0 * k
 function mkFailMonitor28(p0 = 0.005, alpha = 0.05) {
-  return { kind: 'failure-rate', p0, alpha, n: 0, losses: 0, logW: FAIL_ALTS28.map(() => 0), alts: FAIL_ALTS28.map(k => Math.min(0.5, p0 * k)) };
+  return { kind: 'failure-rate', p0, alpha, n: 0, losses: 0, logW: FAIL_ALTS28.map(() => 0), alts: FAIL_ALTS28.map(k => Math.min(0.5, p0 * k)), supE: 1, firstAlarmN: null };
 }
+function failE28(M) { const mx = Math.max(...M.logW); return Math.exp(mx) * M.logW.reduce((a, l) => a + Math.exp(l - mx), 0) / M.logW.length; }
 function failUpdate28(M, lost) {
   M.n++; if (lost) M.losses++;
   for (let i = 0; i < M.alts.length; i++) { const p1 = M.alts[i]; M.logW[i] += lost ? Math.log(p1 / M.p0) : Math.log((1 - p1) / (1 - M.p0)); }
+  /* Ville's inequality bounds sup_t E_t: once E reaches 1/alpha the alarm is latched, even if later wins decay E */
+  const e = failE28(M); if (e > M.supE) M.supE = e;
+  if (M.firstAlarmN == null && e >= 1 / M.alpha) M.firstAlarmN = M.n;
   return M;
 }
 function failState28(M) {
-  const mx = Math.max(...M.logW); const e = Math.exp(mx) * M.logW.reduce((a, l) => a + Math.exp(l - mx), 0) / M.logW.length;
-  return { kind: M.kind, H0: `loss rate <= ${(100 * M.p0).toFixed(2)}%`, n: M.n, losses: M.losses, eValue: r4(e), threshold: 1 / M.alpha,
-    alarm: e >= 1 / M.alpha, meaning: e >= 1 / M.alpha ? `ALARM: evidence (anytime-valid ${(100 * (1 - M.alpha)).toFixed(0)}%) that the loss rate exceeds ${(100 * M.p0).toFixed(2)}% — stop relying on LOCKED and investigate; do not retune on these few outcomes`
+  const e = failE28(M), latched = M.firstAlarmN != null;
+  return { kind: M.kind, H0: `loss rate <= ${(100 * M.p0).toFixed(2)}%`, n: M.n, losses: M.losses, eValue: r4(e), supEValue: r4(M.supE), threshold: 1 / M.alpha,
+    alarm: latched, alarmNow: e >= 1 / M.alpha, firstAlarmAtWindow: M.firstAlarmN,
+    meaning: latched ? `ALARM (latched at LOCKED window ${M.firstAlarmN}, peak e ${r4(M.supE)}): anytime-valid ${(100 * (1 - M.alpha)).toFixed(0)}% evidence that the loss rate exceeds ${(100 * M.p0).toFixed(2)}% — stop relying on LOCKED and investigate; do not retune on these few outcomes`
       : 'no evidence the loss rate exceeds the standard (absence of alarm is not proof of safety)' };
 }
 const EDGE_LAMBDAS28 = [0.02, 0.05, 0.1, 0.2, 0.35, 0.5, 0.7, 0.9];
@@ -3469,7 +3550,11 @@ const SHADOW_POLICIES28 = Object.freeze([
 function shadowDecide28(policyId, { snap, deps, cfg, lockedSide = null, hist = [], impulse = null, tau }) {
   const geo = snap.geo, gates = snap.gates, book = snap.book, base = snap.decision;
   if (!geo || geo.pUp == null) return base;
-  const dec = (pUp, pUpCons, c = cfg) => deps.m25Decide({ tau, pUp, pUpCons, gates, book, cfg: c, hist, lockedSide, provenSide: geo.provenUp ? 'UP' : null });
+  /* the same post-decision guard production applies in classify25: LOCKED but offered below MIN_TRADE_ASK_CENTS
+     means the market disagrees -> no TRADE NOW (otherwise candidates would paper-trade where A refuses) */
+  const guard = d => (d && d.trade && d.trade.action === 'TRADE NOW' && Number.isFinite(cfg.minTradeAskCents) && d.trade.askCents != null && d.trade.askCents < cfg.minTradeAskCents)
+    ? Object.assign({}, d, { trade: Object.assign({}, d.trade, { action: 'LOCKED — MARKET DISAGREES', why: 'ask below the market-disagreement guard' }) }) : d;
+  const dec = (pUp, pUpCons, c = cfg) => guard(deps.m25Decide({ tau, pUp, pUpCons, gates, book, cfg: c, hist, lockedSide, provenSide: geo.provenUp ? 'UP' : null }));
   switch (policyId) {
     case 'A-2.6': return base;
     case 'C1-strict-0.2': return dec(geo.pUp, geo.pUpCons, Object.assign({}, cfg, { lockMaxFlip: 0.002 }));
@@ -3558,6 +3643,15 @@ function shadowSummary28(stats) {
   return out;
 }
 
+/* Holm step-down adjusted p-values: sorted ascending, adj_(i) = max_{j<=i} min(1, (m - j + 1) p_(j)) (monotone).
+   pmap: {name: p | null}; a null p (objective not evaluable) is 1 and still counts in m. */
+function holm28(pmap) {
+  const ps = Object.entries(pmap).map(([k, p]) => [k, p == null || !Number.isFinite(p) ? 1 : p]).sort((a, b) => a[1] - b[1]);
+  const out = {}; let run = 0;
+  ps.forEach(([k, p], i) => { run = Math.max(run, Math.min(1, p * (ps.length - i))); out[k] = run; });
+  return out;
+}
+
 /* ---------------------------------------------------------------- latency percentiles */
 function mkLat28(cap = 2000) { return { cap, series: {} }; }
 function latNote28(L, key, ms) {
@@ -3574,9 +3668,9 @@ function latSummary28(L) {
 }
 
 const CORE28 = { CORE28_VERSION, feeCfg28, feeDollars28, feeCentsPerContract28, walk28, walkFeeCents28, evLadder28, UNC28, band28, fmtBand28, sig1,
-  designation28, canon28, sha28, entryHash28, mkLedger28, ledgerAppend28, verifyLedger28, FAIL_ALTS28, mkFailMonitor28, failUpdate28, failState28,
+  designation28, canon28, sha28, entryHash28, mkLedger28, ledgerAppend28, ledgerFlush28, ledgerResume28, verifyLedger28, FAIL_ALTS28, mkFailMonitor28, failE28, failUpdate28, failState28,
   EDGE_LAMBDAS28, mkEdgeMonitor28, edgeUpdate28, edgeState28, binomCdf28, cpUpper28, POOL28, marketPooledFlip28, SHADOW_POLICIES28,
-  shadowDecide28, shadowNote28, shadowScore28, mkShadowStats28, shadowAccumulate28, shadowSummary28, mkLat28, latNote28, latSummary28 };
+  shadowDecide28, shadowNote28, shadowScore28, mkShadowStats28, shadowAccumulate28, shadowSummary28, holm28, mkLat28, latNote28, latSummary28 };
 if (typeof module !== 'undefined' && module.exports && !globalThis.__CORE28_INLINE__) module.exports = CORE28;
 
 /* =====================================================================
@@ -3589,6 +3683,13 @@ if (typeof module !== 'undefined' && module.exports && !globalThis.__CORE28_INLI
      D2 official BRTI freshness was judged by receipt time only: a value 60 s
         old at the source was "fresh". Now max(receipt age, source age).
      D3 a zero-size best ask level was shown as the "buy at <=" price.
+     D4 PROVEN LOCKED (a proxy price-only bound) bypassed the official-BRTI
+        gates: TRADE NOW + MATHEMATICALLY FINAL while the official reference
+        disagreed. Now withheld (HIGH CONFIDENCE) like an ordinary LOCKED.
+     D5 an official REVERSAL WARNING kept the proxy's >99.9 % / <0.1 % and the
+        guarantee text. Now the official reference's numbers are shown.
+     D6 after the close, 58-59 official values (clock tolerance) counted as
+        "decided" and were labelled MATHEMATICALLY FINAL 60/60. Now 60/60 only.
    ===================================================================== */
 function envNum28(k, d, lo, hi) { const n = Number(process.env[k]); return Number.isFinite(n) ? Math.max(lo, Math.min(hi, n)) : d; }
 const LADDER_SIZES28 = String(process.env.LADDER_SIZES || '1,5,10,25,50,100').split(',').map(Number).filter(x => Number.isFinite(x) && x >= 1 && x <= 100000).slice(0, 10);
@@ -3596,7 +3697,7 @@ const LEDGER28_FILE = String(process.env.LEDGER_FILE || '').trim();
 const TAPE28_FILE = String(process.env.TAPE_FILE || '').trim();
 const TAPE28_MAX = envNum28('TAPE_MAX', 3000, 200, 200000);
 const SHADOW28_P0 = envNum28('MONITOR_P0', LOCK_MAX_FLIP, 0.0005, 0.1);          // failure alarm H0: loss rate <= the LOCKED standard
-const PREREG28_ID = 'pinradar-2.8-prereg-v1';                                     // PREREGISTRATION.md, frozen before any forward data
+const PREREG28_ID = 'pinradar-2.8-prereg-v2';                                     // PREREGISTRATION.md, frozen before any forward data
 
 /* ---------------------------------------------------------------- fee schedule (not hard-coded) */
 var FEE28 = { cfg: feeCfg28({ takerMult: envNum28('FEE_TAKER_MULT', 0.07, 0, 1), makerMult: envNum28('FEE_MAKER_MULT', 0, 0, 1),
@@ -3612,60 +3713,89 @@ async function fee28Refresh() {
     const j = await fetchJson(`${KALSHI_BASE}/series/${encodeURIComponent(KALSHI_SERIES)}`, {}, 4000);
     const s = j && (j.series || j);
     if (!s || typeof s !== 'object') throw new Error('no series record');
-    const mult = Number(s.fee_multiplier), type = s.fee_type != null ? String(s.fee_type) : null;
+    /* strict: only a JSON number or a plain numeric string in (0, 10] is a multiplier (Number(null/''/false) is 0,
+       which would zero the decision fee); anything else keeps the current multiplier and is NOT "verified" */
+    const raw = s.fee_multiplier, type = s.fee_type != null ? String(s.fee_type) : null;
+    const mult = typeof raw === 'number' || (typeof raw === 'string' && /^\s*\d+(\.\d+)?\s*$/.test(raw)) ? Number(raw) : NaN;
+    const multOk = Number.isFinite(mult) && mult > 0 && mult <= 10;
     const before = JSON.stringify(FEE28.cfg);
-    if (Number.isFinite(mult) && mult >= 0 && mult <= 10) FEE28.cfg.seriesMultiplier = mult;
+    const cfg = { ...FEE28.cfg };                       // replaced, never mutated in place (entries already hashed may hold the old one)
+    if (multOk) cfg.seriesMultiplier = mult;
     if (type) {
-      FEE28.cfg.feeType = type;
+      cfg.feeType = type;
       /* maker fees exist only on series whose fee_type names them (third-party documentation: 0.0175 maker
          coefficient); an explicit FEE_MAKER_MULT env value always wins */
-      if (!process.env.FEE_MAKER_MULT) FEE28.cfg.makerMult = /maker/i.test(type) ? 0.0175 : 0;
+      if (!process.env.FEE_MAKER_MULT) cfg.makerMult = /maker/i.test(type) ? 0.0175 : 0;
     }
-    FEE28.cfg.source = `Kalshi series record ${KALSHI_SERIES}: fee_type ${type ?? 'absent'}, fee_multiplier ${Number.isFinite(mult) ? mult : 'absent'}`
-      + ' (rounding unit and taker coefficient 0.07 are not in the record: ' + FEE28.cfg.rounding + ' rounding assumed)';
-    FEE28.verified = Number.isFinite(mult) || !!type; FEE28.fetchedAt = Date.now(); FEE28.error = null;
-    FEE28.series = { fee_type: type, fee_multiplier: Number.isFinite(mult) ? mult : null, ticker: s.ticker || KALSHI_SERIES };
+    cfg.source = `Kalshi series record ${KALSHI_SERIES}: fee_type ${type ?? 'absent'}, fee_multiplier ${raw === undefined ? 'absent' : JSON.stringify(raw)}`
+      + (raw !== undefined && !multOk ? ` (rejected: not a number in (0, 10]; multiplier ${cfg.seriesMultiplier ?? 1} kept)` : '')
+      + ' (rounding unit and taker coefficient 0.07 are not in the record: ' + cfg.rounding + ' rounding assumed)';
+    FEE28.cfg = cfg;
+    FEE28.verified = multOk; FEE28.fetchedAt = Date.now(); FEE28.error = null;
+    FEE28.series = { fee_type: type, fee_multiplier: multOk ? mult : null, fee_multiplier_raw: raw === undefined ? null : raw, ticker: s.ticker || KALSHI_SERIES };
     fee28Recompute();
-    if (JSON.stringify(FEE28.cfg) !== before) { FEE28.history.push({ ts: Date.now(), cfg: { ...FEE28.cfg } }); if (typeof L28 !== 'undefined') ledgerAppend28(L28, 'fees', { cfg: FEE28.cfg, isDefault: FEE28.isDefault }); }
+    if (JSON.stringify(FEE28.cfg) !== before) { FEE28.history.push({ ts: Date.now(), cfg: { ...FEE28.cfg } }); if (typeof L28 !== 'undefined') ledgerAppend28(L28, 'fees', { cfg: { ...FEE28.cfg }, isDefault: FEE28.isDefault }); }
   } catch (e) { FEE28.error = String(e && e.message || e); FEE28.fetchedAt = Date.now(); }
 }
 
 /* ---------------------------------------------------------------- ledger, shadow state, monitors, latency */
 const BOOT28 = { id: crypto.randomBytes(6).toString('hex'), ts: Date.now() };
-const CONFIG28 = { server: SERVER_VERSION, build: BUILD_ID, core: CORE28_VERSION, model: MODEL_VERSION, prereg: PREREG28_ID,
+/* every environment variable the server reads (list generated at build time) except secrets and I/O paths: an
+   override of ANY decision input changes CONFIG28_HASH; the embedded model tables are hashed too */
+const ENV_KEYS28 = ["BASIS_DF", "BASIS_EWMA_HL", "BASIS_MAX_SAMPLES", "BASIS_MEAN_UNC_K", "BASIS_MEAN_USD", "BASIS_PRIOR_N", "BASIS_SD_USD", "BG_TICK_MS", "BOOK_FAST_MS", "BOOK_FAST_TAU", "BRTI_5HZ", "BRTI_COUNT_TOL", "BRTI_ENABLE", "BRTI_GATE", "BRTI_GATE_MAX_FLIP", "BRTI_INDEX_ID", "BRTI_MAX_DIVERGENCE_USD", "BRTI_NODATA_MS", "BRTI_STALE_MS", "CONS_BASIS_MULT", "CONS_VOL_MULT", "DEFAULT_CONTRACTS", "DRIFT_HORIZON_SEC", "DRIFT_SHRINK", "ENABLE_OPENAI", "ENABLE_WS", "FEE_MAKER_MULT", "FEE_PER_FILL", "FEE_ROUNDING", "FEE_TAKER_MULT", "GREEN_MIN_CUSHION_K", "HIGH_MAX_FLIP", "IMP_BASELINE_FLOOR", "IMP_IMBALANCE_MIN", "IMP_MAX_TAU", "IMP_NOTIONAL_MIN", "IMP_QUIET_GAP_SEC", "IMP_SURGE_MIN", "INDEX_ERR_USD", "INDEX_HARD_STALE_MS", "INDEX_STALE_MS", "KALSHI_BASE", "KALSHI_FAST_TAU_SEC", "KALSHI_KEY_ID", "KALSHI_POLL_FAST_MS", "KALSHI_POLL_MS", "KALSHI_PRIVATE_KEY", "KALSHI_SERIES", "KALSHI_STALE_MS", "KALSHI_WS_URL", "LADDER_SIZES", "LEAN_MAX_FLIP", "LEDGER_FILE", "LEDGER_MAX", "LIVE_VOL_SCALE", "LOCK_MAX_FLIP", "LOCK_MAX_TAU", "LOCK_VENUE_QUOTE_MAX_MS", "MAX_BOOK_AGE_MS", "MAX_DISPERSION_BPS_LOCK", "MIN_EDGE_CENTS", "MIN_EXEC_TAU", "MIN_INDEX_VENUES", "MIN_TRADE_ASK_CENTS", "MOMENTUM_BETA", "MOMENTUM_LAG_SEC", "MONITOR_P0", "OPENAI_API_KEY", "OPENAI_MODEL", "OUTLIER_BPS", "PINRADAR_REPLAY", "PINRADAR_STATE_FILE", "PORT", "PRED_LOG_FILE", "PRED_LOG_MAX", "PROVEN_MARGIN_FRAC", "P_CLAMP_LO", "REACH_K_LIVE", "REACH_K_ONSET", "REACH_K_QUIET", "RECAL_ACTIVE", "RECAL_NORMAL", "RECAL_QUIET", "RESOLUTION_MAX_TAU", "REST_FALLBACK_MS", "REVERSAL_JUMP_X", "REVERSAL_P", "REV_FLIP", "SETTLE_ALIGN", "SETTLE_POLL_MS", "SETTLE_TAIL_A", "SETTLE_TAIL_B", "SETTLE_WINDOW_SEC", "STALE_BUDGET_FRAC", "STALE_BUDGET_MAX_MS", "STALE_BUDGET_MIN_MS", "STRIKE_MAX_DEV_FRAC", "STRIKE_OVERRIDE_TOL_USD", "TAPE_FILE", "TAPE_FILE_MAX_MB", "TAPE_MAX", "TIER_HIGH_MAX", "TIER_LOCK_MAX", "TIER_MOD_MAX", "VENUE_QUOTE_MAX_MS", "VENUE_SILENT_MS", "VENUE_STALE_MS", "VOL_FAST_SEC", "VOL_FAST_WEIGHT", "VOL_LONG_SEC", "VOL_MIN_SAMPLES", "VOL_PRIOR", "VOL_SHRINK_N", "VOL_UNC_MULT"];
+const ENV_EXCLUDE28 = /^(KALSHI_PRIVATE_KEY|KALSHI_KEY_ID|OPENAI_API_KEY|OPENAI_MODEL|ENABLE_OPENAI|PORT|PINRADAR_STATE_FILE|PRED_LOG_FILE|LEDGER_FILE|TAPE_FILE|PINRADAR_REPLAY|ENABLE_WS|KALSHI_WS_URL|PRED_LOG_MAX|LEDGER_MAX|TAPE_MAX|TAPE_FILE_MAX_MB)$/;
+function config28Env() { return Object.fromEntries(ENV_KEYS28.filter(k => !ENV_EXCLUDE28.test(k) && process.env[k] !== undefined && process.env[k] !== '').sort().map(k => [k, String(process.env[k])])); }
+const MODEL28_SHA = sha28(JSON.stringify(M25_MODEL ? { v: M25_MODEL.version, fit: M25_MODEL.fit, sigma: M25_MODEL.sigma, regime: M25_MODEL.regime,
+  tauGrid: M25_MODEL.tauGrid, zGrid: M25_MODEL.zGrid, basisQ: M25_MODEL.basisQ, tabs: M25_MODEL.tabs } : null));
+const CONFIG28 = { server: SERVER_VERSION, build: BUILD_ID, core: CORE28_VERSION, model: MODEL_VERSION, modelSha: MODEL28_SHA, env: config28Env(), prereg: PREREG28_ID,
   lockMaxFlip: LOCK_MAX_FLIP, highMaxFlip: HIGH_MAX_FLIP, revFlip: REV_FLIP, minEdgeCents: MIN_EDGE_CENTS, minExecTau: MIN_EXEC_TAU,
   contracts: DEFAULT_CONTRACTS, maxBookAgeMs: MAX_BOOK_AGE_MS, recal: [RECAL_QUIET, RECAL_NORMAL, RECAL_ACTIVE], liveVolScale: LIVE_VOL_SCALE,
   minTradeAskCents: MIN_TRADE_ASK_CENTS, lockMaxTau: LOCK_MAX_TAU, policies: SHADOW_POLICIES28.map(p => p.id), pool: POOL28, unc: UNC28, monitorP0: SHADOW28_P0 };
 const CONFIG28_HASH = sha28(canon28(CONFIG28));
+const SHADOW28 = { windows: new Map(), stats: mkShadowStats28(SHADOW_POLICIES28, SHADOW28_P0), scored: 0, lastScore: null, restored: [] };
+/* one committed ledger row, replayed at boot: outcomes rebuild the monitors (the whole file counts, not just the
+   in-memory tail); a window with committed calls but no outcome yet is restored with exactly those calls */
+function rebuildRow28(e, open) {
+  const b = e.body || {};
+  if (e.type === 'outcome' && b.records) {
+    for (const [pid, rec] of Object.entries(b.records)) shadowAccumulate28(SHADOW28.stats, pid, rec, b.winner);
+    SHADOW28.scored++; open.delete(b.ticker);
+  } else if (e.type === 'unresolved') open.delete(b.ticker);
+  else if (e.type === 'window' && b.ticker) { if (!open.has(b.ticker)) open.set(b.ticker, { ticker: b.ticker, closeMs: b.closeMs, strike: b.strike, recs: {}, opened: e.ts, restored: true }); }
+  else if (e.type === 'call' && b.ticker && b.policy && b.event) {
+    const w = open.get(b.ticker); if (!w) return;
+    const r = w.recs[b.policy] || (w.recs[b.policy] = { firstLock: null, firstTrade: null, firstReversal: null, lockedSide: null, maxTau: null });
+    if (!r[b.event]) { r[b.event] = b.rec || null; if (b.event === 'firstLock' && b.rec) r.lockedSide = b.rec.side; }
+  }
+}
 const L28 = (() => {
-  let L = mkLedger28({ genesisSeed: 'pinradar-2.8|' + CONFIG28_HASH, file: LEDGER28_FILE, fs: LEDGER28_FILE ? require('fs') : null, maxMem: envNum28('LEDGER_MAX', 50000, 1000, 1000000) });
+  const L = mkLedger28({ genesisSeed: 'pinradar-2.8|' + CONFIG28_HASH, file: LEDGER28_FILE, fs: LEDGER28_FILE ? require('fs') : null, maxMem: envNum28('LEDGER_MAX', 50000, 1000, 1000000) });
   L.resumed = null;
-  /* continue an existing chain across restarts when the file survives (persistent disk) */
+  /* continue an existing chain across restarts when the file survives (persistent disk): streamed and verified
+     row by row; a torn last line is cut off, a bad row stops the resume there (original kept as .broken-<ts>) */
   if (LEDGER28_FILE && !process.env.PINRADAR_REPLAY) {
+    const open = new Map(), g0 = L.genesis;
     try {
-      const fs = require('fs');
-      if (fs.existsSync(LEDGER28_FILE)) {
-        const rows = fs.readFileSync(LEDGER28_FILE, 'utf8').split('\n').filter(Boolean).map(x => JSON.parse(x));
-        const v = verifyLedger28(rows, rows.length && rows[0].seq === 1 ? rows[0].prev : null);
-        if (v.ok && rows.length) { L.head = v.head; L.seq = rows[rows.length - 1].seq; L.genesis = rows[0].prev; L.rows = rows.slice(-L.maxMem); L.resumed = { n: rows.length, head: v.head }; }
-        else if (rows.length) { const bad = LEDGER28_FILE + '.broken-' + Date.now(); fs.renameSync(LEDGER28_FILE, bad); L.resumed = { brokenFileMovedTo: bad, why: v.why, at: v.at }; }
-      }
-    } catch (e) { L.fileErr = 'resume failed: ' + String(e && e.message || e); }
+      L.resumed = ledgerResume28(L, require('fs'), LEDGER28_FILE, e => rebuildRow28(e, open));
+      const now = Date.now();
+      for (const w of open.values()) { w.restoredAt = now; SHADOW28.windows.set(w.ticker, w); SHADOW28.restored.push(w.ticker); }
+      L.resumed.openWindowsRestored = open.size;
+      /* a window still live keeps its LOCKED side, so a reversal of a call made before the restart is still warned */
+      const live = [...open.values()].find(w => w.closeMs > now && w.recs['A-2.6'] && w.recs['A-2.6'].firstLock);
+      if (live) Object.assign(LOCK25, { ticker: live.ticker, hist: [], lockedSide: live.recs['A-2.6'].firstLock.side, lockedAtTau: live.recs['A-2.6'].firstLock.tau, revNoted: false });
+    } catch (e) {
+      /* never append to a file that could not be read: keep it untouched, run in memory, say so */
+      L.fileErr = 'resume failed: ' + String(e && e.message || e); L.fileStopped = { ts: Date.now(), why: L.fileErr };
+      L.genesis = g0; L.head = g0; L.seq = 0; L.rows = []; L.fileBytes = null; SHADOW28.stats = mkShadowStats28(SHADOW_POLICIES28, SHADOW28_P0); SHADOW28.scored = 0;
+    }
   }
   return L;
 })();
-const SHADOW28 = { windows: new Map(), stats: mkShadowStats28(SHADOW_POLICIES28, SHADOW28_P0), scored: 0, lastScore: null };
 const LAT28 = mkLat28(3000);
 const TAPE28 = { rows: [], samples: [], lastSampleTs: 0, sinceDigest: [], lastDigestTs: 0, dropped: 0, fileErr: null };
 const HB28 = { lastTs: 0 };
-/* rebuild the monitors from committed outcomes so a restart does not reset the evidence */
-(function rebuild28() {
-  for (const e of L28.rows) if (e.type === 'outcome' && e.body && e.body.records) {
-    for (const [pid, rec] of Object.entries(e.body.records)) shadowAccumulate28(SHADOW28.stats, pid, rec, e.body.winner);
-    SHADOW28.scored++;
-  }
-})();
 ledgerAppend28(L28, 'boot', { boot: BOOT28.id, config: CONFIG28, configHash: CONFIG28_HASH, resumed: L28.resumed, fees: FEE28.cfg });
+if (TAPE28_FILE && !process.env.PINRADAR_REPLAY) tapeWrite28({ k: 'boot', ts: BOOT28.ts, boot: BOOT28.id });   // replay: no ring history across a restart
 
 /* ---------------------------------------------------------------- signal enrichment (every snapshot) */
 function settledFor28(ticker) {
@@ -3680,8 +3810,12 @@ function enrich28(sig, { geo, settle, kal, now, tau }) {
   const book = bookFromKal(kal, now);
   const lv = book.ok && sig.side ? (sig.side === 'UP' ? book.yesAsks : book.noAsks) : null;
   const pWin = sig.pWin, pWinCons = sig.pFlipCons != null ? 1 - sig.pFlipCons : null, pWinStress = band ? 1 - Math.max(band.hi, sig.pFlipCons || 0) : null;
-  const ladder = lv && lv.length ? evLadder28({ levels: lv, pWin, pWinCons, pWinStress, sizes: LADDER_SIZES28, cfg: FEE28.cfg }) : [];
   const tr = sig.trade || {};
+  /* the trade numbers are the proxy decision's: void once the call is breaking (REVERSAL WARNING, official or proxy)
+     or the data are unreliable; a trade the guards refused is never shown as positive value */
+  const voidValue = sig.state === 'REVERSAL WARNING' || sig.state === 'DATA UNRELIABLE' || sig.state === 'AWAITING SETTLEMENT' || !!sig.officialReversal;
+  const veto = voidValue ? sig.state : (tr.action && /MARKET DISAGREES|DO NOT TRADE|EXIT/.test(tr.action) ? tr.action : null);
+  const ladder = !voidValue && lv && lv.length ? evLadder28({ levels: lv, pWin, pWinCons, pWinStress, sizes: LADDER_SIZES28, cfg: FEE28.cfg }) : [];
   const locked = sig.state === 'LOCKED' || sig.state === 'PROVEN LOCKED';
   const bookFresh = !!(book.ok && book.ageMs != null && book.ageMs <= MAX_BOOK_AGE_MS);
   const contracts = tr.contracts || DEFAULT_CONTRACTS;
@@ -3690,7 +3824,8 @@ function enrich28(sig, { geo, settle, kal, now, tau }) {
       flipBand: band, winLabel: band ? `${fmtWin(pWin)} (plausible ${fmtWin(1 - band.hi)}–${fmtWin(1 - band.lo)})` : null, flipLabel: band ? band.label : null,
       note: band ? 'band = range of realised loss rates this displayed probability has corresponded to (Jul-Oct 2026 calibration drift); decisions use the validated point rule' : null },
     value: { minEdgeCents: MIN_EDGE_CENTS, contracts, askCents: tr.askCents ?? null, avgCents: tr.avgCents ?? null, feeCents: tr.feeCents ?? null,
-      evCents: tr.evCents ?? null, evConsCents: tr.evConsCents ?? null, positive: tr.evConsCents != null && tr.evConsCents >= MIN_EDGE_CENTS,
+      evCents: voidValue ? null : (tr.evCents ?? null), evConsCents: voidValue ? null : (tr.evConsCents ?? null), veto,
+      positive: !veto && tr.evConsCents != null && tr.evConsCents >= MIN_EDGE_CENTS,
       stressEvCents: (() => { const r = ladder.find(x => x.size === contracts) || null; return r ? r.evStressCents : null; })() },
     execution: { bookAgeMs: book.ok ? book.ageMs : null, bookFresh, depth: tr.depth ?? null, enoughDepth: tr.depth != null && tr.depth >= contracts,
       secondsLeft: Number.isFinite(tau) ? Math.max(0, tau) : null, enoughTime: Number.isFinite(tau) && tau >= MIN_EXEC_TAU,
@@ -3708,8 +3843,37 @@ function enrich28(sig, { geo, settle, kal, now, tau }) {
 function lastWindowDesignation28(w) {
   if (!w) return null;
   const fin = BRTI.finals.find(f => f.closeMs === w.closeMs && f.size === SETTLE_TICKS);
-  const panel = fin ? { reference: 'OFFICIAL', decided: true, final: settleRound2(fin.value) } : { reference: 'PROXY', decided: true };
+  const panel = fin ? { reference: 'OFFICIAL', decided: true, recorded: fin.size, final: settleRound2(fin.value) } : { reference: 'PROXY', decided: true };
   return designation28({ tau: -1, panel, settled: w.status === 'SETTLED' ? { result: w.result, official: w.official } : null, strike: w.strike });
+}
+
+/* client-reported latencies (POST /radar) are unauthenticated: negative values are dropped, values are capped at
+   60 s, and all clients together add at most 4 samples/s, so nobody can rewrite the G6 series in seconds */
+const CLAT28 = { tokens: 4, last: 0, dropped: 0 };
+function clientLat28(payload, now = Date.now()) {
+  const rtt = Number(payload && payload.clientRttMs), disp = Number(payload && payload.clientDisplayDelayMs);
+  if (!Number.isFinite(rtt) && !Number.isFinite(disp)) return false;
+  CLAT28.tokens = Math.min(4, CLAT28.tokens + Math.max(0, now - CLAT28.last) * 4 / 1000); CLAT28.last = now;
+  if (CLAT28.tokens < 1) { CLAT28.dropped++; return false; } CLAT28.tokens -= 1;
+  if (Number.isFinite(rtt) && rtt >= 0) latNote28(LAT28, 'clientRoundTripMs', Math.min(60000, rtt));
+  if (Number.isFinite(disp) && disp >= 0) latNote28(LAT28, 'clientSignalAgeAtDisplayMs', Math.min(60000, disp));
+  return true;
+}
+/* GET /ledger/verify: re-checks only the rows added since the last check (rows are immutable snapshots); a full
+   re-hash of the in-memory chain (?full=1, ~0.4 s at 50,000 rows) runs at most once a minute */
+const LV28 = { seq: 0, hash: null, ok: true, why: null, at: null, fullTs: 0, full: null };
+function ledgerVerify28(full = false, now = Date.now()) {
+  const rows = L28.rows; if (!rows.length) return { ok: true, n: 0, head: L28.head, mode: 'empty' };
+  const first = rows[0], last = rows[rows.length - 1];
+  if (full && LV28.full && now - LV28.fullTs < 60000) return { ...LV28.full, mode: 'full (cached, at most once a minute)' };
+  let from = 0;
+  if (!full && LV28.ok && LV28.hash && LV28.seq >= first.seq && LV28.seq <= last.seq && rows[LV28.seq - first.seq].hash === LV28.hash) from = LV28.seq - first.seq;
+  if (!full && !LV28.ok) return { ok: false, at: LV28.at, why: LV28.why, mode: 'cached failure' };
+  const v = verifyLedger28(from ? rows.slice(from) : rows, from === 0 && first.seq === 1 ? L28.genesis : null);
+  Object.assign(LV28, { ok: v.ok, why: v.why || null, at: v.at || null, seq: v.ok ? last.seq : 0, hash: v.ok ? v.head : null });
+  const res = { ...v, n: rows.length, mode: full || from === 0 ? 'full' : 'incremental' };
+  if (full || from === 0) { LV28.full = res; LV28.fullTs = now; }
+  return res;
 }
 
 /* ---------------------------------------------------------------- record & replay tape */
@@ -3723,16 +3887,36 @@ function tapePre28({ now, kal, liveIdx, age, quality, strikeIssue }) {
     skew: { n: SKEW.samples.length, est: SKEW.estMs }, rest: !!RESTF.active, basisMu: basisMean25().mean,
     idx: { value: IDX.value, ts: IDX.ts, venuesUsed: IDX.venuesUsed.slice(), dispersionBps: IDX.dispersionBps, lastReason: IDX.lastReason },
     lock25: { ticker: LOCK25.ticker, hist: LOCK25.hist.map(h => ({ t: h.t, pUp: h.pUp })), lockedSide: LOCK25.lockedSide, lockedAtTau: LOCK25.lockedAtTau, revNoted: LOCK25.revNoted },
-    brti: { enabled: BRTI.enabled, last: BRTI.last, last5: BRTI.last5, win: BRTI.win } };
+    brti: { enabled: BRTI.enabled, last: BRTI.last, last5: BRTI.last5, win: BRTI.win },
+    fee: FEE28.isDefault ? null : { cfg: { ...FEE28.cfg } } };
 }
 function tapeSample28() {
   const last = IDX.ring.length ? IDX.ring[IDX.ring.length - 1] : null;
   if (!last || last[0] <= TAPE28.lastSampleTs) return;
   for (const p of IDX.ring) if (p[0] > TAPE28.lastSampleTs) { TAPE28.samples.push([p[0], p[1]]); if (TAPE28_FILE) tapeWrite28({ k: 's', t: p[0], v: p[1] }); }
   TAPE28.lastSampleTs = last[0];
-  while (TAPE28.samples.length > 4000) TAPE28.samples.shift();
+  /* keep the 960 s ring history of every decision record still held, so a pulled /tape replays */
+  const keepFrom = (TAPE28.rows.length ? TAPE28.rows[0].ts : last[0]) - 960000;
+  while (TAPE28.samples.length && (TAPE28.samples[0][0] < keepFrom || TAPE28.samples.length > 4 * TAPE28_MAX + 1000)) TAPE28.samples.shift();
 }
-function tapeWrite28(o) { try { require('fs').appendFileSync(TAPE28_FILE, JSON.stringify(o) + '\n'); } catch (e) { TAPE28.fileErr = String(e && e.message || e); } }
+/* the tape is diagnostic and large (~80 MB/day): it rotates at TAPE_FILE_MAX_MB (current + one .prev file) so it can
+   never fill the disk the ledger is on; a new file starts with the 960 s ring history its first records need */
+const TAPE28_FILE_MAX = envNum28('TAPE_FILE_MAX_MB', 256, 1, 100000) * 1048576;
+function tapeWrite28(o) {
+  try {
+    const fs = require('fs'), line = JSON.stringify(o) + '\n';
+    if (TAPE28.fileBytes == null) TAPE28.fileBytes = fs.existsSync(TAPE28_FILE) ? fs.statSync(TAPE28_FILE).size : 0;
+    if (!TAPE28.rotating && TAPE28.fileBytes + line.length > TAPE28_FILE_MAX) {
+      TAPE28.rotating = true;
+      try {
+        fs.renameSync(TAPE28_FILE, TAPE28_FILE + '.prev'); TAPE28.fileBytes = 0; TAPE28.rotations = (TAPE28.rotations || 0) + 1;
+        tapeWrite28({ k: 'rotate', ts: Date.now(), boot: BOOT28.id });
+        for (const p of IDX.ring) if (!(o.k === 's' && p[0] >= o.t)) tapeWrite28({ k: 's', t: p[0], v: p[1] });
+      } finally { TAPE28.rotating = false; }
+    }
+    fs.appendFileSync(TAPE28_FILE, line); TAPE28.fileBytes += Buffer.byteLength(line);
+  } catch (e) { TAPE28.fileErr = String(e && e.message || e); }
+}
 function tapeRecord28(pre, snap) {
   const s = snap.signal;
   const rec = { k: 'd', ...pre,
@@ -3761,7 +3945,7 @@ function bg28(snap, pre, now) {
     const book = bookFromKal(kal, now);
     const base = { state: s.state, side: s.side, pWin: s.pWin, pFlip: s.pFlip, pFlipCons: s.pFlipCons, trade: s.trade };
     const view = { geo: snap.geo, gates: s.gates || snap.gates, book, decision: base, panel: snap.settle };
-    const cfg = m25Cfg(DEFAULT_CONTRACTS);
+    const cfg = { ...m25Cfg(DEFAULT_CONTRACTS), minTradeAskCents: MIN_TRADE_ASK_CENTS };
     let imp = null; if (tau <= 90) { try { imp = impulseState(now); } catch (_) { imp = null; } }   // policy D acts only inside 90 s
     for (const p of SHADOW_POLICIES28) {
       const rec = w.recs[p.id];
@@ -3771,6 +3955,7 @@ function bg28(snap, pre, now) {
       const ev = shadowNote28(w.recs, p.id, d, { tau, now, bookAgeMs: book.ok ? book.ageMs : null });
       if (ev) for (const k of ev.events) ledgerAppend28(L28, 'call', { ticker: s.ticker, closeMs: s.closeMs, strike: s.strike, policy: p.id, event: k, rec: ev.rec[k] }, now);
     }
+    calib28(w, s, tau, now);
     if (snap.geo) latNote28(LAT28, 'decisionIndexInputAgeMs', snap.geo.inputAgeMs);
     if (book.ok && book.ageMs != null) latNote28(LAT28, 'decisionBookAgeMs', book.ageMs);
   }
@@ -3779,6 +3964,23 @@ function bg28(snap, pre, now) {
     ledgerAppend28(L28, 'digest', { n: TAPE28.sinceDigest.length, sha: sha28(TAPE28.sinceDigest.join('')) }, now);
     TAPE28.sinceDigest = []; TAPE28.lastDigestTs = now;
   }
+}
+/* G5 calibration evidence, committed to the ledger before the outcome (the tape is diagnostic and may be partial):
+   the displayed P(UP) at tau 60/30/10 s (first tick at or below, within 1 s) and at the first entry into each
+   0.2-5 % flip band inside the LOCKED horizon. A DATA UNRELIABLE state is not a forecast and is never recorded. */
+const CALIB28_TAUS = [60, 30, 10], CALIB28_BANDS = [[0.002, 0.005], [0.005, 0.01], [0.01, 0.02], [0.02, 0.05]];
+function calib28(w, s, tau, now) {
+  const c = w.calib || (w.calib = { taus: {}, bands: {} });
+  const ok = s.pWin != null && Number.isFinite(s.pWin) && (s.side === 'UP' || s.side === 'DOWN') && s.state !== 'DATA UNRELIABLE' && s.state !== 'AWAITING SETTLEMENT';
+  const pUp = ok ? Math.round((s.side === 'UP' ? s.pWin : 1 - s.pWin) * 1e6) / 1e6 : null;
+  for (const tt of CALIB28_TAUS) if (c.taus[tt] == null && tau <= tt) {
+    c.taus[tt] = ok && tau > tt - 1;
+    if (c.taus[tt]) ledgerAppend28(L28, 'calib', { ticker: s.ticker, closeMs: s.closeMs, kind: 'tau', target: tt, tau: r4(tau), pUp, state: s.state }, now);
+  }
+  if (!ok) return;
+  const flip = Math.min(pUp, 1 - pUp);
+  for (const [lo, hi] of CALIB28_BANDS) { const k = `${100 * lo}-${100 * hi}%`;
+    if (!c.bands[k] && flip >= lo && flip < hi) { c.bands[k] = 1; ledgerAppend28(L28, 'calib', { ticker: s.ticker, closeMs: s.closeMs, kind: 'band', band: k, tau: r4(tau), pUp, state: s.state }, now); } }
 }
 /* every 60 s whether or not a window is live: feed health goes on the record even when the engine is blind */
 function heartbeat28(now = Date.now()) {
@@ -3794,24 +3996,39 @@ function shadowFinalize28(ticker, result, official) {
   const scores = {}, records = {};
   for (const p of SHADOW_POLICIES28) { records[p.id] = w.recs[p.id] || null; scores[p.id] = shadowAccumulate28(SHADOW28.stats, p.id, w.recs[p.id] || null, winner); }
   SHADOW28.scored++; SHADOW28.lastScore = { ticker, winner, ts: Date.now() };
-  ledgerAppend28(L28, 'outcome', { ticker, closeMs: w.closeMs, strike: w.strike, result, official, winner, records, scores });
+  ledgerAppend28(L28, 'outcome', { ticker, closeMs: w.closeMs, strike: w.strike, result, official, winner, records, scores, ...(w.restored ? { restoredAfterRestart: true } : {}) });
   return scores;
 }
 function shadowExpire28(now = Date.now()) {
-  for (const [tk, w] of SHADOW28.windows) if (now - w.closeMs > 45 * 60000) { SHADOW28.windows.delete(tk); ledgerAppend28(L28, 'unresolved', { ticker: tk, closeMs: w.closeMs }); }
+  for (const [tk, w] of SHADOW28.windows) if (now - Math.max(w.closeMs, w.restoredAt || 0) > 45 * 60000) { SHADOW28.windows.delete(tk); ledgerAppend28(L28, 'unresolved', { ticker: tk, closeMs: w.closeMs, ...(w.restored ? { restoredAfterRestart: true } : {}) }); }
+}
+/* windows restored after a restart that closed before this process saw them roll over: the 2.7 settlement tracker
+   never learns of them, so ask Kalshi directly (every minute until settled or expired) */
+async function settleRestored28(now = Date.now()) {
+  for (const w of [...SHADOW28.windows.values()]) {
+    if (!w.restored || now < w.closeMs + 2500 || (typeof SETTLE !== 'undefined' && SETTLE.pending.has(w.ticker))) continue;
+    try {
+      const j = await fetchJson(`${KALSHI_BASE}/markets/${encodeURIComponent(w.ticker)}`, {}, 2500);
+      const m = j && (j.market || j); const res = m && String(m.result || '').toLowerCase(), ev = Number(m && m.expiration_value);
+      if ((res === 'yes' || res === 'no') && Number.isFinite(ev) && SHADOW28.windows.has(w.ticker)) shadowFinalize28(w.ticker, res, ev);
+    } catch (_) { /* next minute */ }
+  }
 }
 function v28Summary(now = Date.now()) {
   return { ok: true, version: SERVER_VERSION, build: BUILD_ID, core: CORE28_VERSION, prereg: PREREG28_ID, configHash: CONFIG28_HASH, boot: BOOT28.id,
-    ledger: { head: L28.head, seq: L28.seq, inMemory: L28.rows.length, dropped: L28.dropped, file: LEDGER28_FILE || null, fileErr: L28.fileErr, resumed: L28.resumed },
-    shadow: { openWindows: SHADOW28.windows.size, scoredWindows: SHADOW28.scored, lastScore: SHADOW28.lastScore },
+    ledger: { head: L28.head, seq: L28.seq, inMemory: L28.rows.length, dropped: L28.dropped, file: LEDGER28_FILE || null, fileErr: L28.fileErr, resumed: L28.resumed,
+      writeFailures: L28.writeFailures, pendingWrites: L28.pending.length, fileStopped: L28.fileStopped, lastRecovered: L28.lastRecovered || null },
+    shadow: { openWindows: SHADOW28.windows.size, scoredWindows: SHADOW28.scored, lastScore: SHADOW28.lastScore, restoredAfterRestart: SHADOW28.restored },
     fees: { ...FEE28.cfg, isDefault: FEE28.isDefault, verified: FEE28.verified, error: FEE28.error, fetchedAt: FEE28.fetchedAt },
-    tape: { records: TAPE28.rows.length, samples: TAPE28.samples.length, dropped: TAPE28.dropped, file: TAPE28_FILE || null, fileErr: TAPE28.fileErr },
+    tape: { records: TAPE28.rows.length, samples: TAPE28.samples.length, dropped: TAPE28.dropped, file: TAPE28_FILE || null, fileErr: TAPE28.fileErr, fileBytes: TAPE28.fileBytes ?? null, rotations: TAPE28.rotations || 0 },
+    clientLatency: { unauthenticated: true, rateLimitedPerSec: 4, droppedSamples: CLAT28.dropped },
     latency: latSummary28(LAT28) };
 }
 function start28() {
   if (process.env.PINRADAR_REPLAY || START28.done) return; START28.done = true;
   fee28Refresh(); const t = setInterval(fee28Refresh, 6 * 3600 * 1000); if (t.unref) t.unref();
-  const t2 = setInterval(() => { shadowExpire28(); heartbeat28(); }, 60000); if (t2.unref) t2.unref();
+  settleRestored28().catch(() => { });
+  const t2 = setInterval(() => { settleRestored28().catch(() => { }); shadowExpire28(); heartbeat28(); }, 60000); if (t2.unref) t2.unref();
 }
 const START28 = { done: false };
 
@@ -4061,8 +4278,7 @@ async function radar(payload) {
 
   const serverMs = Number(process.hrtime.bigint() - t0) / 1e6;
   latNote28(LAT28, 'radarComputeMs', serverMs);                                    // v2.8
-  if (Number.isFinite(Number(payload.clientRttMs))) latNote28(LAT28, 'clientRoundTripMs', Number(payload.clientRttMs));
-  if (Number.isFinite(Number(payload.clientDisplayDelayMs))) latNote28(LAT28, 'clientSignalAgeAtDisplayMs', Number(payload.clientDisplayDelayMs));
+  clientLat28(payload, Date.now());                                                  // unauthenticated: clamped + rate-limited
   const lw28 = lastWindowSummary(now);
   return {
     ok: true, version: SERVER_VERSION, build: BUILD_ID, ts: Date.now(), serverComputeMs: round(serverMs, 3),
@@ -4566,7 +4782,7 @@ function runSelfTest() {
     }
   }
 
-  /* --- v2.8 checks (core arithmetic, ledger, monitors, and regressions for defects D1-D3) --- */
+  /* --- v2.8 checks (core arithmetic, ledger, monitors, and regressions for defects D1-D6) --- */
   {
     let fb = 0;
     for (let p = 1; p <= 99; p += 7) for (const n of [1, 10, 100]) if (Math.abs(Math.ceil(7 * n * (p / 100) * (1 - p / 100) - 1e-9) / n - feeCentsPerContract28(p, n, feeCfg28())) > 1e-9) fb++;
@@ -4601,6 +4817,45 @@ function runSelfTest() {
       const st = brtiOfficialState27(nowB, nowB + 90000, 90);
       push('2.8 D2: official BRTI freshness uses the source timestamp', !st.ok && st.ageMs >= 59000, st.reasons);
     } finally { Object.assign(BRTI, bs); }
+    /* round 2: with a non-default fee schedule (here per-fill rounding) the decision's fee is computed on the walked fills */
+    const fcS = { ...FEE28.cfg }, fdS = FEE28.isDefault;
+    try {
+      FEE28.cfg = { ...FEE28.cfg, perFill: true }; fee28Recompute();
+      const bk = { ok: true, ageMs: 100, yesAsks: [[97, 3], [98, 7]], noAsks: [[3, 50]] };
+      const d = m25Decide({ tau: 40, pUp: 0.9995, pUpCons: 0.999, gates: { hard: [], soft: [] }, book: bk, cfg: m25Cfg(10), hist: [] });
+      const want = walkFeeCents28(walk28(bk.yesAsks, 10).fills, FEE28.cfg) / 10;
+      push('2.8 fee: per-fill rounding (non-default schedule) reaches the TRADE NOW decision', !FEE28.isDefault && Math.abs(d.trade.feeCents - Math.round(want * 1000) / 1000) < 1e-9 && d.trade.feeCents > kalshiFeeCents(d.trade.avgCents, 10) - 1e-9, [d.trade.feeCents, want]);
+    } finally { FEE28.cfg = fcS; FEE28.isDefault = fdS; fee28Recompute(); }
+    /* round 3: a ledger entry is a snapshot -- changing the caller's object afterwards (the fee refresh did) cannot break the chain */
+    const Ls = mkLedger28({ genesisSeed: 'selftest-snap' }); const ob28 = { a: 1, cfg: { m: 1 } }; ledgerAppend28(Ls, 'fees', ob28, 1); ob28.a = 2; ob28.cfg.m = 3; ledgerAppend28(Ls, 't', {}, 2);
+    push('2.8 ledger: entries are snapshots (a later change to the source object leaves the chain valid)', verifyLedger28(Ls.rows, Ls.genesis).ok && Ls.rows[0].body.a === 1 && Ls.rows[0].body.cfg.m === 1, verifyLedger28(Ls.rows, Ls.genesis));
+    const fm3 = mkFailMonitor28(0.005); for (let i = 0; i < 20; i++) failUpdate28(fm3, i < 4); for (let i = 0; i < 2000; i++) failUpdate28(fm3, false);
+    const st3 = failState28(fm3);
+    push('2.8 failure alarm is latched (Ville bounds sup E): an alarm that later decays below 20 stays an alarm', st3.alarm && !st3.alarmNow && st3.firstAlarmAtWindow != null && st3.supEValue >= 20, [st3.eValue, st3.supEValue, st3.firstAlarmAtWindow]);
+    /* D4: a price-only PROVEN bound never overrides an official-reference disagreement */
+    const bkP = { ok: true, ageMs: 100, yesAsks: [[99, 50]], noAsks: [[2, 50]] };
+    const dPg = m25Decide({ tau: 20, pUp: 0.99999, pUpCons: 0.9999, gates: { hard: [], soft: ['official BRTI disagrees'], official: ['official flip risk'] }, book: bkP, cfg: m25Cfg(10), hist: [], provenSide: 'UP' });
+    const dPo = m25Decide({ tau: 20, pUp: 0.99999, pUpCons: 0.9999, gates: { hard: [], soft: ['volatility estimate warming up'], official: [] }, book: bkP, cfg: m25Cfg(10), hist: [], provenSide: 'UP' });
+    push('2.8 D4: PROVEN LOCKED is withheld when the official reference disagrees (and only then)', dPg.state === 'HIGH CONFIDENCE' && !(dPg.trade && dPg.trade.action === 'TRADE NOW') && dPo.state === 'PROVEN LOCKED', [dPg.state, dPg.trade && dPg.trade.action, dPo.state]);
+    /* D5 + D6 (LOCK25 / BRTI restored afterwards) */
+    const l25b = { ticker: LOCK25.ticker, hist: LOCK25.hist.slice(), lockedSide: LOCK25.lockedSide, lockedAtTau: LOCK25.lockedAtTau, revNoted: LOCK25.revNoted };
+    const bs6 = { enabled: BRTI.enabled, last: BRTI.last, last5: BRTI.last5, win: BRTI.win };
+    try {
+      Object.assign(LOCK25, { ticker: 'SELFTEST-28R', hist: [], lockedSide: 'UP', lockedAtTau: 40, revNoted: false });
+      const rv = brtiAfterClassify27({ ts: Date.now(), ticker: 'SELFTEST-28R', tau: 12, strike: 80000, state: 'LOCKED', side: 'UP', pWin: 0.9995, pFlip: 0.0005, pFlipCons: 0.0007,
+        pWinLabel: '99.95%', pFlipLabel: '0.05%', guarantee: 'prediction, not a guarantee', reasons: [], trade: { action: 'TRADE NOW' } }, { reference: 'OFFICIAL', officialPUp: 0.8, criticalVsStrike: 1 }, 'SELFTEST-28R');
+      push('2.8 D5: an official REVERSAL WARNING shows the official numbers (20 % flip), not the proxy\'s', rv.state === 'REVERSAL WARNING' && Math.abs(rv.pFlip - 0.2) < 1e-9 && Math.abs(rv.pWin - 0.8) < 1e-9
+        && rv.guarantee == null && rv.display27.reversalProbability === fmtFlip(0.2), [rv.state, rv.pWin, rv.pFlip, rv.display27 && rv.display27.reversalProbability]);
+      const C6 = Math.ceil(Date.now() / 900000) * 900000, now6 = C6 + 1000;
+      Object.assign(BRTI, { enabled: true, last5: null, last: { value: 80000, sourceTs: now6 - 100 - (Number.isFinite(SKEW.estMs) ? SKEW.estMs : 0), localTs: now6 - 50, receivedAt: now6 - 50 },
+        win: { closeMs: C6, size: 58, value: 80000.004, localTs: now6 - 50 } });
+      const p58 = settlePanel27({ now: now6, closeMs: C6, strike: 80000, geo: null, tau: -1 });
+      BRTI.win = { closeMs: C6, size: 60, value: 80000.004, localTs: now6 - 50 };
+      const p60 = settlePanel27({ now: now6, closeMs: C6, strike: 80000, geo: null, tau: -1 });
+      const d58 = designation28({ tau: -1, panel: p58, strike: 80000 }), d60 = designation28({ tau: -1, panel: p60, strike: 80000 });
+      push('2.8 D6: after the close 58/60 official values are not final; 60/60 is', p58 && p58.reference === 'OFFICIAL' && !p58.decided && p58.remaining === 2 && d58.code !== 'MATHEMATICALLY_FINAL'
+        && p60 && p60.decided && d60.code === 'MATHEMATICALLY_FINAL', [p58 && p58.remaining, p58 && p58.decided, d58.code, d60.code]);
+    } finally { Object.assign(LOCK25, l25b); Object.assign(BRTI, bs6); }
     /* D3: zero-size levels are not offers */
     const obS = KAL.ob, obT = KAL.obTs;
     try {
@@ -4680,14 +4935,14 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && u.pathname === '/v28') { ensureStarted(); return send(res, 200, v28Summary(Date.now())); }
     /* hash-chained ledger: predictions committed before outcomes; ?since=<seq>&n=&format=ndjson */
     if (req.method === 'GET' && u.pathname === '/ledger') {
-      const since = Number(u.searchParams.get('since') || 0), n = clamp(Number(u.searchParams.get('n') || 5000), 1, 100000);
+      const since = Number(u.searchParams.get('since') || 0), n = clamp(Number(u.searchParams.get('n') || 5000), 1, 5000);   // pages of <= 5,000 (event loop)
       const rows = L28.rows.filter(e => e.seq > since).slice(0, n);
       if (u.searchParams.get('format') === 'ndjson') { cors(res); res.setHeader('Content-Type', 'application/x-ndjson'); return res.end(rows.map(r => JSON.stringify(r)).join('\n') + (rows.length ? '\n' : '')); }
       return send(res, 200, { ok: true, version: SERVER_VERSION, genesis: L28.genesis, head: L28.head, seq: L28.seq, inMemoryFrom: L28.rows.length ? L28.rows[0].seq : null, n: rows.length, rows });
     }
     if (req.method === 'GET' && u.pathname === '/ledger/verify') {
       const first = L28.rows[0];
-      const v = verifyLedger28(L28.rows, first && first.seq === 1 ? L28.genesis : null);
+      const v = ledgerVerify28(u.searchParams.get('full') === '1');
       return send(res, 200, { ok: v.ok, version: SERVER_VERSION, verify: v, head: L28.head, seq: L28.seq, inMemoryFrom: first ? first.seq : null,
         genesis: L28.genesis, file: LEDGER28_FILE || null, fileErr: L28.fileErr, resumed: L28.resumed,
         note: 'publish or screenshot `head` now and then: any later rewrite of an earlier entry changes every subsequent hash' });
@@ -4835,5 +5090,6 @@ module.exports = {
   settlePanel27, brtiGate27, brtiAfterClassify27, predLog27, brtiStatus27, BRTI_STALE_MS, BRTI_GATE_MAX_FLIP, BRTI_MAX_DIVERGENCE_USD, BRTI_COUNT_TOL,
   // v2.8
   ...CORE28, FEE28, fee28Refresh, fee28Recompute, L28, SHADOW28, LAT28, TAPE28, CONFIG28, CONFIG28_HASH, PREREG28_ID, enrich28,
-  tapePre28, tapeRecord28, tapeSample28, bg28, shadowFinalize28, shadowExpire28, heartbeat28, v28Summary, lastWindowDesignation28, settledFor28
+  tapePre28, tapeRecord28, tapeSample28, bg28, shadowFinalize28, shadowExpire28, settleRestored28, heartbeat28, v28Summary, lastWindowDesignation28, settledFor28, calib28,
+  clientLat28, ledgerVerify28, tapeWrite28, TAPE28_FILE_MAX
 };

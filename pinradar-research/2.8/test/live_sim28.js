@@ -127,6 +127,10 @@ process.env.LEDGER_FILE = ''; process.env.TAPE_FILE = '';          // the replay
 const S2 = require(SRV);
 const rp = replayTape(S2, tapeLines);
 ok('LIVE == REPLAY: every recorded decision reproduced exactly by the production function', rp.records > 3000 && rp.mismatches === 0, { records: rp.records, mismatches: rp.mismatches, ex: rp.examples.slice(0, 3) });
+/* the in-memory rolling /tape (the no-disk path) replays too: it keeps the 960 s ring history of every record it holds */
+const memLines = S.TAPE28.samples.map(p => ({ k: 's', t: p[0], v: p[1] })).concat(S.TAPE28.rows);
+const rpm = replayTape(S2, memLines);
+ok('in-memory /tape buffer (rolling, no disk) replays with LIVE == REPLAY', rpm.records >= 2500 && rpm.mismatches === 0, { records: rpm.records, mismatches: rpm.mismatches, ex: rpm.examples.slice(0, 2) });
 /* tape digests in the ledger match the tape */
 const crypto = require('crypto');
 const recHashes = tapeLines.filter(o => o.k === 'd').map(o => S.sha28(S.canon28(o)));
