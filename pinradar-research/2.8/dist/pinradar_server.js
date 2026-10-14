@@ -3720,7 +3720,8 @@ function tapePre28({ now, kal, liveIdx, age, quality, strikeIssue }) {
     ageMs: Number.isFinite(age) ? age : null, quality: { grade: quality.grade, problems: quality.problems.slice(), warnings: quality.warnings.slice() },
     strikeIssue: strikeIssue || null, prevSettled: prev ? { ticker: prev.ticker, closeMs: prev.closeMs, official: prev.official } : null,
     ob: KAL.ob && kal && KAL.ob.ticker === kal.ticker ? { ticker: KAL.ob.ticker, yes: KAL.ob.yes.slice(0, 20), no: KAL.ob.no.slice(0, 20) } : null, obTs: KAL.obTs || 0,
-    skew: { n: SKEW.samples.length, est: SKEW.estMs }, rest: !!RESTF.active,
+    skew: { n: SKEW.samples.length, est: SKEW.estMs }, rest: !!RESTF.active, basisMu: basisMean25().mean,
+    idx: { value: IDX.value, ts: IDX.ts, venuesUsed: IDX.venuesUsed.slice(), dispersionBps: IDX.dispersionBps, lastReason: IDX.lastReason },
     lock25: { ticker: LOCK25.ticker, hist: LOCK25.hist.map(h => ({ t: h.t, pUp: h.pUp })), lockedSide: LOCK25.lockedSide, lockedAtTau: LOCK25.lockedAtTau, revNoted: LOCK25.revNoted },
     brti: { enabled: BRTI.enabled, last: BRTI.last, last5: BRTI.last5, win: BRTI.win } };
 }
@@ -3734,7 +3735,7 @@ function tapeSample28() {
 function tapeWrite28(o) { try { require('fs').appendFileSync(TAPE28_FILE, JSON.stringify(o) + '\n'); } catch (e) { TAPE28.fileErr = String(e && e.message || e); } }
 function tapeRecord28(pre, snap) {
   const s = snap.signal;
-  const rec = { k: 'd', ...pre, basisMu: snap.geo ? snap.geo.basisMeanUsd : null,
+  const rec = { k: 'd', ...pre,
     out: s ? { state: s.state, side: s.side, pWin: s.pWin, pFlip: s.pFlip, pFlipCons: s.pFlipCons, action: s.trade ? s.trade.action : null, ev: s.trade ? s.trade.evConsCents : null } : null };
   TAPE28.rows.push(rec); if (TAPE28.rows.length > TAPE28_MAX) { TAPE28.rows.shift(); TAPE28.dropped++; }
   if (TAPE28_FILE) tapeWrite28(rec);
