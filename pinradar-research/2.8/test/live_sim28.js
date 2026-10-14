@@ -123,6 +123,7 @@ ok('shadow: F (market-pooled) trades no more than A', sm['F-market-pooled-value'
 /* tape replay through a FRESH server instance */
 const tapeLines = fs.readFileSync(process.env.TAPE_FILE, 'utf8').trim().split('\n').map(l => JSON.parse(l));
 delete require.cache[SRV];
+process.env.LEDGER_FILE = ''; process.env.TAPE_FILE = '';          // the replay instance must not write to the live run's files
 const S2 = require(SRV);
 const rp = replayTape(S2, tapeLines);
 ok('LIVE == REPLAY: every recorded decision reproduced exactly by the production function', rp.records > 3000 && rp.mismatches === 0, { records: rp.records, mismatches: rp.mismatches, ex: rp.examples.slice(0, 3) });
@@ -149,6 +150,7 @@ const get = (port, p) => new Promise((res, rej) => http.get({ host: '127.0.0.1',
     shadow: Object.fromEntries(Object.entries(sm).map(([k, s]) => [k, { windows: s.windows, locked: s.locked, lost: s.lost, leadMeanS: s.leadMeanS, trades: s.trades, tradeLosses: s.tradeLosses, pnl: s.pnlCentsPerContractMean }])),
     latencyMs: { bgSnapshot: lat.bgSnapshotMs, decisionIndexInputAge: lat.decisionIndexInputAgeMs, decisionBookAge: lat.decisionBookAgeMs } }));
   console.log(`live_sim28: ${fail ? fail + ' FAILED' : 'all checks passed'}` + (fail ? '\n  FAIL ' + fails.join('\n  FAIL ') : ''));
-  fs.rmSync(TMP, { recursive: true, force: true });
+  fs.writeFileSync(path.join(TMP, 'latency.json'), JSON.stringify({ latency: lat }));
+  if (process.env.KEEP_SIM_DIR) console.log('sim files kept in ' + TMP); else fs.rmSync(TMP, { recursive: true, force: true });
   process.exit(fail ? 1 : 0);
 })();
