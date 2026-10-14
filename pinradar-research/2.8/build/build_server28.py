@@ -54,6 +54,10 @@ s = rep(s, "  const age = now - last.localTs;\n",
         "  const srcAge = Number.isFinite(last.sourceTs) ? (now - (Number.isFinite(SKEW.estMs) ? SKEW.estMs : 0)) - last.sourceTs : NaN;\n"
         "  const age = Number.isFinite(srcAge) ? Math.max(now - last.localTs, srcAge) : now - last.localTs;\n")
 
+s = rep(s, "  const head = st === 'LOCKED' ? `LOCKED — PREDICTED ${side}` : st === 'PROVEN LOCKED' ? `PROVEN — ${side}`",
+        "  const head = st === 'LOCKED' ? `PREDICTED LOCKED — ${side}` : st === 'PROVEN LOCKED' ? `MATHEMATICALLY FINAL (price-only) — ${side}`")
+s = rep(s, "push('2.7 display: LOCKED — PREDICTED UP / win / reversal / seconds / critical remaining average', dsp && dsp.headline === 'LOCKED — PREDICTED UP'",
+        "push('2.7/2.8 display: PREDICTED LOCKED — UP / win / reversal / seconds / critical remaining average', dsp && dsp.headline === 'PREDICTED LOCKED — UP'")
 CORE = open(os.path.join(R28, 'src', 'core28.js'), encoding='utf8').read()
 GLUE = open(os.path.join(R28, 'src', 'server28.js'), encoding='utf8').read()
 s = rep(s, "/* One snapshot shared by /radar and the background classifier. */",

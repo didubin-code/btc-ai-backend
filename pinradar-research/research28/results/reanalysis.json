@@ -1887,5 +1887,511 @@
    "trades_for_80pct_power": 8,
    "days_at_7_per_day": 1.1
   }
+ },
+ "pareto": {
+  "holdout": [
+   {
+    "variant": "As@0.2%",
+    "loss_pct": 0.047,
+    "loss_ub95_pct": 0.224,
+    "coverage_pct": 99.86,
+    "lead_mean_s": 71.6,
+    "cons_trades": 56,
+    "cons_total_c_per_contract": 54.7,
+    "cons_pnl_ci95_c": [
+     0.901,
+     1.053
+    ],
+    "dominated_by": [
+     "As@0.3%",
+     "Asr@0.3%"
+    ],
+    "on_frontier": false
+   },
+   {
+    "variant": "As@0.3%",
+    "loss_pct": 0.047,
+    "loss_ub95_pct": 0.224,
+    "coverage_pct": 99.91,
+    "lead_mean_s": 79.9,
+    "cons_trades": 61,
+    "cons_total_c_per_contract": 73.9,
+    "cons_pnl_ci95_c": [
+     1.08,
+     1.343
+    ],
+    "dominated_by": [],
+    "on_frontier": true
+   },
+   {
+    "variant": "Asr@0.3%",
+    "loss_pct": 0.047,
+    "loss_ub95_pct": 0.224,
+    "coverage_pct": 99.91,
+    "lead_mean_s": 79.4,
+    "cons_trades": 60,
+    "cons_total_c_per_contract": 72.1,
+    "cons_pnl_ci95_c": [
+     1.069,
+     1.334
+    ],
+    "dominated_by": [
+     "As@0.3%"
+    ],
+    "on_frontier": false
+   },
+   {
+    "variant": "A@0.2%",
+    "loss_pct": 0.053,
+    "loss_ub95_pct": 0.253,
+    "coverage_pct": 88.21,
+    "lead_mean_s": 78.7,
+    "cons_trades": 25,
+    "cons_total_c_per_contract": 38.0,
+    "cons_pnl_ci95_c": [
+     0.711,
+     2.329
+    ],
+    "dominated_by": [
+     "A@0.3%",
+     "As@0.3%",
+     "Asr@0.3%"
+    ],
+    "on_frontier": false
+   },
+   {
+    "variant": "A@0.3%",
+    "loss_pct": 0.053,
+    "loss_ub95_pct": 0.253,
+    "coverage_pct": 88.3,
+    "lead_mean_s": 87.8,
+    "cons_trades": 27,
+    "cons_total_c_per_contract": 44.6,
+    "cons_pnl_ci95_c": [
+     0.893,
+     2.41
+    ],
+    "dominated_by": [],
+    "on_frontier": true
+   },
+   {
+    "variant": "As",
+    "loss_pct": 0.094,
+    "loss_ub95_pct": 0.297,
+    "coverage_pct": 99.91,
+    "lead_mean_s": 91.0,
+    "cons_trades": 68,
+    "cons_total_c_per_contract": 95.8,
+    "cons_pnl_ci95_c": [
+     1.26,
+     1.558
+    ],
+    "dominated_by": [],
+    "on_frontier": true
+   },
+   {
+    "variant": "Asr",
+    "loss_pct": 0.094,
+    "loss_ub95_pct": 0.297,
+    "coverage_pct": 99.91,
+    "lead_mean_s": 90.5,
+    "cons_trades": 67,
+    "cons_total_c_per_contract": 94.9,
+    "cons_pnl_ci95_c": [
+     1.266,
+     1.567
+    ],
+    "dominated_by": [
+     "As"
+    ],
+    "on_frontier": false
+   },
+   {
+    "variant": "AnAs",
+    "loss_pct": 0.106,
+    "loss_ub95_pct": 0.335,
+    "coverage_pct": 88.63,
+    "lead_mean_s": 98.1,
+    "cons_trades": 29,
+    "cons_total_c_per_contract": 53.9,
+    "cons_pnl_ci95_c": [
+     1.138,
+     2.579
+    ],
+    "dominated_by": [],
+    "on_frontier": true
+   },
+   {
+    "variant": "Cs",
+    "loss_pct": 0.142,
+    "loss_ub95_pct": 0.366,
+    "coverage_pct": 99.95,
+    "lead_mean_s": 94.5,
+    "cons_trades": 86,
+    "cons_total_c_per_contract": 122.2,
+    "cons_pnl_ci95_c": [
+     1.306,
+     1.535
+    ],
+    "dominated_by": [],
+    "on_frontier": true
+   },
+   {
+    "variant": "C",
+    "loss_pct": 0.159,
+    "loss_ub95_pct": 0.411,
+    "coverage_pct": 88.82,
+    "lead_mean_s": 103.7,
+    "cons_trades": 46,
+    "cons_total_c_per_contract": 87.8,
+    "cons_pnl_ci95_c": [
+     1.431,
+     2.386
+    ],
+    "dominated_by": [],
+    "on_frontier": true
+   },
+   {
+    "variant": "A",
+    "loss_pct": 0.16,
+    "loss_ub95_pct": 0.412,
+    "coverage_pct": 88.63,
+    "lead_mean_s": 100.1,
+    "cons_trades": 32,
+    "cons_total_c_per_contract": 65.6,
+    "cons_pnl_ci95_c": [
+     1.375,
+     2.725
+    ],
+    "dominated_by": [
+     "C"
+    ],
+    "on_frontier": false
+   },
+   {
+    "variant": "Aq",
+    "loss_pct": 0.16,
+    "loss_ub95_pct": 0.412,
+    "coverage_pct": 88.63,
+    "lead_mean_s": 96.1,
+    "cons_trades": 27,
+    "cons_total_c_per_contract": 58.4,
+    "cons_pnl_ci95_c": [
+     1.371,
+     2.955
+    ],
+    "dominated_by": [
+     "A",
+     "C",
+     "AgS"
+    ],
+    "on_frontier": false
+   },
+   {
+    "variant": "AgS",
+    "loss_pct": 0.16,
+    "loss_ub95_pct": 0.412,
+    "coverage_pct": 88.63,
+    "lead_mean_s": 100.1,
+    "cons_trades": 32,
+    "cons_total_c_per_contract": 65.6,
+    "cons_pnl_ci95_c": [
+     1.375,
+     2.725
+    ],
+    "dominated_by": [
+     "C"
+    ],
+    "on_frontier": false
+   },
+   {
+    "variant": "A@1.0%",
+    "loss_pct": 0.265,
+    "loss_ub95_pct": 0.557,
+    "coverage_pct": 88.92,
+    "lead_mean_s": 120.2,
+    "cons_trades": 40,
+    "cons_total_c_per_contract": 98.7,
+    "cons_pnl_ci95_c": [
+     1.865,
+     3.07
+    ],
+    "dominated_by": [],
+    "on_frontier": true
+   },
+   {
+    "variant": "B",
+    "loss_pct": 2.593,
+    "loss_ub95_pct": 3.271,
+    "coverage_pct": 90.94,
+    "lead_mean_s": 201.2,
+    "cons_trades": 945,
+    "cons_total_c_per_contract": -1218.1,
+    "cons_pnl_ci95_c": [
+     -2.414,
+     -0.165
+    ],
+    "dominated_by": [],
+    "on_frontier": true
+   }
+  ],
+  "dev_folds1_6": [
+   {
+    "variant": "A@0.2%",
+    "loss_pct": 0.144,
+    "loss_ub95_pct": 0.303,
+    "coverage_pct": 92.19,
+    "lead_mean_s": 77.9,
+    "cons_trades": 170,
+    "cons_total_c_per_contract": 101.3,
+    "cons_pnl_ci95_c": [
+     -0.564,
+     1.757
+    ],
+    "dominated_by": [],
+    "on_frontier": true
+   },
+   {
+    "variant": "As@0.2%",
+    "loss_pct": 0.186,
+    "loss_ub95_pct": 0.349,
+    "coverage_pct": 99.87,
+    "lead_mean_s": 72.8,
+    "cons_trades": 219,
+    "cons_total_c_per_contract": 141.7,
+    "cons_pnl_ci95_c": [
+     -0.254,
+     1.547
+    ],
+    "dominated_by": [],
+    "on_frontier": true
+   },
+   {
+    "variant": "Aq",
+    "loss_pct": 0.23,
+    "loss_ub95_pct": 0.414,
+    "coverage_pct": 92.43,
+    "lead_mean_s": 92.6,
+    "cons_trades": 177,
+    "cons_total_c_per_contract": 175.9,
+    "cons_pnl_ci95_c": [
+     -0.112,
+     2.1
+    ],
+    "dominated_by": [],
+    "on_frontier": true
+   },
+   {
+    "variant": "A@0.3%",
+    "loss_pct": 0.23,
+    "loss_ub95_pct": 0.415,
+    "coverage_pct": 92.35,
+    "lead_mean_s": 86.8,
+    "cons_trades": 184,
+    "cons_total_c_per_contract": 42.3,
+    "cons_pnl_ci95_c": [
+     -1.274,
+     1.735
+    ],
+    "dominated_by": [
+     "Aq"
+    ],
+    "on_frontier": false
+   },
+   {
+    "variant": "As@0.3%",
+    "loss_pct": 0.266,
+    "loss_ub95_pct": 0.451,
+    "coverage_pct": 99.87,
+    "lead_mean_s": 80.8,
+    "cons_trades": 230,
+    "cons_total_c_per_contract": 98.4,
+    "cons_pnl_ci95_c": [
+     -0.777,
+     1.633
+    ],
+    "dominated_by": [
+     "Aq"
+    ],
+    "on_frontier": false
+   },
+   {
+    "variant": "Asr@0.3%",
+    "loss_pct": 0.292,
+    "loss_ub95_pct": 0.484,
+    "coverage_pct": 99.89,
+    "lead_mean_s": 82.7,
+    "cons_trades": 275,
+    "cons_total_c_per_contract": 154.6,
+    "cons_pnl_ci95_c": [
+     -0.446,
+     1.57
+    ],
+    "dominated_by": [
+     "Aq"
+    ],
+    "on_frontier": false
+   },
+   {
+    "variant": "AgS",
+    "loss_pct": 0.345,
+    "loss_ub95_pct": 0.558,
+    "coverage_pct": 92.51,
+    "lead_mean_s": 100.5,
+    "cons_trades": 261,
+    "cons_total_c_per_contract": 223.2,
+    "cons_pnl_ci95_c": [
+     -0.21,
+     1.92
+    ],
+    "dominated_by": [],
+    "on_frontier": true
+   },
+   {
+    "variant": "AnAs",
+    "loss_pct": 0.345,
+    "loss_ub95_pct": 0.558,
+    "coverage_pct": 92.51,
+    "lead_mean_s": 98.8,
+    "cons_trades": 240,
+    "cons_total_c_per_contract": 171.1,
+    "cons_pnl_ci95_c": [
+     -0.446,
+     1.872
+    ],
+    "dominated_by": [
+     "AgS"
+    ],
+    "on_frontier": false
+   },
+   {
+    "variant": "A",
+    "loss_pct": 0.373,
+    "loss_ub95_pct": 0.593,
+    "coverage_pct": 92.54,
+    "lead_mean_s": 100.5,
+    "cons_trades": 261,
+    "cons_total_c_per_contract": 223.2,
+    "cons_pnl_ci95_c": [
+     -0.21,
+     1.92
+    ],
+    "dominated_by": [
+     "AgS"
+    ],
+    "on_frontier": false
+   },
+   {
+    "variant": "C",
+    "loss_pct": 0.43,
+    "loss_ub95_pct": 0.662,
+    "coverage_pct": 92.59,
+    "lead_mean_s": 95.8,
+    "cons_trades": 233,
+    "cons_total_c_per_contract": 86.2,
+    "cons_pnl_ci95_c": [
+     -1.083,
+     1.823
+    ],
+    "dominated_by": [
+     "A",
+     "AgS",
+     "AnAs"
+    ],
+    "on_frontier": false
+   },
+   {
+    "variant": "Cs",
+    "loss_pct": 0.505,
+    "loss_ub95_pct": 0.74,
+    "coverage_pct": 99.95,
+    "lead_mean_s": 89.2,
+    "cons_trades": 292,
+    "cons_total_c_per_contract": -23.4,
+    "cons_pnl_ci95_c": [
+     -1.569,
+     1.41
+    ],
+    "dominated_by": [
+     "A",
+     "C",
+     "Aq",
+     "Asr",
+     "AgS",
+     "AnAs"
+    ],
+    "on_frontier": false
+   },
+   {
+    "variant": "Asr",
+    "loss_pct": 0.505,
+    "loss_ub95_pct": 0.74,
+    "coverage_pct": 99.95,
+    "lead_mean_s": 96.0,
+    "cons_trades": 349,
+    "cons_total_c_per_contract": 44.7,
+    "cons_pnl_ci95_c": [
+     -1.121,
+     1.377
+    ],
+    "dominated_by": [
+     "A",
+     "AgS",
+     "AnAs"
+    ],
+    "on_frontier": false
+   },
+   {
+    "variant": "As",
+    "loss_pct": 0.558,
+    "loss_ub95_pct": 0.803,
+    "coverage_pct": 99.95,
+    "lead_mean_s": 93.7,
+    "cons_trades": 307,
+    "cons_total_c_per_contract": 85.7,
+    "cons_pnl_ci95_c": [
+     -0.994,
+     1.552
+    ],
+    "dominated_by": [
+     "A",
+     "C",
+     "AgS",
+     "AnAs"
+    ],
+    "on_frontier": false
+   },
+   {
+    "variant": "A@1.0%",
+    "loss_pct": 1.139,
+    "loss_ub95_pct": 1.48,
+    "coverage_pct": 93.28,
+    "lead_mean_s": 122.0,
+    "cons_trades": 336,
+    "cons_total_c_per_contract": 152.9,
+    "cons_pnl_ci95_c": [
+     -0.961,
+     1.872
+    ],
+    "dominated_by": [],
+    "on_frontier": true
+   },
+   {
+    "variant": "B",
+    "loss_pct": 4.491,
+    "loss_ub95_pct": 5.104,
+    "coverage_pct": 94.63,
+    "lead_mean_s": 186.9,
+    "cons_trades": 2234,
+    "cons_total_c_per_contract": -4490.3,
+    "cons_pnl_ci95_c": [
+     -2.857,
+     -1.164
+    ],
+    "dominated_by": [],
+    "on_frontier": true
+   }
+  ],
+  "note": "objectives: first-LOCKED loss rate (lower), mean lead time (higher), total cautious-fill P&L (higher); official-feed variants (As*, Cs, AnAs) are EMULATED and not deployable without the entitlement"
  }
 }

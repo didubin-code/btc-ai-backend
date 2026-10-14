@@ -1,0 +1,831 @@
+{
+ "server": "2.8-2026-10-14",
+ "scenarios": {
+  "S1-S7 jumps": {
+   "checks": [
+    {
+     "name": "a jump that flips the settlement never leaves the old side LOCKED one second later",
+     "pass": true,
+     "got": {
+      "lockedAtShock": 2051,
+      "flips": 204,
+      "flipStillLocked1s": 0,
+      "flipTradeNowAfter": 0,
+      "flipRevWithin1s": 200,
+      "flipRevWithin3s": 200,
+      "noFlipStillLocked1s": 1256,
+      "noFlipRev": 91
+     }
+    },
+    {
+     "name": "no TRADE NOW on the old side after a settlement-flipping jump",
+     "pass": true,
+     "got": {
+      "lockedAtShock": 2051,
+      "flips": 204,
+      "flipStillLocked1s": 0,
+      "flipTradeNowAfter": 0,
+      "flipRevWithin1s": 200,
+      "flipRevWithin3s": 200,
+      "noFlipStillLocked1s": 1256,
+      "noFlipRev": 91
+     }
+    },
+    {
+     "name": "flipping jumps were actually exercised",
+     "pass": true,
+     "got": {
+      "lockedAtShock": 2051,
+      "flips": 204,
+      "flipStillLocked1s": 0,
+      "flipTradeNowAfter": 0,
+      "flipRevWithin1s": 200,
+      "flipRevWithin3s": 200,
+      "noFlipStillLocked1s": 1256,
+      "noFlipRev": 91
+     }
+    }
+   ],
+   "table": {
+    "T-60 $5": {
+     "lockedAtShock": 33,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 29,
+     "noFlipRev": 0
+    },
+    "T-60 $10": {
+     "lockedAtShock": 33,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 25,
+     "noFlipRev": 0
+    },
+    "T-60 $25": {
+     "lockedAtShock": 33,
+     "flips": 2,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 2,
+     "flipRevWithin3s": 2,
+     "noFlipStillLocked1s": 21,
+     "noFlipRev": 0
+    },
+    "T-60 $50": {
+     "lockedAtShock": 33,
+     "flips": 7,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 7,
+     "flipRevWithin3s": 7,
+     "noFlipStillLocked1s": 14,
+     "noFlipRev": 4
+    },
+    "T-60 $70": {
+     "lockedAtShock": 33,
+     "flips": 11,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 11,
+     "flipRevWithin3s": 11,
+     "noFlipStillLocked1s": 5,
+     "noFlipRev": 7
+    },
+    "T-60 $100": {
+     "lockedAtShock": 33,
+     "flips": 16,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 16,
+     "flipRevWithin3s": 16,
+     "noFlipStillLocked1s": 3,
+     "noFlipRev": 11
+    },
+    "T-60 $150": {
+     "lockedAtShock": 33,
+     "flips": 25,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 25,
+     "flipRevWithin3s": 25,
+     "noFlipStillLocked1s": 0,
+     "noFlipRev": 7
+    },
+    "T-30 $5": {
+     "lockedAtShock": 50,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 47,
+     "noFlipRev": 0
+    },
+    "T-30 $10": {
+     "lockedAtShock": 50,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 46,
+     "noFlipRev": 0
+    },
+    "T-30 $25": {
+     "lockedAtShock": 50,
+     "flips": 3,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 3,
+     "flipRevWithin3s": 3,
+     "noFlipStillLocked1s": 39,
+     "noFlipRev": 1
+    },
+    "T-30 $50": {
+     "lockedAtShock": 50,
+     "flips": 6,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 5,
+     "flipRevWithin3s": 5,
+     "noFlipStillLocked1s": 28,
+     "noFlipRev": 9
+    },
+    "T-30 $70": {
+     "lockedAtShock": 50,
+     "flips": 14,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 14,
+     "flipRevWithin3s": 14,
+     "noFlipStillLocked1s": 23,
+     "noFlipRev": 8
+    },
+    "T-30 $100": {
+     "lockedAtShock": 50,
+     "flips": 24,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 24,
+     "flipRevWithin3s": 24,
+     "noFlipStillLocked1s": 20,
+     "noFlipRev": 3
+    },
+    "T-30 $150": {
+     "lockedAtShock": 50,
+     "flips": 28,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 28,
+     "flipRevWithin3s": 28,
+     "noFlipStillLocked1s": 11,
+     "noFlipRev": 6
+    },
+    "T-20 $5": {
+     "lockedAtShock": 51,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 51,
+     "noFlipRev": 0
+    },
+    "T-20 $10": {
+     "lockedAtShock": 51,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 50,
+     "noFlipRev": 0
+    },
+    "T-20 $25": {
+     "lockedAtShock": 51,
+     "flips": 1,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 47,
+     "noFlipRev": 1
+    },
+    "T-20 $50": {
+     "lockedAtShock": 51,
+     "flips": 4,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 4,
+     "flipRevWithin3s": 4,
+     "noFlipStillLocked1s": 39,
+     "noFlipRev": 0
+    },
+    "T-20 $70": {
+     "lockedAtShock": 51,
+     "flips": 6,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 5,
+     "flipRevWithin3s": 5,
+     "noFlipStillLocked1s": 32,
+     "noFlipRev": 7
+    },
+    "T-20 $100": {
+     "lockedAtShock": 51,
+     "flips": 13,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 13,
+     "flipRevWithin3s": 13,
+     "noFlipStillLocked1s": 25,
+     "noFlipRev": 7
+    },
+    "T-20 $150": {
+     "lockedAtShock": 51,
+     "flips": 25,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 25,
+     "flipRevWithin3s": 25,
+     "noFlipStillLocked1s": 20,
+     "noFlipRev": 3
+    },
+    "T-10 $5": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 52,
+     "noFlipRev": 0
+    },
+    "T-10 $10": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 52,
+     "noFlipRev": 0
+    },
+    "T-10 $25": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 50,
+     "noFlipRev": 1
+    },
+    "T-10 $50": {
+     "lockedAtShock": 53,
+     "flips": 1,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 47,
+     "noFlipRev": 3
+    },
+    "T-10 $70": {
+     "lockedAtShock": 53,
+     "flips": 3,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 3,
+     "flipRevWithin3s": 3,
+     "noFlipStillLocked1s": 47,
+     "noFlipRev": 3
+    },
+    "T-10 $100": {
+     "lockedAtShock": 53,
+     "flips": 6,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 6,
+     "flipRevWithin3s": 6,
+     "noFlipStillLocked1s": 46,
+     "noFlipRev": 0
+    },
+    "T-10 $150": {
+     "lockedAtShock": 53,
+     "flips": 9,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 9,
+     "flipRevWithin3s": 9,
+     "noFlipStillLocked1s": 31,
+     "noFlipRev": 6
+    },
+    "T-3 $5": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 53,
+     "noFlipRev": 0
+    },
+    "T-3 $10": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 53,
+     "noFlipRev": 0
+    },
+    "T-3 $25": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 52,
+     "noFlipRev": 0
+    },
+    "T-3 $50": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 52,
+     "noFlipRev": 0
+    },
+    "T-3 $70": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 50,
+     "noFlipRev": 0
+    },
+    "T-3 $100": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 50,
+     "noFlipRev": 1
+    },
+    "T-3 $150": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 46,
+     "noFlipRev": 3
+    },
+    "T-1 $5": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 0,
+     "noFlipRev": 0
+    },
+    "T-1 $10": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 0,
+     "noFlipRev": 0
+    },
+    "T-1 $25": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 0,
+     "noFlipRev": 0
+    },
+    "T-1 $50": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 0,
+     "noFlipRev": 0
+    },
+    "T-1 $70": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 0,
+     "noFlipRev": 0
+    },
+    "T-1 $100": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 0,
+     "noFlipRev": 0
+    },
+    "T-1 $150": {
+     "lockedAtShock": 53,
+     "flips": 0,
+     "flipStillLocked1s": 0,
+     "flipTradeNowAfter": 0,
+     "flipRevWithin1s": 0,
+     "flipRevWithin3s": 0,
+     "noFlipStillLocked1s": 0,
+     "noFlipRev": 0
+    }
+   },
+   "totals": {
+    "lockedAtShock": 2051,
+    "flips": 204,
+    "flipStillLocked1s": 0,
+    "flipTradeNowAfter": 0,
+    "flipRevWithin1s": 200,
+    "flipRevWithin3s": 200,
+    "noFlipStillLocked1s": 1256,
+    "noFlipRev": 91
+   }
+  },
+  "S6 final second": {
+   "checks": [],
+   "reading": "T-1 jumps: the engine has no later second to react in; recognition is irrelevant because the final print is already being recorded - this is irreducible risk, priced only by the tail tables"
+  },
+  "S8 vol regime change": {
+   "checks": [
+    {
+     "name": "a 4x volatility burst over the last 120 s raises the live sigma estimate (120 s + 900 s RMS)",
+     "pass": true,
+     "got": {
+      "windows": 58,
+      "medianSigmaBefore": 0.2895,
+      "medianSigmaAfter": 0.7429,
+      "lockedAtT60": {
+       "base": 33,
+       "after4xVol": 30
+      }
+     }
+    }
+   ],
+   "result": {
+    "windows": 58,
+    "medianSigmaBefore": 0.2895,
+    "medianSigmaAfter": 0.7429,
+    "lockedAtT60": {
+     "base": 33,
+     "after4xVol": 30
+    }
+   },
+   "limitation": "the 900 s component dilutes a fresh regime change: sigma rises ~2x not 4x within 120 s; tail tables by sigma bucket partly compensate"
+  },
+  "baseline": {
+   "checks": [
+    {
+     "name": "healthy inputs, $120 cushion at T-45 -> LOCKED UP + TRADE NOW at 98c",
+     "pass": true,
+     "got": [
+      "LOCKED",
+      "TRADE NOW",
+      {
+       "hard": [],
+       "soft": [],
+       "budgetMs": 3000
+      }
+     ]
+    }
+   ]
+  },
+  "S9 reference discrepancy": {
+   "checks": [
+    {
+     "name": "official vs proxy divergence > $40 withholds LOCKED (soft gate) and TRADE NOW",
+     "pass": true,
+     "got": [
+      "HIGH CONFIDENCE",
+      [
+       "official BRTI and the proxy index differ by $44.97 (> $40)"
+      ]
+     ]
+    }
+   ]
+  },
+  "S10 missing BRTI observations": {
+   "checks": [
+    {
+     "name": "accumulator count inconsistent with the clock -> panel falls back to PROXY, reason shown",
+     "pass": true,
+     "got": [
+      "PROXY",
+      [
+       "official window_size 9 vs 15 expected from the clock"
+      ]
+     ]
+    }
+   ]
+  },
+  "S11 stale websocket data": {
+   "checks": [
+    {
+     "name": "index inputs older than the staleness budget -> DATA UNRELIABLE, no trade",
+     "pass": true,
+     "got": [
+      "DATA UNRELIABLE",
+      [
+       "oldest index input 3500 ms > 3000 ms budget at 45 s to close"
+      ]
+     ]
+    }
+   ]
+  },
+  "S12 delayed order book": {
+   "checks": [
+    {
+     "name": "book older than 1.5 s -> LOCKED kept, TRADE NOW replaced by BOOK STALE",
+     "pass": true,
+     "got": [
+      "LOCKED",
+      "LOCKED — BOOK STALE"
+     ]
+    }
+   ]
+  },
+  "S13 out-of-order events": {
+   "checks": [
+    {
+     "name": "an older Coinbase ticker (lower sequence) cannot overwrite a newer quote",
+     "pass": true,
+     "got": [
+      80100.01000000001,
+      1
+     ]
+    },
+    {
+     "name": "official BRTI sequence gaps / reordering are counted (visible on /brti-status)",
+     "pass": true,
+     "got": 2
+    }
+   ]
+  },
+  "S14 incorrect metadata": {
+   "checks": [
+    {
+     "name": "decimal-shifted strike is parsed as-is (8.012) and must be caught downstream",
+     "pass": true,
+     "got": 8.012
+    },
+    {
+     "name": "implausible strike -> no geometry, DATA UNRELIABLE",
+     "pass": true,
+     "got": [
+      "DATA UNRELIABLE",
+      [
+       "no settlement geometry",
+       "strike implausible vs index"
+      ]
+     ]
+    },
+    {
+     "name": "strike != previous window official settlement -> hard gate (contract mapping wrong)",
+     "pass": true,
+     "got": [
+      "no settlement geometry",
+      "strike $80000 != previous window PREV official settlement $80012.34"
+     ]
+    }
+   ]
+  },
+  "S15 rounding": {
+   "checks": [
+    {
+     "name": "average 79,999.995 rounds to the strike -> UP; 79,999.994 -> DOWN; exact tie -> UP",
+     "pass": true,
+     "got": [
+      80000,
+      "UP",
+      79999.99,
+      "DOWN",
+      "UP"
+     ]
+    }
+   ],
+   "unverified": "Kalshi rounding mode at exactly half a cent (half-up vs half-even) is not documented in the record we have; affects only averages ending in exactly .xx5"
+  },
+  "S16 network interruption": {
+   "checks": [
+    {
+     "name": "Kalshi market record unavailable -> DATA UNRELIABLE",
+     "pass": true,
+     "got": [
+      "no settlement geometry",
+      "Kalshi market record unavailable"
+     ]
+    },
+    {
+     "name": "all exchange feeds down -> DATA UNRELIABLE (D1 gate and BAD quality)",
+     "pass": true,
+     "got": [
+      "DATA UNRELIABLE",
+      [
+       "no live venue",
+       "live index unavailable (no live venue): the last good value is not used for a decision"
+      ]
+     ]
+    }
+   ]
+  },
+  "S17 backend restart": {
+   "checks": [
+    {
+     "name": "second boot resumes the same chain from the file (seq continues, whole file verifies)",
+     "pass": true,
+     "got": {
+      "a": {
+       "seq": 2,
+       "head": "56687f35686e2b7ded46658212c8f79f70a6e49b0b96a349ac156a4180ae0078",
+       "resumed": null
+      },
+      "b": {
+       "seq": 4,
+       "head": "91e2df347f6939b127ed2714b43951afc0bc8eb564801b49f27ba9de4fb14900",
+       "resumed": {
+        "n": 2,
+        "head": "56687f35686e2b7ded46658212c8f79f70a6e49b0b96a349ac156a4180ae0078"
+       }
+      },
+      "verify": {
+       "ok": true,
+       "n": 4,
+       "head": "91e2df347f6939b127ed2714b43951afc0bc8eb564801b49f27ba9de4fb14900"
+      }
+     }
+    },
+    {
+     "name": "cold start (100 s of history) -> vol warming soft gate: no LOCKED, no TRADE NOW",
+     "pass": true,
+     "got": [
+      "HIGH CONFIDENCE",
+      [
+       "volatility estimate warming up (needs ~5 min of index history after a restart)"
+      ]
+     ]
+    }
+   ]
+  },
+  "S18 load": {
+   "checks": [
+    {
+     "name": "p99 full decision snapshot (incl. 2.8 enrichment) < 25 ms",
+     "pass": true,
+     "got": 0.287
+    },
+    {
+     "name": "worst-case impulse scan over 18,000 trades < 100 ms (it only runs inside 90 s, shadow policy D)",
+     "pass": true,
+     "got": 6.918182
+    }
+   ],
+   "result": {
+    "snapshotMs": {
+     "p50": 0.055,
+     "p95": 0.147,
+     "p99": 0.287,
+     "max": 1.877
+    },
+    "impulseScan18kTradesMs": 6.92,
+    "impulseOk": true
+   }
+  },
+  "S19 calibration error": {
+   "checks": [
+    {
+     "name": "a 2 % LOCKED loss rate (4x the 0.5 % standard) raises the anytime-valid alarm",
+     "pass": true,
+     "got": {
+      "alarmAfterCalls": 15,
+      "state": {
+       "kind": "failure-rate",
+       "H0": "loss rate <= 0.50%",
+       "n": 3000,
+       "losses": 61,
+       "eValue": 33506446955633036,
+       "threshold": 20,
+       "alarm": true,
+       "meaning": "ALARM: evidence (anytime-valid 95%) that the loss rate exceeds 0.50% — stop relying on LOCKED and investigate; do not retune on these few outcomes"
+      }
+     }
+    }
+   ],
+   "response": "alarm = stop relying on LOCKED and investigate; no parameter is retuned automatically"
+  },
+  "S20 confident loss": {
+   "checks": [
+    {
+     "name": "after the crash: REVERSAL WARNING / EXIT, never LOCKED UP or TRADE NOW again",
+     "pass": true,
+     "got": {
+      "ticker": "KXBTC15M-26JUL231145-45",
+      "lockedAtTau": 89,
+      "shockAtTau": 18,
+      "jumpUsd": 176.6,
+      "requiredMoveUsd": 151.6,
+      "statesAfter": [
+       "REVERSAL WARNING/EXIT / NO TRADE",
+       "REVERSAL WARNING/EXIT / NO TRADE",
+       "REVERSAL WARNING/EXIT / NO TRADE",
+       "REVERSAL WARNING/EXIT / NO TRADE"
+      ],
+      "anyLockedUpAfter": false,
+      "anyTradeNowAfter": false
+     }
+    },
+    {
+     "name": "the losing LOCKED call and the losing paper trade are counted (no survivorship)",
+     "pass": true,
+     "got": {
+      "windows": 1,
+      "locked": 1,
+      "lost": 1,
+      "lossRatePct": 100,
+      "lossCp95UpperPct": 100,
+      "coveragePct": 100,
+      "leadMeanS": 40,
+      "leadMedianS": 40,
+      "trades": 1,
+      "tradeLosses": 1,
+      "pnlCentsPerContractMean": -99.1,
+      "failure": {
+       "kind": "failure-rate",
+       "H0": "loss rate <= 0.50%",
+       "n": 1,
+       "losses": 1,
+       "eValue": 6.6429,
+       "threshold": 20,
+       "alarm": false,
+       "meaning": "no evidence the loss rate exceeds the standard (absence of alarm is not proof of safety)"
+      },
+      "edge": {
+       "kind": "proof-of-edge",
+       "H0": "mean P&L per contract <= 0",
+       "n": 1,
+       "meanCentsPerContract": -99.1,
+       "totalCentsPerContractSum": -99.1,
+       "maxDrawdownCentsPerContract": 99.1,
+       "eValue": 0.6507,
+       "threshold": 20,
+       "proven": false,
+       "meaning": "edge NOT established — treat TRADE NOW profitability as unproven"
+      },
+      "fills": "hypothetical: the visible Kalshi book at the decision second, not an executed order"
+     }
+    }
+   ],
+   "case": {
+    "ticker": "KXBTC15M-26JUL231145-45",
+    "lockedAtTau": 89,
+    "shockAtTau": 18,
+    "jumpUsd": 176.6,
+    "requiredMoveUsd": 151.6,
+    "statesAfter": [
+     "REVERSAL WARNING/EXIT / NO TRADE",
+     "REVERSAL WARNING/EXIT / NO TRADE",
+     "REVERSAL WARNING/EXIT / NO TRADE",
+     "REVERSAL WARNING/EXIT / NO TRADE"
+    ],
+    "anyLockedUpAfter": false,
+    "anyTradeNowAfter": false
+   }
+  }
+ }
+}

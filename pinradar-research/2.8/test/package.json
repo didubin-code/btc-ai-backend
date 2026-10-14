@@ -1,0 +1,8 @@
+{
+  "name": "pinradar28-tests",
+  "private": true,
+  "description": "offline test dependencies for Pin Radar 2.8 (jsdom for the page test); not used by the server",
+  "dependencies": {
+    "jsdom": "^24.1.3"
+  }
+}

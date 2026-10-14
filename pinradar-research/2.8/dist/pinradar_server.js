@@ -3146,7 +3146,7 @@ function brtiAfterClassify27(sig, panel, ticker) {
     }
   }
   const st = sig.state, side = sig.side;
-  const head = st === 'LOCKED' ? `LOCKED — PREDICTED ${side}` : st === 'PROVEN LOCKED' ? `PROVEN — ${side}` : st === 'HIGH CONFIDENCE' ? `HIGH CONFIDENCE — ${side} (not locked)`
+  const head = st === 'LOCKED' ? `PREDICTED LOCKED — ${side}` : st === 'PROVEN LOCKED' ? `MATHEMATICALLY FINAL (price-only) — ${side}` : st === 'HIGH CONFIDENCE' ? `HIGH CONFIDENCE — ${side} (not locked)`
     : st === 'LEANING' ? `LEANING ${side}` : st === 'REVERSAL WARNING' ? `REVERSAL WARNING — ${side} AT RISK` : st;
   const cv = panel && panel.criticalVsStrike != null ? panel.criticalVsStrike : null;
   sig.display27 = {
@@ -4546,7 +4546,7 @@ function runSelfTest() {
       const nv = brtiAfterClassify27({ ...sigL }, pP, 'SELFTEST27');
       push('2.7 PROXY panel never changes the 2.6 decision', nv.state === 'LOCKED' && !nv.officialReversal && nv.trade.action === 'TRADE NOW', nv.state);
       const dsp = nv.display27;
-      push('2.7 display: LOCKED — PREDICTED UP / win / reversal / seconds / critical remaining average', dsp && dsp.headline === 'LOCKED — PREDICTED UP' && dsp.winProbability && dsp.reversalProbability
+      push('2.7/2.8 display: PREDICTED LOCKED — UP / win / reversal / seconds / critical remaining average', dsp && dsp.headline === 'PREDICTED LOCKED — UP' && dsp.winProbability && dsp.reversalProbability
         && dsp.secondsRemaining === 17 && /BELOW STRIKE$/.test(dsp.criticalRemainingAverage || '') && dsp.reference === 'PROXY', JSON.stringify(dsp));
 
       /* 7. entitlement error and 5 Hz never counted as observations */

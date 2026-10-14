@@ -219,3 +219,26 @@ with open(OUT, 'w') as f:
     json.dump(out, f, indent=1)
 print(json.dumps(out, indent=1)[:200])
 print('wrote', OUT)
+
+# ---------------------------------------------------------------- 6. Pareto frontier of the previously evaluated variants
+def frontier(part):
+    vs = dict(sm[part]['variants']); vs.update({k: v for k, v in se[part].items() if isinstance(v, dict) and 'locked' in v})
+    pts = []
+    for name, v in vs.items():
+        L, t = v['locked'], v.get('trade_now_CONS', {})
+        pts.append({'variant': name, 'loss_pct': round(100 * L['lost'] / L['n'], 3), 'loss_ub95_pct': round(100 * cp_upper_one_sided(L['lost'], L['n']), 3),
+                    'coverage_pct': v.get('coverage_pct'), 'lead_mean_s': v.get('lead_mean_s'),
+                    'cons_trades': t.get('trades'), 'cons_total_c_per_contract': round((t.get('trades') or 0) * (t.get('pnl_c_per_contract') or 0), 1),
+                    'cons_pnl_ci95_c': t.get('pnl_ci95_c')})
+    # dominated if another variant is no worse on loss, lead and total cautious P&L and strictly better on one
+    for p in pts:
+        p['dominated_by'] = [q['variant'] for q in pts if q is not p and q['loss_pct'] <= p['loss_pct'] and q['lead_mean_s'] >= p['lead_mean_s']
+                             and q['cons_total_c_per_contract'] >= p['cons_total_c_per_contract']
+                             and (q['loss_pct'] < p['loss_pct'] or q['lead_mean_s'] > p['lead_mean_s'] or q['cons_total_c_per_contract'] > p['cons_total_c_per_contract'])]
+        p['on_frontier'] = not p['dominated_by']
+    return sorted(pts, key=lambda p: p['loss_pct'])
+out['pareto'] = {'holdout': frontier('holdout'), 'dev_folds1_6': frontier('dev_folds1_6'),
+                 'note': 'objectives: first-LOCKED loss rate (lower), mean lead time (higher), total cautious-fill P&L (higher); official-feed variants (As*, Cs, AnAs) are EMULATED and not deployable without the entitlement'}
+with open(OUT, 'w') as f:
+    json.dump(out, f, indent=1)
+print('pareto written')
