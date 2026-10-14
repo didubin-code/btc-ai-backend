@@ -66,6 +66,8 @@ Rows **P1–P16** were run by the previous research session (Oct 13). They are r
 | R26 | D6: FINAL needs 60/60 official values | repro | 58/59 never FINAL | FAILED (58 values labelled 60/60) | yes (fix) | defect fixed |
 | R27 | forward evaluator cannot be passed by tampering or missing evidence | synthetic ledgers | edits, deletions, dropped windows, missing evidence never PASS | FAILED in round-1 tool (segment split, outcome copies, final-only alarm, Holm, PASS without G1/G5/G6) | yes (prereg v2) | fixed; anchors required for whole-segment deletion |
 | R28 | G3 design has adequate power | exact binomial | ≥ 80 % at the dev rate | v1: 52 % per stage; v2: 85 % at 0.37 % (3,000 windows, bound 0.75 %), 47 % at 0.5 % | yes (prereg v2) | redesigned before any data |
+| R29 | the evaluator's verdict cannot be moved by the evaluator's own choices | synthetic ledgers + real server processes | optional stopping, options, unanchored tails, restarts, downtime never move a verdict | FAILED in the first fixed version (second fix review N1–N8: 13 % false PASS at a true 0.75 % with daily re-runs; `--since`/`--latency` flipped verdicts; false and missed forks in the puller) | yes (prereg v2) | fixed; 10 regression checks |
+| R30 | the false-alarm rate of the latched monitors stays ≤ 5 % | SIM (Monte Carlo, 4,000 runs) | type-I ≤ 5 % | failure 2.8 % (3,000 windows at p = p0), edge 1.8 % (1,500 trades at zero edge) | — | passed |
 
 ## Candidates carried into the forward test (pre-registered, `2.8/PREREGISTRATION.md`)
 

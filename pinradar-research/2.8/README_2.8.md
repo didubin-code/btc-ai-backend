@@ -45,7 +45,8 @@ SHA-256 values are in `2.8/SHA256SUMS.txt`. Dependencies are unchanged: only `ws
      * optionally `PRED_LOG_FILE=/var/data/pred28.ndjson`
 
      The chain then survives restarts, and so do open windows and their committed calls. Run a single instance: Render already turns off zero-downtime deploys when a disk is attached, so two processes never write one file.
-   * **No disk.** Run `node tools/ledger_pull28.js https://btc-pin-radar-28.onrender.com ledger28.ndjson` from your computer every 5–10 minutes. It is free and verifies the chain on every pull.
+   * **No disk.** Run `node tools/ledger_pull28.js https://btc-pin-radar-28.onrender.com ledger28.ndjson --anchors anchors28.txt` from your computer every 5–10 minutes (cron). It is free and verifies the chain on every pull.
+     * Exit codes: 0 ok; 3 FORK (nothing appended: investigate); 4 the server has entries it could not store yet (disk problem).
      * A restart starts a new verified chain. Calls committed in a window that was open during the restart are still scored from the pulled file. If that window's outcome never arrives, it counts as unresolved.
      * If you pull too rarely and the server's in-memory window (`LEDGER_MAX` = 50,000 entries, about 10 days) moves past your last entry, the gap stays visible and fails G2.
    * With a disk, `/ledger` serves only entries already written to it. After a disk-write failure and a restart, a pulled copy therefore can never disagree with the server's chain. If the puller ever sees a different entry at the same position of the same chain, it stops with `FORK` and appends nothing.
@@ -62,10 +63,12 @@ SHA-256 values are in `2.8/SHA256SUMS.txt`. Dependencies are unchanged: only `ws
   * A multiplier in [0.1, 4] from Kalshi's record is used for TRADE NOW, including per-fill rounding when configured.
   * Anything else (null, empty, out of range) is rejected, and the default schedule is kept with `verified:false`.
 * `/ledger/verify` → `"ok":true`. It re-checks only new entries; `?full=1` re-hashes everything, at most once a minute.
-  * **Publish the `head` at least once a day, outside the server and outside your copy of the file**: for example in a git commit, a message, or a screenshot with a date.
-  * Pass these heads to the report as `--anchor h1,h2,…`.
-  * The hash chain alone proves only that the file is internally consistent. Published heads are what prove that no entry, and no whole restart segment, was later rewritten, deleted or invented.
-  * The report needs at least one published head in every chain segment (each restart without a disk starts a segment), and one after the last scored window.
+  * **Anchors.** Run the puller with `--anchors anchors28.txt` (with a disk too: it is the evidence copy). Each pull appends the head of your pulled file with the time.
+    * **Publish that file often, outside the server and outside your copy of the ledger**, for example by committing it to a git repository every hour. The commit history is the timestamp.
+    * Pass the heads to the report as `--anchor h1,h2,…`.
+    * The hash chain alone proves only that the file is internally consistent. Published heads prove that nothing up to them was later rewritten, deleted or invented.
+    * A window counts only if a published head comes at or after it in its own chain segment (each restart without a disk starts a segment). Later windows count as unresolved (limit 2 %), so publish at least hourly.
+    * Use the puller's heads, not `/ledger/verify`'s: that head can include entries you have not pulled.
 * `/shadow` → six policies, with open windows filling up during the final 300 s of each window.
 * `/latency` → `bgSnapshotMs.p99` is a few ms. `clientSignalAgeAtDisplayMs` fills once the 2.8 page is open; it is reported by browsers, so it is informational only. The ledger receives an hourly latency histogram, and G6 is computed from those.
 
@@ -80,8 +83,10 @@ SHA-256 values are in `2.8/SHA256SUMS.txt`. Dependencies are unchanged: only `ws
 * Then run:
 
 ```
-node pinradar-research/2.8/tools/forward_report28.js --ledger ledger28.ndjson --g1 PASS --config <CONFIG28_HASH from /v28> --anchor <published heads> --out report.json
+node pinradar-research/2.8/tools/forward_report28.js --ledger ledger28.ndjson --g1 PASS --config <CONFIG28_HASH from /v28> --anchor <published heads, comma-separated> --out report.json
 ```
+
+The test ends at the first window by which there are 3,000 LOCKED windows and 21 days (or at day 90). Later windows are not scored, so re-running the report later gives the same verdict. `--since` produces an exploratory report, not a verdict.
 
 The tool recomputes every pre-registered gate from committed entries only:
 * Each window is scored from its first committed calls (never from the server's summary), under the configuration in force when those calls were made.
@@ -91,7 +96,7 @@ The verdict is one of:
 
 | Verdict | Meaning |
 |---|---|
-| FAIL | G2 or the stop rule failed; or, at the end, a gate failed |
+| FAIL | G2 (integrity; unresolved ≥ 2 %; downtime > 5 %) or the stop rule failed; or, at the end, a gate failed |
 | IN PROGRESS | the test has not ended |
 | NOT DEMONSTRATED | the end was reached and nothing failed, but the reliability bound was not reached |
 | INCOMPLETE | evidence is missing (G1 attestation, published heads, calibration coverage or latency) |
@@ -117,7 +122,7 @@ It covers, in order:
 * build reproducibility
 * selftest 134/134
 * core tests 61/61
-* page tests 38/38
+* page tests 41/41
 * fuzz 20,000 (2.8 vs 2.7 invariants)
 * replay parity (58 real contracts, 17,458 seconds)
 * live-path simulation:
@@ -133,7 +138,7 @@ It covers, in order:
   * exact half-cent ties;
   * m25PUp monotone in the gap, 509,040 evaluations;
   * recalibration monotone.
-* round-3 regressions 44/44 (`test/regress28.js`; every check fails on the build that had the defect)
+* round-3 regressions 54/54 (`test/regress28.js`; every check fails on the build that had the defect)
 
 `node --expose-gc test/soak28.js dist/pinradar_server.js 24` is the 24 h memory/latency soak (about 3 min). With `--expose-gc`, the heap is measured after a full GC: 18 MB at hour 1, 42 MB at hour 24, as bounded buffers fill.
 

@@ -3378,6 +3378,7 @@ function ledgerAppend28(L, type, body, ts = Date.now()) {
      alter an entry that is already hashed (JSON copy = what canon28 and the file see: NaN/undefined -> null/absent) */
   const e = { seq: ++L.seq, ts, type, body: body === undefined ? null : JSON.parse(JSON.stringify(body)), prev: L.head };
   e.hash = entryHash28(L.head, e); L.head = e.hash;
+  if (e.seq === 1) L.chainId = e.hash;                    // identifies this chain (the genesis is shared by every chain of one config)
   L.rows.push(e); if (L.rows.length > L.maxMem) { L.rows.shift(); L.dropped++; }
   if (L.file && L.fs && !L.fileStopped) { L.pending.push([e.seq, JSON.stringify(e) + '\n']); ledgerFlush28(L); }
   return e;
@@ -3395,6 +3396,8 @@ function ledgerFlush28(L) {
       if (L.fileErr) { L.lastRecovered = { ts: Date.now(), after: L.fileErr }; L.fileErr = null; }
     } catch (err) {
       L.fileErr = String(err && err.message || err); L.writeFailures++;
+      /* nothing was ever stored (unmounted or read-only disk): run as the no-disk setup, serving the chain from memory */
+      if (!L.fileSeq) { L.fileStopped = { ts: Date.now(), why: 'ledger file not writable (' + L.fileErr + '): running in memory only, as without a disk' }; L.memoryOnly = true; L.pending = []; return; }
       if (L.pending.length > L.maxPending) { L.fileStopped = { ts: Date.now(), why: L.fileErr, atSeq: L.pending[0][0] }; L.pending = []; }
       return;
     }
@@ -3428,7 +3431,7 @@ function ledgerResume28(L, fs, file, onRow = null, now = Date.now()) {
         else if (prev !== null && e.prev !== prev) why = 'prev hash mismatch';
         else if (entryHash28(e.prev, e) !== e.hash) why = 'hash mismatch (entry altered)';
         if (why) { info.broken = { why, atSeq: e && e.seq != null ? e.seq : lastSeq + 1, afterBytes: good }; stop = true; break; }
-        if (prev === null) { info.firstSeq = e.seq; L.genesis = e.prev; }
+        if (prev === null) { info.firstSeq = e.seq; L.genesis = e.prev; L.chainId = e.hash; }
         prev = e.hash; lastSeq = e.seq; good += bytes; info.n++;
         keep.push(e); if (keep.length > 2 * L.maxMem) keep.splice(0, keep.length - L.maxMem);
         if (onRow) onRow(e);
@@ -3440,7 +3443,7 @@ function ledgerResume28(L, fs, file, onRow = null, now = Date.now()) {
     let e = null; try { e = JSON.parse(rest.toString('utf8')); } catch (_) { e = null; }
     if (e && typeof e === 'object' && (prev === null ? e.seq === 1 : (e.seq === lastSeq + 1 && e.prev === prev)) && entryHash28(e.prev, e) === e.hash) {
       fs.appendFileSync(file, '\n'); good += rest.length + 1; info.n++; info.completedLastLine = e.seq;      // only the newline was missing
-      if (prev === null) { info.firstSeq = e.seq; L.genesis = e.prev; }
+      if (prev === null) { info.firstSeq = e.seq; L.genesis = e.prev; L.chainId = e.hash; }
       prev = e.hash; lastSeq = e.seq; keep.push(e); if (onRow) onRow(e); rest = Buffer.alloc(0);
     }
   }
@@ -4038,11 +4041,17 @@ function calib28(w, s, tau, now) {
 /* every 60 s whether or not a window is live: feed health goes on the record even when the engine is blind */
 function heartbeat28(now = Date.now()) {
   HB28.lastTs = now;
-  /* hourly latency histograms (G6 is evaluated on the whole test period from these, not on a rolling /latency snapshot) */
+  /* latency histograms every 5 min (and at SIGTERM): G6 is evaluated on the whole test period from these, not on a
+     rolling /latency snapshot, and a restart loses at most the last few minutes */
   if (!HB28.latTs) HB28.latTs = now;
-  if (now - HB28.latTs >= 3600000) { ledgerAppend28(L28, 'latency', { since: HB28.latTs, until: now, hist: latFlush28(LAT28) }, now); HB28.latTs = now; }
+  if (now - HB28.latTs >= 300000) latCommit28(now);
   ledgerAppend28(L28, 'heartbeat', { uptimeSec: Math.round((now - BOOT28.ts) / 1000), live: VENUE_LIST().filter(v => venueFresh(v, now)).map(v => v.name),
     kalshi: KAL.market ? KAL.market.ticker : null, kalshiAgeMs: KAL.ts ? now - KAL.ts : null, brti: BRTI.state, bgTicks: BG.ticks, bgErr: BG.lastErr, scored: SHADOW28.scored }, now);
+}
+function latCommit28(now = Date.now()) {
+  const hist = latFlush28(LAT28);
+  if (Object.keys(hist).length) ledgerAppend28(L28, 'latency', { since: HB28.latTs || now, until: now, hist }, now);
+  HB28.latTs = now;
 }
 /* settlement: score every policy's first calls for this window, commit the outcome */
 function shadowFinalize28(ticker, result, official) {
@@ -4073,7 +4082,8 @@ async function settleRestored28(now = Date.now()) {
 function v28Summary(now = Date.now()) {
   return { ok: true, version: SERVER_VERSION, build: BUILD_ID, core: CORE28_VERSION, prereg: PREREG28_ID, configHash: CONFIG28_HASH, boot: BOOT28.id,
     ledger: { head: L28.head, seq: L28.seq, inMemory: L28.rows.length, dropped: L28.dropped, file: LEDGER28_FILE || null, fileErr: L28.fileErr, resumed: L28.resumed,
-      writeFailures: L28.writeFailures, pendingWrites: L28.pending.length, durableSeq: LEDGER28_FILE ? L28.fileSeq : null, fileStopped: L28.fileStopped, lastRecovered: L28.lastRecovered || null },
+      writeFailures: L28.writeFailures, pendingWrites: L28.pending.length, durableSeq: LEDGER28_FILE && !L28.memoryOnly ? L28.fileSeq : null, memoryOnly: !!L28.memoryOnly,
+      chainId: L28.chainId || null, fileStopped: L28.fileStopped, lastRecovered: L28.lastRecovered || null },
     shadow: { openWindows: SHADOW28.windows.size, scoredWindows: SHADOW28.scored, lastScore: SHADOW28.lastScore, restoredAfterRestart: SHADOW28.restored },
     fees: { ...FEE28.cfg, isDefault: FEE28.isDefault, verified: FEE28.verified, error: FEE28.error, fetchedAt: FEE28.fetchedAt },
     tape: { records: TAPE28.rows.length, samples: TAPE28.samples.length, dropped: TAPE28.dropped, file: TAPE28_FILE || null, fileErr: TAPE28.fileErr, fileBytes: TAPE28.fileBytes ?? null, rotations: TAPE28.rotations || 0 },
@@ -4084,6 +4094,8 @@ function start28() {
   if (process.env.PINRADAR_REPLAY || START28.done) return; START28.done = true;
   fee28Refresh(); const t = setInterval(fee28Refresh, 6 * 3600 * 1000); if (t.unref) t.unref();
   settleRestored28().catch(() => { });
+  /* a deploy or restart sends SIGTERM: commit the partial latency histogram first (there is no other handler, so exit as the default would) */
+  if (!process.listenerCount('SIGTERM')) process.once('SIGTERM', () => { try { latCommit28(); ledgerAppend28(L28, 'shutdown', { boot: BOOT28.id, signal: 'SIGTERM' }); } catch (_) { } process.exit(0); });
   const t2 = setInterval(() => { settleRestored28().catch(() => { }); shadowExpire28(); heartbeat28(); }, 60000); if (t2.unref) t2.unref();
 }
 const START28 = { done: false };
@@ -4995,17 +5007,18 @@ const server = http.createServer(async (req, res) => {
       const since = Number(u.searchParams.get('since') || 0), n = clamp(Number(u.searchParams.get('n') || 5000), 1, 5000);   // pages of <= 5,000 (event loop)
       /* with a ledger file, only rows already on disk are served: a row that a restart could still lose (pending write)
          is never handed to a puller, so a resumed chain can never fork from a pulled copy */
-      const lim = LEDGER28_FILE && !L28.resumeFailed ? L28.fileSeq : Infinity;
+      const lim = LEDGER28_FILE && !L28.resumeFailed && !L28.memoryOnly ? L28.fileSeq : Infinity;
       const rows = L28.rows.filter(e => e.seq > since && e.seq <= lim).slice(0, n);
       if (u.searchParams.get('format') === 'ndjson') { cors(res); res.setHeader('Content-Type', 'application/x-ndjson'); return res.end(rows.map(r => JSON.stringify(r)).join('\n') + (rows.length ? '\n' : '')); }
-      return send(res, 200, { ok: true, version: SERVER_VERSION, genesis: L28.genesis, head: L28.head, seq: L28.seq, durableSeq: Number.isFinite(lim) ? lim : null, inMemoryFrom: L28.rows.length ? L28.rows[0].seq : null, n: rows.length, rows });
+      return send(res, 200, { ok: true, version: SERVER_VERSION, genesis: L28.genesis, chainId: L28.chainId || null, head: L28.head, seq: L28.seq, durableSeq: Number.isFinite(lim) ? lim : null,
+        pendingWrites: L28.pending.length, inMemoryFrom: L28.rows.length ? L28.rows[0].seq : null, n: rows.length, rows });
     }
     if (req.method === 'GET' && u.pathname === '/ledger/verify') {
       const first = L28.rows[0];
       const v = ledgerVerify28(u.searchParams.get('full') === '1');
-      return send(res, 200, { ok: v.ok, version: SERVER_VERSION, verify: v, head: L28.head, seq: L28.seq, inMemoryFrom: first ? first.seq : null,
+      return send(res, 200, { ok: v.ok, version: SERVER_VERSION, verify: v, head: L28.head, seq: L28.seq, chainId: L28.chainId || null, inMemoryFrom: first ? first.seq : null,
         genesis: L28.genesis, file: LEDGER28_FILE || null, fileErr: L28.fileErr, resumed: L28.resumed,
-        note: 'publish or screenshot `head` now and then: any later rewrite of an earlier entry changes every subsequent hash' });
+        note: 'anchor the heads printed by tools/ledger_pull28.js (they are in your pulled file): publish its --anchors file often; this head may include entries not yet pulled' });
     }
     /* shadow model competition on identical live inputs, scored at Kalshi settlement */
     if (req.method === 'GET' && u.pathname === '/shadow') {

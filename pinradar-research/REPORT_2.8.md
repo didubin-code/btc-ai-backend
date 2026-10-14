@@ -229,7 +229,7 @@ before the outcome. The decision rules, with Holm-corrected multiplicity control
   |---|---|
   | selftest | 134/134 |
   | core | 61/61 |
-  | page | 38/38 |
+  | page | 41/41 |
   | fuzz | 20,000 cases, 0 violations |
   | replay parity with 2.7 | 0 mismatches / 17,458 |
   | live-path simulation | pass |
@@ -237,7 +237,7 @@ before the outcome. The decision rules, with Holm-corrected multiplicity control
   | settlement arithmetic | 18/18 |
   | BRTI mock | 4/4 |
   | property tests (`props28.js`) | 140,000 settlement checks, 1,611 ties, 509,040 monotonicity evaluations, 10,005 recalibration evaluations: 0 violations |
-  | round-3 regressions (`regress28.js`) | 44/44; every check fails on the build that had the defect |
+  | round-3 regressions (`regress28.js`) | 54/54; every check fails on the build that had the defect |
   | 24 h soak | pass |
 
   `bash pinradar-research/2.8/test/run_all28.sh` re-runs everything in about 5 minutes and writes nothing tracked.
@@ -301,7 +301,8 @@ Both are built by sha-checked patch scripts from the preserved 2.7 files.
 
 **Outcome:**
 * 36 of 36 candidates confirmed real, none refuted, plus 1 more found during verification.
-* The fix review found 10 defects in the first round of fixes (R1–R10). All were reproduced and fixed.
+* The fix review found 10 defects in the first round of fixes (R1–R10) and 10 in the second (N1–N10). N11
+  (value vs execution) is by design. All were reproduced and fixed.
 * `test/regress28.js` has a check for every item. Each check fails on the build that had the defect and passes
   on the final build.
 
@@ -320,6 +321,7 @@ Both are built by sha-checked patch scripts from the preserved 2.7 files.
 | **Config hash** | K1 not every override covered; R10 credentials (official gates) not covered | every env override, the model tables, officialFeed and streaming |
 | **Tests and claims** | CVE-08 the equivalence claim was not tested through `computeLockSnapshot` (minor: the adversarial scenarios did catch a promote-to-LOCKED mutant). CVE-12 three numbers had no script. CVE-13 tie projection (minor; in 2.7). CVE-16 `run_all` rewrote tracked files and needed a sibling checkout. CVE-10/15/17 statistics wording | cross-version replay in live_sim (mutant: 253 differences); `props28.js`; tie epsilon; non-mutating, self-contained `run_all`; sections A/C/E/H corrected |
 | **Operations** | LI-10 a large `/ledger` or `/ledger/verify` blocked the event loop for 0.35–0.5 s | pages of ≤ 5,000; incremental verify |
+| **Second fix review (N)** | N1 the reliability bound could be re-evaluated later until it passed (optional stopping: 13 % false PASS at a true 0.75 % with daily re-runs). N2 `--since`, a missing `--config` or a `/latency` snapshot changed the verdict. N3 a segment's rows after its last published head could be deleted or invented unseen. N4 the puller identified chains by a genesis shared by every restart: false FORKs that stopped pulling for good, and missed real rewinds. N5 an unwritable disk hid the whole ledger. N6 the partial latency hour was lost at each restart. N7 a candidate's own stop rule was ignored. N8 downtime was invisible. N9/N10 README | the test ends at a fixed point; `--config` required, `--since` exploratory, G6 only from the ledger; windows after the segment's last anchor are unresolved; chain id = hash of the seq-1 entry, FORK on rewind; memory-only fallback and exit code 4 for an undurable server; 5-minute and SIGTERM latency commits; candidate stop rule; missing windows ≤ 5 %; puller `--anchors` file |
 
 **What held up** (checked by the reviewers and not changed):
 * the settlement arithmetic and the 2.6 probability engine;

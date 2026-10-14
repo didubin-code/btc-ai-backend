@@ -166,6 +166,7 @@ const writeNd = (f, rows, tail = '') => fs.writeFileSync(f, rows.map(r => JSON.s
     const t0 = 1.8e12; let t = t0;
     S.ledgerAppend28(L, 'boot', { boot: 'rg', configHash: H8 }, t);
     for (const w of spec) {
+      if (w.gapBefore) t += w.gapBefore * 900000;                                       // windows with no trace at all (downtime)
       const closeMs = (t = t + 900000);
       S.ledgerAppend28(L, 'window', { ticker: w.ticker, closeMs, strike: 80000 }, closeMs - 300000);
       const recs = {};
@@ -225,7 +226,7 @@ const writeNd = (f, rows, tail = '') => fs.writeFileSync(f, rows.map(r => JSON.s
     ok('CVE-03', 'forward_report28: missing G1/G5/G6 evidence gives INCOMPLETE, not PASS', !r.crashed && !/^PASS/.test(r.verdict), r.verdict || r.stderr);
     const spec2 = Array.from({ length: 3050 }, (_, i) => win(i, { calib: true })); spec2.latency = true;
     const rows2 = mkChain(spec2), f2 = path.join(TMP, 'fullev.ndjson'); writeNd(f2, rows2);
-    const r2 = report(['--ledger', f2, '--g1', 'PASS', '--anchor', rows2[rows2.length - 1].hash]);
+    const r2 = report(['--ledger', f2, '--g1', 'PASS', '--config', 'cafe' + '0'.repeat(60), '--anchor', rows2[rows2.length - 1].hash]);
     ok('CVE-03b', 'forward_report28: with ledger calibration + latency histograms + G1 attestation the same record PASSes', !r2.crashed && /^PASS/.test(r2.verdict), { v: r2.verdict, g2: r2.gates && r2.gates.G2.issues, g5: r2.gates && r2.gates.G5.coverageByTauPct, g6: r2.gates && r2.gates.G6 });
   }
   { /* CVE-06: 3 losses in the first 700 LOCKED windows is not evidence of harm (rate 0.43 %): no FAIL at the interim */
@@ -302,6 +303,76 @@ const writeNd = (f, rows, tail = '') => fs.writeFileSync(f, rows.map(r => JSON.s
     const h = env => child(env, `const S=require(${JSON.stringify(SRV)});console.log(JSON.stringify({ h: S.CONFIG28_HASH, feed: S.CONFIG28 && S.CONFIG28.officialFeed }))`);
     const h0 = h({}), h1 = h({ KALSHI_KEY_ID: 'regress-key', KALSHI_PRIVATE_KEY: pem });
     ok('R10', 'Kalshi credentials (official gates on) change CONFIG28_HASH', h0.h && h1.h && h0.h !== h1.h && h1.feed === true, [h0, h1]);
+  }
+  /* ---------------- review round 2 (N1-N8) ---------------- */
+  const CFG = 'cafe' + '0'.repeat(60);
+  const full = (rows, extra = []) => ['--g1', 'PASS', '--config', CFG, '--anchor', rows[rows.length - 1].hash, ...extra];
+  { /* N1: the test ends at 3,000 LOCKED windows / 21 days; later windows cannot turn NOT DEMONSTRATED into PASS */
+    const spec = Array.from({ length: 4300 }, (_, i) => win(i, { calib: true, ...(i < 3000 && i % 200 === 50 ? { winner: 'DOWN' } : {}) })); spec.latency = true;
+    const rows = mkChain(spec), f = path.join(TMP, 'n1.ndjson'); writeNd(f, rows);
+    const r = report(['--ledger', f, ...full(rows)]);
+    ok('N1', 'G3 is evaluated where the test ended (3,000 LOCKED, 15 lost: bound 0.77 %): NOT DEMONSTRATED, not a later PASS', !r.crashed && /^NOT DEMONSTRATED/.test(r.verdict) && r.gates.G3.locked === 3000 && r.gates.G2.issues.afterEnd === 1300, { v: r.verdict, g3: r.gates && r.gates.G3 && { locked: r.gates.G3.locked, up: r.gates.G3.cp95UpperPct }, after: r.gates && r.gates.G2.issues.afterEnd });
+  }
+  { /* N2: --since is exploratory; a /latency snapshot never satisfies G6 */
+    const spec = Array.from({ length: 3050 }, (_, i) => win(i, { calib: true })); spec.latency = true;
+    const rows = mkChain(spec), f = path.join(TMP, 'n2.ndjson'); writeNd(f, rows);
+    const r = report(['--ledger', f, ...full(rows, ['--since', String(1.8e12 + 2 * 86400000)])]);
+    ok('N2a', '--since gives an EXPLORATORY report, never the pre-registered verdict', !r.crashed && /^EXPLORATORY/.test(r.verdict), r.verdict);
+    const spec2 = Array.from({ length: 3050 }, (_, i) => win(i, { calib: true }));
+    const rows2 = mkChain(spec2), f2 = path.join(TMP, 'n2b.ndjson'); writeNd(f2, rows2);
+    const lf = path.join(TMP, 'lat.json'); fs.writeFileSync(lf, JSON.stringify({ latency: { decisionIndexInputAgeMs: { p99: 10 }, bgSnapshotMs: { p99: 1 }, radarComputeMs: { p99: 1 } } }));
+    const r2 = report(['--ledger', f2, ...full(rows2, ['--latency', lf])]);
+    ok('N2b', 'a user-supplied /latency snapshot is information only: G6 stays insufficient (INCOMPLETE)', !r2.crashed && r2.gates.G6.sufficient === false && /^INCOMPLETE/.test(r2.verdict), r2.verdict);
+  }
+  { /* N3: a loss after the last published head of its segment cannot be deleted or replaced unseen: it is unverified = unresolved */
+    const a = mkChain([...Array.from({ length: 30 }, (_, i) => win(i)), win(30, { winner: 'DOWN' })]);
+    const anchorEarly = a.find(e => e.type === 'outcome' && e.body.ticker === 'W20').hash;
+    const f = path.join(TMP, 'n3.ndjson'); writeNd(f, a);
+    const r = report(['--ledger', f, '--config', CFG, '--anchor', anchorEarly]);
+    ok('N3', 'outcomes after the segment\'s last anchor are not scored but counted unresolved (deleting them changes nothing)', !r.crashed && r.gates.G2.issues.unanchoredOutcomes === 10 && r.policies['A-2.6'].lost === 0 && r.gates.G2.issues.unresolved >= 10 && r.gates.G2.pass === false,
+      r.gates && r.gates.G2.issues);
+  }
+  { /* N8: downtime: 20 % of the calendar windows missing -> G2 fails */
+    const spec = Array.from({ length: 400 }, (_, i) => win(i, i % 40 === 0 && i ? { gapBefore: 10 } : {}));
+    const rows = mkChain(spec), f = path.join(TMP, 'n8.ndjson'); writeNd(f, rows);
+    const r = report(['--ledger', f, '--config', CFG, '--anchor', rows[rows.length - 1].hash]);
+    ok('N8', 'missing calendar windows (downtime) are counted and over 5 % fail G2', !r.crashed && r.gates.G2.issues.missingWindows === 90 && r.gates.G2.pass === false, r.gates && { cal: r.gates.G2.issues.calendarWindows, miss: r.gates.G2.issues.missingWindows });
+  }
+  { /* N7: a candidate whose own stop rule fires is never adopted */
+    const spec = Array.from({ length: 3050 }, (_, i) => win(i, { calib: true, ...(i < 200 && i % 40 === 5 ? { winner: 'DOWN', by: { 'A-2.6': {}, 'C1-strict-0.2': { lockSide: 'UP' } } } : {}) })); spec.latency = true;
+    const rows = mkChain(spec), f = path.join(TMP, 'n7.ndjson'); writeNd(f, rows);
+    const r = report(['--ledger', f, ...full(rows)]);
+    const c1 = r.candidates && r.candidates['C1-strict-0.2'];
+    ok('N7', 'candidate C1 with 5 losses in its first 200 LOCKED windows has its stop rule fired and is not adopted', !r.crashed && c1 && !!c1.G3cStop && c1.G3cStop.triggered && c1.adopt === false, c1);
+  }
+  { /* N6: latency histograms are committed every 5 minutes (a restart loses at most a few minutes) */
+    const n0 = S.L28.rows.filter(e => e.type === 'latency').length, t0 = 5e12;
+    S.latNote28(S.LAT28, 'bgSnapshotMs', 1.5, t0); S.heartbeat28(t0); S.latNote28(S.LAT28, 'bgSnapshotMs', 2.5, t0 + 1000); S.heartbeat28(t0 + 300001);
+    ok('N6', 'a latency histogram is committed after 5 minutes', S.L28.rows.filter(e => e.type === 'latency').length === n0 + 1, S.L28.rows.filter(e => e.type === 'latency').length - n0);
+  }
+  /* N4 + N5: the puller against real server processes */
+  const serve = (env, body) => new Promise(res => {
+    const p = cp.spawn(process.execPath, ['-e', `process.env.PINRADAR_REPLAY='';const S=require(${JSON.stringify(SRV)});${body};S.server.listen(0,'127.0.0.1',()=>console.log('PORT '+S.server.address().port))`],
+      { env: { ...process.env, ENABLE_WS: '0', PINRADAR_REPLAY: '', LEDGER_FILE: '', TAPE_FILE: '', ...env } });
+    let buf = ''; p.stdout.on('data', d => { buf += d; const m = /PORT (\d+)/.exec(buf); if (m) res({ p, port: Number(m[1]) }); });
+    setTimeout(() => res({ p, port: null }), 20000);
+  });
+  const pull = (port, file) => new Promise(res => { const q = cp.spawn(process.execPath, [path.join(TOOLS, 'ledger_pull28.js'), `http://127.0.0.1:${port}`, file]); let o = ''; q.stdout.on('data', d => o += d); q.stderr.on('data', d => o += d); q.on('close', code => res({ code, o })); });
+  {
+    const pf = path.join(TMP, 'pulled.ndjson');
+    let sv = await serve({}, `for(let i=0;i<30;i++)S.ledgerAppend28(S.L28,'t',{i})`); const a1 = await pull(sv.port, pf); sv.p.kill();
+    sv = await serve({}, `for(let i=0;i<60;i++)S.ledgerAppend28(S.L28,'t',{j:i})`); const a2 = await pull(sv.port, pf); sv.p.kill();
+    ok('N4a', 'a restart without a disk (new chain, same configuration) is appended as a new segment, not a FORK', a1.code === 0 && a2.code === 0 && /new chain segment/.test(a2.o), { a1: a1.code, a2: a2.code, o: a2.o.slice(0, 200) });
+    const lf = path.join(TMP, 'disk.ndjson'), pf2 = path.join(TMP, 'pulled2.ndjson');
+    sv = await serve({ LEDGER_FILE: lf }, `for(let i=0;i<40;i++)S.ledgerAppend28(S.L28,'t',{i})`); const b1 = await pull(sv.port, pf2); sv.p.kill();
+    const keep = fs.readFileSync(lf, 'utf8').split('\n').slice(0, 20).join('\n') + '\n'; fs.writeFileSync(lf, keep);   // the disk copy rewinds (e.g. a corrupt row cut at resume)
+    sv = await serve({ LEDGER_FILE: lf }, `0`); const b2 = await pull(sv.port, pf2); sv.p.kill();
+    const pulledRows = fs.readFileSync(pf2, 'utf8').trim().split('\n').length;
+    ok('N4b', 'a server that resumed a shorter copy of the same chain is a FORK: exit 3, nothing appended', b1.code === 0 && b2.code === 3 && pulledRows === 41, { b1: b1.code, b2: b2.code, rows: pulledRows, o: b2.o.slice(0, 160) });
+    sv = await serve({ LEDGER_FILE: '/nonexistent-dir-regress28/ledger.ndjson' }, `for(let i=0;i<10;i++)S.ledgerAppend28(S.L28,'t',{i})`);
+    const pf3 = path.join(TMP, 'pulled3.ndjson'); const c1 = await pull(sv.port, pf3); sv.p.kill();
+    const n3 = fs.existsSync(pf3) ? fs.readFileSync(pf3, 'utf8').trim().split('\n').length : 0;
+    ok('N5', 'an unwritable ledger file falls back to the no-disk behaviour: the chain is still served and pulled', c1.code === 0 && n3 === 11, { code: c1.code, rows: n3, o: c1.o.slice(0, 160) });
   }
   { /* F12: Holm step-down is monotone (textbook): p = .011, .012 with m = 5 -> both 0.055 */
     const h = S.holm28 ? S.holm28({ a: 0.011, b: 0.012, c: 0.5, d: 0.9, e: null }) : null;

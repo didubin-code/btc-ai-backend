@@ -58,7 +58,7 @@ hash-chained ledger before Kalshi publishes the result.
 | Gate | Requirement | Basis |
 |---|---|---|
 | G1 correctness | `run_all28.sh` passes on the deployed build and every `/selftest` check passes; the operator attests it to the evaluator (`--g1 PASS`) | build integrity |
-| G2 integrity | Each chain segment starts at seq 1 from its boot entry's genesis and verifies with no break, and segments are in time order. Any edited, deleted or unparsable row, sequence gap or unanchored start fails. Every scored call precedes its outcome in file order. Unresolved plus dropped windows < 2 %. **Anchoring:** the chain proves internal consistency only; deleting or fabricating a whole segment is ruled out only by heads published outside the file. Every segment must contain a published head (`--anchor`), and the last one must come after the last scored outcome; otherwise the verdict is at most INCOMPLETE | evidence validity |
+| G2 integrity | Each chain segment starts at seq 1 from its boot entry's genesis and verifies with no break, and segments are in time order. Any edited, deleted or unparsable row, sequence gap or unanchored start fails. Every scored call precedes its outcome in file order. **Anchoring:** the chain proves internal consistency only, so a window counts only if a published head (`--anchor`, from the puller's anchors file) comes at or after its outcome in its own chain segment. Later windows in that segment are unverified and count as unresolved. Unresolved (explicit, dropped or unverified) < 2 % of windows. **Downtime:** 15-minute windows in the test period with no trace in the ledger ≤ 5 % | evidence validity |
 | G3 reliability | Final (≥ 3,000 LOCKED windows, or the 90-day maximum): one-sided 95 % Clopper–Pearson upper bound ≤ 0.75 %. Power 85 % at the development loss rate 0.37 %, 47 % at 0.5 %. A higher bound is NOT DEMONSTRATED (no adoption), not FAIL. An interim bound at 700 windows is reported, never acted on | dev 0.37 % (13/3,484); v1 had ~52 % power at each stage |
 | G3c stop rule (the only early FAIL on reliability) | the anytime-valid failure monitor (H0: loss rate ≤ 0.5 %) must never alarm: e ≥ 20 at any point (running maximum; the alarm is latched, because Ville's inequality bounds sup E). More than 3 losses in any 200 consecutive LOCKED windows is also an operational stop | 2.7 README rule |
 | G4 coverage | LOCKED in ≥ 85 % of scored windows; mean first-LOCKED lead ≥ 60 s | 2.6 holdout 88.6 % / 100 s |
@@ -66,9 +66,18 @@ hash-chained ledger before Kalshi publishes the result.
 | G6 latency | Over the whole test period, from the hourly latency histograms committed to the ledger (p99 = upper bucket edge, conservative): p99 index input age at decision ≤ 3,000 ms; p99 snapshot compute ≤ 25 ms; p99 `/radar` compute ≤ 50 ms. The signal age when displayed (p99 ≤ 1,500 ms target) is reported by browsers, so it is unauthenticated. It is reported but cannot decide the gate | staleness budget, page STALE rule |
 | G7 economics (separate claim) | edge e-process (H0: mean P&L per contract ≤ 0) reaches ≥ 20 at any point on hypothetical fills (first crossing; valid by Ville's inequality) ⇒ "edge established on visible-book fills". Otherwise TRADE NOW profitability stays **unproven**, whatever the point estimate. Power (Monte Carlo, about 4.7 trades a day, 98.15 ¢ average plus 0.2 ¢ fee): within 90 days (about 420 trades) about 9 % at the development estimate of +0.86 ¢, about 34 % at +1.32 ¢ | Ville's inequality |
 
-Minimum period: 21 days and 3,000 LOCKED windows, whichever is later (about 35 days at about 85 LOCKED windows a
-day). Maximum: 90 days; outcomes after day 90 are not scored. Gates are evaluated with `tools/forward_report28.js`
-on the pulled ledger, never on a server's in-memory summary alone.
+**The end of the test.** The test ends at the first scored window by which there are ≥ 3,000 LOCKED windows and
+≥ 21 days (about 35 days at about 85 LOCKED windows a day), or at day 90, whichever comes first. Later outcomes are
+not scored, so re-running the evaluation later cannot change the verdict. This matters because a Clopper–Pearson
+bound is valid only at a sample size fixed in advance.
+
+**Rules for the evaluator:**
+* Gates are evaluated with `tools/forward_report28.js` on the pulled ledger, never on a server's in-memory summary
+  alone.
+* A verdict requires `--config <frozen CONFIG28_HASH>`. Each window is attributed to the configuration in force
+  when its calls were made.
+* With `--since` the output is exploratory, not a verdict.
+* G6 comes only from the latency histograms committed to the ledger; a `/latency` snapshot is information only.
 
 Verdicts, in this order:
 
@@ -77,7 +86,7 @@ Verdicts, in this order:
 | **FAIL** | G2 fails or the G3c stop rule fires (at any time); or, at the end, G1 fails or G4, G5 or G6 fails |
 | **IN PROGRESS** | before the end |
 | **NOT DEMONSTRATED** | the end is reached but G3's bound is above 0.75 % (no adoption, and no evidence of harm either) |
-| **INCOMPLETE** | evidence is missing: G1 not attested, no published anchors, G5 coverage below 85 %, or a missing G6 series. It is never a PASS |
+| **INCOMPLETE** | evidence is missing: no `--config`, G1 not attested, no published anchors, G5 coverage below 85 %, or a missing G6 series. It is never a PASS |
 | **PASS (decision support)** | G1–G6 pass |
 
 TRADE NOW profitability additionally needs G7, and then still only on hypothetical fills. As stated in advance (G7
@@ -103,7 +112,7 @@ A candidate replaces A only if, on the same scored windows:
    objective cannot be evaluated has p = 1 and still counts in m = 5.
 
 3. **Every production gate passes for the candidate.**
-   * Its own G3 and G4 are evaluated.
+   * Its own G3, G3c stop rule (latched alarm, losses in 200) and G4 are evaluated.
    * G1, G2 and G6 are shared system gates.
    * G5 cannot be measured per candidate, because only production's displayed probability is committed.
    * The evaluator prints a verdict per candidate: not worse, constraints, objective after Holm, G3/G4, and adopt yes/no.
@@ -140,3 +149,8 @@ in `test/regress28.js` that fails on the v1 build.
 | Whole chain segments could be deleted or fabricated undetected | Published anchors required; segments in time order |
 | A window was attributed to the configuration in force at its outcome | The configuration in force when its calls were made |
 | Section 5 conditions were not computed | Per-candidate verdicts |
+| The bound could be re-evaluated on later data (optional stopping) | The test ends at a fixed point and later outcomes are not scored |
+| Options not fixed by the pre-registration (`--since`, no `--config`, a `/latency` snapshot) changed the verdict | `--config` required; `--since` is exploratory; G6 only from the ledger |
+| A segment's rows after its last published head could be deleted or invented unseen | They are unverified and counted as unresolved |
+| Downtime was invisible | Windows with no trace counted; at most 5 % |
+| A candidate's own stop rule was ignored | Required for adoption |
