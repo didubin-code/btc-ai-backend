@@ -5,17 +5,18 @@
       const since = Number(u.searchParams.get('since') || 0), n = clamp(Number(u.searchParams.get('n') || 5000), 1, 5000);   // pages of <= 5,000 (event loop)
       /* with a ledger file, only rows already on disk are served: a row that a restart could still lose (pending write)
          is never handed to a puller, so a resumed chain can never fork from a pulled copy */
-      const lim = LEDGER28_FILE && !L28.resumeFailed ? L28.fileSeq : Infinity;
+      const lim = LEDGER28_FILE && !L28.resumeFailed && !L28.memoryOnly ? L28.fileSeq : Infinity;
       const rows = L28.rows.filter(e => e.seq > since && e.seq <= lim).slice(0, n);
       if (u.searchParams.get('format') === 'ndjson') { cors(res); res.setHeader('Content-Type', 'application/x-ndjson'); return res.end(rows.map(r => JSON.stringify(r)).join('\n') + (rows.length ? '\n' : '')); }
-      return send(res, 200, { ok: true, version: SERVER_VERSION, genesis: L28.genesis, head: L28.head, seq: L28.seq, durableSeq: Number.isFinite(lim) ? lim : null, inMemoryFrom: L28.rows.length ? L28.rows[0].seq : null, n: rows.length, rows });
+      return send(res, 200, { ok: true, version: SERVER_VERSION, genesis: L28.genesis, chainId: L28.chainId || null, head: L28.head, seq: L28.seq, durableSeq: Number.isFinite(lim) ? lim : null,
+        pendingWrites: L28.pending.length, inMemoryFrom: L28.rows.length ? L28.rows[0].seq : null, n: rows.length, rows });
     }
     if (req.method === 'GET' && u.pathname === '/ledger/verify') {
       const first = L28.rows[0];
       const v = ledgerVerify28(u.searchParams.get('full') === '1');
-      return send(res, 200, { ok: v.ok, version: SERVER_VERSION, verify: v, head: L28.head, seq: L28.seq, inMemoryFrom: first ? first.seq : null,
+      return send(res, 200, { ok: v.ok, version: SERVER_VERSION, verify: v, head: L28.head, seq: L28.seq, chainId: L28.chainId || null, inMemoryFrom: first ? first.seq : null,
         genesis: L28.genesis, file: LEDGER28_FILE || null, fileErr: L28.fileErr, resumed: L28.resumed,
-        note: 'publish or screenshot `head` now and then: any later rewrite of an earlier entry changes every subsequent hash' });
+        note: 'anchor the heads printed by tools/ledger_pull28.js (they are in your pulled file): publish its --anchors file often; this head may include entries not yet pulled' });
     }
     /* shadow model competition on identical live inputs, scored at Kalshi settlement */
     if (req.method === 'GET' && u.pathname === '/shadow') {

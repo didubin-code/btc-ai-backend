@@ -1,7 +1,7 @@
 /* Long-run soak of the 2.8 live path on a fake clock: a synthetic random-walk index for N simulated hours,
    96 windows/day with rollover and settlement, bgTick at 2 Hz. Checks that every 2.8 in-memory structure stays
    bounded and that per-tick cost does not grow. SYNTHETIC prices: mechanics only.
-   usage: node test/soak28.js <pinradar_server.js> [hours=24]                                               */
+   usage: node --expose-gc test/soak28.js <pinradar_server.js> [hours=24]   (--expose-gc: heap is measured after a full GC)                                               */
 'use strict';
 process.env.ENABLE_WS = '0'; process.env.PINRADAR_REPLAY = '1';
 const path = require('path');
@@ -12,7 +12,8 @@ let seed = 7; const R = () => { seed = (seed * 16807) % 2147483647; return seed 
 const T0 = 1_790_000_100 - (1_790_000_100 % 900), T1 = T0 + HOURS * 3600;
 for (let i = 0; i < 10; i++) S.SKEW.samples.push(20); S.SKEW.estMs = 20;
 let x = 80000, cur = null, strike = 80000; const pend = [], sumWin = new Map();
-const snapMem = () => ({ heapMB: +(process.memoryUsage().heapUsed / 1048576).toFixed(1), ledger: S.L28.rows.length, tapeRows: S.TAPE28.rows.length, tapeSamples: S.TAPE28.samples.length,
+/* heap = live heap after a full GC when run with --expose-gc (without it, heapUsed includes uncollected garbage) */
+const snapMem = () => ({ heapMB: (global.gc && global.gc(), +(process.memoryUsage().heapUsed / 1048576).toFixed(1)), ledger: S.L28.rows.length, tapeRows: S.TAPE28.rows.length, tapeSamples: S.TAPE28.samples.length,
   shadowOpen: S.SHADOW28.windows.size, lat: Object.values(S.LAT28.series).reduce((a, s) => a + s.length, 0), pred: S.PRED27.rows.length, sig: S.SIGNAL_LOG.length,
   settleDone: S.SETTLE.done.length, ledgerOpen: S.LEDGER.open.size, ledgerClosed: S.LEDGER.closed.length, ring: S.IDX.ring.length });
 const hourly = []; let tickMs = [], ticks = 0;

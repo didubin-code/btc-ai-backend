@@ -172,6 +172,7 @@ function ledgerAppend28(L, type, body, ts = Date.now()) {
      alter an entry that is already hashed (JSON copy = what canon28 and the file see: NaN/undefined -> null/absent) */
   const e = { seq: ++L.seq, ts, type, body: body === undefined ? null : JSON.parse(JSON.stringify(body)), prev: L.head };
   e.hash = entryHash28(L.head, e); L.head = e.hash;
+  if (e.seq === 1) L.chainId = e.hash;                    // identifies this chain (the genesis is shared by every chain of one config)
   L.rows.push(e); if (L.rows.length > L.maxMem) { L.rows.shift(); L.dropped++; }
   if (L.file && L.fs && !L.fileStopped) { L.pending.push([e.seq, JSON.stringify(e) + '\n']); ledgerFlush28(L); }
   return e;
@@ -189,6 +190,8 @@ function ledgerFlush28(L) {
       if (L.fileErr) { L.lastRecovered = { ts: Date.now(), after: L.fileErr }; L.fileErr = null; }
     } catch (err) {
       L.fileErr = String(err && err.message || err); L.writeFailures++;
+      /* nothing was ever stored (unmounted or read-only disk): run as the no-disk setup, serving the chain from memory */
+      if (!L.fileSeq) { L.fileStopped = { ts: Date.now(), why: 'ledger file not writable (' + L.fileErr + '): running in memory only, as without a disk' }; L.memoryOnly = true; L.pending = []; return; }
       if (L.pending.length > L.maxPending) { L.fileStopped = { ts: Date.now(), why: L.fileErr, atSeq: L.pending[0][0] }; L.pending = []; }
       return;
     }
@@ -222,7 +225,7 @@ function ledgerResume28(L, fs, file, onRow = null, now = Date.now()) {
         else if (prev !== null && e.prev !== prev) why = 'prev hash mismatch';
         else if (entryHash28(e.prev, e) !== e.hash) why = 'hash mismatch (entry altered)';
         if (why) { info.broken = { why, atSeq: e && e.seq != null ? e.seq : lastSeq + 1, afterBytes: good }; stop = true; break; }
-        if (prev === null) { info.firstSeq = e.seq; L.genesis = e.prev; }
+        if (prev === null) { info.firstSeq = e.seq; L.genesis = e.prev; L.chainId = e.hash; }
         prev = e.hash; lastSeq = e.seq; good += bytes; info.n++;
         keep.push(e); if (keep.length > 2 * L.maxMem) keep.splice(0, keep.length - L.maxMem);
         if (onRow) onRow(e);
@@ -234,7 +237,7 @@ function ledgerResume28(L, fs, file, onRow = null, now = Date.now()) {
     let e = null; try { e = JSON.parse(rest.toString('utf8')); } catch (_) { e = null; }
     if (e && typeof e === 'object' && (prev === null ? e.seq === 1 : (e.seq === lastSeq + 1 && e.prev === prev)) && entryHash28(e.prev, e) === e.hash) {
       fs.appendFileSync(file, '\n'); good += rest.length + 1; info.n++; info.completedLastLine = e.seq;      // only the newline was missing
-      if (prev === null) { info.firstSeq = e.seq; L.genesis = e.prev; }
+      if (prev === null) { info.firstSeq = e.seq; L.genesis = e.prev; L.chainId = e.hash; }
       prev = e.hash; lastSeq = e.seq; keep.push(e); if (onRow) onRow(e); rest = Buffer.alloc(0);
     }
   }
@@ -292,21 +295,24 @@ function failState28(M) {
       : 'no evidence the loss rate exceeds the standard (absence of alarm is not proof of safety)' };
 }
 const EDGE_LAMBDAS28 = [0.02, 0.05, 0.1, 0.2, 0.35, 0.5, 0.7, 0.9];
-function mkEdgeMonitor28(alpha = 0.05) { return { kind: 'proof-of-edge', alpha, n: 0, sum: 0, sumSq: 0, logW: EDGE_LAMBDAS28.map(() => 0), dd: { peak: 0, cum: 0, max: 0 } }; }
+function mkEdgeMonitor28(alpha = 0.05) { return { kind: 'proof-of-edge', alpha, n: 0, sum: 0, sumSq: 0, logW: EDGE_LAMBDAS28.map(() => 0), dd: { peak: 0, cum: 0, max: 0 }, supE: 1, firstProvenN: null }; }
+function edgeE28(M) { const fin = M.logW.filter(Number.isFinite); if (!fin.length) return 0; const mx = Math.max(...fin); return Math.exp(mx) * fin.reduce((a, l) => a + Math.exp(l - mx), 0) / M.logW.length; }
 function edgeUpdate28(M, pnlDollarsPerContract) {
   const x = Number(pnlDollarsPerContract); if (!Number.isFinite(x)) return M;
   M.n++; M.sum += x; M.sumSq += x * x;
   for (let i = 0; i < EDGE_LAMBDAS28.length; i++) { const f = 1 + EDGE_LAMBDAS28[i] * x; M.logW[i] += f > 0 ? Math.log(f) : -Infinity; }
   M.dd.cum += x; M.dd.peak = Math.max(M.dd.peak, M.dd.cum); M.dd.max = Math.max(M.dd.max, M.dd.peak - M.dd.cum);
+  /* Ville: P(sup E >= 1/alpha) <= alpha under H0, so the claim may be made at the first crossing and stays made */
+  const e = edgeE28(M); if (e > (M.supE || 1)) M.supE = e; if (M.firstProvenN == null && e >= 1 / M.alpha) M.firstProvenN = M.n;
   return M;
 }
 function edgeState28(M) {
-  const fin = M.logW.filter(Number.isFinite); let e = 0;
-  if (fin.length) { const mx = Math.max(...fin); e = Math.exp(mx) * fin.reduce((a, l) => a + Math.exp(l - mx), 0) / M.logW.length; }
+  const e = edgeE28(M), latched = M.firstProvenN != null;
   const mean = M.n ? M.sum / M.n : null;
   return { kind: M.kind, H0: 'mean P&L per contract <= 0', n: M.n, meanCentsPerContract: mean == null ? null : r4(100 * mean),
-    totalCentsPerContractSum: r4(100 * M.sum), maxDrawdownCentsPerContract: r4(100 * M.dd.max), eValue: r4(e), threshold: 1 / M.alpha,
-    proven: e >= 1 / M.alpha, meaning: e >= 1 / M.alpha ? `positive edge established (anytime-valid ${(100 * (1 - M.alpha)).toFixed(0)}%) on these fills`
+    totalCentsPerContractSum: r4(100 * M.sum), maxDrawdownCentsPerContract: r4(100 * M.dd.max), eValue: r4(e), supEValue: r4(M.supE || 1), threshold: 1 / M.alpha,
+    proven: latched, provenNow: e >= 1 / M.alpha, firstProvenAtTrade: M.firstProvenN,
+    meaning: latched ? `positive edge established (anytime-valid ${(100 * (1 - M.alpha)).toFixed(0)}%, first at trade ${M.firstProvenN}) on these hypothetical fills`
       : 'edge NOT established — treat TRADE NOW profitability as unproven' };
 }
 

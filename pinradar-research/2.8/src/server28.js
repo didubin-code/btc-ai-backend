@@ -333,11 +333,17 @@ function calib28(w, s, tau, now) {
 /* every 60 s whether or not a window is live: feed health goes on the record even when the engine is blind */
 function heartbeat28(now = Date.now()) {
   HB28.lastTs = now;
-  /* hourly latency histograms (G6 is evaluated on the whole test period from these, not on a rolling /latency snapshot) */
+  /* latency histograms every 5 min (and at SIGTERM): G6 is evaluated on the whole test period from these, not on a
+     rolling /latency snapshot, and a restart loses at most the last few minutes */
   if (!HB28.latTs) HB28.latTs = now;
-  if (now - HB28.latTs >= 3600000) { ledgerAppend28(L28, 'latency', { since: HB28.latTs, until: now, hist: latFlush28(LAT28) }, now); HB28.latTs = now; }
+  if (now - HB28.latTs >= 300000) latCommit28(now);
   ledgerAppend28(L28, 'heartbeat', { uptimeSec: Math.round((now - BOOT28.ts) / 1000), live: VENUE_LIST().filter(v => venueFresh(v, now)).map(v => v.name),
     kalshi: KAL.market ? KAL.market.ticker : null, kalshiAgeMs: KAL.ts ? now - KAL.ts : null, brti: BRTI.state, bgTicks: BG.ticks, bgErr: BG.lastErr, scored: SHADOW28.scored }, now);
+}
+function latCommit28(now = Date.now()) {
+  const hist = latFlush28(LAT28);
+  if (Object.keys(hist).length) ledgerAppend28(L28, 'latency', { since: HB28.latTs || now, until: now, hist }, now);
+  HB28.latTs = now;
 }
 /* settlement: score every policy's first calls for this window, commit the outcome */
 function shadowFinalize28(ticker, result, official) {
@@ -368,7 +374,8 @@ async function settleRestored28(now = Date.now()) {
 function v28Summary(now = Date.now()) {
   return { ok: true, version: SERVER_VERSION, build: BUILD_ID, core: CORE28_VERSION, prereg: PREREG28_ID, configHash: CONFIG28_HASH, boot: BOOT28.id,
     ledger: { head: L28.head, seq: L28.seq, inMemory: L28.rows.length, dropped: L28.dropped, file: LEDGER28_FILE || null, fileErr: L28.fileErr, resumed: L28.resumed,
-      writeFailures: L28.writeFailures, pendingWrites: L28.pending.length, durableSeq: LEDGER28_FILE ? L28.fileSeq : null, fileStopped: L28.fileStopped, lastRecovered: L28.lastRecovered || null },
+      writeFailures: L28.writeFailures, pendingWrites: L28.pending.length, durableSeq: LEDGER28_FILE && !L28.memoryOnly ? L28.fileSeq : null, memoryOnly: !!L28.memoryOnly,
+      chainId: L28.chainId || null, fileStopped: L28.fileStopped, lastRecovered: L28.lastRecovered || null },
     shadow: { openWindows: SHADOW28.windows.size, scoredWindows: SHADOW28.scored, lastScore: SHADOW28.lastScore, restoredAfterRestart: SHADOW28.restored },
     fees: { ...FEE28.cfg, isDefault: FEE28.isDefault, verified: FEE28.verified, error: FEE28.error, fetchedAt: FEE28.fetchedAt },
     tape: { records: TAPE28.rows.length, samples: TAPE28.samples.length, dropped: TAPE28.dropped, file: TAPE28_FILE || null, fileErr: TAPE28.fileErr, fileBytes: TAPE28.fileBytes ?? null, rotations: TAPE28.rotations || 0 },
@@ -379,6 +386,8 @@ function start28() {
   if (process.env.PINRADAR_REPLAY || START28.done) return; START28.done = true;
   fee28Refresh(); const t = setInterval(fee28Refresh, 6 * 3600 * 1000); if (t.unref) t.unref();
   settleRestored28().catch(() => { });
+  /* a deploy or restart sends SIGTERM: commit the partial latency histogram first (there is no other handler, so exit as the default would) */
+  if (!process.listenerCount('SIGTERM')) process.once('SIGTERM', () => { try { latCommit28(); ledgerAppend28(L28, 'shutdown', { boot: BOOT28.id, signal: 'SIGTERM' }); } catch (_) { } process.exit(0); });
   const t2 = setInterval(() => { settleRestored28().catch(() => { }); shadowExpire28(); heartbeat28(); }, 60000); if (t2.unref) t2.unref();
 }
 const START28 = { done: false };

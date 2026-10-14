@@ -57,23 +57,31 @@ hash-chained ledger before Kalshi publishes the result.
 
 | Gate | Requirement | Basis |
 |---|---|---|
-| G1 correctness | `run_all28.sh` passes on the deployed build; every `/selftest` check passes | build integrity |
-| G2 integrity | Each chain segment starts at seq 1 from its boot entry's genesis and verifies with no break. Any edited, deleted or unparsable row, sequence gap or unanchored start fails. Every head hash written down (`--anchor`) appears in the chain. Every scored call precedes its outcome. Unresolved plus dropped windows < 2 % | evidence validity |
-| G3a reliability, stage 1 | ≥ 700 LOCKED windows: one-sided 95 % Clopper–Pearson upper bound ≤ 1.0 % | standard 0.5 % with 2× tolerance |
-| G3b reliability, stage 2 | ≥ 1,500 LOCKED windows: upper bound ≤ 0.75 % | dev 0.37 % (13/3,484) |
-| G3c stop rule | the anytime-valid failure monitor (H0: loss rate ≤ 0.5 %) must never alarm: e ≥ 20 at any point (running maximum; the alarm is latched, because Ville's inequality bounds sup E). Also more than 3 losses in any 200 consecutive LOCKED windows is an operational stop | 2.7 README rule |
+| G1 correctness | `run_all28.sh` passes on the deployed build and every `/selftest` check passes; the operator attests it to the evaluator (`--g1 PASS`) | build integrity |
+| G2 integrity | Each chain segment starts at seq 1 from its boot entry's genesis and verifies with no break, and segments are in time order. Any edited, deleted or unparsable row, sequence gap or unanchored start fails. Every scored call precedes its outcome in file order. Unresolved plus dropped windows < 2 %. **Anchoring:** the chain proves internal consistency only; deleting or fabricating a whole segment is ruled out only by heads published outside the file. Every segment must contain a published head (`--anchor`), and the last one must come after the last scored outcome; otherwise the verdict is at most INCOMPLETE | evidence validity |
+| G3 reliability | Final (≥ 3,000 LOCKED windows, or the 90-day maximum): one-sided 95 % Clopper–Pearson upper bound ≤ 0.75 %. Power 85 % at the development loss rate 0.37 %, 47 % at 0.5 %. A higher bound is NOT DEMONSTRATED (no adoption), not FAIL. An interim bound at 700 windows is reported, never acted on | dev 0.37 % (13/3,484); v1 had ~52 % power at each stage |
+| G3c stop rule (the only early FAIL on reliability) | the anytime-valid failure monitor (H0: loss rate ≤ 0.5 %) must never alarm: e ≥ 20 at any point (running maximum; the alarm is latched, because Ville's inequality bounds sup E). More than 3 losses in any 200 consecutive LOCKED windows is also an operational stop | 2.7 README rule |
 | G4 coverage | LOCKED in ≥ 85 % of scored windows; mean first-LOCKED lead ≥ 60 s | 2.6 holdout 88.6 % / 100 s |
-| G5 calibration | at τ = 60, 30 and 10 s, expected calibration error ≤ 1.5 pp. Pooled first-entry observed / expected flips over the 0.2–5 % bands has a 95 % CI whose lower end is ≤ 1.25 (no significant over-confidence beyond 25 %). Computed from the ledger's `calib` entries, committed before the outcome: the displayed P(UP) at the first tick at or below each τ (within 1 s) and at the first entry into each band. DATA UNRELIABLE states are not forecasts and are excluded. The tape is a diagnostic fallback only | 2.6 holdout/dev ECE 0.3–1.4 pp; drift 0.25–1.24 |
-| G6 latency | p99 index input age at decision ≤ 3,000 ms; p99 snapshot compute ≤ 25 ms; p99 `/radar` compute ≤ 50 ms; p99 signal age when displayed ≤ 1,500 ms | staleness budget, page STALE rule |
-| G7 economics (separate claim) | edge e-process (H0: mean P&L per contract ≤ 0) ≥ 20 on hypothetical fills ⇒ "edge established on visible-book fills". Otherwise TRADE NOW profitability stays **unproven**, whatever the point estimate | Ville's inequality |
+| G5 calibration | at τ = 60, 30 and 10 s, expected calibration error ≤ 1.5 pp. Pooled first-entry observed / expected flips over the 0.2–5 % bands has a 95 % CI whose lower end is ≤ 1.25 (no significant over-confidence beyond 25 %). Computed from the ledger's `calib` entries, committed before the outcome: the displayed P(UP) at the first tick at or below each τ (within 1 s) and at the first entry into each band. DATA UNRELIABLE states are not forecasts and are excluded. Calibration points must exist for ≥ 85 % of scored windows at each τ, otherwise G5 is insufficient (INCOMPLETE). The tape is a diagnostic fallback only | 2.6 holdout/dev ECE 0.3–1.4 pp; drift 0.25–1.24 |
+| G6 latency | Over the whole test period, from the hourly latency histograms committed to the ledger (p99 = upper bucket edge, conservative): p99 index input age at decision ≤ 3,000 ms; p99 snapshot compute ≤ 25 ms; p99 `/radar` compute ≤ 50 ms. The signal age when displayed (p99 ≤ 1,500 ms target) is reported by browsers, so it is unauthenticated. It is reported but cannot decide the gate | staleness budget, page STALE rule |
+| G7 economics (separate claim) | edge e-process (H0: mean P&L per contract ≤ 0) reaches ≥ 20 at any point on hypothetical fills (first crossing; valid by Ville's inequality) ⇒ "edge established on visible-book fills". Otherwise TRADE NOW profitability stays **unproven**, whatever the point estimate. Power (Monte Carlo, about 4.7 trades a day, 98.15 ¢ average plus 0.2 ¢ fee): within 90 days (about 420 trades) about 9 % at the development estimate of +0.86 ¢, about 34 % at +1.32 ¢ | Ville's inequality |
 
-Minimum period: 21 days and 1,500 LOCKED windows, whichever is later. Maximum: 90 days. Gates are evaluated
-with `tools/forward_report28.js` on the pulled ledger, never on a server's in-memory summary alone.
+Minimum period: 21 days and 3,000 LOCKED windows, whichever is later (about 35 days at about 85 LOCKED windows a
+day). Maximum: 90 days; outcomes after day 90 are not scored. Gates are evaluated with `tools/forward_report28.js`
+on the pulled ledger, never on a server's in-memory summary alone.
 
-Verdicts:
-* Production adoption (decision support): G1–G6 pass.
-* TRADE NOW profitability: G7 also passes, and then still only on hypothetical fills.
-* An alarm in G3c, a failure of G2, or G3a failing at stage 1 ends the test with FAIL.
+Verdicts, in this order:
+
+| Verdict | When |
+|---|---|
+| **FAIL** | G2 fails or the G3c stop rule fires (at any time); or, at the end, G1 fails or G4, G5 or G6 fails |
+| **IN PROGRESS** | before the end |
+| **NOT DEMONSTRATED** | the end is reached but G3's bound is above 0.75 % (no adoption, and no evidence of harm either) |
+| **INCOMPLETE** | evidence is missing: G1 not attested, no published anchors, G5 coverage below 85 %, or a missing G6 series. It is never a PASS |
+| **PASS (decision support)** | G1–G6 pass |
+
+TRADE NOW profitability additionally needs G7, and then still only on hypothetical fills. As stated in advance (G7
+power above), "unproven" is the expected outcome within 90 days even if the development edge is real.
 
 ## 5. Candidate comparisons (secondary, multiplicity-controlled)
 
@@ -94,7 +102,11 @@ A candidate replaces A only if, on the same scored windows:
    Holm is the step-down procedure: adjusted p-values are made monotone with a running maximum. A candidate whose
    objective cannot be evaluated has p = 1 and still counts in m = 5.
 
-3. **Every production gate G1–G6 passes for the candidate.**
+3. **Every production gate passes for the candidate.**
+   * Its own G3 and G4 are evaluated.
+   * G1, G2 and G6 are shared system gates.
+   * G5 cannot be measured per candidate, because only production's displayed probability is committed.
+   * The evaluator prints a verdict per candidate: not worse, constraints, objective after Holm, G3/G4, and adopt yes/no.
 
 Expected power, stated in advance: at loss rates near 0.3 %, discordant pairs will number in the single digits
 for months. The default outcome is therefore **keep A**. A candidate that is "not significantly different" is
@@ -120,4 +132,11 @@ in `test/regress28.js` that fails on the v1 build.
 | G3c read only the final e-value | Running maximum (latched alarm) |
 | Holm was not step-down monotone, and F had no test (m = 4) | Monotone step-down over five candidates, with F's test defined |
 | G5 used a tape that the in-memory endpoint keeps for only about 2.5 h, and included DATA UNRELIABLE rows | Committed `calib` ledger entries, DATA UNRELIABLE excluded |
-| G1 named a fixed self-test count | Every self-test check passes |
+| G7 read only the final e-value | First crossing (latched, valid under Ville); power stated |
+| G1 named a fixed self-test count | Every self-test check passes; the operator attests it (`--g1 PASS`) |
+| G3 stages had about 52 % power each at the development rate, and stage 1 called absence of evidence a FAIL | One final bound at ≥ 3,000 LOCKED windows (85 % power); only the stop rule fails early |
+| A missing G1, G5 or G6 evidence counted as a pass; no 90-day cap | INCOMPLETE instead; outcomes after day 90 are not scored |
+| G6 used a rolling /latency snapshot (about 25 min) and a browser-reported series anyone can post | Hourly histograms committed to the ledger; the browser series is informational |
+| Whole chain segments could be deleted or fabricated undetected | Published anchors required; segments in time order |
+| A window was attributed to the configuration in force at its outcome | The configuration in force when its calls were made |
+| Section 5 conditions were not computed | Per-candidate verdicts |

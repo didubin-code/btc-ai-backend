@@ -3498,21 +3498,24 @@ function failState28(M) {
       : 'no evidence the loss rate exceeds the standard (absence of alarm is not proof of safety)' };
 }
 const EDGE_LAMBDAS28 = [0.02, 0.05, 0.1, 0.2, 0.35, 0.5, 0.7, 0.9];
-function mkEdgeMonitor28(alpha = 0.05) { return { kind: 'proof-of-edge', alpha, n: 0, sum: 0, sumSq: 0, logW: EDGE_LAMBDAS28.map(() => 0), dd: { peak: 0, cum: 0, max: 0 } }; }
+function mkEdgeMonitor28(alpha = 0.05) { return { kind: 'proof-of-edge', alpha, n: 0, sum: 0, sumSq: 0, logW: EDGE_LAMBDAS28.map(() => 0), dd: { peak: 0, cum: 0, max: 0 }, supE: 1, firstProvenN: null }; }
+function edgeE28(M) { const fin = M.logW.filter(Number.isFinite); if (!fin.length) return 0; const mx = Math.max(...fin); return Math.exp(mx) * fin.reduce((a, l) => a + Math.exp(l - mx), 0) / M.logW.length; }
 function edgeUpdate28(M, pnlDollarsPerContract) {
   const x = Number(pnlDollarsPerContract); if (!Number.isFinite(x)) return M;
   M.n++; M.sum += x; M.sumSq += x * x;
   for (let i = 0; i < EDGE_LAMBDAS28.length; i++) { const f = 1 + EDGE_LAMBDAS28[i] * x; M.logW[i] += f > 0 ? Math.log(f) : -Infinity; }
   M.dd.cum += x; M.dd.peak = Math.max(M.dd.peak, M.dd.cum); M.dd.max = Math.max(M.dd.max, M.dd.peak - M.dd.cum);
+  /* Ville: P(sup E >= 1/alpha) <= alpha under H0, so the claim may be made at the first crossing and stays made */
+  const e = edgeE28(M); if (e > (M.supE || 1)) M.supE = e; if (M.firstProvenN == null && e >= 1 / M.alpha) M.firstProvenN = M.n;
   return M;
 }
 function edgeState28(M) {
-  const fin = M.logW.filter(Number.isFinite); let e = 0;
-  if (fin.length) { const mx = Math.max(...fin); e = Math.exp(mx) * fin.reduce((a, l) => a + Math.exp(l - mx), 0) / M.logW.length; }
+  const e = edgeE28(M), latched = M.firstProvenN != null;
   const mean = M.n ? M.sum / M.n : null;
   return { kind: M.kind, H0: 'mean P&L per contract <= 0', n: M.n, meanCentsPerContract: mean == null ? null : r4(100 * mean),
-    totalCentsPerContractSum: r4(100 * M.sum), maxDrawdownCentsPerContract: r4(100 * M.dd.max), eValue: r4(e), threshold: 1 / M.alpha,
-    proven: e >= 1 / M.alpha, meaning: e >= 1 / M.alpha ? `positive edge established (anytime-valid ${(100 * (1 - M.alpha)).toFixed(0)}%) on these fills`
+    totalCentsPerContractSum: r4(100 * M.sum), maxDrawdownCentsPerContract: r4(100 * M.dd.max), eValue: r4(e), supEValue: r4(M.supE || 1), threshold: 1 / M.alpha,
+    proven: latched, provenNow: e >= 1 / M.alpha, firstProvenAtTrade: M.firstProvenN,
+    meaning: latched ? `positive edge established (anytime-valid ${(100 * (1 - M.alpha)).toFixed(0)}%, first at trade ${M.firstProvenN}) on these hypothetical fills`
       : 'edge NOT established — treat TRADE NOW profitability as unproven' };
 }
 

@@ -69,6 +69,7 @@ function response(sig, extra = {}) {
   ok('pin pressure dial still renders CLEAR as a diagnostic', txt('verdict') === 'CLEAR' && /diagnostic/i.test(w.document.querySelector('.diagLabel').textContent), txt('verdict'));
   ok('2.6: P(UP) / P(DOWN) and the conservative bound are shown', /P\(UP\) 0\.40% · P\(DOWN\) 99\.60%/.test(txt('callProb')) && /conservative flip ≤/.test(txt('callProb')), txt('callProb'));
   ok('2.6: evidence for the LOCKED call (standard, record, not a guarantee)', /LOCKED standard/.test(txt('valid')) && /first LOCKED calls lost/.test(txt('valid')) && /Not a guarantee/.test(txt('valid')), txt('valid').slice(0, 180));
+  ok('2.8: the record shown is the settlement-aware 13 of 3484, labelled development, never "out of sample"', /13 (flips in|of) 3484/.test(txt('valid')) && /Development/.test(txt('valid')) && !/out of sample/i.test(txt('valid')), txt('valid').slice(0, 300));
   ok('distance shown in dollars and percent', /−\$173 \(-0\.207%\)/.test(txt('kDist')), txt('kDist'));
   ok('the live strip no longer says "% locked"', !/locked/i.test(txt('lvLock')), txt('lvLock'));
   ok('2.7: decision block (win / reversal / seconds / critical remaining average, labelled PROXY)', /WIN PROBABILITY 99\.6%/.test(txt('d27')) && /REVERSAL PROBABILITY 0\.4%/.test(txt('d27'))
@@ -100,6 +101,9 @@ function response(sig, extra = {}) {
     await show(response(sgU));
     ok('2.7: official reference below the strike after a LOCKED UP -> REVERSAL WARNING, EXIT / NO TRADE', /REVERSAL WARNING — UP AT RISK/.test(txt('callHead')) && txt('tradeAct') === 'EXIT / NO TRADE',
       txt('callHead') + ' | ' + txt('tradeAct') + ' | ' + JSON.stringify({ off: pU.officialPUp, gates: gU.soft }));
+    S.enrich28(sgU, { geo: geoU, settle: pU, kal: { ok: true, ticker: 'KXBTC15M-TEST' }, now: Date.now(), tau: (closeO - Date.now()) / 1000 }); await show(response(sgU));
+    ok('2.8 D5: the official REVERSAL WARNING shows official numbers (no proxy >99.9 %) and voids the value box', !/>99\.9%/.test(txt('callProb')) && !/>99\.9%/.test(txt('v28o')) && /REVERSAL WARNING/.test(txt('v28v')) && !$('v28v').querySelector('b.g'),
+      [txt('callProb'), txt('v28o'), txt('v28v')].join(' | '));
     Object.assign(S.BRTI, { last: null, win: null, state: 'test: off' });
   }
 
@@ -109,6 +113,7 @@ function response(sig, extra = {}) {
   ok('LOCKED at 99.9c -> LOCKED, DO NOT TRADE', txt('tradeAct') === 'LOCKED — DO NOT TRADE', txt('tradeAct') + ' | ' + txt('tradeWhy'));
   await show(response(signal({ pUp: 0.004, book: bookDown(85) })));
   ok('2.6: LOCKED offered at 85c -> LOCKED — MARKET DISAGREES (red, no TRADE NOW)', txt('tradeAct') === 'LOCKED — MARKET DISAGREES' && $('tradeBox').className.includes('bad'), txt('tradeAct') + ' | ' + $('tradeBox').className);
+  ok('2.8: MARKET DISAGREES is named in the TRADE VALUE box and the value is never green there', /MARKET DISAGREES/.test(txt('v28v')) && !$('v28v').querySelector('b.g'), txt('v28v'));
   await show(response(signal({ pUp: 0.03, book: bookDown(90) })));
   ok('97% -> HIGH CONFIDENCE — DOWN (not locked) + WAIT', /HIGH CONFIDENCE — DOWN \(not locked\)/.test(txt('callHead')) && txt('tradeAct') === 'WAIT', txt('callHead') + ' | ' + txt('tradeAct'));
   ok('2.6: HIGH CONFIDENCE carries its own (weaker) record and is never called LOCKED', /HIGH CONFIDENCE = flip risk ≤ 5% \(not LOCKED\)/.test(txt('valid')), txt('valid').slice(0, 160));

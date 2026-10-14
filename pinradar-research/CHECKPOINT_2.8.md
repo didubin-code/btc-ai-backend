@@ -1,6 +1,6 @@
 # Pin Radar 2.8 — working checkpoint (resume file)
 
-Updated: 2026-10-14 (checkpoint 2), round 3 in progress. **Nothing deployed. No orders. Production 2.3 untouched.**
+Updated: 2026-10-14 (checkpoint 3), round 3 in progress. **Nothing deployed. No orders. Production 2.3 untouched.**
 * `btc-ai-backend` `main` is still `c9e0df6`.
 * `Btc-signal` `main` is still `f3eb239`.
 
@@ -24,7 +24,7 @@ The workflow `pinradar28-adversarial-review` (run `wf_cc847d80-36a`) is resumabl
 | find-evidence-chain | dropped (duplicate coverage) |
 | verify-1 (F3, F4, F11, F15) | done: all four real; plus NEW-band28-reversal (minor, real) |
 | verify-2…verify-6 (re-run) | done: every finding they covered is real (F1, F2, F5–F10, F12–F14, F16–F18, LI-2/7/8/9/10/11, CVE-06/10/11/12/15/17) |
-| verify-7 (CVE-03/04/08/09/13/16) | running |
+| verify-7 (CVE-03/04/08/09/13/16) | done: all real. **Workflow total: 36/36 confirmed, 0 refuted, + NEW-band28-reversal** |
 | fix review of the fixes (separate agent, snapshot `snap_r3a`) | done: R1–R10 found in my fixes, all reproduced and fixed in checkpoint 2 |
 
 ## Fixed in this WIP (each has a check in `2.8/test/regress28.js` that FAILS on `266c3f3` and passes here)
@@ -93,6 +93,31 @@ After the live-integration fixes (`prcopy3`) only part of the suite was re-run:
 | Candidates | section 5 verdicts computed (not worse, constraints, Holm, own G3/G4) |
 
 Full run_all28 passed on the tree before R1–R10 (all 9 stages). After R1–R10, these were run: selftest 134/134, regress 44/44, props pass. **A final full run and the soak are still to be done.**
+
+## Checkpoint 3
+
+* Docs updated:
+  * PREREGISTRATION v2 (gates and verdict table);
+  * README sections 1–6 and 8;
+  * REPORT (sections A, C, E, G, H, R3 and J);
+  * REGISTER R6, R14, R15, R17, R18 and R23–R28.
+* The edge monitor is latched (type-I 1.8 %; failure 2.8 %).
+* page28_test is now 41/41; its 3 new checks fail on 266c3f3.
+* The soak measures the heap after GC: 18 → 42 MB over 24 h, pass.
+* The full run_all28 passed on the tree before the N fixes.
+* Second fix review (round 2, snapshot snap_r3b) found N1–N11:
+  * N1: G3 not frozen at the end (optional stopping);
+  * N2: `--since`, `--config` and the `--latency` fallback can change the verdict;
+  * N3: the tail after a segment's last anchor is unverified;
+  * N4: the puller identified chains by genesis (false or missed forks);
+  * N5: an unwritable LEDGER_FILE hid the ledger;
+  * N6: latency histograms hourly (the partial hour was lost at restart);
+  * N7: candidate adoption ignores the candidate's stop rule;
+  * N8: downtime not measured;
+  * N9: anchor the puller's head;
+  * N10: README stale (fixed);
+  * N11: value vs execution, by design.
+* In this commit, N4, N5 and N6 are done in the server, core, routes and puller (`chainId`, memory-only fallback, 5-min + SIGTERM latency flush, puller `--anchors`, exit codes 3/4). N1–N3, N7, N8 (forward_report) and their tests are next.
 
 ## Outstanding
 
