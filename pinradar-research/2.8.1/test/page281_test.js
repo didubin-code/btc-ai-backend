@@ -16,7 +16,7 @@ function mkGeo(pUp, extra = {}) {
     sigmaBps: 0.42, sigmaRawBps: 0.41, sigmaWarm: true, sigmaParts: [], sigmaPathUsd: 6.1, basisSdUsd: 4.8, basisMeanUsd: 0.9,
     cushionSigma: 22.2, requiredMoveUsd: 346.6, inputAgeMs: 120, volInflation: 1.001, provenUp: false, regime: { kind: 'sig', bucket: 3 }, ...extra };
 }
-function signal({ pUp, tau = 30, book, execSec = 10, warmup = null, ticker = 'KXBTC15M-TEST' }) {
+function signal({ pUp, tau = 30, book, execSec = 12, warmup = null, ticker = 'KXBTC15M-TEST' }) {
   S.KAL.ob = book ? { ticker, yes: book.yes, no: book.no } : null; S.KAL.obTs = Date.now() - (book && book.ageMs || 100);
   Object.assign(S.LOCK25, { ticker, hist: [], lockedSide: null, lockedAtTau: null, revNoted: false });
   const now = Date.now(), closeMs = now + tau * 1000, geo = mkGeo(pUp, { tau });
@@ -55,16 +55,16 @@ const bookDown = (askNo, size = 500, ageMs = 100) => ({ yes: [[100 - askNo, size
 
   current = response(signal({ pUp: 0.004, book: bookDown(96) }));
   $('startBtn').click(); await sleep(900);
-  ok('TRADE NOW banner: buy NO (DOWN), green, with the last order moment', /^TRADE NOW — BUY NO \(DOWN\)$/.test(txt('act281S')) && $('act281').className.includes('go') && /last moment to place an order: T−13 s/.test(txt('act281C')), [txt('act281S'), $('act281').className, txt('act281C')]);
-  ok('the request carries the order time (default 10 s)', lastBody && JSON.parse(lastBody).execSec === 10, lastBody && JSON.parse(lastBody).execSec);
+  ok('TRADE NOW banner: buy NO (DOWN), green, with the last order moment', /^TRADE NOW — BUY NO \(DOWN\)$/.test(txt('act281S')) && $('act281').className.includes('go') && /last moment to place an order: T−15 s/.test(txt('act281C')), [txt('act281S'), $('act281').className, txt('act281C')]);
+  ok('the request carries the order time (default 12 s)', lastBody && JSON.parse(lastBody).execSec === 12, lastBody && JSON.parse(lastBody).execSec);
   await show(response(signal({ pUp: 0.004, book: bookDown(99.9) })));
-  ok('LOCKED with no edge -> PREDICTED LOCKED DOWN — NOT TRADABLE NOW, with the reason', /^PREDICTED LOCKED DOWN — NOT TRADABLE NOW$/.test(txt('act281S')) && /NO EDGE|not tradable now/.test(txt('act281W')) && $('act281').className.includes('pred'), [txt('act281S'), txt('act281W')]);
+  ok('LOCKED with no edge -> SIT OUT, reversal risk and the no-edge reason', txt('act281S') === 'SIT OUT' && /reversal risk/.test(txt('act281W')) && /no edge at/.test(txt('act281W')) && $('act281').className.includes('sit'), [txt('act281S'), txt('act281W')]);
   await show(response(signal({ pUp: 0.004, tau: 9, book: bookDown(96) })));
-  ok('LOCKED with 9 s left and a 10 s order time -> TOO LATE TO TRADE (amber), never TRADE NOW', txt('act281S') === 'TOO LATE TO TRADE' && $('act281').className.includes('late') && /past the last moment/.test(txt('act281C')), [txt('act281S'), txt('act281W'), txt('act281C')]);
+  ok('LOCKED with 9 s left and a 12 s order time -> TOO LATE (amber), never TRADE NOW', txt('act281S') === 'TOO LATE' && $('act281').className.includes('late') && /past the last moment/.test(txt('act281C')), [txt('act281S'), txt('act281W'), txt('act281C')]);
   await show(response(signal({ pUp: 0.03, book: bookDown(96) })));
   ok('HIGH CONFIDENCE -> SIT OUT', txt('act281S') === 'SIT OUT' && $('act281').className.includes('sit'), txt('act281S'));
   await show(response(signal({ pUp: 0.004, tau: -2, book: bookDown(96) })));
-  ok('after the close -> WINDOW CLOSED — FINAL / SETTLEMENT (never an opportunity)', /WINDOW CLOSED/.test(txt('act281S')) && !/TRADE NOW/.test(txt('act281S')) && txt('act281C') === '', [txt('act281S'), txt('act281C')]);
+  ok('after the close -> TOO LATE, window closed (never an opportunity)', txt('act281S') === 'TOO LATE' && /window closed/.test(txt('act281W')) && !/TRADE NOW/.test(txt('act281S')) && txt('act281C') === '', [txt('act281S'), txt('act281C')]);
   await show(response(signal({ pUp: 0.004, book: bookDown(96), warmup: { label: 'restarted 150 s ago: conservative volatility envelope (full history in 750 s)' } })));
   ok('restart banner shown when the server reports a warm-up', $('warm281').style.display === 'block' && /restarted 150 s ago/.test(txt('warm281')), txt('warm281'));
   await show(response(signal({ pUp: 0.004, book: bookDown(96) })));
@@ -79,9 +79,9 @@ const bookDown = (askNo, size = 500, ageMs = 100) => ({ yes: [[100 - askNo, size
   /* the Oct 15 12:00 ET screens: LOCKED UP at 99.8c (no edge), then no UP offers */
   const bookUp = (askYes, size = 500) => ({ yes: [[0.3, 900]], no: askYes == null ? [] : [[Math.round((100 - askYes) * 100) / 100, size]], ageMs: 520 });
   await show(response(signal({ pUp: 0.9954, tau: 70, book: bookUp(99.8) })));
-  ok('Oct 15 replica, 99.8c: PREDICTED LOCKED UP — NOT TRADABLE NOW, NO EDGE with the price that would qualify', /^PREDICTED LOCKED UP — NOT TRADABLE NOW$/.test(txt('act281S')) && /NO EDGE/.test(txt('act281W')) && /qualify only at ≤/.test(txt('act281W')), [txt('act281S'), txt('act281W')]);
+  ok('Oct 15 replica, 99.8c: SIT OUT — LOCKED UP but no edge, with the price that would qualify', txt('act281S') === 'SIT OUT' && /LOCKED UP, but no edge at 99.8¢/.test(txt('act281W')) && /worth it only at ≤/.test(txt('act281W')), [txt('act281S'), txt('act281W')]);
   await show(response(signal({ pUp: 0.9999, tau: 33, book: bookUp(null) })));
-  ok('Oct 15 replica, no UP offers at T-33: NO OFFERS (not TOO LATE) in the banner and the trade box', /NO OFFERS/.test(txt('act281W')) && txt('act281S') !== 'TOO LATE TO TRADE' && txt('tradeAct') === 'LOCKED — NO OFFERS', [txt('act281S'), txt('act281W'), txt('tradeAct')]);
+  ok('Oct 15 replica, no UP offers at T-33: SIT OUT — nobody is selling (not TOO LATE), trade box NO OFFERS', /nobody is selling UP/.test(txt('act281W')) && txt('act281S') === 'SIT OUT' && txt('tradeAct') === 'LOCKED — NO OFFERS', [txt('act281S'), txt('act281W'), txt('tradeAct')]);
   /* review finding: the banner must be downgraded when the backend goes stale (the page may downgrade, never upgrade) */
   await show(response(signal({ pUp: 0.004, tau: 30, book: bookDown(96) })));
   const okBefore = txt('act281S');

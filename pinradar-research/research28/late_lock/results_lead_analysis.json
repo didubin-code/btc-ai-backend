@@ -44,7 +44,8 @@
  "neverLocked": 4,
  "projection": {
   "firstSaidWithin20s": 53,
-  "lockedAsProjected": 45,
+  "lockedWithinProjectedTime": 37,
+  "lockedWithinProjectedTimePlus10s": 45,
   "neverLocked": 1,
   "medianWarningSecondsBeforeLocked": 15
  },

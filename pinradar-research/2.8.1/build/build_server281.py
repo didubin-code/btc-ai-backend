@@ -64,11 +64,59 @@ s = rep(s, """    else if (!(tr.evConsCents >= cfg.minEdgeCents)) { tr.action = 
 # (compatibility) but flag it and say what it means; exec281 shows it as PREDICTED LOCKED (NO OFFERS), not TOO LATE
 s = rep(s, "    else if (!lv || !lv.length) { tr.action = 'LOCKED — TOO LATE'; tr.why = `no ${out.side} offers left on Kalshi`; }",
         "    else if (!lv || !lv.length) { tr.action = 'LOCKED — TOO LATE'; tr.noOffers = true; tr.why = `no ${out.side} offers on Kalshi: nobody is selling ${out.side} below 100¢ (the market already treats it as decided)`; }   // v2.8.1")
+# DATA UNRELIABLE defect (sampler phase): each ring sample was assigned to ONE settlement print by rounding. Node's setInterval drifts
+# (~1 ms per tick), so the sample phase sweeps through x.5 s; there two consecutive samples round to the same print and the next print
+# gets none -> "only k/n locked prints sampled" -> DATA UNRELIABLE for most of the final minute (94 % of decisions at phase 500 ms,
+# research28/dq/sampler_phase.js). Fix 1: every print takes its nearest sample within 600 ms (a sample may serve the two prints it lies
+# between). A real gap (no sample within 600 ms) is still missing and the coverage gate still fires.
+s = rep(s, """    const off = Math.round((closeMs - p[0]) / 1000);
+    if (off < 0 || off >= W) continue;
+    const d = Math.abs(closeMs - off * 1000 - p[0]);
+    if (d > 600) continue;
+    const cur = bySec.get(off);
+    if (!cur || d < cur.d) bySec.set(off, { v: p[1], d });
+  }""", """    const o0 = Math.floor((closeMs - p[0]) / 1000);                 // v2.8.1: the two prints this sample lies between
+    for (const off of (DQ_FIXES281 ? [o0, o0 + 1] : [Math.round((closeMs - p[0]) / 1000)])) {
+      if (off < 0 || off >= W) continue;
+      const d = Math.abs(closeMs - off * 1000 - p[0]);
+      if (d > 600) continue;
+      const cur = bySec.get(off);
+      if (!cur || d < cur.d) bySec.set(off, { v: p[1], d });
+    }
+  }""")
+# Fix 2: the 1 Hz sampler is aligned to the wall-clock second (+SAMPLE_PHASE_MS) and re-aligned every tick, so it cannot drift.
+s = rep(s, """  if (IDX.sampler) return;
+  IDX.sampler = setInterval(sampleIndex, 1000);
+  if (IDX.sampler.unref) IDX.sampler.unref();""", """  if (IDX.sampler) return;
+  /* v2.8.1: aligned to the second (+SAMPLE_PHASE_MS), re-aligned on every tick: no setInterval drift through the x.5 s phase */
+  const phase = clampEnv(process.env.SAMPLE_PHASE_MS, 100, 0, 400);
+  const schedule = () => {
+    const now = Date.now(), next = (Math.floor((now - phase) / 1000) + 1) * 1000 + phase;
+    IDX.sampler = setTimeout(() => { try { sampleIndex(); } finally { schedule(); } }, Math.max(1, next - now));
+    if (IDX.sampler.unref) IDX.sampler.unref();
+  };
+  if (!DQ_FIXES281) { IDX.sampler = setInterval(sampleIndex, 1000); if (IDX.sampler.unref) IDX.sampler.unref(); sampleIndex(); return; }   // 2.8 behaviour
+  IDX.sampler = true; schedule();""")
+# DATA UNRELIABLE (input age): the lock gate used the OLDEST quote among the venues in the index, and its budget shrinks to 100 ms per
+# second of tau (0.75 s minimum) in the final 30 s. One lagging venue therefore made the call DATA UNRELIABLE even when two other venues
+# were fresh and agreed. v2.8.1: when the full index would exceed the budget, the index is rebuilt from the venues whose quotes are within
+# the budget, if they still form a quorum (>= MIN_INDEX_VENUES, outlier rule unchanged). Otherwise nothing changes and the gate fires.
+s = rep(s, "function computeIndex(now = Date.now()) {\n  const live = VENUE_LIST().filter(v => venueFresh(v, now));",
+        "function computeIndex(now = Date.now(), maxQuoteAgeMs = Infinity) {\n  const live = VENUE_LIST().filter(v => venueFresh(v, now) && now - v.lastQuoteTs <= maxQuoteAgeMs);   // v2.8.1: optional age cap")
+s = rep(s, """    const liveIdx = computeIndex(now);
+    const used = liveIdx ? VENUE_LIST().filter(v => liveIdx.used.includes(v.name)) : [];
+    const age = used.length ? Math.max(...used.map(v => now - v.lastQuoteTs)) : Infinity;""",
+        """    const li281 = liveIndexFor281(now, Number.isFinite(kal.closeMs) ? (kal.closeMs - now) / 1000 : NaN);   // v2.8.1: fresh quorum
+    const liveIdx = li281.idx;
+    const used = liveIdx ? VENUE_LIST().filter(v => liveIdx.used.includes(v.name)) : [];
+    const age = used.length ? Math.max(...used.map(v => now - v.lastQuoteTs)) : Infinity;""")
+s = rep(s, "  const liveIdx = computeIndex(now);\n  const liveValue = liveIdx ? liveIdx.value : IDX.value;",
+        "  const liveIdx = liveIndexFor281(now, kal && Number.isFinite(kal.closeMs) ? (kal.closeMs - now) / 1000 : NaN).idx;   // v2.8.1: fresh quorum\n  const liveValue = liveIdx ? liveIdx.value : IDX.value;")
 # classify25: order time and stress; the 2.8 warm-up gate stays for the first COLD_MIN_SEC (geo.sigmaWarm is true once the envelope covers it)
 s = rep(s, "function classify25({ now = Date.now(), tau, ticker, closeMs, strike, geo, gates, kal, contracts, mutate = false }) {\n  const ls = lock25For(ticker);\n  const cfg = m25Cfg(contracts);",
         "function classify25({ now = Date.now(), tau, ticker, closeMs, strike, geo, gates, kal, contracts, mutate = false, execSec }) {\n  const ls = lock25For(ticker);\n  const cfg = m25Cfg(contracts, execSec);")
 s = rep(s, "  if (geo && !geo.sigmaWarm) g.soft.push('volatility estimate warming up (needs ~5 min of index history after a restart)');",
-        "  if (geo && !geo.sigmaWarm) g.soft.push(`volatility estimate warming up (LOCKED needs ${typeof COLD_MIN_SEC !== 'undefined' ? COLD_MIN_SEC : 300} s of index history after a restart)`);")
+        "  if (geo && !geo.sigmaWarm) g.soft.push(`volatility estimate warming up (LOCKED needs ${typeof COLD281_ON !== 'undefined' && COLD281_ON ? COLD_MIN_SEC : 300} s of index history after a restart)`);")
 s = rep(s, "  const d = m25Decide({ tau, pUp: geo ? geo.pUp : null, pUpCons: geo ? geo.pUpCons : null, gates: g, book, cfg, hist,",
         "  const pUpStress = geo && typeof stressPUp281 === 'function' ? stressPUp281(geo, tau, cfg.execSec) : null;   // v2.8.1\n"
         "  const d = m25Decide({ tau, pUp: geo ? geo.pUp : null, pUpCons: geo ? geo.pUpCons : null, pUpStress, gates: g, book, cfg, hist,")
@@ -96,7 +144,8 @@ s = rep(s, "  enrich28(signal, { geo, settle, kal, now, tau });             // v
         "  if (signal) { signal.warmup = warmup281(now, cv281, bc281); signal.cold = geo && geo.cold281 ? geo.cold281 : null;\n"
         "    if (signal.v28 && signal.v28.execution) { signal.v28.execution.enoughTime = Number.isFinite(tau) && tau >= MIN_EXEC_TAU + ex281; signal.v28.execution.orderTimeSec = ex281;\n"
         "      signal.v28.execution.ready = !!(signal.v28.execution.ready && signal.v28.execution.enoughTime); } }\n"
-        "  exec281(signal, { tau, execSec: ex281, now });               // v2.8.1: the action a trader should take now\n"
+        "  exec281(signal, { tau, execSec: ex281, now, mutate });       // v2.8.1: the action a trader should take now\n"
+        "  if (mutate && signal) dqNote281(now, tau, signal.ticker, signal.gates || gates);   // v2.8.1: why DATA UNRELIABLE, on the record\n"
         "  return { geo, gates, signal, settle };")
 # /radar: the page's order time
 s = rep(s, "    liveIndexAgeMs, side, mutate: false, indexOverride: Number.isFinite(priceOverride) ? priceOverride : undefined,\n    contracts: payload.contracts });",
@@ -114,10 +163,12 @@ s = rep(s, "      try { d = shadowDecide28(p.id, { snap: view, deps: { m25Decide
 s = rep(s, "        v28: v28Summary(now),\n        ts: now\n      });",
         "        v28: v28Summary(now),\n"
         "        warmup: (() => { const cv = coldVol281(now, IDX.ring), bc = basisCold281(null); return warmup281(now, cv, bc); })(),   // v2.8.1\n"
+        "        dataQuality: dqSummary281(true),\n"
         "        execution: { orderTimeSec: EXEC_SEC, stressZ: EXEC_STRESS_Z, minExecTau: MIN_EXEC_TAU, coldEnvelope: COLD281_ON, coldMinSec: COLD_MIN_SEC, basisWarmN: BASIS_WARM_N, basisColdRange: [BASIS_COLD_LO, BASIS_COLD_HI] },\n"
         "        ts: now\n      });")
 s = rep(s, "    if (req.method === 'GET' && u.pathname === '/basis') {",
         "    if (req.method === 'GET' && u.pathname === '/exec') return send(res, 200, { ok: true, version: SERVER_VERSION, ...exec281Summary() });   // v2.8.1\n"
+        "    if (req.method === 'GET' && u.pathname === '/dq') return send(res, 200, { ok: true, version: SERVER_VERSION, ...dqSummary281() });        // v2.8.1\n"
         "    if (req.method === 'GET' && u.pathname === '/basis') {")
 
 # self-test additions
@@ -127,7 +178,7 @@ s = rep(s, "  const failed = checks.filter(c => !c.pass);", ST + "\n  const fail
 # exports
 s = rep(s, "  clientLat28, ledgerVerify28, tapeWrite28, TAPE28_FILE_MAX\n};",
         "  clientLat28, ledgerVerify28, tapeWrite28, TAPE28_FILE_MAX,\n"
-        "  // v2.8.1\n  coldVol281, basisCold281, coldGeometry281, stressPUp281, exec281, exec281Summary, warmup281, execSec281, EXEC281, COLD_TABLE281,\n"
+        "  // v2.8.1\n  coldVol281, basisCold281, coldGeometry281, stressPUp281, exec281, exec281Summary, warmup281, execSec281, EXEC281, COLD_TABLE281,\n  liveIndexFor281, dqNote281, dqSummary281, DQ281, startSampler,\n"
         "  COLD_MIN_SEC, COLD_FULL_SEC, COLD281_ON, BASIS_WARM_N, BASIS_COLD_LO, BASIS_COLD_HI, EXEC_SEC, EXEC_STRESS_Z\n};")
 
 # the environment variables the server reads (config hash input): recomputed over the final source

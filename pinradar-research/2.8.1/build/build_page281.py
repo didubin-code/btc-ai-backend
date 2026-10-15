@@ -51,7 +51,7 @@ s = rep(s, '  <div class="call" id="call">\n    <div class="callTop">',
         '    <div class="callTop">')
 # order time setting
 s = rep(s, """      <div class="field"><label>&nbsp;</label><div class="hint">TRADE NOW requires LOCKED, offers for at least this many contracts, a fresh book, ≥3 s left and positive conservative edge after Kalshi's fee.</div></div>""",
-        """      <div class="field"><label>My order time, seconds (from seeing TRADE NOW to the order reaching Kalshi)</label><input id="execSec" inputmode="numeric" placeholder="10"/></div>
+        """      <div class="field"><label>My order time, seconds (from seeing TRADE NOW to the order reaching Kalshi)</label><input id="execSec" inputmode="numeric" placeholder="12"/></div>
     </div>
     <div class="grid" style="margin-top:6px">
       <div class="field" style="grid-column:1/-1"><div class="hint">TRADE NOW requires LOCKED, offers for at least this many contracts, a fresh book, at least 3 s + your order time left, and a positive conservative edge after Kalshi's fee that survives an adverse BTC move while you place the order. A LOCKED call that comes later than that is shown as TOO LATE TO TRADE.</div></div>""")
@@ -61,7 +61,7 @@ s = rep(s, "  if(s.c)$('contracts').value=s.c;}catch(e){}}",
         "  if(s.c)$('contracts').value=s.c;\n  if(s.e!=null&&s.e!=='')$('execSec').value=s.e;}catch(e){}}")
 s = rep(s, "  const ct=parseInt($('contracts').value,10);if(Number.isFinite(ct)&&ct>0)p.contracts=ct;",
         "  const ct=parseInt($('contracts').value,10);if(Number.isFinite(ct)&&ct>0)p.contracts=ct;\n"
-        "  const ex=parseFloat($('execSec').value);p.execSec=Number.isFinite(ex)&&ex>=0?Math.min(120,ex):10;   // v2.8.1: your order time")
+        "  const ex=parseFloat($('execSec').value);p.execSec=Number.isFinite(ex)&&ex>=0?Math.min(120,ex):12;   // v2.8.1: your order time")
 s = rep(s, "  ['backendUrl','target','contracts'].forEach(id=>$(id).addEventListener('change',save));",
         "  ['backendUrl','target','contracts','execSec'].forEach(id=>$(id).addEventListener('change',save));")
 # render: action banner (server's exec state; a client-side data downgrade always wins)
@@ -70,7 +70,7 @@ s = rep(s, "  else if(/TOO LATE|TOO THIN|DO NOT TRADE|BOOK STALE|NO BOOK/.test(a
         "  if(!downgraded&&tr.noOffers&&/TOO LATE/.test(act)){act='LOCKED — NO OFFERS';tcls='tradeBox late';}   // v2.8.1: an empty book is not a timing problem")
 s = rep(s, "  $('tradeBox').className=tcls;$('tradeAct').textContent=act;$('tradeWhy').textContent=why;",
         "  $('tradeBox').className=tcls;$('tradeAct').textContent=act;$('tradeWhy').textContent=why;\n"
-        "  render281(sg,downgraded);")
+        "  render281(sg,downgraded,!!(dv&&dv.bad));")
 # a stale or dead backend, and the close, downgrade the action banner too (the page may downgrade a call, never upgrade it)
 s = rep(s, "function markCallStale(age){\n  $('call').className='call stale';",
         "function markCallStale(age){\n  act281Down('STALE — DO NOT TRADE','last server reading is '+(age/1000).toFixed(1)+' s old; the action shown may no longer hold');\n  $('call').className='call stale';")
@@ -85,23 +85,24 @@ function act281Down(title,why,fin){
   const b=$('act281');if(!b)return;
   b.className='act281 '+(fin?'fin':'bad');$('act281S').textContent=title;$('act281W').textContent=why;$('act281C').textContent='';$('act281P').textContent='';
 }
-function render281(sg,downgraded){
+function render281(sg,downgraded,divergent){
   const ex=sg&&sg.exec, wu=sg&&sg.warmup, box=$('act281');
   const wb=$('warm281');
   if(wb){if(wu&&wu.label){wb.style.display='block';wb.textContent='⟳ '+wu.label;}else{wb.style.display='none';wb.textContent='';}}
   if(!box)return;
   if(!ex){box.className='act281 sit';$('act281S').textContent='NO ACTION DATA';$('act281W').textContent='backend is not 2.8.1: TRADE NOW timing does not include your order time';$('act281C').textContent='';$('act281P').textContent='';return;}
-  let st=ex.state, cls='sit', why=ex.why||'';
-  if(downgraded){st='SIT OUT';why='DATA SUSPECT — '+downgraded;cls='bad';}
-  else if(st==='TRADE NOW')cls='go';else if(st==='PREDICTED LOCKED')cls='pred';else if(st==='TOO LATE TO TRADE')cls='late';else if(st==='FINAL')cls='fin';
-  else if(sg.state==='REVERSAL WARNING')cls='bad';
+  /* the decision in three words, the reversal risk, one reason: TRADE NOW / SIT OUT / TOO LATE */
+  let head=ex.headline||'SIT OUT', cls=head==='TRADE NOW'?'go':head==='TOO LATE'?'late':'sit', why=ex.reason||ex.why||'';
+  if(downgraded){head='SIT OUT';why='DATA SUSPECT — '+downgraded;cls='bad';}
+  else if(sg.state==='REVERSAL WARNING'||sg.state==='DATA UNRELIABLE')cls='bad';
+  else if(ex.state==='FINAL')cls='fin';
   box.className='act281 '+cls;
-  $('act281S').textContent=st==='PREDICTED LOCKED'?('PREDICTED LOCKED '+(sg.side||'')+' — NOT TRADABLE NOW'):st==='TRADE NOW'?('TRADE NOW — BUY '+(sg.side==='UP'?'YES (UP)':'NO (DOWN)')):st==='FINAL'?'WINDOW CLOSED — FINAL / SETTLEMENT':st;
-  $('act281W').textContent=why;
+  $('act281S').textContent=head==='TRADE NOW'?('TRADE NOW — BUY '+(sg.side==='UP'?'YES (UP)':'NO (DOWN)')):head;
+  $('act281W').textContent=(ex.reversalPct!=null&&!downgraded?('reversal risk '+(ex.reversalPct<0.01?'<0.01':ex.reversalPct.toFixed(2))+'% · '):'')+why;
   const left=ex.secondsToLastOrder;
-  $('act281C').textContent=st==='FINAL'?'':(left!=null?(left>0?('last moment to place an order: T−'+ex.lastOrderTau+' s (in '+Math.floor(left)+' s) · your order time '+ex.execSec+' s')
+  $('act281C').textContent=ex.state==='FINAL'?'':(left!=null?(left>0?('last moment to place an order: T−'+ex.lastOrderTau+' s (in '+Math.floor(left)+' s) · your order time '+ex.execSec+' s')
     :('past the last moment to place an order (T−'+ex.lastOrderTau+' s with your '+ex.execSec+' s order time)')):'');
-  $('act281P').textContent=(!downgraded&&ex.prepare)?ex.prepare:'';
+  $('act281P').textContent=(!downgraded&&!divergent&&ex.prepare)?ex.prepare:'';   // never GET READY on data the browser disputes
 }
 function renderCall(d){""")
 s = rep(s, "    $('callProb').textContent='';$('tradeAct').textContent='—';$('tradeWhy').textContent='upload the 2.5 pinradar_server.js to enable LOCKED calls';\n    return;",

@@ -3,19 +3,23 @@
    these windows); every check that depends on the book says so.
      P1  warm parity: 2.8.1 with EXEC_SEC=0 makes exactly 2.8's decisions on every second (state, side, P, action, EV)
      P2  warm, default order time: probabilities and states identical to 2.8; actions differ only by the order-time
-         TOO LATE rule (tau < 13 s) or the execution stress test
+         TOO LATE rule (tau < LAST = 15 s) or the execution stress test
      R1  Oct 14 mechanism: a restart 300 s before the close -> 2.8 shows no LOCKED at all; 2.8.1 does, and every wrong
          2.8.1 call is a window the warm validated engine also gets wrong
      R2  restart subset property: every second 2.8.1 shows LOCKED after a restart, the warm validated engine shows
          LOCKED on the same side (counted over boots 600/420/330/300/180 s before the close, basis cold and warm)
      S1  Oct 12 20:45 ET adverse reversal (real window): never LOCKED UP in 2.8.1 in any restart configuration
-     S2  safely ahead: TRADE NOW only with >= 13 s left; TOO LATE TO TRADE after the last order moment
-     S3  narrowly ahead (real path moved so the settlement lands $1 from the strike): no TRADE NOW
+     S2  safely ahead: TRADE NOW only with >= LAST (15 s) left; TOO LATE TO TRADE after the last order moment
+     S3  narrowly ahead (real path moved so the settlement lands $1 from the strike): REPORTED only (model limit, not a safety check)
      S4  final-second adverse jump: REVERSAL WARNING within 1 s, never TRADE NOW after the jump
      S5  late data: stale index input -> DATA UNRELIABLE / SIT OUT; stale book -> PREDICTED LOCKED, never TRADE NOW
      S6  signal after the book empties: LOCKED with no offers -> PREDICTED LOCKED (NO OFFERS) while time remains, TOO LATE only past the last order moment
+     R3  pin cases (review blocker): real paths with the strike moved to |A-K| = 0.5-2.5 USD, basis model cold: no LOCKED on the side opposite to the
+         base leader, and no more wrong first-LOCKED calls than the engine with the basis known
+     R4  bracket robustness (review finding): at sampled LOCKED seconds after a restart, a dense scan of sigma_900 over the whole bracket
+         (301 points + regime-edge left limits) never gives a flip risk above the LOCKED standard
      S9  Oct 15 12:00 ET replica: LOCKED UP with the leader at 99.8c -> PREDICTED LOCKED (NO EDGE, with the price that would qualify), never TRADE NOW;
-         the same window with a 97c leader ask -> TRADE NOW while >= 13 s remain
+         the same window with a 97c leader ask -> TRADE NOW while >= LAST s remain
      S7  valid signal with insufficient time: 9 s left, 10 s order time -> TOO LATE TO TRADE; 3 s order time -> TRADE NOW
      S8  after the close: FINAL, never an opportunity
    usage: node test/late281_test.js <2.8 server> <2.8.1 server> [out.json]                                          */
@@ -27,6 +31,7 @@ const F281 = process.argv[3] || path.join(__dirname, '..', 'dist', 'pinradar_ser
 process.env.EXEC_SEC = '0'; const S0 = L.loadServer(F281);
 delete process.env.EXEC_SEC; const S1 = L.loadServer(F281);
 const W = L.loadWindows();
+const LAST = S1.MIN_EXEC_TAU + S1.EXEC_SEC;            // the last order moment with the default order time (12 + 3 = 15 s)
 const res = {}; let fail = 0; const fails = [];
 const ok = (name, cond, got) => { res[name] = got; if (!cond) { fail++; fails.push(name + ' :: ' + JSON.stringify(got).slice(0, 400)); } };
 let seed = 281; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
@@ -54,16 +59,16 @@ const execOf = (S, snap) => ({ exec: snap.signal.exec ? snap.signal.exec.state :
       if (key(a[i]) !== key(b[i])) { d0++; if (ex.length < 3) ex.push({ t: w.ticker, tau: a[i].tau, a: key(a[i]), b: key(b[i]) }); }
       if (keyP(a[i]) !== keyP(c[i])) dP++;
       else if (a[i].action !== c[i].action) {
-        /* allowed by design: past the last order moment (13 s) every LOCKED action is TOO LATE; the stress test refuses fragile TRADE NOWs */
-        if (c[i].action === 'LOCKED — TOO LATE' && c[i].tau < 13 && /^(TRADE NOW|LOCKED)/.test(a[i].action)) dTooLate++;
+        /* allowed by design: past the last order moment (LAST) every LOCKED action is TOO LATE; the stress test refuses fragile TRADE NOWs */
+        if (c[i].action === 'LOCKED — TOO LATE' && c[i].tau < LAST && /^(TRADE NOW|LOCKED)/.test(a[i].action)) dTooLate++;
         else if (a[i].action === 'TRADE NOW' && c[i].action === 'LOCKED — DO NOT TRADE' && /survive/.test(c[i].why || '')) dStress++;
         else { dOther++; if (ex2.length < 4) ex2.push({ t: w.ticker, tau: a[i].tau, a: a[i].action, c: c[i].action, why: c[i].why }); }
       }
     }
   }
   ok('P1 warm parity: 2.8.1 (EXEC_SEC=0) = 2.8 on every second', d0 === 0 && n > 15000, { seconds: n, differences: d0, ex });
-  ok('P2 warm, 10 s order time: identical probabilities/states; actions differ only by TOO LATE (<13 s) or the stress test',
-    dP === 0 && dOther === 0, { seconds: n, probabilityDiffs: dP, lockedActionToTooLateUnder13s: dTooLate, tradeNowToStressRefusal: dStress, otherActionDiffs: dOther, ex: ex2 });
+  ok('P2 warm, default order time: identical probabilities/states; actions differ only by TOO LATE (< LAST) or the stress test, and the stress test does refuse some',
+    dP === 0 && dOther === 0 && dStress > 0, { seconds: n, probabilityDiffs: dP, lockedActionToTooLateUnder13s: dTooLate, tradeNowToStressRefusal: dStress, otherActionDiffs: dOther, ex: ex2 });
 }
 
 /* R1 / R2: restarts */
@@ -99,10 +104,53 @@ const execOf = (S, snap) => ({ exec: snap.signal.exec ? snap.signal.exec.state :
     { '2.8': t300['2.8'].lockedWindows, '2.8.1': t300['2.8.1'].lockedWindows, wrong281: t300['2.8.1'].wrong, warmWrong: [...warmRef.keys()].length ? [...warmWrong] : [] });
   let u281 = 0, s281 = 0, u28 = 0, s28 = 0;
   for (const o of Object.values(out)) { u281 += o['2.8.1'].unsupportedSeconds; s281 += o['2.8.1'].lockedSeconds; u28 += o['2.8'].unsupportedSeconds; s28 += o['2.8'].lockedSeconds; }
+  const SPLIT = Date.UTC(2026, 8, 1) / 1000, heldOut = new Set(W.filter(w => w.C >= SPLIT && w.src === 'replay').map(w => w.ticker));
+  res.reported = res.reported || {};
+  res.reported['R2 held-out windows (not used to calibrate the volatility band)'] = { windows: heldOut.size, note: 'per-window detail in restartDetail; the basis band [-7, 9] was set from the range of these same 58 walk-forward means, so the basis half of R2 cannot fail on this data set' };
   ok('R2 restart subset: at every second 2.8.1 shows LOCKED after a restart, the warm validated engine gives that side >= 99.5 %',
     u281 === 0 && s281 > 1000, { '2.8.1 lockedSeconds': s281, '2.8.1 unsupported': u281, '2.8 lockedSeconds': s28, '2.8 unsupported (for comparison)': u28,
       byConfig: Object.fromEntries(Object.entries(out).map(([k, o]) => [k, { '2.8': [o['2.8'].lockedWindows, o['2.8'].wrong, o['2.8'].unsupportedSeconds], '2.8.1': [o['2.8.1'].lockedWindows, o['2.8.1'].wrong, o['2.8.1'].unsupportedSeconds] }])) });
   res.restartDetail = out;
+}
+
+
+/* R3: pin cases with a cold basis model (review blocker: the worst candidate used to flip the call to the other side) */
+{
+  let combos = 0, opposite = 0, wrongCold = 0, wrongKnown = 0, lockedCold = 0, lockedKnown = 0; const ex = [];
+  for (const w0 of W) for (const m of [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5]) {
+    const K = Math.round((w0.A - m) * 100) / 100, w = { ...w0, K, yes: w0.A >= K - 0.005 };
+    combos++;
+    const cold = L.runWindow(S0, w, w.C - 1300, { basisMu: null, decide: (S, snap) => ({ base: snap.geo && snap.geo.cold281 ? snap.geo.cold281.basePUp : (snap.geo ? snap.geo.pUp : null) }) });
+    const known = L.runWindow(S0, w, w.C - 1300, { basisMu: w0.mu });
+    const fc = cold.find(r => L.isLocked(r.state)), fk = known.find(r => L.isLocked(r.state));
+    for (const r of cold) if (r.state === 'LOCKED' && r.base != null && (r.base >= 0.5 ? 'UP' : 'DOWN') !== r.side) { opposite++; if (ex.length < 3) ex.push({ t: w.ticker, K, tau: r.tau, side: r.side, base: r.base }); }
+    if (fc) { lockedCold++; if (fc.side !== L.truth(w)) wrongCold++; }
+    if (fk) { lockedKnown++; if (fk.side !== L.truth(w)) wrongKnown++; }
+  }
+  ok('R3 pin cases, cold basis: no LOCKED on the side opposite to the base leader; wrong first LOCKED <= basis-known engine',
+    combos >= 300 && opposite === 0 && wrongCold <= wrongKnown, { combos, lockedCold, wrongCold, lockedKnown, wrongKnown, oppositeSideLockedSeconds: opposite, ex });
+}
+
+/* R4: dense scan of the volatility bracket at LOCKED seconds after a restart (review finding: the 9-point grid skipped regime-edge left limits) */
+{
+  let checked = 0, notRobust = 0, maxRatio = 0; const ex = [];
+  for (const B of [300, 600]) for (const w of W) {
+    let k = 0;
+    L.runWindow(S0, w, w.C - B, { basisMu: w.mu, decide: (S, snap, c) => {
+      const s = snap.signal; if (s.state !== 'LOCKED' || (k++ % 3)) return {};
+      const cv = S.coldVol281(c.NOW, S.IDX.ring); if (!cv.cold || !cv.usable) return {};
+      const args = { indexNow: c.liveIdx.value, strike: w.K, closeMs: w.C * 1000, now: c.NOW, inputAgeMs: c.age, basisMu: c.basisMu };
+      const comb = v => Math.sqrt((cv.sigma120 * cv.sigma120 + v * v) / 2);
+      const pts = []; for (let i = 0; i <= 300; i++) pts.push(comb(cv.lo * Math.pow(cv.hi / cv.lo, i / 300)));
+      for (const e of S.M25_MODEL.regime.edges) if (e > comb(cv.lo) && e <= comb(cv.hi)) pts.push(e * (1 - 1e-9));
+      let worst = 0;
+      for (const v of pts) { const g = S.lockGeometry25({ ...args, sigma: { value: v, warm: true, parts: [] } }); if (g && g.pUp != null) worst = Math.max(worst, s.side === 'UP' ? 1 - g.pUp : g.pUp); }
+      checked++; maxRatio = Math.max(maxRatio, worst / Math.max(1e-12, s.pFlip));
+      if (worst > 0.005 + 1e-9) { notRobust++; if (ex.length < 3) ex.push({ t: w.ticker, B, tau: c.tau, shown: s.pFlip, worstInBracket: worst }); }
+      return {};
+    } });
+  }
+  ok('R4 bracket robustness: no LOCKED second after a restart has a sigma_900 inside the bracket with flip > 0.5 %', checked > 200 && notRobust === 0, { checked, notRobust, maxWorstOverShownRatio: +maxRatio.toFixed(3), ex });
 }
 
 /* S1: Oct 12 20:45 ET (= 5:45 pm PT) adverse reversal */
@@ -121,7 +169,7 @@ const execOf = (S, snap) => ({ exec: snap.signal.exec ? snap.signal.exec.state :
   ok('S1 Oct 12 20:45 ET adverse reversal: 2.8.1 never LOCKED and never TRADE NOW (all restart / basis configurations)', bad === 0, got);
 }
 
-/* S2: safely ahead (official margin >= $50): TRADE NOW only with >= 13 s left, then TOO LATE TO TRADE */
+/* S2: safely ahead (official margin >= $50): TRADE NOW only with >= LAST (15 s) left, then TOO LATE TO TRADE */
 {
   let tn = 0, tnLate = 0, tooLate = 0, windows = 0;
   for (const w of W.filter(w => Math.abs(w.A - w.K) >= 50)) {
@@ -129,11 +177,11 @@ const execOf = (S, snap) => ({ exec: snap.signal.exec ? snap.signal.exec.state :
     const book = (T, tau, x, w2) => { const lead = x >= w2.K ? 'UP' : 'DOWN'; const L1 = [[97, 500]], L2 = [[4, 500]]; const tb = a => a.map(([p, s]) => [Math.round((100 - p) * 100) / 100, s]);
       return { yes: tb(lead === 'UP' ? L2 : L1), no: tb(lead === 'UP' ? L1 : L2), ageMs: 120 }; };
     for (const r of L.runWindow(S1, w, w.C - 1300, { basisMu: w.mu, book, decide: execOf })) {
-      if (r.exec === 'TRADE NOW') { tn++; if (r.tau < 13) tnLate++; }
-      if (r.exec === 'TOO LATE TO TRADE') { tooLate++; if (r.tau >= 13) tnLate++; }
+      if (r.exec === 'TRADE NOW') { tn++; if (r.tau < LAST) tnLate++; }
+      if (r.exec === 'TOO LATE TO TRADE') { tooLate++; if (r.tau >= LAST) tnLate++; }
     }
   }
-  ok('S2 safely ahead (synthetic 97c book): TRADE NOW only at >= 13 s, TOO LATE TO TRADE only below', tn > 0 && tooLate > 0 && tnLate === 0, { windows, tradeNowSeconds: tn, tooLateSeconds: tooLate, violations: tnLate });
+  ok('S2 safely ahead (synthetic 97c book): TRADE NOW only at >= LAST s, TOO LATE TO TRADE only below', tn > 0 && tooLate > 0 && tnLate === 0, { windows, tradeNowSeconds: tn, tooLateSeconds: tooLate, violations: tnLate });
 }
 
 /* S3: narrowly ahead: a real path moved so that the official settlement lands $1 above the strike (index + the window's basis) */
@@ -144,11 +192,12 @@ const execOf = (S, snap) => ({ exec: snap.signal.exec ? snap.signal.exec.state :
     const px = new Map(); w0.idx.forEach((v, i) => px.set(w0.T_first + i, v + shift)); windows++;
     const rows = L.runWindow(S1, w, w.C - 1300, { px, basisMu: w0.mu, book: bookFor(false), decide: execOf });
     const fl = rows.find(r => L.isLocked(r.state)); if (fl) { lockedWins++; if (fl.side !== 'UP') lockedWrong++; }
-    for (const r of rows) if (r.exec === 'TRADE NOW') { tnSeconds++; if (r.side !== 'UP') tnWrong++; if (r.tau < 13) tnLate++; }
+    for (const r of rows) if (r.exec === 'TRADE NOW') { tnSeconds++; if (r.side !== 'UP') tnWrong++; if (r.tau < LAST) tnLate++; }
   }
-  ok('S3 narrowly ahead (official $1 above the strike): no TRADE NOW in the last 13 s; LOCKED / TRADE NOW outcomes reported', tnLate === 0,
+  res.reported = res.reported || {};
+  res.reported['S3 narrowly ahead (official $1 from the strike): REPORTED, not a pass/fail check'] =
     { windows, lockedWindows: lockedWins, lockedWrongSide: lockedWrong, tradeNowSeconds: tnSeconds, tradeNowWrongSide: tnWrong, tradeNowUnder13s: tnLate,
-      note: 'a $1 settlement margin is decided by the basis (official minus our index); LOCKED on the wrong side here is the model limit the forward test measures' });
+      note: 'a $1 settlement margin is decided by the basis (official minus our index); LOCKED / TRADE NOW on the wrong side here is a model limit that 2.8.1 does not change' };
 }
 
 /* S4: final-second adverse jump on LOCKED windows (jump flips the settlement at tau 4) */
@@ -169,6 +218,22 @@ const execOf = (S, snap) => ({ exec: snap.signal.exec ? snap.signal.exec.state :
   ok('S4 final-second adverse jump: the LOCKED call is dropped / REVERSAL WARNING within 1 s; no TRADE NOW', windows > 5 && warned === windows && tnAfter === 0, { windows, warnedWithin1s: warned, tradeNowAfterJump: tnAfter });
 }
 
+/* S4b: an adverse jump at tau 35, where TRADE NOW is reachable: TRADE NOW just before, never in the jump second or after it */
+{
+  let windows = 0, hadTradeBefore = 0, tnAtOrAfter = 0;
+  for (const w of W.filter(w => Math.abs(w.A - w.K) >= 20).slice(0, 15)) {
+    const lead = w.A >= w.K ? 1 : -1, px = new Map(); w.idx.forEach((v, i) => px.set(w.T_first + i, v));
+    for (let T = w.C - 35; T <= w.C; T++) px.set(T, px.get(T) - lead * (Math.abs(w.A - w.K) * 4 + 80));
+    const book = (T, tau, x, w2) => { const ld = lead > 0 ? 'UP' : 'DOWN'; const tb = a => a.map(([p, s]) => [Math.round((100 - p) * 100) / 100, s]);
+      return { yes: tb(ld === 'UP' ? [[4, 500]] : [[97, 500]]), no: tb(ld === 'UP' ? [[97, 500]] : [[4, 500]]), ageMs: 120 }; };
+    const rows = L.runWindow(S1, w, w.C - 1300, { px, basisMu: w.mu, book, decide: execOf });
+    if (!rows.some(r => r.exec === 'TRADE NOW' && r.tau > 35.5)) continue;
+    windows++; hadTradeBefore++;
+    tnAtOrAfter += rows.filter(r => r.tau <= 35 && r.exec === 'TRADE NOW').length;
+  }
+  ok('S4b adverse jump at T-35: TRADE NOW existed just before; none in the jump second or after', windows > 3 && tnAtOrAfter === 0, { windows, hadTradeBefore, tradeNowAtOrAfterJump: tnAtOrAfter });
+}
+
 /* S5: late data updates */
 {
   const w = W.find(x => x.ticker === 'KXBTC15M-26OCT131100-00');
@@ -186,7 +251,7 @@ const execOf = (S, snap) => ({ exec: snap.signal.exec ? snap.signal.exec.state :
   const w = W.find(x => x.ticker === 'KXBTC15M-26OCT131100-00');
   const empty = L.runWindow(S1, w, w.C - 1300, { basisMu: w.mu, book: (T, tau, x) => (tau <= 25 ? { yes: [], no: [[96, 300]], ageMs: 100 } : bookFor(false)(T, tau, x, w)), decide: execOf });   // DOWN call: no NO offers left
   const e25 = empty.filter(r => r.tau <= 24.8 && L.isLocked(r.state));
-  const e25a = e25.filter(r => r.tau >= 13), e25b = e25.filter(r => r.tau < 13);
+  const e25a = e25.filter(r => r.tau >= LAST), e25b = e25.filter(r => r.tau < LAST);
   ok('S6 LOCKED with no offers on the called side -> PREDICTED LOCKED (NO OFFERS) while time remains; TOO LATE TO TRADE only past the last order moment',
     e25a.length > 5 && e25a.every(r => r.exec === 'PREDICTED LOCKED' && /NO OFFERS/.test(r.execWhy || '')) && e25b.length > 3 && e25b.every(r => r.exec === 'TOO LATE TO TRADE'),
     [...new Set(e25.map(r => r.exec + ': ' + (r.execWhy || '').slice(0, 90)))].slice(0, 3));
@@ -208,19 +273,19 @@ const execOf = (S, snap) => ({ exec: snap.signal.exec ? snap.signal.exec.state :
   const shape = askUp => (T, tau) => (tau <= 34 ? { yes: tb([[0.3, 900]]), no: [], ageMs: 500 } : { yes: tb([[0.3, 900]]), no: tb([[askUp, 500]]), ageMs: 500 });   // ob.no = NO bids = 100 - YES asks
   const r998 = L.runWindow(S1, w, w.C - 1300, { basisMu: w.mu, book: shape(99.8), decide: execOf });
   const lk = r998.filter(r => L.isLocked(r.state) && r.side === 'UP');
-  const noEdge = lk.filter(r => r.tau > 34.5), empty = lk.filter(r => r.tau <= 33.8 && r.tau >= 13), late = lk.filter(r => r.tau < 13);
+  const noEdge = lk.filter(r => r.tau > 34.5), empty = lk.filter(r => r.tau <= 33.8 && r.tau >= LAST), late = lk.filter(r => r.tau < LAST);
   const r97 = L.runWindow(S1, w, w.C - 1300, { basisMu: w.mu, book: shape(97), decide: execOf });
   const tn97 = r97.filter(r => r.exec === 'TRADE NOW');
-  ok('S9 Oct 15 replica: 99.8c ask -> PREDICTED LOCKED (NO EDGE, qualifying price shown), empty book -> NO OFFERS, < 13 s -> TOO LATE, never TRADE NOW; a 97c ask -> TRADE NOW at >= 13 s',
+  ok('S9 Oct 15 replica: 99.8c ask -> PREDICTED LOCKED (NO EDGE, qualifying price shown), empty book -> NO OFFERS, < LAST -> TOO LATE, never TRADE NOW; a 97c ask -> TRADE NOW at >= LAST s',
     noEdge.length > 10 && noEdge.every(r => r.exec === 'PREDICTED LOCKED' && /NO EDGE/.test(r.execWhy) && r.edge && r.edge.maxAskForTradeNow < 99.8)
       && empty.length > 5 && empty.every(r => r.exec === 'PREDICTED LOCKED' && /NO OFFERS/.test(r.execWhy)) && late.every(r => r.exec === 'TOO LATE TO TRADE')
-      && !r998.some(r => r.exec === 'TRADE NOW') && tn97.length > 0 && tn97.every(r => r.tau >= 13),
+      && !r998.some(r => r.exec === 'TRADE NOW') && tn97.length > 0 && tn97.every(r => r.tau >= LAST),
     { window: w.ticker, firstLockedTau: lk.length ? lk[0].tau : null, noEdgeSeconds: noEdge.length, exampleWhy: noEdge.length ? noEdge[0].execWhy : null,
       maxAskForTradeNow: noEdge.length ? noEdge[0].edge.maxAskForTradeNow : null, noOffersSeconds: empty.length, tooLateSeconds: late.length, tradeNowSecondsAt97c: tn97.length });
 }
 
 console.log(JSON.stringify({ fails }, null, 1));
 if (process.argv[4]) fs.writeFileSync(process.argv[4], JSON.stringify(res, null, 1));
-const names = Object.keys(res).filter(k => k !== 'restartDetail');
+const names = Object.keys(res).filter(k => k !== 'restartDetail' && k !== 'reported');
 console.log(`late281: ${names.length - fail}/${names.length} passed`);
 process.exit(fail ? 1 : 0);

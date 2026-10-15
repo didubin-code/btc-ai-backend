@@ -927,8 +927,8 @@ function venueFresh(v, now) {
   return socketAge <= VENUE_SILENT_MS && quoteAge <= VENUE_QUOTE_MAX_MS;
 }
 function venueQuoteAge(v, now) { return v.lastQuoteTs ? now - v.lastQuoteTs : null; }
-function computeIndex(now = Date.now()) {
-  const live = VENUE_LIST().filter(v => venueFresh(v, now));
+function computeIndex(now = Date.now(), maxQuoteAgeMs = Infinity) {
+  const live = VENUE_LIST().filter(v => venueFresh(v, now) && now - v.lastQuoteTs <= maxQuoteAgeMs);   // v2.8.1: optional age cap
   if (live.length === 0) { IDX.lastReason = 'no live venue'; return null; }
   const mids = live.map(v => v.mid);
   const med = median(mids);
@@ -972,8 +972,15 @@ function sampleIndex() {
 }
 function startSampler() {
   if (IDX.sampler) return;
-  IDX.sampler = setInterval(sampleIndex, 1000);
-  if (IDX.sampler.unref) IDX.sampler.unref();
+  /* v2.8.1: aligned to the second (+SAMPLE_PHASE_MS), re-aligned on every tick: no setInterval drift through the x.5 s phase */
+  const phase = clampEnv(process.env.SAMPLE_PHASE_MS, 100, 0, 400);
+  const schedule = () => {
+    const now = Date.now(), next = (Math.floor((now - phase) / 1000) + 1) * 1000 + phase;
+    IDX.sampler = setTimeout(() => { try { sampleIndex(); } finally { schedule(); } }, Math.max(1, next - now));
+    if (IDX.sampler.unref) IDX.sampler.unref();
+  };
+  if (!DQ_FIXES281) { IDX.sampler = setInterval(sampleIndex, 1000); if (IDX.sampler.unref) IDX.sampler.unref(); sampleIndex(); return; }   // 2.8 behaviour
+  IDX.sampler = true; schedule();
   sampleIndex();
 }
 /* Trailing mean of the index over the last `sec` seconds. */
@@ -1584,12 +1591,14 @@ function lockGeometry25({ indexNow, strike, closeMs, now = Date.now(), inputAgeM
   const bySec = new Map();
   if (nLock > 0) for (const p of ring) {
     if (p[0] > now || p[0] < closeMs - (W + 1) * 1000) continue;
-    const off = Math.round((closeMs - p[0]) / 1000);
-    if (off < 0 || off >= W) continue;
-    const d = Math.abs(closeMs - off * 1000 - p[0]);
-    if (d > 600) continue;
-    const cur = bySec.get(off);
-    if (!cur || d < cur.d) bySec.set(off, { v: p[1], d });
+    const o0 = Math.floor((closeMs - p[0]) / 1000);                 // v2.8.1: the two prints this sample lies between
+    for (const off of (DQ_FIXES281 ? [o0, o0 + 1] : [Math.round((closeMs - p[0]) / 1000)])) {
+      if (off < 0 || off >= W) continue;
+      const d = Math.abs(closeMs - off * 1000 - p[0]);
+      if (d > 600) continue;
+      const cur = bySec.get(off);
+      if (!cur || d < cur.d) bySec.set(off, { v: p[1], d });
+    }
   }
   let lsum = 0, lobs = 0, filledLive = 0;
   for (let off = 0; off < W; off++) {
@@ -1709,7 +1718,7 @@ function classify25({ now = Date.now(), tau, ticker, closeMs, strike, geo, gates
   const cfg = m25Cfg(contracts, execSec);
   const book = bookFromKal(kal, now);
   const g = { hard: [...gates.hard], soft: [...gates.soft], official: [...(gates.official || [])], budgetMs: gates.budgetMs };
-  if (geo && !geo.sigmaWarm) g.soft.push(`volatility estimate warming up (LOCKED needs ${typeof COLD_MIN_SEC !== 'undefined' ? COLD_MIN_SEC : 300} s of index history after a restart)`);
+  if (geo && !geo.sigmaWarm) g.soft.push(`volatility estimate warming up (LOCKED needs ${typeof COLD281_ON !== 'undefined' && COLD281_ON ? COLD_MIN_SEC : 300} s of index history after a restart)`);
   if (Number.isFinite(tau) && tau > LOCK_MAX_TAU) g.soft.push(`more than ${LOCK_MAX_TAU} s to close: outside the validated LOCKED horizon`);
   if (geo && M25_MODEL.fit && M25_MODEL.fit.sigmaRange && geo.sigmaRawBps != null) {
     const [lo, hi] = M25_MODEL.fit.sigmaRange;
@@ -3803,7 +3812,7 @@ const AUDIT28 = (() => {
 const BOOT28 = { id: crypto.randomBytes(6).toString('hex'), ts: Date.now() };
 /* every environment variable the server reads (list generated at build time) except secrets and I/O paths: an
    override of ANY decision input changes CONFIG28_HASH; the embedded model tables are hashed too */
-const ENV_KEYS28 = ["BASIS_COLD_HI", "BASIS_COLD_LO", "BASIS_DF", "BASIS_EWMA_HL", "BASIS_MAX_SAMPLES", "BASIS_MEAN_UNC_K", "BASIS_MEAN_USD", "BASIS_PRIOR_N", "BASIS_SD_USD", "BASIS_WARM_N", "BG_TICK_MS", "BOOK_FAST_MS", "BOOK_FAST_TAU", "BRTI_5HZ", "BRTI_COUNT_TOL", "BRTI_ENABLE", "BRTI_GATE", "BRTI_GATE_MAX_FLIP", "BRTI_INDEX_ID", "BRTI_MAX_DIVERGENCE_USD", "BRTI_NODATA_MS", "BRTI_STALE_MS", "COLD_MIN_SEC", "COLD_START_ENVELOPE", "CONS_BASIS_MULT", "CONS_VOL_MULT", "DEFAULT_CONTRACTS", "DRIFT_HORIZON_SEC", "DRIFT_SHRINK", "ENABLE_OPENAI", "ENABLE_WS", "EXEC_SEC", "EXEC_STRESS_Z", "FEE_MAKER_MULT", "FEE_PER_FILL", "FEE_ROUNDING", "FEE_TAKER_MULT", "GREEN_MIN_CUSHION_K", "HIGH_MAX_FLIP", "IMP_BASELINE_FLOOR", "IMP_IMBALANCE_MIN", "IMP_MAX_TAU", "IMP_NOTIONAL_MIN", "IMP_QUIET_GAP_SEC", "IMP_SURGE_MIN", "INDEX_ERR_USD", "INDEX_HARD_STALE_MS", "INDEX_STALE_MS", "KALSHI_BASE", "KALSHI_FAST_TAU_SEC", "KALSHI_KEY_ID", "KALSHI_POLL_FAST_MS", "KALSHI_POLL_MS", "KALSHI_PRIVATE_KEY", "KALSHI_SERIES", "KALSHI_STALE_MS", "KALSHI_WS_URL", "LADDER_SIZES", "LEAN_MAX_FLIP", "LEDGER_FILE", "LEDGER_MAX", "LIVE_VOL_SCALE", "LOCK_MAX_FLIP", "LOCK_MAX_TAU", "LOCK_VENUE_QUOTE_MAX_MS", "MAX_BOOK_AGE_MS", "MAX_DISPERSION_BPS_LOCK", "MIN_EDGE_CENTS", "MIN_EXEC_TAU", "MIN_INDEX_VENUES", "MIN_TRADE_ASK_CENTS", "MOMENTUM_BETA", "MOMENTUM_LAG_SEC", "MONITOR_P0", "OPENAI_API_KEY", "OPENAI_MODEL", "OUTLIER_BPS", "PINRADAR_REPLAY", "PINRADAR_STATE_FILE", "PORT", "PRED_LOG_FILE", "PRED_LOG_MAX", "PROVEN_MARGIN_FRAC", "P_CLAMP_LO", "REACH_K_LIVE", "REACH_K_ONSET", "REACH_K_QUIET", "RECAL_ACTIVE", "RECAL_NORMAL", "RECAL_QUIET", "RESOLUTION_MAX_TAU", "REST_FALLBACK_MS", "REVERSAL_JUMP_X", "REVERSAL_P", "REV_FLIP", "SETTLE_ALIGN", "SETTLE_POLL_MS", "SETTLE_TAIL_A", "SETTLE_TAIL_B", "SETTLE_WINDOW_SEC", "STALE_BUDGET_FRAC", "STALE_BUDGET_MAX_MS", "STALE_BUDGET_MIN_MS", "STRIKE_MAX_DEV_FRAC", "STRIKE_OVERRIDE_TOL_USD", "TAPE_FILE", "TAPE_FILE_MAX_MB", "TAPE_MAX", "TIER_HIGH_MAX", "TIER_LOCK_MAX", "TIER_MOD_MAX", "VENUE_QUOTE_MAX_MS", "VENUE_SILENT_MS", "VENUE_STALE_MS", "VOL_FAST_SEC", "VOL_FAST_WEIGHT", "VOL_LONG_SEC", "VOL_MIN_SAMPLES", "VOL_PRIOR", "VOL_SHRINK_N", "VOL_UNC_MULT"];
+const ENV_KEYS28 = ["BASIS_COLD_HI", "BASIS_COLD_LO", "BASIS_DF", "BASIS_EWMA_HL", "BASIS_MAX_SAMPLES", "BASIS_MEAN_UNC_K", "BASIS_MEAN_USD", "BASIS_PRIOR_N", "BASIS_SD_USD", "BASIS_WARM_N", "BG_TICK_MS", "BOOK_FAST_MS", "BOOK_FAST_TAU", "BRTI_5HZ", "BRTI_COUNT_TOL", "BRTI_ENABLE", "BRTI_GATE", "BRTI_GATE_MAX_FLIP", "BRTI_INDEX_ID", "BRTI_MAX_DIVERGENCE_USD", "BRTI_NODATA_MS", "BRTI_STALE_MS", "COLD_MIN_SEC", "COLD_START_ENVELOPE", "CONS_BASIS_MULT", "CONS_VOL_MULT", "DEFAULT_CONTRACTS", "DQ_FIXES", "DRIFT_HORIZON_SEC", "DRIFT_SHRINK", "ENABLE_OPENAI", "ENABLE_WS", "EXEC_SEC", "EXEC_STRESS_Z", "FEE_MAKER_MULT", "FEE_PER_FILL", "FEE_ROUNDING", "FEE_TAKER_MULT", "GREEN_MIN_CUSHION_K", "HIGH_MAX_FLIP", "IMP_BASELINE_FLOOR", "IMP_IMBALANCE_MIN", "IMP_MAX_TAU", "IMP_NOTIONAL_MIN", "IMP_QUIET_GAP_SEC", "IMP_SURGE_MIN", "INDEX_ERR_USD", "INDEX_HARD_STALE_MS", "INDEX_STALE_MS", "KALSHI_BASE", "KALSHI_FAST_TAU_SEC", "KALSHI_KEY_ID", "KALSHI_POLL_FAST_MS", "KALSHI_POLL_MS", "KALSHI_PRIVATE_KEY", "KALSHI_SERIES", "KALSHI_STALE_MS", "KALSHI_WS_URL", "LADDER_SIZES", "LEAN_MAX_FLIP", "LEDGER_FILE", "LEDGER_MAX", "LIVE_VOL_SCALE", "LOCK_MAX_FLIP", "LOCK_MAX_TAU", "LOCK_VENUE_QUOTE_MAX_MS", "MAX_BOOK_AGE_MS", "MAX_DISPERSION_BPS_LOCK", "MIN_EDGE_CENTS", "MIN_EXEC_TAU", "MIN_INDEX_VENUES", "MIN_TRADE_ASK_CENTS", "MOMENTUM_BETA", "MOMENTUM_LAG_SEC", "MONITOR_P0", "OPENAI_API_KEY", "OPENAI_MODEL", "OUTLIER_BPS", "PINRADAR_REPLAY", "PINRADAR_STATE_FILE", "PORT", "PRED_LOG_FILE", "PRED_LOG_MAX", "PROVEN_MARGIN_FRAC", "P_CLAMP_LO", "REACH_K_LIVE", "REACH_K_ONSET", "REACH_K_QUIET", "RECAL_ACTIVE", "RECAL_NORMAL", "RECAL_QUIET", "RESOLUTION_MAX_TAU", "REST_FALLBACK_MS", "REVERSAL_JUMP_X", "REVERSAL_P", "REV_FLIP", "SAMPLE_PHASE_MS", "SETTLE_ALIGN", "SETTLE_POLL_MS", "SETTLE_TAIL_A", "SETTLE_TAIL_B", "SETTLE_WINDOW_SEC", "STALE_BUDGET_FRAC", "STALE_BUDGET_MAX_MS", "STALE_BUDGET_MIN_MS", "STRIKE_MAX_DEV_FRAC", "STRIKE_OVERRIDE_TOL_USD", "TAPE_FILE", "TAPE_FILE_MAX_MB", "TAPE_MAX", "TIER_HIGH_MAX", "TIER_LOCK_MAX", "TIER_MOD_MAX", "VENUE_QUOTE_MAX_MS", "VENUE_SILENT_MS", "VENUE_STALE_MS", "VOL_FAST_SEC", "VOL_FAST_WEIGHT", "VOL_LONG_SEC", "VOL_MIN_SAMPLES", "VOL_PRIOR", "VOL_SHRINK_N", "VOL_UNC_MULT"];
 const ENV_EXCLUDE28 = /^(KALSHI_PRIVATE_KEY|KALSHI_KEY_ID|OPENAI_API_KEY|OPENAI_MODEL|ENABLE_OPENAI|PORT|PINRADAR_STATE_FILE|PRED_LOG_FILE|LEDGER_FILE|TAPE_FILE|PINRADAR_REPLAY|ENABLE_WS|KALSHI_WS_URL|PRED_LOG_MAX|LEDGER_MAX|TAPE_MAX|TAPE_FILE_MAX_MB)$/;
 function config28Env() { return Object.fromEntries(ENV_KEYS28.filter(k => !ENV_EXCLUDE28.test(k) && process.env[k] !== undefined && process.env[k] !== '').sort().map(k => [k, String(process.env[k])])); }
 const MODEL28_SHA = sha28(JSON.stringify(M25_MODEL ? { v: M25_MODEL.version, fit: M25_MODEL.fit, sigma: M25_MODEL.sigma, regime: M25_MODEL.regime,
@@ -4136,6 +4145,7 @@ const START28 = { done: false };
    samples and EXEC_SEC = 0 (checked by test/late281_test.js).
    =================================================================================================== */
 const COLD281_ON = String(process.env.COLD_START_ENVELOPE ?? '1') !== '0';
+const DQ_FIXES281 = String(process.env.DQ_FIXES ?? '1') !== '0';           // data-quality fixes (print mapping, aligned sampler, fresh quorum)
 const COLD_FULL_SEC = 900;
 const COLD_MIN_SEC = clampEnv(process.env.COLD_MIN_SEC, 120, 120, 900);
 /* [m seconds of history, K(m), F(m) bps/sqrt s]: research28/late_lock/calib_coldvol.js (99.9th pct x 1.15, monotone) */
@@ -4145,29 +4155,41 @@ const COLD_GRID281 = 9;
 const BASIS_WARM_N = clampEnv(process.env.BASIS_WARM_N, 12, 0, 10000);
 const BASIS_COLD_LO = clampEnv(process.env.BASIS_COLD_LO, -7, -100, 0);
 const BASIS_COLD_HI = clampEnv(process.env.BASIS_COLD_HI, 9, 0, 100);
-const EXEC_SEC = clampEnv(process.env.EXEC_SEC, 10, 0, 120);
+const EXEC_SEC = clampEnv(process.env.EXEC_SEC, 12, 0, 120);          // 12 s order time + MIN_EXEC_TAU 3 s = a 15 s execution buffer
 const EXEC_STRESS_Z = clampEnv(process.env.EXEC_STRESS_Z, 1.645, 0, 6);
 const PREPARE_SEC281 = 20;
 
-function execSec281(v) { const n = Number(v); return Number.isFinite(n) && n >= 0 ? Math.min(120, n) : EXEC_SEC; }
+function execSec281(v) {
+  const n = typeof v === 'number' ? v : (typeof v === 'string' && /^\s*\d+(\.\d+)?\s*$/.test(v) ? Number(v) : NaN);   // anything else -> the default
+  return Number.isFinite(n) && n >= 0 ? Math.min(120, n) : EXEC_SEC;
+}
 function coldK281(m) { let row = COLD_TABLE281[0]; for (const r of COLD_TABLE281) if (r[0] <= m) row = r; return row; }
 /* how much index history this process holds, and the sigma_900 bracket while it is short */
 function coldVol281(now, ring) {
   const span = ring.length ? Math.max(0, (now - ring[0][0]) / 1000) : 0;
   if (span >= COLD_FULL_SEC) return { cold: false, span: round(span, 1) };
-  const L = Math.max(1, Math.min(COLD_FULL_SEC, Math.floor(span)));
+  const L = Math.max(1, Math.min(COLD_FULL_SEC, Math.ceil(span)));
   const all = ringRmsVol(L, now, ring), s120 = ringRmsVol(120, now, ring);
-  const usable = COLD281_ON && span >= COLD_MIN_SEC && all.v != null && s120.v != null;
-  if (!usable) return { cold: true, usable: false, span: round(span, 1) };
-  const [, K, F] = coldK281(span);
-  const lo = Math.sqrt(Math.min(1, span / COLD_FULL_SEC)) * all.v, hi = Math.max(K * all.v, F, lo);
-  return { cold: true, usable: true, span: round(span, 1), sigmaM: all.v, sigma120: s120.v, lo, hi, K, F };
+  /* m = returns actually observed (an index outage after the start leaves a hole: the bracket is looked up for what was seen, not for wall-clock) */
+  const m = all.n || 0;
+  const warm28 = ringRmsVol(COLD_FULL_SEC, now, ring).v != null;       // 2.8's own warm flag (>= 300 returns), used when the envelope is off
+  const usable = COLD281_ON && m >= COLD_MIN_SEC && all.v != null && s120.v != null;
+  if (!usable) return { cold: true, usable: false, span: round(span, 1), m, warm28 };
+  const [, K, F] = coldK281(m);
+  /* lower bound: sigma_900^2 >= (m/900) sigma_m^2 whatever the unseen returns were (with fewer than 900 - m unseen returns it is higher still) */
+  const lo = Math.sqrt(Math.min(1, m / COLD_FULL_SEC)) * all.v, hi = Math.max(K * all.v, F, lo);
+  return { cold: true, usable: true, span: round(span, 1), m, warm28, sigmaM: all.v, sigma120: s120.v, lo, hi, K, F };
 }
 function basisCold281(basisMu, basisLiveN) {
   const n = Number.isFinite(basisLiveN) ? basisLiveN : (basisMu == null ? BASIS.samples.length : Infinity);
   return { cold: COLD281_ON && n < BASIS_WARM_N, n: Number.isFinite(n) ? n : null };
 }
-/* worst-case geometry over the cold brackets (lockGeometry25 is unchanged; only its sigma / basis inputs vary) */
+/* worst case over the cold brackets (lockGeometry25 is unchanged; only its sigma / basis inputs vary).
+   - P is not monotone in sigma: the tail table and the recalibration ratio change at the regime edges, and the flip risk is largest
+     just BELOW an edge. The candidates are a log grid, the measured value, and the left limit of every regime edge inside the bracket
+     (within one regime the flip risk grows with sigma, so the worst is at an end of the bracket or at an edge's left limit).
+   - A side is called only if it leads under EVERY candidate; otherwise there is no call (P = 1/2, TOSS-UP). The worst case is never
+     the opposite side presented as a confident call. */
 function coldGeometry281(base, args, cv, bc) {
   if (!base || base.pUp == null) return base;
   const spec = (M25_MODEL && M25_MODEL.sigma) || { kind: 'single', Ls: [900] };
@@ -4177,47 +4199,65 @@ function coldGeometry281(base, args, cv, bc) {
       return spec.kind === 'rms' ? Math.sqrt(v.reduce((a, x) => a + x * x, 0) / v.length) : spec.kind === 'max' ? Math.max(...v) : v[0]; };
     for (let i = 0; i < COLD_GRID281; i++) sigmas.push(comb(cv.lo * Math.pow(cv.hi / cv.lo, i / (COLD_GRID281 - 1))));
     sigmas.push(comb(cv.sigmaM));
+    const cLo = comb(cv.lo), cHi = comb(cv.hi);
+    const edges = (M25_MODEL && M25_MODEL.regime && M25_MODEL.regime.kind === 'sig' && M25_MODEL.regime.edges) || [];
+    for (const e of edges) {
+      if (!(e > cLo && e <= cHi)) continue;
+      let a = cv.lo, b = cv.hi;                                                   // comb is increasing in s900: bisect comb(s) = e
+      for (let k = 0; k < 60; k++) { const mid = (a + b) / 2; if (comb(mid) < e) a = mid; else b = mid; }
+      sigmas.push(Math.min(comb(a), e * (1 - 1e-9)));
+    }
   } else sigmas.push(null);                                                       // the base sigma
   const mus = bc.cold ? [BASIS_COLD_LO, base.basisMeanUsd, BASIS_COLD_HI] : [args.basisMu];
-  const side = base.pUp >= 0.5 ? 'UP' : 'DOWN', win = p => (side === 'UP' ? p : 1 - p);
-  let worst = null, worstCons = Infinity, n = 0;
+  let minG = null, maxG = null, minCons = Infinity, maxCons = -Infinity, n = 0;
   for (const sv of sigmas) for (const mu of mus) {
     const g = lockGeometry25({ ...args, sigma: sv == null ? null : { value: sv, warm: true, parts: [] }, basisMu: mu });
     if (!g || g.pUp == null) continue; n++;
-    if (!worst || win(g.pUp) < win(worst.pUp)) worst = g;
-    worstCons = Math.min(worstCons, win(g.pUpCons == null ? g.pUp : g.pUpCons));
+    if (!minG || g.pUp < minG.pUp) minG = g;
+    if (!maxG || g.pUp > maxG.pUp) maxG = g;
+    const pc = g.pUpCons == null ? g.pUp : g.pUpCons; minCons = Math.min(minCons, pc); maxCons = Math.max(maxCons, pc);
   }
-  if (!worst) return base;
+  if (!minG) return base;
+  let out, side;
+  if (minG.pUp >= 0.5) { side = 'UP'; out = { ...minG, pUpCons: Math.min(minCons, minG.pUp) }; }
+  else if (maxG.pUp < 0.5) { side = 'DOWN'; out = { ...maxG, pUpCons: Math.max(maxCons, maxG.pUp) }; }
+  else { side = null; out = { ...base, pUp: 0.5, pUpCons: 0.5, pUpModel: 0.5, pUpConsModel: 0.5 }; }   // the candidates disagree on the leader: no call
   /* the volatility counts as warm only if it is (>= 900 s) or the envelope covers it; a basis-only envelope keeps the 2.8 flag */
-  const out = { ...worst, pUpCons: side === 'UP' ? worstCons : 1 - worstCons, sigmaWarm: cv.cold ? !!cv.usable : base.sigmaWarm,
-    cold281: { active: true, volEnvelope: !!(cv.cold && cv.usable), basisEnvelope: !!bc.cold, historySec: cv.span,
+  Object.assign(out, { sigmaWarm: cv.cold ? !!cv.usable : base.sigmaWarm,
+    cold281: { active: true, volEnvelope: !!(cv.cold && cv.usable), basisEnvelope: !!bc.cold, historySec: cv.span, returnsSeen: cv.m,
       sigmaBand: cv.cold && cv.usable ? [round(cv.lo, 4), round(cv.hi, 4)] : null, sigmaMeasured: cv.sigmaM != null ? round(cv.sigmaM, 4) : null,
-      basisBand: bc.cold ? [BASIS_COLD_LO, BASIS_COLD_HI] : null, basisLiveN: bc.n, candidates: n,
-      basePUp: base.pUp, worstSigmaBps: worst.sigmaRawBps, worstBasisUsd: worst.basisMeanUsd,
-      note: 'restart: the call uses the worst probability over the volatility / basis values the server cannot yet pin down' } };
+      basisBand: bc.cold ? [BASIS_COLD_LO, BASIS_COLD_HI] : null, basisLiveN: bc.n, candidates: n, leaderUnderAllCandidates: side,
+      basePUp: base.pUp, pUpRange: [minG.pUp, maxG.pUp], worstSigmaBps: side ? out.sigmaRawBps : null, worstBasisUsd: side ? out.basisMeanUsd : null,
+      note: side ? 'restart: the call uses the worst probability over the volatility / basis values the server cannot yet pin down'
+        : 'restart: the leader depends on volatility / basis values the server cannot yet pin down: no call' } });
   if (cv.cold && cv.usable) out.sigmaParts = [{ L: 120, bps: round(cv.sigma120, 4), n: null }, { L: COLD_FULL_SEC, bps: null, band: [round(cv.lo, 4), round(cv.hi, 4)] }];
   return out;
 }
-/* execution stress: BTC moves against the call by a one-sided z quantile while the order is being placed */
+/* execution stress: BTC has ALREADY moved against the call by a one-sided z quantile of the order-time move, and the whole remaining
+   time is still random (the order-time diffusion is not removed): never less risky than the live call, and riskier the longer the order time */
 function stressPUp281(geo, tau, execSec, z = EXEC_STRESS_Z) {
   if (!geo || geo.pUp == null || !Number.isFinite(tau) || !(execSec > 0) || !(z >= 0) || !M25_MODEL) return null;
   const sgn = geo.pUp >= 0.5 ? 1 : -1, d = Math.min(execSec, Math.max(0, tau));
   const shift = z * geo.sigmaBps * 1e-4 * geo.index * Math.sqrt(d), frac = Math.min(1, (geo.nRemaining == null ? 60 : geo.nRemaining) / 60);
   const b = geo.regime ? geo.regime.bucket : m25Bucket(M25_MODEL, 0);
-  return recalPUp26(m25PUp(M25_MODEL, { tau: Math.max(0, tau - d), gap: geo.gapUsd - sgn * shift * frac, sigBps: geo.sigmaBps, S: geo.index, mu: geo.basisMeanUsd, bucket: b }), recalRatio26(b));
+  return recalPUp26(m25PUp(M25_MODEL, { tau: Math.max(0, tau), gap: geo.gapUsd - sgn * shift * frac, sigBps: geo.sigmaBps, S: geo.index, mu: geo.basisMeanUsd, bucket: b }), recalRatio26(b));
 }
 const EXEC281 = { windows: new Map(), keep: 200 };
 function warmup281(now, cv, bc) {
   const up = bootTs ? Math.round((now - bootTs) / 1000) : null;
-  const lockIn = cv.span >= COLD_MIN_SEC ? 0 : Math.ceil(COLD_MIN_SEC - cv.span);
-  return { uptimeSec: up, indexHistorySec: cv.span, volEnvelope: !!(cv.cold && cv.usable), lockedAvailable: cv.span >= COLD_MIN_SEC,
+  const avail = !cv.cold || (COLD281_ON ? !!cv.usable : !!cv.warm28);
+  const need = COLD281_ON ? COLD_MIN_SEC : 300;                       // envelope off = 2.8: ringRmsVol(900) needs >= 300 returns
+  const seen = cv.m != null ? cv.m : cv.span;
+  const lockIn = avail ? 0 : Math.max(1, Math.ceil(need - seen));
+  return { uptimeSec: up, indexHistorySec: cv.span, volEnvelope: !!(cv.cold && cv.usable), lockedAvailable: avail,
     lockedAvailableInSec: lockIn, fullHistoryInSec: cv.cold ? Math.ceil(COLD_FULL_SEC - cv.span) : 0, basisLiveN: bc.n, basisCold: bc.cold,
-    label: !cv.cold && !bc.cold ? null : (cv.span < COLD_MIN_SEC ? `restarted: LOCKED unavailable for ${lockIn} s more (index history ${Math.floor(cv.span)} s)`
-      : (cv.cold ? `restarted ${Math.floor(cv.span)} s ago: conservative volatility envelope (full history in ${Math.ceil(COLD_FULL_SEC - cv.span)} s)` : '')
+    label: !cv.cold && !bc.cold ? null : (!avail ? `restarted: LOCKED unavailable for ~${lockIn} s more (index history ${Math.floor(seen)} s, needs ${need} s)`
+      : (cv.cold ? (cv.usable ? `restarted ${Math.floor(cv.span)} s ago: conservative volatility envelope (full history in ${Math.ceil(COLD_FULL_SEC - cv.span)} s)`
+        : `restarted ${Math.floor(cv.span)} s ago: volatility from partial history (2.8 behaviour, envelope off)`) : '')
         + (bc.cold ? `${cv.cold ? '; ' : ''}basis model cold (${bc.n}/${BASIS_WARM_N} settled windows): conservative basis range` : '')) };
 }
 /* the single action a trader should take now */
-function exec281(sig, { tau, execSec, now }) {
+function exec281(sig, { tau, execSec, now, mutate = false }) {
   if (!sig) return sig;
   const tr = sig.trade || {}, st = sig.state, a = tr.action || '', lastOrderTau = MIN_EXEC_TAU + execSec;
   const left = Number.isFinite(tau) ? tau - lastOrderTau : null;
@@ -4225,8 +4265,9 @@ function exec281(sig, { tau, execSec, now }) {
   const des = sig.v28 && sig.v28.designation;
   if (Number.isFinite(tau) && tau <= 0) { state = 'FINAL'; why = (des && des.label) || 'window closed: awaiting settlement'; }
   else if (st === 'LOCKED' || st === 'PROVEN LOCKED') {
-    if (a === 'TRADE NOW') { state = 'TRADE NOW'; why = tr.why; }
-    else if (/TOO LATE/.test(a) && tr.noOffers && !(left != null && left < 0)) { state = 'PREDICTED LOCKED'; why = 'NO OFFERS — ' + tr.why + '; nothing to buy (not a timing problem)'; }
+    if (left != null && left < 0) { state = 'TOO LATE TO TRADE'; why = /TOO LATE/.test(a) && !tr.noOffers ? tr.why : `${Math.max(0, tau).toFixed(1)} s left: past the last moment to place an order (T−${lastOrderTau} s with a ${execSec} s order time)`; }
+    else if (a === 'TRADE NOW') { state = 'TRADE NOW'; why = tr.why; }
+    else if (/TOO LATE/.test(a) && tr.noOffers) { state = 'PREDICTED LOCKED'; why = 'NO OFFERS — ' + tr.why + '; nothing to buy (not a timing problem)'; }
     else if (/TOO LATE/.test(a)) { state = 'TOO LATE TO TRADE'; why = tr.why; }
     else if (a === 'LOCKED — DO NOT TRADE' && tr.askCents != null && sig.pWin != null && !/survive/.test(tr.why || '')) {
       /* no edge: say plainly that the market is already at least as sure as the model, and at what price the trade would qualify */
@@ -4243,20 +4284,44 @@ function exec281(sig, { tau, execSec, now }) {
     why = st === 'REVERSAL WARNING' ? 'REVERSAL WARNING: the LOCKED call is breaking down' : st === 'DATA UNRELIABLE' ? ('data unreliable: ' + ((sig.gates && sig.gates.hard[0]) || ''))
       : st === 'HIGH CONFIDENCE' ? ('not LOCKED' + (tr.why ? ' — ' + tr.why : '')) : `no LOCKED call (${st})`;
     const pj = sig.projection;
-    if (st === 'HIGH CONFIDENCE' && pj && pj.lockInSec != null && pj.lockInSec <= PREPARE_SEC281 && left != null && left - pj.lockInSec >= 0)
+    const soft = (sig.gates && sig.gates.soft) || [], wu = sig.warmup;
+    const gatesOk = soft.every(t => /outside the validated LOCKED horizon/.test(t)) && (!soft.length || (pj && pj.atTau != null && pj.atTau <= LOCK_MAX_TAU));
+    if (st === 'HIGH CONFIDENCE' && gatesOk && (!wu || wu.lockedAvailable) && pj && pj.lockInSec != null && pj.lockInSec <= PREPARE_SEC281 && left != null && left - pj.lockInSec >= 0)
       prepare = `GET READY: LOCKED ${pj.side} projected in ~${Math.round(pj.lockInSec)} s if BTC holds — open the Kalshi ${pj.side === 'UP' ? 'YES' : 'NO'} ticket now; submit only on TRADE NOW`;
   }
   const edge = sig.exec_edge || null; delete sig.exec_edge;
-  sig.exec = { state, why, prepare, execSec, lastOrderTau, secondsToLastOrder: left == null ? null : round(left, 1), edge, noOffers: !!tr.noOffers,
+  /* the three-word decision the page leads with, the reversal risk, and ONE short reason (no arithmetic left to the trader) */
+  const locked = st === 'LOCKED' || st === 'PROVEN LOCKED', sd = sig.side || '';
+  const headline = state === 'TRADE NOW' ? 'TRADE NOW' : (state === 'TOO LATE TO TRADE' || state === 'FINAL') ? 'TOO LATE' : 'SIT OUT';
+  let reason;
+  if (state === 'FINAL') reason = 'window closed: ' + ((des && des.label) || 'awaiting settlement');
+  else if (state === 'TRADE NOW') reason = `buy ${sd === 'UP' ? 'YES (UP)' : 'NO (DOWN)'} at ≤ ${tr.askCents}¢: ${tr.evConsCents >= 0 ? '+' : ''}${tr.evConsCents}¢ per contract after fees (cautious)`;
+  else if (state === 'TOO LATE TO TRADE') reason = `LOCKED ${sd} with ${Math.max(0, tau).toFixed(0)} s left: an order needs ${lastOrderTau} s`;
+  else if (locked && edge) reason = `LOCKED ${sd}, but no edge at ${edge.askCents}¢` + (edge.maxAskForTradeNow > 0 ? ` (worth it only at ≤ ${edge.maxAskForTradeNow}¢)` : '');
+  else if (locked && tr.noOffers) reason = `LOCKED ${sd}, but nobody is selling ${sd}: the market treats it as decided`;
+  else if (locked && /survive/.test(tr.why || '')) reason = `LOCKED ${sd}, but the edge is too thin for a ${execSec} s order time`;
+  else if (locked && /BOOK STALE|NO BOOK/.test(a)) reason = `LOCKED ${sd}, but the Kalshi order book is ${/NO BOOK/.test(a) ? 'missing' : 'stale'}`;
+  else if (locked && /TOO THIN/.test(a)) reason = `LOCKED ${sd}, but ${tr.why || 'too few contracts offered'}`;
+  else if (locked && /MARKET DISAGREES/.test(a)) reason = `LOCKED ${sd}, but Kalshi offers it at ${tr.askCents}¢: check the index and strike`;
+  else if (locked) reason = `LOCKED ${sd}, not tradable: ${tr.why || a}`;
+  else if (st === 'REVERSAL WARNING') reason = `REVERSAL WARNING: the earlier LOCKED ${sd} call is breaking down`;
+  else if (st === 'DATA UNRELIABLE') reason = 'data unreliable: ' + ((sig.gates && sig.gates.hard[0]) || 'see the data panel');
+  else if (st === 'HIGH CONFIDENCE') reason = `not LOCKED yet (${sd} ${sig.pWin != null ? (100 * sig.pWin).toFixed(2) + ' %' : ''})` + (sig.warmup && !sig.warmup.lockedAvailable ? ': server restarted, LOCKED unavailable for now' : '');
+  else reason = `no reliable call (${st})`;
+  const reversalPct = st === 'DATA UNRELIABLE' || sig.pFlip == null ? null : round(100 * sig.pFlip, 3);
+  sig.exec = { headline, reversalPct, reason, state, why, prepare, execSec, lastOrderTau, secondsToLastOrder: left == null ? null : round(left, 1), edge, noOffers: !!tr.noOffers,
     note: 'TRADE NOW needs LOCKED, a fresh book with enough offers, a positive conservative edge after fees that survives an adverse move during your order time, and at least ' + lastOrderTau + ' s left' };
-  /* per-window record of when the call became tradable / too late (diagnostic, /exec) */
-  if (sig.ticker && Number.isFinite(tau) && tau > 0) {
+  /* per-window record of when the call became tradable / too late (diagnostic, /exec): background classifier only (default order time) */
+  if (mutate && sig.ticker && Number.isFinite(tau) && tau > 0) {
     let w = EXEC281.windows.get(sig.ticker);
     if (!w) { w = { ticker: sig.ticker, closeMs: sig.closeMs, firstLockedTau: null, firstTradeTau: null, firstTooLateTau: null, lastOrderTau, side: null }; EXEC281.windows.set(sig.ticker, w);
       while (EXEC281.windows.size > EXEC281.keep) EXEC281.windows.delete(EXEC281.windows.keys().next().value); }
     if ((st === 'LOCKED' || st === 'PROVEN LOCKED') && w.firstLockedTau == null) { w.firstLockedTau = round(tau, 1); w.side = sig.side; }
     if (state === 'TRADE NOW' && w.firstTradeTau == null) w.firstTradeTau = round(tau, 1);
     if (state === 'TOO LATE TO TRADE' && w.firstTooLateTau == null) w.firstTooLateTau = round(tau, 1);
+    if ((st === 'LOCKED' || st === 'PROVEN LOCKED') && state !== 'TRADE NOW' && w.firstBlock == null)
+      w.firstBlock = { tau: round(tau, 1), state, reason: /^NO EDGE/.test(why) ? 'no edge' : /^NO OFFERS/.test(why) ? 'no offers' : state === 'TOO LATE TO TRADE' ? 'time'
+        : /survive/.test(why) ? 'stress' : /STALE|NO BOOK|fresh/.test(why) ? 'book' : /THIN|contracts offered/.test(why) ? 'depth' : /MARKET DISAGREES|< 90/.test(why) ? 'market disagrees' : 'other' };
   }
   return sig;
 }
@@ -4265,8 +4330,48 @@ function exec281Summary() {
   const locked = ws.filter(w => w.firstLockedTau != null);
   const actionable = locked.filter(w => w.firstLockedTau >= w.lastOrderTau);
   return { windows: ws.length, locked: locked.length, lockedBeforeLastOrder: actionable.length, tradeNow: ws.filter(w => w.firstTradeTau != null).length,
-    tooLateOnly: locked.filter(w => w.firstTradeTau == null && w.firstTooLateTau != null).length, recent: ws.slice(-20),
+    lockedOnlyAfterLastOrderMoment: locked.filter(w => w.firstLockedTau < w.lastOrderTau).length,
+    lockedNotTradableBy: locked.filter(w => w.firstTradeTau == null && w.firstBlock).reduce((o, w) => { o[w.firstBlock.reason] = (o[w.firstBlock.reason] || 0) + 1; return o; }, {}), recent: ws.slice(-20),
     note: 'background classifier with the default order time (EXEC_SEC); since this process started' };
+}
+
+/* ---- data quality ---- */
+/* the live index for a decision: if its oldest input would exceed the stale budget for this tau, rebuild it from the venues whose quotes
+   are within the budget when they still form a quorum (one lagging venue must not poison an index two fresh, agreeing venues provide) */
+function liveIndexFor281(now, tau) {
+  const idx = computeIndex(now);
+  if (!idx || !DQ_FIXES281) return { idx, freshQuorum: false };
+  const ageOf = ix => Math.max(...VENUE_LIST().filter(v => ix.used.includes(v.name)).map(v => now - v.lastQuoteTs));
+  const age = ageOf(idx);
+  if (!Number.isFinite(tau) || tau <= 0) return { idx, freshQuorum: false };
+  const budget = staleBudgetMs(tau);
+  if (!(age > budget)) return { idx, freshQuorum: false };
+  const keepReason = IDX.lastReason;
+  const f = computeIndex(now, budget);
+  if (f && !f.single && f.used.length >= MIN_INDEX_VENUES) return { idx: { ...f, freshQuorum: true, droppedStale: idx.used.filter(n => !f.used.includes(n)) }, freshQuorum: true };
+  IDX.lastReason = keepReason;
+  return { idx, freshQuorum: false };
+}
+/* every hard data gate the background classifier hits, with the venue state at that moment (/dq; summary on /health) */
+const DQ281 = { counts: {}, recent: [], since: null, decisions: 0, unreliable: 0, keep: 200 };
+function dqNote281(now, tau, ticker, gates) {
+  if (!DQ281.since) DQ281.since = now;
+  DQ281.decisions++;
+  const hard = (gates && gates.hard) || [];
+  if (!hard.length) return;
+  DQ281.unreliable++;
+  for (const h of hard) { const k = String(h).replace(/\$?-?[0-9][0-9.,]*/g, '#'); DQ281.counts[k] = (DQ281.counts[k] || 0) + 1; }
+  DQ281.recent.push({ ts: now, ticker, tau: Number.isFinite(tau) ? round(tau, 1) : null, hard: hard.slice(),
+    venues: VENUE_LIST().map(v => ({ name: v.name, state: v.state, fresh: venueFresh(v, now), quoteAgeMs: v.lastQuoteTs ? now - v.lastQuoteTs : null, msgAgeMs: v.lastMsgTs ? now - v.lastMsgTs : null, lastError: v.lastError || null })),
+    ringSamples: IDX.ring.length, skewMs: Math.round(SKEW.estMs) });
+  while (DQ281.recent.length > DQ281.keep) DQ281.recent.shift();
+}
+function dqSummary281(brief = false) {
+  const top = Object.entries(DQ281.counts).sort((a, b) => b[1] - a[1]);
+  const o = { since: DQ281.since ? new Date(DQ281.since).toISOString() : null, backgroundDecisions: DQ281.decisions, dataUnreliable: DQ281.unreliable,
+    pct: DQ281.decisions ? round(100 * DQ281.unreliable / DQ281.decisions, 3) : null, reasons: Object.fromEntries(top.slice(0, brief ? 5 : 50)) };
+  if (!brief) o.recent = DQ281.recent.slice(-100);
+  return o;
 }
 
 /* One snapshot shared by /radar and the background classifier. */
@@ -4300,7 +4405,8 @@ function computeLockSnapshot({ now = Date.now(), kal, strike, strikeIssue, overr
   if (signal) { signal.warmup = warmup281(now, cv281, bc281); signal.cold = geo && geo.cold281 ? geo.cold281 : null;
     if (signal.v28 && signal.v28.execution) { signal.v28.execution.enoughTime = Number.isFinite(tau) && tau >= MIN_EXEC_TAU + ex281; signal.v28.execution.orderTimeSec = ex281;
       signal.v28.execution.ready = !!(signal.v28.execution.ready && signal.v28.execution.enoughTime); } }
-  exec281(signal, { tau, execSec: ex281, now });               // v2.8.1: the action a trader should take now
+  exec281(signal, { tau, execSec: ex281, now, mutate });       // v2.8.1: the action a trader should take now
+  if (mutate && signal) dqNote281(now, tau, signal.ticker, signal.gates || gates);   // v2.8.1: why DATA UNRELIABLE, on the record
   return { geo, gates, signal, settle };
 }
 /* Background classifier: keeps the sticky-side/reversal state and the
@@ -4311,7 +4417,8 @@ function bgTick(now = Date.now()) {
     const kal = kalshiContext();
     if (!kal.ok || !Number.isFinite(kal.strike)) return null;
     if (Number.isFinite(kal.closeMs) && kal.closeMs - now < 0) return null;
-    const liveIdx = computeIndex(now);
+    const li281 = liveIndexFor281(now, Number.isFinite(kal.closeMs) ? (kal.closeMs - now) / 1000 : NaN);   // v2.8.1: fresh quorum
+    const liveIdx = li281.idx;
     const used = liveIdx ? VENUE_LIST().filter(v => liveIdx.used.includes(v.name)) : [];
     const age = used.length ? Math.max(...used.map(v => now - v.lastQuoteTs)) : Infinity;
     const quality = assessQuality(now, kal);
@@ -4433,7 +4540,7 @@ async function radar(payload) {
   /* Use a LIVE index for the current level (venue quotes are 10-40 ms
      fresh) and keep the 1 Hz ring for the settlement average and vol,
      which must mirror BRTI's one-print-per-second cadence. */
-  const liveIdx = computeIndex(now);
+  const liveIdx = liveIndexFor281(now, kal && Number.isFinite(kal.closeMs) ? (kal.closeMs - now) / 1000 : NaN).idx;   // v2.8.1: fresh quorum
   const liveValue = liveIdx ? liveIdx.value : IDX.value;
   const indexNow = Number.isFinite(priceOverride) ? priceOverride : liveValue;
   const priceSource = Number.isFinite(priceOverride) ? 'client-override'
@@ -5131,6 +5238,21 @@ function runSelfTest() {
       gE && g0 && win(gE, 'UP') <= win(g0, 'UP') + 1e-12 && (COLD281_ON ? (gE.sigmaWarm === true && gE.cold281 && gE.cold281.volEnvelope) : gE.pUp === g0.pUp), [g0 && g0.pUp, gE && gE.pUp]);
     const gB = coldGeometry281(g0, args, { cold: false, span: 999 }, { cold: true, n: 0 });
     push('2.8.1 cold basis: worst case over the basis range is no more confident than the prior mean', gB && win(gB, 'UP') <= win(g0, 'UP') + 1e-12 && gB.cold281.basisEnvelope, [g0 && g0.pUp, gB && gB.pUp]);
+    /* review blocker: a cold basis must never present the OPPOSITE side as a confident call (DOWN leader, tiny gap, near the close) */
+    {
+      const ringD = []; for (let i = 0; i < 960; i++) ringD.push([nowS - (959 - i) * 1000, 80000 - 0.5 + 0.2 * Math.sin(i / 5)]);
+      const aD = { indexNow: 79999.5, strike: 80000, closeMs: nowS + 6000, now: nowS, inputAgeMs: 100, ring: ringD, basisMu: 0 };
+      const gD0 = lockGeometry25(aD), gDB = coldGeometry281(gD0, aD, { cold: false, span: 999 }, { cold: true, n: 0 });
+      const flipped = gDB && gD0 && gD0.pUp < 0.5 && gDB.pUp > 0.5;
+      push('2.8.1 cold basis: a DOWN leader is never turned into an UP call (no side unless it leads under every candidate)', gDB && !flipped && (gDB.pUp === 0.5 || gDB.pUp <= gD0.pUp + 1e-12), [gD0 && gD0.pUp, gDB && gDB.pUp, gDB && gDB.cold281 && gDB.cold281.leaderUnderAllCandidates]);
+    }
+    /* review finding: the warm-up gate text must state the real requirement (300 s when the envelope is off, as in 2.8) */
+    {
+      const gC = { ...lockGeometry25({ ...args, ring: ringS }), sigmaWarm: false };
+      const dC = classify25({ now: nowS, tau: 45, ticker: 'SELFTEST-281', closeMs: nowS + 45000, strike: 80000, geo: gC, gates: { hard: [], soft: [], official: [] }, kal: { ok: true, ticker: 'SELFTEST-281' }, contracts: 10, mutate: false });
+      const need = COLD281_ON ? COLD_MIN_SEC : 300;
+      push('2.8.1 warm-up gate text states the real requirement (' + need + ' s)', dC.gates.soft.some(t => t.includes(`LOCKED needs ${need} s`)), dC.gates.soft);
+    }
     /* order time and stress */
     push('2.8.1 order time: m25Cfg adds the order time to the 3 s fill margin', m25Cfg(10, 10).minExecTau === MIN_EXEC_TAU + 10 && m25Cfg(10, 0).minExecTau === MIN_EXEC_TAU, [m25Cfg(10, 10).minExecTau, m25Cfg(10, 0).minExecTau]);
     const bk = { ok: true, ageMs: 100, yesAsks: [[97, 500]], noAsks: [[4, 500]] };
@@ -5141,8 +5263,9 @@ function runSelfTest() {
       dLate.trade.action === 'LOCKED — TOO LATE' && dOk.trade.action === 'TRADE NOW', [dLate.trade.action, dOk.trade.action]);
     push('2.8.1 stress: TRADE NOW is refused when an adverse move during the order time removes the edge', dStress.trade.action === 'LOCKED — DO NOT TRADE' && /survive/.test(dStress.trade.why), dStress.trade);
     const gS = lockGeometry25({ ...args, ring: ringW });
-    const ps = stressPUp281(gS, 45, 10), ps0 = stressPUp281(gS, 45, 10, 0);
-    push('2.8.1 stress: an adverse move during the order time never raises the probability at the fill moment', gS && ps != null && ps0 != null && ps <= ps0 + 1e-12, [gS && gS.pUp, ps0, ps]);
+    const ps0 = stressPUp281(gS, 45, 10, 0), ps3 = stressPUp281(gS, 45, 3), ps10 = stressPUp281(gS, 45, 10), ps30 = stressPUp281(gS, 45, 30);
+    push('2.8.1 stress: never more confident than the live call, and less confident the longer the order time',
+      gS && ps0 != null && Math.abs(ps0 - gS.pUp) < 1e-5 && ps3 <= ps0 + 1e-12 && ps10 <= ps3 + 1e-12 && ps30 <= ps10 + 1e-12, [gS && gS.pUp, ps0, ps3, ps10, ps30]);   // ps0: z = 0 (geo fields are rounded, so not bit-equal to pUp)
     /* action states */
     const a1 = exec281({ state: 'LOCKED', side: 'UP', trade: { action: 'LOCKED — DO NOT TRADE', why: 'x' }, ticker: null }, { tau: 40, execSec: 10, now: nowS });
     const a2 = exec281({ state: 'LOCKED', side: 'UP', trade: { action: 'LOCKED — TOO LATE', why: 'y' }, ticker: null }, { tau: 8, execSec: 10, now: nowS });
@@ -5191,6 +5314,7 @@ const server = http.createServer(async (req, res) => {
         predictionLog: { rows: PRED27.rows.length, dropped: PRED27.dropped, file: PRED_LOG_FILE || null, fileErr: PRED27.fileErr },
         v28: v28Summary(now),
         warmup: (() => { const cv = coldVol281(now, IDX.ring), bc = basisCold281(null); return warmup281(now, cv, bc); })(),   // v2.8.1
+        dataQuality: dqSummary281(true),
         execution: { orderTimeSec: EXEC_SEC, stressZ: EXEC_STRESS_Z, minExecTau: MIN_EXEC_TAU, coldEnvelope: COLD281_ON, coldMinSec: COLD_MIN_SEC, basisWarmN: BASIS_WARM_N, basisColdRange: [BASIS_COLD_LO, BASIS_COLD_HI] },
         ts: now
       });
@@ -5269,6 +5393,7 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true, version: SERVER_VERSION, samples: samples.length, records: rows.length, dropped: TAPE28.dropped, sampleRows: samples, rows });
     }
     if (req.method === 'GET' && u.pathname === '/exec') return send(res, 200, { ok: true, version: SERVER_VERSION, ...exec281Summary() });   // v2.8.1
+    if (req.method === 'GET' && u.pathname === '/dq') return send(res, 200, { ok: true, version: SERVER_VERSION, ...dqSummary281() });        // v2.8.1
     if (req.method === 'GET' && u.pathname === '/basis') {
       const b = basisModel();
       return send(res, 200, { ok: true, version: SERVER_VERSION, model: b, samples: BASIS.samples.slice(-200), settlement: { pending: [...SETTLE.pending.values()], done: SETTLE.done.slice(0, 20) } });
@@ -5388,5 +5513,6 @@ module.exports = {
   clientLat28, ledgerVerify28, tapeWrite28, TAPE28_FILE_MAX,
   // v2.8.1
   coldVol281, basisCold281, coldGeometry281, stressPUp281, exec281, exec281Summary, warmup281, execSec281, EXEC281, COLD_TABLE281,
+  liveIndexFor281, dqNote281, dqSummary281, DQ281, startSampler,
   COLD_MIN_SEC, COLD_FULL_SEC, COLD281_ON, BASIS_WARM_N, BASIS_COLD_LO, BASIS_COLD_HI, EXEC_SEC, EXEC_STRESS_Z
 };

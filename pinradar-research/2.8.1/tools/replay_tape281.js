@@ -68,9 +68,13 @@ if (require.main === module) {
   process.env.ENABLE_WS = '0'; process.env.PINRADAR_REPLAY = '1';
   const fs = require('fs'), path = require('path');
   const S = require(path.resolve(process.argv[2]));
-  const lines = fs.readFileSync(process.argv[3], 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l));
+  /* ndjson (/tape?format=ndjson or TAPE_FILE) or the default JSON /tape ({sampleRows, rows}); a saved file may start with a BOM */
+  const txt = fs.readFileSync(process.argv[3], 'utf8').replace(/^\uFEFF/, '').trim();
+  let lines; try { const j = JSON.parse(txt); lines = Array.isArray(j) ? j : (j.sampleRows || []).map(([t, v]) => ({ k: 's', t, v })).concat(j.rows || []); }
+  catch (_) { lines = txt.split('\n').map(l => l.trim()).filter(Boolean).map(l => JSON.parse(l)); }
   const res = replayTape(S, lines);
   if (process.argv[4]) fs.writeFileSync(process.argv[4], JSON.stringify(res, null, 1));
   console.log(JSON.stringify(res));
-  process.exit(res.mismatches ? 1 : 0);
+  if (!res.records) console.error('no decision records in this tape: nothing was replayed');
+  process.exit(res.mismatches || !res.records ? 1 : 0);
 }

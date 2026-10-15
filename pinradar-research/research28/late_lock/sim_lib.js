@@ -83,7 +83,7 @@ function runWindow(S, w, bootT, opts = {}) {
         soft: (s.gates || snap.gates).soft.slice(), hard: (s.gates || snap.gates).hard.slice(), sigmaWarm: g.sigmaWarm, sigmaRaw: g.sigmaRawBps, sigma: g.sigmaBps,
         bucket: g.regime ? g.regime.bucket : null, gap: g.gapUsd, cushion: g.cushionSigma, nLock: g.nLock, lockedMean: g.lockedMean,
         expSettle: g.expectedSettle, reqMove: g.requiredMoveUsd, ring: S.IDX.ring.length };
-      if (opts.decide) Object.assign(row, opts.decide(S, snap, { T, tau, x, w, NOW }) || {});
+      if (opts.decide) Object.assign(row, opts.decide(S, snap, { T, tau, x, w, NOW, liveIdx, age, basisMu: opts.basisMu == null ? null : opts.basisMu }) || {});
       rows.push(row);
     }
     return rows;
