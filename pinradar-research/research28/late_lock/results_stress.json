@@ -1,0 +1,38 @@
+{
+ "firstLocked": {
+  "order 3 s": {
+   "n": 54,
+   "stressedFlipPct": {
+    "p10": 0.487,
+    "median": 0.677,
+    "p90": 1.046
+   },
+   "shareUnder05pct": 0.111
+  },
+  "order 10 s": {
+   "n": 53,
+   "stressedFlipPct": {
+    "p10": 0.583,
+    "median": 0.87,
+    "p90": 1.904
+   },
+   "shareUnder05pct": 0.038
+  },
+  "order 30 s": {
+   "n": 50,
+   "stressedFlipPct": {
+    "p10": 0.862,
+    "median": 1.456,
+    "p90": 3.212
+   },
+   "shareUnder05pct": 0
+  }
+ },
+ "tradeNow": {
+  "orderTimeSec": 10,
+  "z": 1.645,
+  "tradeNowSeconds": 2422,
+  "refusedByStress": 6,
+  "book": "synthetic leader ask 95-99.9c, 300 contracts"
+ }
+}

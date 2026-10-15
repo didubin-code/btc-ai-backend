@@ -68,7 +68,7 @@ const execOf = (S, snap) => ({ exec: snap.signal.exec ? snap.signal.exec.state :
   }
   ok('P1 warm parity: 2.8.1 (EXEC_SEC=0) = 2.8 on every second', d0 === 0 && n > 15000, { seconds: n, differences: d0, ex });
   ok('P2 warm, default order time: identical probabilities/states; actions differ only by TOO LATE (< LAST) or the stress test, and the stress test does refuse some',
-    dP === 0 && dOther === 0 && dStress > 0, { seconds: n, probabilityDiffs: dP, lockedActionToTooLateUnder13s: dTooLate, tradeNowToStressRefusal: dStress, otherActionDiffs: dOther, ex: ex2 });
+    dP === 0 && dOther === 0 && dStress > 0, { seconds: n, probabilityDiffs: dP, lockedActionToTooLateUnderLast: dTooLate, tradeNowToStressRefusal: dStress, otherActionDiffs: dOther, ex: ex2 });
 }
 
 /* R1 / R2: restarts */
@@ -196,7 +196,7 @@ const execOf = (S, snap) => ({ exec: snap.signal.exec ? snap.signal.exec.state :
   }
   res.reported = res.reported || {};
   res.reported['S3 narrowly ahead (official $1 from the strike): REPORTED, not a pass/fail check'] =
-    { windows, lockedWindows: lockedWins, lockedWrongSide: lockedWrong, tradeNowSeconds: tnSeconds, tradeNowWrongSide: tnWrong, tradeNowUnder13s: tnLate,
+    { windows, lockedWindows: lockedWins, lockedWrongSide: lockedWrong, tradeNowSeconds: tnSeconds, tradeNowWrongSide: tnWrong, tradeNowUnderLast: tnLate,
       note: 'a $1 settlement margin is decided by the basis (official minus our index); LOCKED / TRADE NOW on the wrong side here is a model limit that 2.8.1 does not change' };
 }
 

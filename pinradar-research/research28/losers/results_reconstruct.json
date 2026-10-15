@@ -1,0 +1,156 @@
+[
+ {
+  "ticker": "KXBTC15M-26SEP022315-15",
+  "basisMuUsed": 5.137574515875461,
+  "truth": "UP",
+  "officialMinusStrike": 39.57,
+  "realisedBasis": 8.17,
+  "call": {
+   "side": "DOWN",
+   "tau": 97.25,
+   "pFlip": 0.004408,
+   "pFlipCons": 0.010076,
+   "index": 77699.54,
+   "gapUsd": -80.6,
+   "cushionSigma": 5.76,
+   "requiredMoveUsd": 80.6,
+   "sigmaRawBps": 0.2221,
+   "regime": "normal",
+   "momentum30s": 1.45,
+   "recordedPrints": 0
+  },
+  "reversal": {
+   "maxAdverseIndexMoveUsd": 127.9,
+   "atTau": 53,
+   "requiredAtCall": 80.6,
+   "ratio": 1.59
+  },
+  "pathAfterCall": [
+   {
+    "tau": 60,
+    "state": "LEANING",
+    "side": "DOWN",
+    "pFlip": 0.078782,
+    "index": 77746.08
+   },
+   {
+    "tau": 45,
+    "state": "REVERSAL WARNING",
+    "side": "DOWN",
+    "pFlip": 0.997032,
+    "index": 77827.39
+   },
+   {
+    "tau": 30,
+    "state": "REVERSAL WARNING",
+    "side": "DOWN",
+    "pFlip": 0.999568,
+    "index": 77819.53
+   },
+   {
+    "tau": 20,
+    "state": "REVERSAL WARNING",
+    "side": "DOWN",
+    "pFlip": 0.999936,
+    "index": 77815.77
+   },
+   {
+    "tau": 10,
+    "state": "REVERSAL WARNING",
+    "side": "DOWN",
+    "pFlip": 0.999997,
+    "index": 77799.21
+   },
+   {
+    "tau": 5,
+    "state": "REVERSAL WARNING",
+    "side": "DOWN",
+    "pFlip": 1,
+    "index": 77797.47
+   }
+  ],
+  "safeguards": {
+   "threshold 0.2 %": "would NOT have LOCKED at the call (flip 0.441 %)",
+   "15 s execution buffer": "no effect (call at T-97.25)",
+   "2.8.1 same inputs (basis as here)": "LOCKED DOWN at T-97.25",
+   "2.8.1 after a restart (basis model cold)": "LOCKED DOWN at T-94.25"
+  }
+ },
+ {
+  "ticker": "KXBTC15M-26OCT122045-45",
+  "basisMuUsed": 0,
+  "truth": "DOWN",
+  "officialMinusStrike": -2.55,
+  "realisedBasis": null,
+  "call": {
+   "side": "UP",
+   "tau": 17.25,
+   "pFlip": 0.00446,
+   "pFlipCons": 0.011253,
+   "index": 81354.87,
+   "gapUsd": 15.6,
+   "cushionSigma": 3.02,
+   "requiredMoveUsd": 52.01,
+   "sigmaRawBps": 0.6172,
+   "regime": "active",
+   "momentum30s": -0.8,
+   "recordedPrints": 42
+  },
+  "reversal": {
+   "maxAdverseIndexMoveUsd": 74.7,
+   "atTau": 5,
+   "requiredAtCall": 52.01,
+   "ratio": 1.44
+  },
+  "pathAfterCall": [
+   {
+    "tau": 60,
+    "state": "TOSS-UP",
+    "side": "UP",
+    "pFlip": 0.27728,
+    "index": 81372.51
+   },
+   {
+    "tau": 45,
+    "state": "LEANING",
+    "side": "UP",
+    "pFlip": 0.108967,
+    "index": 81380.64
+   },
+   {
+    "tau": 30,
+    "state": "HIGH CONFIDENCE",
+    "side": "UP",
+    "pFlip": 0.007975,
+    "index": 81383.69
+   },
+   {
+    "tau": 20,
+    "state": "HIGH CONFIDENCE",
+    "side": "UP",
+    "pFlip": 0.007691,
+    "index": 81357.82
+   },
+   {
+    "tau": 10,
+    "state": "REVERSAL WARNING",
+    "side": "UP",
+    "pFlip": 0.629177,
+    "index": 81285.07
+   },
+   {
+    "tau": 5,
+    "state": "REVERSAL WARNING",
+    "side": "UP",
+    "pFlip": 0.689716,
+    "index": 81282.89
+   }
+  ],
+  "safeguards": {
+   "threshold 0.2 %": "would NOT have LOCKED at the call (flip 0.446 %)",
+   "15 s execution buffer": "no effect (call at T-17.25)",
+   "2.8.1 same inputs (basis as here)": "LOCKED UP at T-17.25",
+   "2.8.1 after a restart (basis model cold)": "never LOCKED"
+  }
+ }
+]

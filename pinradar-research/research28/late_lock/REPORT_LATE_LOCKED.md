@@ -1,225 +1,242 @@
-# Late LOCKED signals: investigation of the Oct 14 2026 4:30 pm PT window, and the 2.8.1 fix
+# BTC Pin Radar 2.8.1: late LOCKED, DATA UNRELIABLE, late reversals — findings and fixes
 
-Written 2026-10-15. **Nothing was deployed. No order was placed. The Render services and `main` were not touched by this work.**
+Updated 2026-10-15. **Nothing was deployed and no order was placed.** The Render services, `main` and production were not touched by this work. The code is on the research branch `claude/btc-pin-radar-research-xpe585`, in `pinradar-research/2.8.1`.
 
-## How to read this report
+## Where the evidence comes from
 
-Every number below comes from one of four sources, named next to it:
+| Tag | Source |
+|---|---|
+| [CODE] | The deployed 2.8 source, byte-identical to our build (sha256 `0efd86c9…`). |
+| [SIM] | The unmodified 2.8 or 2.8.1 server, run on a fake clock with **real** 1 Hz BTC index paths: 58 KXBTC15M windows, Jul 21 – Oct 13, with official results. These windows were picked for earlier tests, so they over-represent reversals; their loss counts are not rates. Kalshi books in [SIM] are synthetic and are labelled where used. |
+| [HIST] | Result files of the Oct 13 research: 2,120 holdout windows (Jul 22 – Aug 13) and 3,765 development windows (Sep 4 – Oct 13), with real Kalshi tapes. The raw tapes are not in this environment. Every [HIST] number names its file. |
+| [SCREEN] | The user's two screenshots of the deployed 2.8 page, Oct 15 12:00 ET window. |
+| [CP7] | A one-line note from the Oct 13 research checkpoints (2.5 engine, development data). No data or script for it exists here, so it cannot be re-checked. |
 
-* **[CODE]** — reading the 2.8 source you deployed. It is byte-identical to our 2.8 build: sha256 `0efd86c9…` (server) and `cf9fce39…` (page).
-* **[SIM]** — the unmodified 2.8 or 2.8.1 server code, driven on a fake clock with **real** 1 Hz BTC index paths. There are 58 KXBTC15M windows, Jul 21 – Oct 13 2026, with their official settlement values. Any Kalshi order book used here is synthetic and is labelled so.
-* **[HIST]** — results of the earlier research on 2,120 holdout and 3,765 development windows.
-  * They used real Kalshi trade tapes.
-  * Those raw files are not in this environment; only their result files are (`pkg27/research/results`).
-* **[OCT14]** — your server's logs of the incident window. **None are available yet.**
-  * Network access to Kalshi, Coinbase and Kraken is blocked here.
-  * Nothing for that window is invented below.
-  * `2.8.1/tools/forensic281.js` produces the exact reconstruction as soon as you upload the saved `/tape`, `/predictions`, `/signals` and `/health` files.
+No server log of any incident window has been received. Network access to Kalshi, Coinbase and Kraken is blocked here.
 
-## 1. What happened on Oct 14 (root cause)
+## 1. Answers in brief
 
-| Time (UTC) | Event | Source |
+1. **Oct 15 12:00 ET, "LOCKED UP + DON'T TRADE", then "LOCKED — TOO LATE"** [SCREEN].
+   * The decision was correct. UP was offered at 99.8 ¢ plus a 0.1 ¢ fee, so it breaks even only above a 99.9 % win probability. The model said 99.54 %.
+   * The expected value was −0.36 ¢ on the point estimate and −1.07 ¢ on the conservative one. The market was more confident than the model, so this was not over-conservatism.
+   * "LOCKED — TOO LATE" at T−33 was a **labelling defect**: there were no UP offers at all, not too little time. It is fixed.
+2. **Oct 14 4:30 pm PT.** Two mechanisms fit, and only the server's logs can tell which happened.
+   * **(a) Restart.** The user's 2.8 upload at 23:22:46 UTC restarted the server inside that window, and 2.8 cannot show LOCKED for 300 s after a start [CODE, SIM]. This fits the report "LOCKED appeared late" only if the process started between about 23:24:00 and 23:25:00. A start at 23:25 or later means no LOCKED at all.
+   * **(b) The Oct 15 pattern.** LOCKED arrives when the market is already at 99 ¢ or more, then the book empties and 2.8 says "TOO LATE".
+   * Both are fixed.
+3. **Intermittent DATA UNRELIABLE: a demonstrated defect** [CODE, SIM].
+   * The 1 Hz index sampler drifts. When it fires near half a second, two samples round to the same settlement second. One second then looks unrecorded, the coverage gate fires, and the page shows DATA UNRELIABLE for most of the final minute. Measured: **94 % of decisions in the affected windows**.
+   * It is fixed: 0 % at every phase, while a real data gap still triggers the warning.
+4. **Late reversals are not late signals.** All 15 recorded losing LOCKED calls were made 54–300 s before the close, and were overturned by sharp moves afterwards [HIST]. Two real paths available here show 1.4–1.6× the required move arriving within seconds [SIM].
+   * Safeguards based on momentum, volatility or the execution buffer would have prevented none of the 15.
+   * A 0.2 % threshold would have prevented about two thirds of them, at the cost of about half the trading profit (section 5).
+5. **The trading edge is not established.** Development TRADE NOW: +0.86 ¢ per contract, 95 % CI −0.21 to +1.92 ¢ (cautious fills) [HIST]. The opportunity is small: about 5 trades a day, about 1–2 ¢ per contract.
+
+## 2. Oct 15 12:00 ET (KXBTC15M-26OCT151200-00) [SCREEN]
+
+| | T−70 s | T−33 s |
 |---|---|---|
-| 23:15:00 | Window `KXBTC15M-26OCT141930-30` opens; it closes at 23:30:00 (4:30 pm PT). | |
-| 23:22:30 | `pinradar_server.js` deleted from `btc-ai-backend` `main`. | git `fa50b0e` |
-| 23:22:46 | 2.8 server uploaded. | git `2b0d593`, sha `0efd86c9…` = our 2.8 build |
-| 23:23:42 | 2.8 page uploaded as `btc_pin_radar.html`. | git `4426774`, sha `cf9fce39…` = our 2.8 page |
-| about 23:24–23:27 | Render rebuilds and starts the new process, inside the window. | estimate; `/health` `uptimeSec` gives the exact time |
-| 23:30:00 | Close. | |
+| State | PREDICTED LOCKED UP (first LOCKED at T−96) | PREDICTED LOCKED UP |
+| P(UP) | 99.54 % (conservative flip 1.17 %) | 99.99 % |
+| UP ask / size | 99.8 ¢ / 10+ (ladder ≥ 100 at 99.8 ¢) | none (depth 0) |
+| EV after fee (10 lot) | −0.36 ¢ point, −1.07 ¢ conservative | — |
+| Book age / index age | 526 ms / 340 ms | 522 ms / 107 ms |
+| 2.8 action | LOCKED — DO NOT TRADE | LOCKED — TOO LATE ("no UP offers left") |
+| **2.8.1 action** | **SIT OUT** — "LOCKED UP, but no edge at 99.8 ¢ (worth it only at ≤ 98.2 ¢)" | **SIT OUT** — "LOCKED UP, but nobody is selling UP: the market treats it as decided" |
 
-What a fresh 2.8 process does **[CODE]**:
+* **Nothing blocked TRADE NOW except the price.** At any ask of 99.4 ¢ or more, no win probability can clear a 0.5 ¢ edge after the fee.
+* **An entry was worth taking only at ≤ 98.2 ¢ while LOCKED** (from T−96). Whether such an ask existed between T−96 and T−70 is in the server's `/tape` and `/predictions` for that ticker; the screenshots don't show it.
+* **Before T−96 the model was below the LOCKED standard.** Buying the leader there at market prices is not supported by the historical evidence: the market leader at 95–99 ¢ was slightly overpriced [CP7]. The fitted "cheaper ask means a weaker call" effect is exploratory, not established: per-window p ≈ 0.07, and without the one sub-90 ¢ loss b ≈ 0.29 with p ≈ 0.47 (round-3 review CVE-10).
 
-* Volatility is `rms(σ120, σ900)`. `ringRmsVol(900)` needs at least 300 one-second samples.
-* For the first 300 s after any start, the soft gate *"volatility estimate warming up (needs ~5 min of index history after a restart)"* withholds LOCKED. The page shows HIGH CONFIDENCE / WAIT instead.
-* The index history is not saved across restarts (`saveState` keeps only the basis model and the ledger, and only with a state file).
-* A process that started 300 s or less before the close therefore **cannot show LOCKED in that window at all**. One that started 330 s before can show it only from T−30.
+## 3. Intermittent DATA UNRELIABLE
 
-The same mechanism, measured on real windows **[SIM]**:
+### What triggers it in 2.8 [CODE]
 
-* **Restart 300 s or less before the close:** 2.8 shows LOCKED in **0 of 58** windows. A server already running shows it in 54 of 58, with a median of 78 s before the close.
-* **Restart 330 s before the close:** 2.8 shows its first LOCKED at **T−29** in every window that locks (P10 = median = P90 = 29 s).
-* **Restart 360–420 s before the close:** 2.8 delays LOCKED by 40–60 s on average.
+* Every hard data gate forces DATA UNRELIABLE:
+  * no geometry;
+  * data quality BAD (index unavailable or more than 10 s old, no live venue, Kalshi context more than 6 s old, or strike not yet set);
+  * strike implausible;
+  * an override is active;
+  * the index uses fewer than 2 venues;
+  * the oldest index input is older than the budget;
+  * fewer than 90 % of the settlement prints so far were sampled;
+  * the REST fallback is active;
+  * clock skew is unknown or more than 1 s;
+  * the live index is unavailable (D1);
+  * the official BRTI gate (soft only).
+* **Input-age budget.** It is `clamp(100 ms × seconds left, 750 ms, 3 s)`, applied to the oldest of the three venue quotes. In the final 30 s it tightens to 0.1 s per second left.
 
-Other delay sources, checked in the code **[CODE]**:
+### Defect 1: sampler phase, demonstrated
 
-* **Page.** It polls `/radar` every 0.25 s, and every 0.12 s in the last 120 s, with `cache: 'no-store'`. The server computes every response fresh.
-* **Kalshi book.** It is polled every 0.25 s inside 120 s, and is refused if older than 1.5 s.
-* **Index.** It is sampled at 1 Hz from websocket books.
+`setInterval(1000)` drifts: here, 1.2 ms per tick when idle. The phase of the 1 Hz sample therefore sweeps through the whole second about every 14 minutes, and faster under load. In 2.8, each sample is assigned to one settlement print by rounding. Near a phase of 0.5 s, two consecutive samples round to the same print, and the next print gets none.
 
-None of these can delay LOCKED by more than about a second. The page-side display delay is measured in `/latency` (`clientDisplayDelayMs`).
+Real 2.8 code, 12 real windows, `research28/dq/sampler_phase.js`:
 
-**Classification: software/deployment defect (restart warm-up), not a mathematical limit.** The model itself typically supports LOCKED well before the close. In the fixture of this mechanism, the model supported LOCKED at T−103 while the gate held it back until T−31.
+| Sampler phase (±60 ms jitter) | 420 | 450 | 470–530 | 550 | 580 ms |
+|---|---|---|---|---|---|
+| Decisions in the final 60 s that are DATA UNRELIABLE ("only k/n locked prints sampled") | 0 % | 34 % | 89–94 % | 30 % | 0 % |
 
-To confirm Oct 14 specifically, read `/health` `uptimeSec`, or Render's deploy log. A start at about 23:25:00 or later means no LOCKED was possible before the close. A start between 23:24:30 and 23:25:00 means LOCKED only in the last 30 s.
+**Fix (2.8.1):**
+1. Every print takes its nearest sample within 600 ms.
+2. The sampler is aligned to the second plus 100 ms, and re-aligned on every tick.
+3. Result: 0 % at every phase.
+4. A real 5 s gap is still DATA UNRELIABLE, in 8 of 8 windows (`test/dq281_test.js` Q1–Q3).
 
-Two more restart defects found **[CODE + SIM]**:
+### Defect 2: one lagging venue, demonstrated mechanism
 
-* **(a) Unvalidated volatility for 15 minutes after a start.** From 300 s to 900 s after a start, 2.8 treats the volatility as warm but builds the "900 s" estimate from 300–899 s of data. That estimate was never validated.
-  * Restarted 600–900 s before the close, 2.8 LOCKED 57 windows with **2 wrong**; the warm engine LOCKs 54 with 1 wrong.
-  * The extra wrong call is the Oct 12 20:45 ET reversal: LOCKED UP at T−17 to T−22.
-* **(b) Basis model resets to $0.** Every restart puts the basis model (official settlement minus our index) at its prior mean of $0. The walk-forward mean is typically about +$4.5 (range −$6 to +$8 in the sample).
-  * With the basis at $0, even a warm 2.8 LOCKs the Oct 12 window UP at T−17, which is wrong.
-  * After the deploy, your live 2.8 is running in this state until about a dozen windows have settled.
+The input age is the age of the **oldest** venue in the index. One venue whose quote was 2.6 s old made the call DATA UNRELIABLE in the final 20 s, even with two fresh venues that agreed.
 
-## 2. Why LOCKED is "late" even without a restart
+**Fix (2.8.1):** when the full index would exceed the budget, it is rebuilt from the venues within the budget, if they still form a quorum. With two lagging venues it is still DATA UNRELIABLE (`dq281_test` Q4).
 
-| | Value | Source |
+**Not yet confirmed from production.** Which of these fires on the deployed server needs its logs. 2.8.1 adds `/dq`, which counts every hard-gate reason with the venue state at that moment; the same counts are on `/health`. On the deployed 2.8, `/signals?n=5000` holds the gate texts.
+
+## 4. Restarts (the Oct 14 mechanism)
+
+* **Volatility warm-up** [CODE]. Volatility is rms(σ120, σ900), and `ringRmsVol(900)` needs 300 samples. So LOCKED is withheld for 300 s after any start. From 300 s to 900 s, 2.8 uses an unvalidated partial σ900.
+* **Basis reset.** The basis model (official settlement minus our index) restarts at $0.
+
+**2.8.1 fix:**
+* From 120 s of history until 900 s, σ900 is bracketed:
+  * lower bound `sqrt(m/900)·σ_m` (exact);
+  * upper bound `max(K(m)·σ_m, F(m))` (empirical);
+  * m is the number of returns actually observed.
+* Until 12 windows have settled, the basis mean is bracketed to −$7…+$9.
+* A side is called only if it leads under every candidate.
+* The worst probability is taken over a grid, the measured value, and the left limit of every regime edge inside the bracket. Within a regime the flip risk grows with σ, so the worst case is at a bracket end or at an edge's left limit.
+
+**Independent review (round 4)** found and confirmed:
+* the cold basis could flip a narrow DOWN leader into LOCKED UP;
+* the 9-point grid missed the regime-edge worst case.
+
+Both are fixed. Tests: R3 (348 near-strike cases, 0 opposite-side LOCKED) and R4 (1,987 LOCKED seconds after restarts, a dense σ scan of the bracket, 0 above 0.5 %).
+
+[SIM], 58 windows: LOCKED windows / wrong / median lead in seconds. "Basis cold" is a real restart; "basis known" isolates the volatility warm-up.
+
+| Configuration | 2.8 | 2.8.1 |
 |---|---|---|
-| Lead before the close, first LOCKED | mean 100 s, median 77 s | [HIST] holdout; dev 100.5 / 77 |
-| P10 of that lead | between 20 and 30 s | [HIST] 89.7 % of holdout LOCKED windows are LOCKED by T−30, 96.3 % by T−20 |
-| P10 / median / P90 | 36 / 78 / 184 s | [SIM] 58 windows, warm |
-| First LOCKED in the last 60 s | 36.5 % holdout (686 of 1,879), 36.7 % dev (1,277 of 3,484) | [HIST] |
-| First LOCKED after T−15 (too late for a 10 s order) | about 1.9 % holdout (35), 3.2 % dev (110) | [HIST] fixed-time counts |
-| Spearman correlation of first-LOCK τ with the official margin, volatility, basis | **0.85**, 0.20, 0.07 | [SIM] |
-| Median first LOCKED by official margin | $0–20: T−46 s · $20–50: T−53 s · $50–100: T−84 s · > $100: T−151 s | [SIM] |
-| Kalshi ask for the leader when LOCKED (T−60 … T−3) | **median 99.9 ¢**; ask ≤ 99 ¢ in only 0.5–4 % of LOCKED windows | [HIST] |
-| Market at 99 ¢ before the model's LOCKED | 85 % of windows | [HIST] Oct 13 research, CP7 |
-| LOCKED windows with an executable +EV trade (TRADE NOW, cautious fills) | **1.7 %** holdout (32 / 1,879), **7.5 %** dev (261 / 3,484); visible fills 2.3 % / 9.6 % | [HIST] |
-| Median τ of those TRADE NOWs | 57.5 s holdout, 76 s dev | [HIST] |
-| Accuracy of those actionable LOCKED calls | holdout 32 / 32; dev 259 / 261 (2 lost, 0.77 %) | [HIST] |
+| Server running for over 15 min, basis known (the validated setup) | 54 / 1 / 78 | 54 / 1 / 78 (identical every second) |
+| Running, basis model empty | 57 / 2 / 72 | 51 / 1 / 74 |
+| Restart 900 s before close, basis known | 54 / 1 / 77 | 52 / 0 / 54 |
+| Restart 900 s before close, basis cold | 57 / 2 / 69 | 49 / 0 / 49 |
+| Restart 600 s before close, basis known | 55 / 2 / 76 | 53 / 0 / 50 |
+| Restart 330 s before close | 56 / 1 / 29 (51 of 56 at T−29) | 50 / 0 / 46 |
+| Restart 300 s before close | **0** / 0 / — | **50 / 0 / 46** |
+| Restart 180 s before close | 0 / 0 / — | 50 / 0 / 47 |
 
-* **Why "~100 s average lead" and "LOCKED came too late" are both true.**
-  * The 100 s is lead before the **close**.
-  * The binding constraint is the **market**. In 85 % of windows Kalshi prices the leader at 99 ¢ or more before the model reaches 99.5 %.
-  * A LOCKED call then has nothing left to buy. 2.8 says "LOCKED — DO NOT TRADE", which reads like a missed signal; 2.8.1 says **PREDICTED LOCKED — NOT TRADABLE NOW** and gives the reason.
-* **Accuracy of actionable LOCKED calls.** The dev loss rate (0.77 %) is about twice the all-LOCKED rate (0.37 %). This is consistent with the adverse-selection fit: a cheaper ask is evidence the call is weaker (pooling weight on the market 0.66, LR test p = 0.037) **[HIST]**.
-* **Late LOCKED is mostly strike proximity, not volatility or data.** Lock time is driven by the official margin (Spearman 0.85), not by volatility (0.20) or the basis (0.07).
+* **The one 2.8 error that is the volatility warm-up alone** is Oct 12 at a 600 s restart. The other extra 2.8 errors come from the basis reset; Sep 2 is wrong on the warm engine too.
+* **The cost is a more conservative server after a restart:** fewer and later LOCKED calls for 15 min (volatility), and some for about 3 h (basis), until 12 windows settle.
+* **Evidence is limited.**
+  * Only 12 of the 58 windows were outside the volatility-band calibration period.
+  * Band coverage on them is 100 %, but on roughly 12–24 effectively independent σ900 values.
+  * The basis band was set from these same windows' walk-forward means.
 
-## 3. Earliest mathematically justified entry
+## 5. Late reversals and the proposed safeguards
 
-**The rule.**
+### The 15 recorded losing LOCKED calls [HIST]
 
-* YES if and only if `round2(avg of the 60 BRTI seconds in (close−60, close]) ≥ K`, i.e. `avg ≥ K − 0.005`.
-* With n prints recorded at average A and r = 60 − n to come, the call flips only if the remaining prints average at least `c = (60(K−0.005) − nA)/r` the other way.
-* An index jump X at τ seconds moves the settlement average by `X·(τ+1)/60` inside the window, and by the whole of X before it.
-* So the reversal risk at time τ is the probability that the remaining path plus the basis error crosses that critical value.
-* 2.8 prices this with empirical, volatility-bucketed tail tables and regime recalibration (validated **[HIST]**). The "sigma cushion" on the page is a display; it is not the decision variable.
+From `settle_extra.json` (AgS = 2.7/2.8 behaviour):
+* holdout: 3 of 1,879;
+* development: 12 of 3,483.
 
-**Can LOCKED come earlier without losing accuracy?** The threshold sweep on the same model **[HIST]**:
+| Losing call | Seconds before close |
+|---|---|
+| UP | 270, 300, 100, 117, 94, 73, 167, 264 |
+| DOWN | 87, 70, 103, 82, 145, 156, 54 |
 
-| LOCKED at flip ≤ | holdout lost / LOCKED | dev lost / LOCKED | mean lead (holdout / dev) | TRADE NOW (dev, cautious) |
-|---|---|---|---|---|
-| 0.2 % | 1 / 1,870 | 5 / 3,471 (0.14 %) | 79 / 78 s | 170 trades, +0.60 ¢ |
-| 0.3 % | 1 / 1,872 | 8 / 3,477 (0.23 %) | 88 / 87 s | 184 trades, +0.23 ¢ |
-| **0.5 % (production)** | 3 / 1,879 | 13 / 3,484 (0.37 %) | 100 / 100.5 s | 261 trades, +0.86 ¢ |
-| 1.0 % | 5 / 1,885 | **40 / 3,512 (1.14 %)** | 120 / 122 s | 336 trades, +0.46 ¢ |
+None was made in the last 50 s. Losses are flat across regimes: quiet 3/898, normal 5/1,438, active 4/1,148 (`AUDIT_25`).
 
-* **Loosening to 1 % is not justified.** It buys about 20 s of lead, but triples false LOCKED calls on development data. It also lowers total development profit (336 × 0.46 ¢ < 261 × 0.86 ¢), because the extra calls come when the market is already at 99 ¢ or more, where the break-even loss rate is below 1 %.
-* **The sigma cushion and thresholds are not delaying signals unnecessarily.**
-* **An EV-based entry below LOCKED (HIGH CONFIDENCE at a cheap ask) cannot be validated here.** It needs the Kalshi prices across all historical windows (not in this environment). The evidence that exists points against it: the market price carries information the model lacks (pooling weight 0.66), and the market leader at 95–99 ¢ was slightly overpriced. It is not offered.
+By 30 s momentum at the first LOCKED (`settle_metrics.json`):
 
-**What does move the usable entry earlier, without changing any probability:**
+| Momentum | Development | Holdout |
+|---|---|---|
+| Adverse ≥ 2σ | 0/7 | 0/5 |
+| Adverse 1–2σ | 0/77 | 0/39 |
+| Flat | 8/2,327 | 3/1,290 |
+| Favourable | 5/1,073 | 0/545 |
 
-1. **Fix the restart defect (2.8.1).** After a restart 300 s before the close: 0 → 50 of 58 windows LOCKED, 0 wrong, median T−46 s **[SIM]**.
-2. **GET READY.** When the model projects LOCKED within about 20 s if BTC holds, the page tells you to open the order ticket.
-   * In the 58 windows, the projection was right in 45 of 53 cases, about 15 s before the LOCKED call (median) **[SIM]**.
-   * Preparing the ticket shortens your real order time, so more LOCKED calls stay tradable.
-3. **The order-time rule.** It does not make anything earlier. It stops a too-late call from being shown as an opportunity.
+### The two real losing paths available here [SIM]
 
-## 4. The fix: 2.8.1
+`research28/losers/reconstruct.js`:
 
-The code, install steps and rollback are in `2.8.1/README_2.8.1.md`.
+| | Sep 2 23:15 ET (warm engine) | Oct 12 20:45 ET (basis cold) |
+|---|---|---|
+| Call | LOCKED DOWN at T−97, flip 0.44 % | LOCKED UP at T−17, flip 0.45 % |
+| Gap / cushion / required move | −$80.6 / 5.8σ / $80.6 | +$15.6 / 3.0σ / $52.0 |
+| Volatility, regime, momentum | 0.22 bps/√s, normal, +1.45 | 0.62 bps/√s, active, −0.8 |
+| What happened | BTC +$128 in 44 s (1.59× required) | BTC −$75 in 12 s (1.44× required) |
+| 2.8.1 | same LOCKED (warm and cold) | never LOCKED |
 
-* **Cold-start volatility envelope.** Volatility is bracketed until 900 s of history; LOCKED is possible from 120 s.
-  * Lower bound: `sqrt(m/900)·σ_m`. This is exact.
-  * Upper bound: `max(K(m)·σ_m, F(m))`, the 99.9th percentile × 1.15 on Jul–Aug paths.
-  * The call uses the worst probability across the bracket.
-  * Coverage on Sep–Oct paths: 100 % (12 series, 6,012 evaluations per history length) **[SIM]**.
-* **Cold basis envelope.** Until 12 windows have settled, the call uses the worst probability over basis means of −$7 to +$9.
-* **Order time.** TRADE NOW requires τ ≥ 3 s + order time (10 s default, set on the page); later than that is TOO LATE TO TRADE.
-* **Execution stress.** The edge after fees must survive a 1.645σ adverse BTC move during the order time.
-  * On the 58 windows it refused 0 TRADE NOWs that 2.8 would have made **[SIM]**.
-  * It removes only fragile calls; on first LOCKED calls the stressed flip stayed under 0.42 % in 9 of 10 cases.
-* **Action states:**
-  * TRADE NOW — BUY YES/NO, with the last moment to place the order;
-  * PREDICTED LOCKED — NOT TRADABLE NOW, with the reason;
-  * TOO LATE TO TRADE;
-  * SIT OUT, plus GET READY;
-  * WINDOW CLOSED — FINAL / SETTLEMENT (never an opportunity);
-  * a restart banner.
+### What each safeguard would have done
 
-### Comparison: 2.8 (deployed) vs 2.8.1 (proposed)
-
-| Measure | 2.8 | 2.8.1 | Source |
+| Safeguard (tested as a hypothesis) | Losing LOCKED calls prevented | Opportunities removed | Verdict |
 |---|---|---|---|
-| **Steady state (server up more than 15 min, basis warm)** | | | |
-| LOCKED decisions | — | identical every second; 17,400 decision-seconds | [SIM] P1 |
-| LOCKED accuracy / false-LOCKED rate | holdout 3 / 1,879 (0.16 %), dev 13 / 3,484 (0.37 %) | same (identical decisions) | [HIST] |
-| Actionable LOCKED (first LOCKED with ≥ 13 s left) | 53 of 54 | 53 of 54 | [SIM] |
-| LOCKED signals too late for a 10 s order | 1 of 54, still shown as LOCKED (TRADE NOW possible down to T−3) | 1 of 54, shown as TOO LATE TO TRADE | [SIM] |
-| Average usable lead (first LOCKED − 13 s) | 83 s | 83 s | [SIM] |
-| TRADE NOW in the last 13 s (synthetic book) | allowed until T−3 | 0 | [SIM] P2 |
-| TRADE NOW opportunities | holdout 32 / dev 261 (cautious) | same, minus those in the last 13 s (≈ 1–3 %) | [HIST] |
-| Profit per contract (cautious) | holdout +2.05 ¢, dev +0.86 ¢ (95 % CI −0.21 to +1.92) | not re-estimable here; ≈ same | [HIST] |
-| **Restart 300 s before the close (the Oct 14 mechanism)** | | | |
-| LOCKED windows / wrong | **0 / 0** | **50 / 0** | [SIM] |
-| Actionable (≥ 13 s) / median lead / mean usable lead | 0 / — / — | 49 / 46 s / 38 s | [SIM] |
-| **Restart 330 s before the close** | | | |
-| LOCKED / wrong | 56 / 1 (Oct 12 UP, wrong) | 50 / 0 | [SIM] |
-| Median lead | 29 s | 47 s | [SIM] |
-| **Restart 600–900 s before the close** | | | |
-| LOCKED / wrong | 57 / **2** (unvalidated partial volatility) | 49–50 / **0** | [SIM] |
-| Median lead | 72 s | 48–49 s | [SIM] |
-| **Oct 12 20:45 ET (5:45 pm PT) adverse reversal** | | | |
-| Basis known | never LOCKED | never LOCKED | [SIM] |
-| Basis model cold, or restarted | LOCKED UP (wrong) at T−17 to T−23 | never LOCKED in any configuration | [SIM] S1 |
+| LOCKED at flip ≤ 0.2 % (instead of 0.5 %) [HIST] | development 8 of 13, holdout 2 of 3 | development TRADE NOW 261 → 170, cautious profit per contract +0.86 → +0.60 ¢, total −55 %; holdout 32 → 25 trades, total −42 %; mean lead −22 s | Not adopted as the trade rule. Already in the forward test (shadow C1). |
+| LOCKED at flip ≤ 1.0 % [HIST] | none (development losses 13 → 40) | — | Rejected. |
+| ≥ 15 s execution buffer | 0 of 15 (no loss was called that late) | TRADE NOW in the last 15 s: ≤ 8 of 261 development trades by the fixed-time counts (not measured exactly) | **Adopted** (12 s order time + 3 s), for executability, not for risk. |
+| Momentum veto | 0 (no loss in the adverse classes) | 84 development / 44 holdout calls | Rejected. |
+| Exit on REVERSAL WARNING (flip ≥ 10 %) [HIST] | warned 11 of 12 development losers; exits about break-even | 25 false alarms | Unchanged (a warning, not an exit rule). |
+| Restart envelopes [SIM] | Oct 12 basis-cold error; restart errors 2 → 0 | about 8 of 58 LOCKED windows in the first 15 min after a restart | **Adopted.** |
+| Execution stress test (1.645σ during the order time) [SIM] | not measurable here (no historical books) | refused 6 of 2,428 TRADE NOW seconds (synthetic book) | **Adopted.** Stressed flip at the first LOCKED: median 0.68 / 0.87 / 1.46 % for 3 / 10 / 30 s order times. |
 
-Other results on the same 58 windows **[SIM]**:
+The LOCKED threshold stays at 0.5 % (development total profit: 0.2 % → 101, 0.3 % → 42, **0.5 % → 223**, 1.0 % → 153 cent-contracts). On holdout, 1.0 % did best (99 vs 66), so the choice is not robust either way. The forward test's shadow policies keep measuring it.
 
-* **Warm engine, LOCKED seconds after a restart.** At every second 2.8.1 showed LOCKED after a restart (26,696 decision-seconds over 10 restart configurations), the warm validated engine gave that side at least 99.5 %: **0 exceptions**. For 2.8, 1,181 of its 21,858 post-restart LOCKED seconds were not supported by the warm engine.
-* **A model limit 2.8.1 does not change: narrow margins.** In 20 real paths moved so that the official settlement lands $1 above the strike, 2.8.1 LOCKED 4 windows, and 1 of them on the wrong side. It showed one TRADE NOW second on that wrong side, more than 13 s before the close. A $1 margin is decided by the basis (official settlement minus our index), which the model can only estimate. The forward test is what measures this.
+## 6. Why LOCKED is rarely tradable, and what the economics are
 
-The price of the fix is that 2.8.1 is more conservative from 2 to 15 minutes after a restart: about 8 fewer LOCKED windows of 58, and a shorter lead. The calls 2.8 makes in that period rest on an unvalidated volatility estimate, and they include the two wrong calls above.
+| Measure | Value | Source |
+|---|---|---|
+| First LOCKED, development (3,484 calls) | 0–15 s: 85 (2.4 %, 1 loss) · 15–30 s: 321 · 30–60 s: 872 · 60–90 s: 743 · 90–120 s: 446 · 120–180 s: 495 · 180–300 s: 522 | AUDIT_25 in the server |
+| Lead before the close | mean 100 s, median 77 s (both sets); P10 ≈ 28 s (development); P10 / median / P90 on 58 windows: 36 / 78 / 184 s | [HIST] / [SIM] |
+| Correlation of first-LOCKED time with the official margin / volatility / basis | Spearman 0.85 / 0.20 / 0.07 | [SIM] |
+| Leader ask in LOCKED windows that had a price | median 99.9 ¢; ≤ 99 ¢ in 0.2–4.0 % (holdout T−3: 1 of 99 priced) | `fixed_time_trade.json` |
+| Market at 99 ¢ before the model's LOCKED | 85 % of windows | [CP7], 2.5 engine, not reproducible here |
+| LOCKED windows with a +EV TRADE NOW | 1.7 % holdout (32/1,879), 7.5 % development (261/3,484) | `settle_metrics.json` |
+| TRADE NOW, cautious fills | holdout 32 trades, 0 lost, +2.05 ¢ (CI +1.38 to +2.73); development 261, 2 lost, +0.86 ¢ (CI −0.21 to +1.92) | `settle_metrics.json` |
+| Forward, user's live 2.8 (screen) | 0 of 51 LOCKED lost; 9 paper trades, mean +2.12 ¢ | [SCREEN] |
+| "LOCKED within ~20 s if BTC holds" (GET READY) | right within the projected time 37 of 53; within +10 s 45 of 53; median 15 s warning | [SIM] |
 
-## 5. Tests
+**What this means:**
+* Each trade risks about 98 ¢ to win 0.2–3 ¢. At the observed LOCKED loss rate (0.37 % development) the edge exists only when the ask is at or below about 99 ¢, which happens in a few percent of LOCKED windows.
+* Expected profit is roughly 1–2 ¢ per contract, a few trades a day, limited by depth at good prices. One loss erases about 50–100 winning trades.
+* Establishing the edge at 95 % confidence needs about 200–600 forward trades: 30–90 days at about 7 a day (`reanalysis.json` `forward_plan_trade_now`).
 
-`bash pinradar-research/2.8.1/test/run_all281.sh` runs every check offline:
+## 7. What the page shows (2.8.1)
 
-* a reproducible build;
-* self-test 144/144, with the default config and with the new features off;
-* the late-LOCKED suite on real windows:
-  * P1, P2: warm parity with 2.8;
-  * R1: the Oct 14 mechanism;
-  * R2: every LOCKED second after a restart is supported by the warm validated engine;
-  * S1: the Oct 12 reversal;
-  * S2: safely ahead;
-  * S3: narrowly ahead (official settlement $1 from the strike);
-  * S4: a final-second adverse jump;
-  * S5: late index and late book data;
-  * S6: a LOCKED call after the book has no offers;
-  * S7: a valid signal with insufficient time;
-  * S8: after the close;
-* the page in jsdom;
-* the forensic tool on a fixture of the mechanism;
-* cold-band coverage;
-* all 2.8 suites against 2.8.1 with the new features off:
-  * core 61/61;
-  * fuzz: 20,000 cases, 0 violations;
-  * replay parity vs 2.7: 17,458 decision-seconds, 0 mismatches;
-  * adversarial;
-  * properties;
-  * live simulation, including live = replay.
+**Top line:** TRADE NOW — BUY YES/NO, **SIT OUT** or **TOO LATE**, followed by the reversal risk and one reason. Examples:
 
-The results of the final run are in `2.8.1/TEST_RESULTS.md`.
+| Situation | Reason shown |
+|---|---|
+| LOCKED but overpriced | "LOCKED UP, but no edge at 99.8 ¢ (worth it only at ≤ 98.2 ¢)" |
+| LOCKED but no offers | "nobody is selling UP: the market treats it as decided" |
+| LOCKED but no time | "LOCKED UP with 9 s left: an order needs 15 s" |
+| After the close | "window closed" |
+| Restart | "not LOCKED yet: server restarted, LOCKED unavailable for now" |
 
-## 6. What is still needed from you
+**Also on the page:**
+* The last moment to place an order.
+* A GET READY note, only when LOCKED could actually be shown.
+* A restart banner.
+* If the backend goes stale or the window closes, the line drops to STALE or WINDOW CLOSED.
 
-1. **For the exact Oct 14 reconstruction**, the saved `/health`, `/tape?format=ndjson`, `/predictions?ticker=KXBTC15M-26OCT141930-30` and `/signals?n=5000`. The tape keeps the last 10 windows' final 5 minutes, so the Oct 14 window drops out after about 150 minutes, and any restart erases everything.
-   * Alternatively, allow `api.elections.kalshi.com`, `api.exchange.coinbase.com` and `api.kraken.com` in this environment's network settings. I can then rebuild the window from public data: Kalshi's trades and settlement, and the exchange trades for the index.
-2. **Deployment of 2.8.1 is your decision.** If you deploy, upload right after a quarter-hour close, never inside a window you intend to trade.
+The big outcome headline (PREDICTED LOCKED — UP) is unchanged. The page layout is otherwise the 2.8 layout.
 
-## Files
+## 8. Tests
 
-* `research28/late_lock/`
-  * `sim_lib.js` — driver
-  * `restart_experiment.js` and `results_restart_2.8*.json` — restart experiment and results
-  * `calib_coldvol.js` and `results_coldvol_calib.json` — cold-volatility calibration
-  * `lead_analysis.js` and `results_lead_analysis.json` — lead analysis
-  * this report
-* `2.8.1/`
-  * `src/` — `late281.js`, `selftest281.js`
-  * `build/` — server and page builds, sha-checked against the deployed 2.8 files
-  * `dist/`
-  * `test/` — `late281_test.js`, `page281_test.js`, `make_incident_fixture.js`, `run_all281.sh`
-  * `tools/` — `forensic281.js`, `replay_tape281.js`
-  * `README_2.8.1.md`, `PREREG_AMENDMENT_v3.md`, `SHA256SUMS.txt`
+`bash pinradar-research/2.8.1/test/run_all281.sh` runs offline. Results are in `2.8.1/TEST_RESULTS.md`, and checksums in `2.8.1/SHA256SUMS.txt`.
+
+* **Self-test:** 146/146.
+* **Real-window suite (`late281`), 15 checks:**
+  * P1 and P2: parity with 2.8 when warm; the stress test binds.
+  * R1–R4: restarts.
+  * S1–S9: scenarios, including the Oct 12 reversal, the Oct 15 replica, a jump at T−35, the empty book and insufficient time.
+  * S3 (narrow margins) is reported only: a $1 margin is decided by the basis, so wrong-side LOCKED there is a model limit.
+* **`dq281`:** 5/5.
+* **Page:** 14/14.
+* **Forensic tool:** fixture check.
+* **Cold-band coverage.**
+* **The 2.8 suites against 2.8.1** with every new feature off (`COLD_START_ENVELOPE=0 EXEC_SEC=0 DQ_FIXES=0`), confirming it behaves as 2.8.
+
+## 9. What would settle the remaining questions
+
+1. **The deployed server's logs,** read with `2.8.1/tools/forensic281.js`. This needs `/health` with the time you saved it, `/ledger?since=0&n=5000`, `/predictions?ticker=…`, `/signals?n=5000` and `/tape?format=ndjson`. It settles the Oct 14 cause, the DATA UNRELIABLE reasons, and the Oct 15 price path.
+2. **Network access** to `api.elections.kalshi.com`, `api.exchange.coinbase.com` and `api.kraken.com`. With it the full dataset can be rebuilt and every window since Oct 13 used as a genuinely untouched test: model calibration, the threshold choice, and whether TRADE NOW makes money with real books.
+3. **The forward test** (pre-registration v3 for 2.8.1). A ledger on a persistent disk is needed; without one, a restart loses the evidence.
