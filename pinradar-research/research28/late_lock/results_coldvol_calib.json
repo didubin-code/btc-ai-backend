@@ -1,0 +1,235 @@
+{
+ "note": "band for the 900 s volatility after a restart: [sqrt(m/900) sigma_m, max(K(m) sigma_m, F(m))] (bps per second)",
+ "series": 43,
+ "calSeries": 31,
+ "valSeries": 12,
+ "table_m_K_F": [
+  [
+   60,
+   4.345,
+   0.715
+  ],
+  [
+   75,
+   3.965,
+   0.714
+  ],
+  [
+   90,
+   3.857,
+   0.713
+  ],
+  [
+   120,
+   3.638,
+   0.54
+  ],
+  [
+   150,
+   3.59,
+   0.531
+  ],
+  [
+   180,
+   3.555,
+   0.531
+  ],
+  [
+   240,
+   3.434,
+   0.528
+  ],
+  [
+   300,
+   3.304,
+   0.519
+  ],
+  [
+   360,
+   3.176,
+   0.364
+  ],
+  [
+   450,
+   2.881,
+   0.342
+  ],
+  [
+   600,
+   2.542,
+   0.282
+  ],
+  [
+   750,
+   2.093,
+   0.282
+  ],
+  [
+   850,
+   1.782,
+   0.278
+  ]
+ ],
+ "coverage": {
+  "calibration": {
+   "60": {
+    "n": 22281,
+    "below": 0,
+    "above": 8,
+    "coveragePct": 99.964
+   },
+   "75": {
+    "n": 22281,
+    "below": 0,
+    "above": 2,
+    "coveragePct": 99.991
+   },
+   "90": {
+    "n": 22281,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "120": {
+    "n": 22281,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "150": {
+    "n": 22281,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "180": {
+    "n": 22281,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "240": {
+    "n": 22281,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "300": {
+    "n": 22281,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "360": {
+    "n": 22281,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "450": {
+    "n": 22281,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "600": {
+    "n": 22281,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "750": {
+    "n": 22281,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "850": {
+    "n": 22281,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   }
+  },
+  "validation": {
+   "60": {
+    "n": 6012,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "75": {
+    "n": 6012,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "90": {
+    "n": 6012,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "120": {
+    "n": 6012,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "150": {
+    "n": 6012,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "180": {
+    "n": 6012,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "240": {
+    "n": 6012,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "300": {
+    "n": 6012,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "360": {
+    "n": 6012,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "450": {
+    "n": 6012,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "600": {
+    "n": 6012,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "750": {
+    "n": 6012,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   },
+   "850": {
+    "n": 6012,
+    "below": 0,
+    "above": 0,
+    "coveragePct": 100
+   }
+  }
+ }
+}

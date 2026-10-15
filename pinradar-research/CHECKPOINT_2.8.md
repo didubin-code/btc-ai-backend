@@ -62,3 +62,18 @@ cd btc-ai-backend && git checkout claude/btc-pin-radar-research-xpe585 && git pu
 bash pinradar-research/2.8/test/run_all28.sh
 (cd pinradar-research/2.8 && node --expose-gc test/soak28.js dist/pinradar_server.js 24)
 ```
+
+## Late-LOCKED investigation (started 2026-10-14 23:36 UTC) — resume notes
+
+* Trigger: user report, Oct 14 KXBTC15M-26OCT141930-30 (close 23:30 UTC): LOCKED shown only after the opportunity was gone.
+* FOUND: the user uploaded the 2.8 dist to `main` of both repos themselves: btc-ai-backend 2b0d593 (23:22:46 UTC, sha 0efd86c9 = our 2.8 dist),
+  Btc-signal 4426774 (23:23:42 UTC, page sha cf9fce39 = our 2.8 page). So production = 2.8, restarted ~23:24-23:27 UTC, inside the incident window.
+* Mechanism (code): sigma = rms(120 s, 900 s); ringRmsVol(900) needs >= 300 samples -> soft gate 'volatility estimate warming up' withholds
+  LOCKED for 300 s after every restart; no ring persistence (saveState stores basis+ledger only, and only with a state file).
+  Basis model also restarts at prior mean 0 (BASIS_MEAN_USD) -> walk-forward mu (median +4.5 in the sample) lost for hours.
+* Real-code experiment (research28/late_lock/restart_experiment.js, 58 real windows): boot <= T-300 -> 0 LOCKED in all windows;
+  boot T-330 -> LOCKED only at T-29; warm validated setup 54 LOCKED / 1 wrong; mu=0 (fresh basis) 57 / 2 wrong (Oct 12 20:45 ET LOCKED UP wrongly at T-17).
+* Asked the user to save /health, /tape?format=ndjson (ring of 10 windows x 300 s, rolls out ~02:00 UTC), /predictions?ticker=..., /signals, /ledger, /latency.
+* Plan: 2.8.1 candidate in pinradar-research/2.8.1 (built from the 2.8 dist, sha-checked): cold-start sigma envelope (exact lower bound sqrt(m/900),
+  empirical upper), cold-basis mu envelope [-7, 9] until 12 live samples, execution layer (order time, TOO LATE TO TRADE, PREDICTED LOCKED,
+  FINAL/SETTLED, SIT OUT, stress test), warm-up status; page action banner + order-time input; forensic tool for the user's logs.

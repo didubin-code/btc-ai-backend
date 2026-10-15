@@ -1,0 +1,539 @@
+{
+ "windows": 58,
+ "locked": 54,
+ "wrong": 1,
+ "leadToClose": {
+  "mean": 94.4,
+  "p10": 36.25,
+  "median": 78.25,
+  "p90": 184.25
+ },
+ "inTimeFor10sOrder": 53,
+ "tooLateFor10sOrder": 1,
+ "spearman_lockTau_vs": {
+  "officialMargin": 0.847,
+  "sigmaAtT300": 0.202,
+  "absBasis": 0.071
+ },
+ "byMargin": [
+  {
+   "margin": "$0-20",
+   "n": 6,
+   "medianLockTau": 46.25,
+   "lockedAfterT13": 1
+  },
+  {
+   "margin": "$20-50",
+   "n": 22,
+   "medianLockTau": 53.25,
+   "lockedAfterT13": 0
+  },
+  {
+   "margin": "$50-100",
+   "n": 9,
+   "medianLockTau": 84.25,
+   "lockedAfterT13": 0
+  },
+  {
+   "margin": "$100-",
+   "n": 17,
+   "medianLockTau": 151.25,
+   "lockedAfterT13": 0
+  }
+ ],
+ "neverLocked": 4,
+ "projection": {
+  "firstSaidWithin20s": 53,
+  "lockedAsProjected": 45,
+  "neverLocked": 1,
+  "medianWarningSecondsBeforeLocked": 15
+ },
+ "rows": [
+  {
+   "t": "KXBTC15M-26JUL212115-15",
+   "lockTau": 181.25,
+   "margin": 165.13000000000466,
+   "sigma": 0.2985,
+   "sigmaAtLock": 0.2853,
+   "basis": 1.6256481481395895,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL212130-30",
+   "lockTau": 90.25,
+   "margin": 97.8799999999901,
+   "sigma": 0.4785,
+   "sigmaAtLock": 0.2876,
+   "basis": 2.2360185185389128,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL212145-45",
+   "lockTau": 131.25,
+   "margin": 28.80000000000291,
+   "sigma": 0.2671,
+   "sigmaAtLock": 0.3064,
+   "basis": 9.180092592607252,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL212200-00",
+   "lockTau": 39.25,
+   "margin": 37.14999999999418,
+   "sigma": 0.2675,
+   "sigmaAtLock": 0.253,
+   "basis": 10.399907407394494,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL212215-15",
+   "lockTau": 65.25,
+   "margin": 56.43000000000757,
+   "sigma": 0.3336,
+   "sigmaAtLock": 0.2586,
+   "basis": 6.946148148155771,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL212230-30",
+   "lockTau": 49.25,
+   "margin": 43.41000000000349,
+   "sigma": 0.2597,
+   "sigmaAtLock": 0.2445,
+   "basis": 4.9802777777804295,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL212245-45",
+   "lockTau": 60.25,
+   "margin": 46.80000000000291,
+   "sigma": 0.2485,
+   "sigmaAtLock": 0.2086,
+   "basis": 7.575277777781594,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL212300-00",
+   "lockTau": 84.25,
+   "margin": 57.679999999993015,
+   "sigma": 0.244,
+   "sigmaAtLock": 0.2048,
+   "basis": 7.442037037049886,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL212315-15",
+   "lockTau": 106.25,
+   "margin": 104.26000000000931,
+   "sigma": 0.2229,
+   "sigmaAtLock": 0.3379,
+   "basis": 3.4276851851755055,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL212330-30",
+   "lockTau": 145.25,
+   "margin": 92.55999999999767,
+   "sigma": 0.2703,
+   "sigmaAtLock": 0.1903,
+   "basis": 2.9966666666732635,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL212345-45",
+   "lockTau": 67.25,
+   "margin": 29.089999999996508,
+   "sigma": 0.2106,
+   "sigmaAtLock": 0.2204,
+   "basis": 4.559907407397986,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL220000-00",
+   "lockTau": 88.25,
+   "margin": 67.30000000000291,
+   "sigma": 0.2261,
+   "sigmaAtLock": 0.4505,
+   "basis": 8.852351851848653,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL220015-15",
+   "lockTau": 250.25,
+   "margin": 127.47000000000116,
+   "sigma": 0.2496,
+   "sigmaAtLock": 0.2407,
+   "basis": 2.325925925935735,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL220030-30",
+   "lockTau": 63.25,
+   "margin": 54.44000000000233,
+   "sigma": 0.2354,
+   "sigmaAtLock": 0.2055,
+   "basis": 2.4965740740735782,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL220045-45",
+   "lockTau": 37.25,
+   "margin": 26.419999999998254,
+   "sigma": 0.2434,
+   "sigmaAtLock": 0.2818,
+   "basis": 3.8396296296123182,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL220100-00",
+   "lockTau": 56.25,
+   "margin": 36.66000000000349,
+   "sigma": 0.2451,
+   "sigmaAtLock": 0.1988,
+   "basis": 4.91064814812853,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL231145-45",
+   "lockTau": 88.25,
+   "margin": 46.93999999999505,
+   "sigma": 0.3729,
+   "sigmaAtLock": 0.3342,
+   "basis": 2.381388888883521,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL241545-45",
+   "lockTau": 50.25,
+   "margin": 37.79000000000087,
+   "sigma": 0.2652,
+   "sigmaAtLock": 0.2094,
+   "basis": 2.9212037037068512,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL251930-30",
+   "lockTau": 49.25,
+   "margin": 13.260000000002037,
+   "sigma": 0.1028,
+   "sigmaAtLock": 0.0671,
+   "basis": 3.5385185185223236,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL270145-45",
+   "lockTau": 29.25,
+   "margin": 10.200000000004366,
+   "sigma": 0.3018,
+   "sigmaAtLock": 0.1668,
+   "basis": 9.55399999999645,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL281045-45",
+   "lockTau": 184.25,
+   "margin": 178.84000000000378,
+   "sigma": 0.7281,
+   "sigmaAtLock": 0.7083,
+   "basis": 3.923333333332266,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL291415-15",
+   "lockTau": 97.25,
+   "margin": 146.3199999999997,
+   "sigma": 1.1969,
+   "sigmaAtLock": 1.1848,
+   "basis": 10.793981481481751,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL301915-15",
+   "lockTau": 128.25,
+   "margin": 92.93000000000029,
+   "sigma": 0.1744,
+   "sigmaAtLock": 0.2073,
+   "basis": 6.12787037036469,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26JUL312030-30",
+   "lockTau": 62.25,
+   "margin": 21.720000000001164,
+   "sigma": 0.0985,
+   "sigmaAtLock": 0.1231,
+   "basis": 2.1294444444574765,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG020545-45",
+   "lockTau": 53.25,
+   "margin": 34.580000000001746,
+   "sigma": 0.1699,
+   "sigmaAtLock": 0.1356,
+   "basis": 9.13759259260405,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG030800-00",
+   "lockTau": 204.25,
+   "margin": 135.79000000000087,
+   "sigma": 0.2122,
+   "sigmaAtLock": 0.4617,
+   "basis": 6.624722222222772,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG040945-45",
+   "lockTau": 147.25,
+   "margin": 119.83000000000175,
+   "sigma": 0.8109,
+   "sigmaAtLock": 0.5789,
+   "basis": 5.796481481476803,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG052315-15",
+   "lockTau": 12.25,
+   "margin": 8.519999999996799,
+   "sigma": 0.2089,
+   "sigmaAtLock": 0.1682,
+   "basis": 4.3320370370202,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG070300-00",
+   "lockTau": 36.25,
+   "margin": 37.779999999998836,
+   "sigma": 0.3596,
+   "sigmaAtLock": 0.297,
+   "basis": 0.16092592592758592,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG101500-00",
+   "lockTau": 68.25,
+   "margin": 20.49000000000524,
+   "sigma": 0.1947,
+   "sigmaAtLock": 0.1845,
+   "basis": 1.642962962963793,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG112045-45",
+   "lockTau": 82.25,
+   "margin": 41.85000000000582,
+   "sigma": 0.2037,
+   "sigmaAtLock": 0.1601,
+   "basis": 0.6114814814791316,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG130900-00",
+   "lockTau": 198.25,
+   "margin": 113.73999999999796,
+   "sigma": 0.2447,
+   "sigmaAtLock": 0.2221,
+   "basis": 3.7547222222274286,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG160315-15",
+   "lockTau": 46.25,
+   "margin": 11.87999999999738,
+   "sigma": 0.0623,
+   "sigmaAtLock": 0.0463,
+   "basis": 3.615648148144828,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG180030-30",
+   "lockTau": 46.25,
+   "margin": 8.010000000002037,
+   "sigma": 0.1469,
+   "sigmaAtLock": 0.1051,
+   "basis": 12.974074074089003,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG191200-00",
+   "lockTau": 65.25,
+   "margin": 91.27999999999884,
+   "sigma": 1.5463,
+   "sigmaAtLock": 1.1336,
+   "basis": 0.07990740741661284,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG201530-30",
+   "lockTau": 99.25,
+   "margin": 125.43000000000757,
+   "sigma": 0.337,
+   "sigmaAtLock": 0.4032,
+   "basis": 4.325555555566098,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG211645-45",
+   "lockTau": 48.25,
+   "margin": 31.589999999996508,
+   "sigma": 0.5018,
+   "sigmaAtLock": 0.4018,
+   "basis": 1.575092592596775,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG232345-45",
+   "lockTau": 151.25,
+   "margin": 145.8000000000029,
+   "sigma": 0.4788,
+   "sigmaAtLock": 0.4473,
+   "basis": 3.9148148147942265,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG250115-15",
+   "lockTau": 299.25,
+   "margin": 215,
+   "sigma": 0.3625,
+   "sigmaAtLock": 0.3625,
+   "basis": 0.5293518518592464,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG261115-15",
+   "lockTau": 40.25,
+   "margin": 34.270000000004075,
+   "sigma": 0.7249,
+   "sigmaAtLock": 0.6544,
+   "basis": 0.23518518517084885,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG271445-45",
+   "lockTau": 28.25,
+   "margin": 24.110000000000582,
+   "sigma": 0.4111,
+   "sigmaAtLock": 0.4232,
+   "basis": 0.5623148148151813,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG281545-45",
+   "lockTau": 95.25,
+   "margin": 150.56000000001222,
+   "sigma": 0.3731,
+   "sigmaAtLock": 0.3088,
+   "basis": 0.737129629633273,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG291645-45",
+   "lockTau": 71.25,
+   "margin": 46.379999999990105,
+   "sigma": 0.181,
+   "sigmaAtLock": 0.1539,
+   "basis": 3.1466666666819947,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26AUG302100-00",
+   "lockTau": 97.25,
+   "margin": 100.4600000000064,
+   "sigma": 0.3295,
+   "sigmaAtLock": 0.248,
+   "basis": 6.489629629635601,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26SEP012145-45",
+   "lockTau": 139.25,
+   "margin": 242.32000000000698,
+   "sigma": 0.3569,
+   "sigmaAtLock": 0.4974,
+   "basis": 7.3131481481395895,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26SEP022315-15",
+   "lockTau": 97.25,
+   "margin": 39.570000000006985,
+   "sigma": 0.255,
+   "sigmaAtLock": 0.2221,
+   "basis": 8.16907407407416,
+   "correct": false
+  },
+  {
+   "t": "KXBTC15M-26SEP040215-15",
+   "lockTau": 38.25,
+   "margin": 25.720000000001164,
+   "sigma": 0.2952,
+   "sigmaAtLock": 0.3162,
+   "basis": 3.374537037059781,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26SEP051630-30",
+   "lockTau": 14.25,
+   "margin": 14.15999999998894,
+   "sigma": 0.2803,
+   "sigmaAtLock": 0.4889,
+   "basis": 3.316018518511555,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26SEP061730-30",
+   "lockTau": 78.25,
+   "margin": 86.77999999999884,
+   "sigma": 0.1578,
+   "sigmaAtLock": 0.2256,
+   "basis": 5.0232407407602295,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26SEP081345-45",
+   "lockTau": 34.25,
+   "margin": 32.69999999999709,
+   "sigma": 0.3299,
+   "sigmaAtLock": 0.2517,
+   "basis": 2.2656481481535593,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26SEP091700-00",
+   "lockTau": 48.25,
+   "margin": 41.19000000000233,
+   "sigma": 0.3327,
+   "sigmaAtLock": 0.3552,
+   "basis": 0.6610185185127193,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26SEP102015-15",
+   "lockTau": 285.25,
+   "margin": 251.85000000000582,
+   "sigma": 0.5883,
+   "sigmaAtLock": 0.5996,
+   "basis": 2.285370370358578,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26SEP190545-45",
+   "lockTau": 165.25,
+   "margin": 152.11000000000058,
+   "sigma": 0.3517,
+   "sigmaAtLock": 0.348,
+   "basis": 10.40018518519355,
+   "correct": true
+  },
+  {
+   "t": "KXBTC15M-26OCT131100-00",
+   "lockTau": 103.25,
+   "margin": 168.86000000000058,
+   "sigma": 0.3969,
+   "sigmaAtLock": 0.4694,
+   "basis": 0,
+   "correct": true
+  }
+ ]
+}
