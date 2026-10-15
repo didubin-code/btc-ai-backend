@@ -5106,8 +5106,8 @@ function runSelfTest() {
     /* cold-vol bracket: exact lower bound, empirical upper bound, none once 900 s are held */
     const ringC = []; for (let i = 0; i < 200; i++) ringC.push([nowS - (199 - i) * 1000, 80000 + 3 * Math.sin(i / 7)]);
     const cvC = coldVol281(nowS, ringC);
-    push('2.8.1 cold vol: 199 s of history -> usable bracket [sqrt(m/900) sigma_m, max(K sigma_m, F)]',
-      cvC.cold && cvC.usable && Math.abs(cvC.lo - Math.sqrt(cvC.span / 900) * cvC.sigmaM) < 1e-9 && cvC.hi >= Math.max(cvC.K * cvC.sigmaM, cvC.F) - 1e-12, cvC);
+    push(COLD281_ON ? '2.8.1 cold vol: 199 s of history -> usable bracket [sqrt(m/900) sigma_m, max(K sigma_m, F)]' : '2.8.1 cold vol: COLD_START_ENVELOPE=0 -> no bracket (2.8 warm-up behaviour)',
+      COLD281_ON ? (cvC.cold && cvC.usable && Math.abs(cvC.lo - Math.sqrt(cvC.span / 900) * cvC.sigmaM) < 1e-9 && cvC.hi >= Math.max(cvC.K * cvC.sigmaM, cvC.F) - 1e-12) : (cvC.cold && !cvC.usable), cvC);
     const ringW = []; for (let i = 0; i < 960; i++) ringW.push([nowS - (959 - i) * 1000, 80000 + 3 * Math.sin(i / 7)]);
     push('2.8.1 cold vol: 960 s of history -> warm (no envelope)', coldVol281(nowS, ringW).cold === false, coldVol281(nowS, ringW));
     const ringS = ringC.slice(-90);
@@ -5116,8 +5116,8 @@ function runSelfTest() {
     const args = { indexNow: 80040, strike: 80000, closeMs: nowS + 45000, now: nowS, inputAgeMs: 100, ring: ringC, basisMu: 0 };
     const g0 = lockGeometry25(args), gE = coldGeometry281(g0, args, cvC, { cold: false, n: 99 });
     const win = (g, s) => (s === 'UP' ? g.pUp : 1 - g.pUp);
-    push('2.8.1 cold envelope: worst-case win probability <= the measured-sigma value, volatility counted as covered',
-      gE && g0 && win(gE, 'UP') <= win(g0, 'UP') + 1e-12 && gE.sigmaWarm === true && gE.cold281 && gE.cold281.volEnvelope, [g0 && g0.pUp, gE && gE.pUp]);
+    push('2.8.1 cold envelope: worst-case win probability <= the measured-sigma value' + (COLD281_ON ? ', volatility counted as covered' : ' (envelope off: no change)'),
+      gE && g0 && win(gE, 'UP') <= win(g0, 'UP') + 1e-12 && (COLD281_ON ? (gE.sigmaWarm === true && gE.cold281 && gE.cold281.volEnvelope) : gE.pUp === g0.pUp), [g0 && g0.pUp, gE && gE.pUp]);
     const gB = coldGeometry281(g0, args, { cold: false, span: 999 }, { cold: true, n: 0 });
     push('2.8.1 cold basis: worst case over the basis range is no more confident than the prior mean', gB && win(gB, 'UP') <= win(g0, 'UP') + 1e-12 && gB.cold281.basisEnvelope, [g0 && g0.pUp, gB && gB.pUp]);
     /* order time and stress */

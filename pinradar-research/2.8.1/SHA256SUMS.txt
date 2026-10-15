@@ -1,0 +1,9 @@
+# SHA-256 of the 2.8.1 deliverables (built from 2.8/dist, sha 0efd86c9 server / cf9fce39 page)
+631a5b280b0a0721e538ba5914a36720d0f3ad17e7bbee91d177e68b3ba0204a  dist/pinradar_server.js
+faea61c58af0d5feeca19bcad5161957cfe0ab10004865431519e83df86a2d7c  dist/btc_pin_radar_281.html
+49b1ad6e1b07e621e2ee7412d9004b46c37931c391506efa3006c259720338f7  src/late281.js
+0ce6e8be40221151710ac17b16ecc1990428f3cbad7ef83325b397f14092b293  src/selftest281.js
+aad1b6db3cab5f670e1ffa546548cf248b358176c828bfbc54f53ff2e341f605  build/build_server281.py
+40a4e87cbf3d0b807471bc4f9039ac7a71aba06a1da1ab1009d0280ec8394fdd  build/build_page281.py
+ce4846a6f1cf7f0cc61baaf94ec41faca4e054bd46ef056054af94c4d3572015  tools/forensic281.js
+cff54b0cdaa908ac6a830a8ea68ff2a3ea3402d91db72f9d2f217420cfb0e88c  tools/replay_tape281.js

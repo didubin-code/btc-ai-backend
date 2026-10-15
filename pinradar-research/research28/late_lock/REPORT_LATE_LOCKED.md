@@ -40,6 +40,14 @@ The same mechanism, measured on real windows **[SIM]**:
 * **Restart 330 s before the close:** 2.8 shows its first LOCKED at **T−29** in every window that locks (P10 = median = P90 = 29 s).
 * **Restart 360–420 s before the close:** 2.8 delays LOCKED by 40–60 s on average.
 
+Other delay sources, checked in the code **[CODE]**:
+
+* **Page.** It polls `/radar` every 0.25 s, and every 0.12 s in the last 120 s, with `cache: 'no-store'`. The server computes every response fresh.
+* **Kalshi book.** It is polled every 0.25 s inside 120 s, and is refused if older than 1.5 s.
+* **Index.** It is sampled at 1 Hz from websocket books.
+
+None of these can delay LOCKED by more than about a second. The page-side display delay is measured in `/latency` (`clientDisplayDelayMs`).
+
 **Classification: software/deployment defect (restart warm-up), not a mathematical limit.** The model itself typically supports LOCKED well before the close. In the fixture of this mechanism, the model supported LOCKED at T−103 while the gate held it back until T−31.
 
 To confirm Oct 14 specifically, read `/health` `uptimeSec`, or Render's deploy log. A start at about 23:25:00 or later means no LOCKED was possible before the close. A start between 23:24:30 and 23:25:00 means LOCKED only in the last 30 s.
@@ -155,6 +163,11 @@ The code, install steps and rollback are in `2.8.1/README_2.8.1.md`.
 | **Oct 12 20:45 ET (5:45 pm PT) adverse reversal** | | | |
 | Basis known | never LOCKED | never LOCKED | [SIM] |
 | Basis model cold, or restarted | LOCKED UP (wrong) at T−17 to T−23 | never LOCKED in any configuration | [SIM] S1 |
+
+Other results on the same 58 windows **[SIM]**:
+
+* **Warm engine, LOCKED seconds after a restart.** At every second 2.8.1 showed LOCKED after a restart (26,696 decision-seconds over 10 restart configurations), the warm validated engine gave that side at least 99.5 %: **0 exceptions**. For 2.8, 1,181 of its 21,858 post-restart LOCKED seconds were not supported by the warm engine.
+* **A model limit 2.8.1 does not change: narrow margins.** In 20 real paths moved so that the official settlement lands $1 above the strike, 2.8.1 LOCKED 4 windows, and 1 of them on the wrong side. It showed one TRADE NOW second on that wrong side, more than 13 s before the close. A $1 margin is decided by the basis (official settlement minus our index), which the model can only estimate. The forward test is what measures this.
 
 The price of the fix is that 2.8.1 is more conservative from 2 to 15 minutes after a restart: about 8 fewer LOCKED windows of 58, and a shorter lead. The calls 2.8 makes in that period rest on an unvalidated volatility estimate, and they include the two wrong calls above.
 

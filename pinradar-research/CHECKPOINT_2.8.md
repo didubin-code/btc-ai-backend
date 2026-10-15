@@ -77,3 +77,11 @@ bash pinradar-research/2.8/test/run_all28.sh
 * Plan: 2.8.1 candidate in pinradar-research/2.8.1 (built from the 2.8 dist, sha-checked): cold-start sigma envelope (exact lower bound sqrt(m/900),
   empirical upper), cold-basis mu envelope [-7, 9] until 12 live samples, execution layer (order time, TOO LATE TO TRADE, PREDICTED LOCKED,
   FINAL/SETTLED, SIT OUT, stress test), warm-up status; page action banner + order-time input; forensic tool for the user's logs.
+
+### Late-LOCKED status (2026-10-15 ~01:00 UTC)
+* 2.8.1 built (`2.8.1/dist`, server sha 631a5b28, page sha faea61c5), `bash 2.8.1/test/run_all281.sh` ALL PASSED
+  (selftest 144/144 both configs; late281 12/12; page281 11/11; forensic fixture PASS; cold band coverage 100 %;
+  2.8 suites vs 2.8.1 with features off: core 61/61, fuzz 0/20000, replay 0/17458, adversarial 24/24, props, live_sim).
+* Report: research28/late_lock/REPORT_LATE_LOCKED.md; README/install: 2.8.1/README_2.8.1.md; prereg v3 amendment.
+* Pending from the user: saved /health, /tape, /predictions, /signals for KXBTC15M-26OCT141930-30 (then run tools/forensic281.js),
+  or network access to Kalshi/Coinbase/Kraken; deployment decision (theirs).
