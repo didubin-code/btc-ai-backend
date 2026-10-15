@@ -38,7 +38,10 @@ function loadServer(file) {
      fromTau   record decisions only when tau <= fromTau (default 300, the LOCKED horizon)
      book(T, tau, x, w)  -> { yes:[[px,size]...], no:[[px,size]...], ageMs } | null   (Kalshi book, optional)
      contracts default 10
-     decide(S, snap, ctx) optional extra hook (the proposed execution layer)                               */
+     decide(S, snap, ctx) optional extra hook (the proposed execution layer)
+     decisionQuoteAgeMs  venue quote age at the decision (default: the quotes stamped at T+0.1 s are ~0.7 s old when the decision runs at
+                         T+0.75 s, which inflates the late-window volatility slightly; production's quotes are typically tens to hundreds of
+                         ms old, so results near the close should also be checked with a small value, e.g. 50)                 */
 function runWindow(S, w, bootT, opts = {}) {
   const fromTau = opts.fromTau == null ? 300 : opts.fromTau;
   const px = opts.px || priceAt(w);
@@ -66,6 +69,7 @@ function runWindow(S, w, bootT, opts = {}) {
       if (tau > fromTau) continue;
       NOW = T * 1000 + 750;
       S.KAL.ts = NOW - 120;
+      if (opts.decisionQuoteAgeMs != null) for (const v of Object.values(S.VENUES)) if (v.lastQuoteTs > 0) v.lastQuoteTs = NOW - opts.decisionQuoteAgeMs;
       if (opts.book) {
         const b = opts.book(T, tau, x, w);
         if (b) { S.KAL.ob = { ticker: w.ticker, yes: b.yes, no: b.no }; S.KAL.obTs = NOW - (b.ageMs == null ? 150 : b.ageMs); }
@@ -83,7 +87,7 @@ function runWindow(S, w, bootT, opts = {}) {
         soft: (s.gates || snap.gates).soft.slice(), hard: (s.gates || snap.gates).hard.slice(), sigmaWarm: g.sigmaWarm, sigmaRaw: g.sigmaRawBps, sigma: g.sigmaBps,
         bucket: g.regime ? g.regime.bucket : null, gap: g.gapUsd, cushion: g.cushionSigma, nLock: g.nLock, lockedMean: g.lockedMean,
         expSettle: g.expectedSettle, reqMove: g.requiredMoveUsd, ring: S.IDX.ring.length };
-      if (opts.decide) Object.assign(row, opts.decide(S, snap, { T, tau, x, w, NOW, liveIdx, age, basisMu: opts.basisMu == null ? null : opts.basisMu }) || {});
+      if (opts.decide) Object.assign(row, opts.decide(S, snap, { T, tau: (w.C * 1000 - NOW) / 1000, x, w, NOW, liveIdx, age, basisMu: opts.basisMu == null ? null : opts.basisMu }) || {});   // tau at the decision (T+0.75 s)
       rows.push(row);
     }
     return rows;

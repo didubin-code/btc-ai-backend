@@ -13,8 +13,8 @@ Everything in `2.8/PREREGISTRATION.md` (v2) applies unchanged, except the items 
    * The pre-registration id is `pinradar-2.8.1-prereg-v3`.
 2. **Production policy `A-2.6` as amended.**
    * TRADE NOW requires τ ≥ 3 s + `EXEC_SEC`. The default `EXEC_SEC` is 12 s, so TRADE NOW requires τ ≥ 15 s.
-   * The stress test with z = 1.645 is applied to TRADE NOW. Under the stress, BTC has already moved against the call by 1.645σ√(order time), and the full remaining time is still random.
-   * The data-quality fixes (`DQ_FIXES=1`) apply: the aligned sampler, nearest-sample print matching, and the fresh-venue quorum.
+   * The stress test with z = 1.645 is applied to TRADE NOW. Under the stress, BTC has already moved against the call by 1.645σ√(order time), and the full remaining time is still random. The cautious value after fees (the probability standard of `evConsCents`) must stay ≥ 0.
+   * The data-quality fixes (`DQ_FIXES=1`) apply: the aligned sampler and nearest-sample print matching. One lagging venue is DATA UNRELIABLE, as in 2.8.
    * After a restart, the cold-start volatility and basis envelopes apply.
    * The shadow policies use the same order time and stress input.
 3. **G1–G6 gates, stop rule and evidence rules.** Same as v2. Windows decided while either envelope was active are reported separately as well as pooled, with the boot entry's timestamp as the split.
@@ -23,6 +23,7 @@ Everything in `2.8/PREREGISTRATION.md` (v2) applies unchanged, except the items 
 
 **Changes in revision 1** (all made before deployment, none based on 2.8.1 forward data):
 * The default `EXEC_SEC` went from 10 to 12, so the buffer is 15 s.
-* The stress test now keeps the full remaining time random. Before, it removed the order time, which could make the stressed call more confident than the live one.
+* The stress test now keeps the full remaining time random. Before, it removed the order time, which could make the stressed call more confident than the live one. It now uses the cautious probability, not the point probability.
+* The "fresh-venue quorum" was withdrawn: it let a frozen venue bias the settlement prints while the warning was suppressed.
 * The data-quality fixes and the `DQ_FIXES` / `SAMPLE_PHASE_MS` keys were added.
 * Item 5 was added.

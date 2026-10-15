@@ -1,20 +1,20 @@
-# Pin Radar 2.8.1 — test results (actually run, 2026-10-15T21:01Z)
+# Pin Radar 2.8.1 — test results (actually run, 2026-10-15T21:42Z)
 
 Command: `bash pinradar-research/2.8.1/test/run_all281.sh` (offline; no network, no orders). Output, verbatim:
 
 ```
 == build (sha-checked patches of the delivered 2.8 files) into a temp dir; the committed dist must be identical
-dist/pinradar_server.js is the build of these sources (bad4267e4776a1fc)
-dist/btc_pin_radar_281.html is the build of these sources (8ab2a7c75c5e643f)
+dist/pinradar_server.js is the build of these sources (9ebf5c7fbed59d90)
+dist/btc_pin_radar_281.html is the build of these sources (1e4efc018de993ac)
 == 1. server self-test (default config, and with the new features off)
-selftest 146/146 OK (pin-radar-2.8.1)
-selftest 146/146 OK (pin-radar-2.8.1)
+selftest 148/148 OK (pin-radar-2.8.1)
+selftest 148/148 OK (pin-radar-2.8.1)
 == 2. late-LOCKED suite on 58 real windows: warm parity, restarts (Oct 14 mechanism), Oct 12 reversal, scenarios
 late281: 15/15 passed
 == 2b. DATA UNRELIABLE: sampler phase, real gaps, aligned sampler on real timers, one lagging venue, /dq diagnostics
-dq281: 5/5 passed
+dq281: 6/6 passed
 == 3. page (jsdom, real 2.8.1 signal objects)
-page281: 14/14 passed
+page281: 16/16 passed
 == 4. forensic tool on a fixture of the Oct 14 mechanism (2.8 started 330 s before a real window's close)
 forensic281: restart found 330s before the close; model supported LOCKED at T-102.75, 2.8 showed it at T-30.75; 2.8.1 on the same inputs at T-56.75 -> PASS
 == 5. cold-start volatility band: calibration Jul-Aug, coverage on Sep-Oct
@@ -30,26 +30,26 @@ ALL 2.8.1 CHECKS PASSED
 exit 0
 ```
 
-Detail of the late-LOCKED suite (`test/late281_test.js`, the same build, run separately so its JSON could be kept). LAST = 3 s fill + 12 s default order time = 15 s:
+Detail of the late-LOCKED suite (`test/late281_test.js` on the same build, server sha256 9ebf5c7fbed59d90…, run separately so its JSON could be kept). LAST = 3 s fill + 12 s default order time = 15 s:
 
 * **P1 warm parity**: 2.8.1 (EXEC_SEC=0) = 2.8 on every second
   `{"seconds": 17400, "differences": 0, "ex": []}`
 * **P2 warm, default order time**: identical probabilities/states; actions differ only by TOO LATE (< LAST) or the stress test, and the stress test does refuse some
-  `{"seconds": 17400, "probabilityDiffs": 0, "lockedActionToTooLateUnderLast": 637, "tradeNowToStressRefusal": 10, "otherActionDiffs": 0, "ex": []}`
+  `{"seconds": 17400, "probabilityDiffs": 0, "lockedActionToTooLateUnderLast": 637, "tradeNowToStressRefusal": 76, "otherActionDiffs": 0, "ex": []}`
 * **R1 Oct 14 mechanism**: restart 300 s before the close -> 2.8 never LOCKED; 2.8.1 LOCKED, wrong only where the warm engine is wrong
   `{"2.8": 0, "2.8.1": 50, "wrong281": [], "warmWrong": ["KXBTC15M-26SEP022315-15"]}`
 * **reported**
-  `{"R2 held-out windows (not used to calibrate the volatility band)": {"windows": 12, "note": "per-window detail in restartDetail; the basis band [-7, 9] was set from the range of these same 58 walk-forward means, so the basis half of R2 cannot fail on this data set"}, "S3 narrowly ahead (official $1 from the strike): REPORTED, not a pass/fail check": {"windows": 20, "lockedWindows": 4, "lockedWrongSide": 1, "tradeNowSeconds": 0, "tradeNowWrongSide": 0, "tradeNowUnderLast": 0, "note": "a $1 settlement margin is decided by the basis (official minus our index); LOCKED / TRADE NOW on the wrong side …`
+  `{"R2 held-out windows (not used to calibrate the volatility band)": {"windows": 12, "note": "per-window detail in restartDetail; the basis band [-7, 9] was set from the range of these same 58 walk-forward means, so the basis half of R2 cannot fail on this data set"}, "S1 the warm engine with a KNOWN basis on Oct 12 (a model limit 2.8.1 does not change)": {"input age ~0.7 s": {"firstLocked": "never LOCKED", "firstTradeNow": "never TRADE NOW", "truth": "DOWN"}, "input age 50 ms": {"firstLocked": "LOCKED UP T-17.25", "firstTradeNow": "never TRADE NOW", "truth": "DOWN"}}, "S3 narrowly ahead (offic …`
 * **R2 restart subset**: at every second 2.8.1 shows LOCKED after a restart, the warm validated engine gives that side >= 99.5 %
   `{"2.8.1 lockedSeconds": 26368, "2.8.1 unsupported": 0, "2.8 lockedSeconds": 21858, "2.8 unsupported (for comparison)": 1181, "byConfig": {"boot T-600 basis cold": {"2.8": [57, ["26SEP022315-15", "26OCT122045-45"], 359], "2.8.1": [50, [], 0]}, "boot T-600 basis warm": {"2.8": [55, ["26SEP022315-15", "26OCT122045-45"], 296], "2.8.1": [53, [], 0]}, "boot T-420 basis cold": {"2.8": [57, ["26SEP022315-15", "26OCT122045-45"], 279], "2.8.1": [50, [], 0]}, "boot T-420 basis warm": {"2.8": [55, ["26SEP022315-15", "26OCT122045-45"], 181], "2.8.1": [53, [], 0]}, "boot T-330 basis cold": {"2.8": [56, ["26 …`
 * **R3 pin cases, cold basis**: no LOCKED on the side opposite to the base leader; wrong first LOCKED <= basis-known engine
   `{"combos": 348, "lockedCold": 7, "wrongCold": 3, "lockedKnown": 53, "wrongKnown": 13, "oppositeSideLockedSeconds": 0, "ex": []}`
 * **R4 bracket robustness**: no LOCKED second after a restart has a sigma_900 inside the bracket with flip > 0.5 %
   `{"checked": 1987, "notRobust": 0, "maxWorstOverShownRatio": 486140.821, "ex": []}`
-* **S1 Oct 12 20:45 ET adverse reversal**: 2.8.1 never LOCKED and never TRADE NOW (all restart / basis configurations)
-  `{"warm basis known": {"2.8.1": "never LOCKED", "2.8": "never LOCKED"}, "warm basis cold": {"2.8.1": "never LOCKED", "2.8": "LOCKED UP T-17.25"}, "boot T-900 basis cold": {"2.8.1": "never LOCKED", "2.8": "LOCKED UP T-17.25"}, "boot T-900 basis known": {"2.8.1": "never LOCKED", "2.8": "never LOCKED"}, "boot T-600 basis cold": {"2.8.1": "never LOCKED", "2.8": "LOCKED UP T-22.25"}, "boot T-600 basis known": {"2.8.1": "never LOCKED", "2.8": "LOCKED UP T-17.25"}, "boot T-420 basis cold": {"2.8.1": "never LOCKED", "2.8": "LOCKED UP T-23.25"}, "boot T-420 basis known": {"2.8.1": "never LOCKED", "2.8": …`
+* **S1 Oct 12 20:45 ET adverse reversal**: with a cold basis 2.8.1 never LOCKED / TRADE NOW; with a known basis no LOCKED the warm engine does not show (both input ages)
+  `{"input age ~0.7 s": {"warm basis known": {"2.8.1": "never LOCKED", "2.8": "never LOCKED", "lockedNotInWarmEngine": 0}, "warm basis cold": {"2.8.1": "never LOCKED", "2.8": "LOCKED UP T-17.25", "lockedNotInWarmEngine": 0}, "boot T-900 basis cold": {"2.8.1": "never LOCKED", "2.8": "LOCKED UP T-17.25", "lockedNotInWarmEngine": 0}, "boot T-900 basis known": {"2.8.1": "never LOCKED", "2.8": "never LOCKED", "lockedNotInWarmEngine": 0}, "boot T-600 basis cold": {"2.8.1": "never LOCKED", "2.8": "LOCKED UP T-22.25", "lockedNotInWarmEngine": 0}, "boot T-600 basis known": {"2.8.1": "never LOCKED", "2.8": …`
 * **S2 safely ahead (synthetic 97c book)**: TRADE NOW only at >= LAST s, TOO LATE TO TRADE only below
-  `{"windows": 26, "tradeNowSeconds": 3150, "tooLateSeconds": 390, "violations": 0}`
+  `{"windows": 26, "tradeNowSeconds": 3130, "tooLateSeconds": 390, "violations": 0}`
 * **S4 final-second adverse jump**: the LOCKED call is dropped / REVERSAL WARNING within 1 s; no TRADE NOW
   `{"windows": 15, "warnedWithin1s": 15, "tradeNowAfterJump": 0}`
 * **S4b adverse jump at T-35**: TRADE NOW existed just before; none in the jump second or after
@@ -63,7 +63,7 @@ Detail of the late-LOCKED suite (`test/late281_test.js`, the same build, run sep
 * **S8 after the close**: FINAL (never TRADE NOW, never an opportunity)
   `[{"headline": "TOO LATE", "reversalPct": null, "reason": "window closed: AWAITING SETTLEMENT", "state": "FINAL", "why": "AWAITING SETTLEMENT", "prepare": null, "execSec": 10, "lastOrderTau": 13, "secondsToLastOrder": -14, "edge": null, "noOffers": false, "note": "TRADE NOW needs LOCKED, a fresh book with enough offers, a positive conservative edge after fees that survives an adverse move during your order time, and at least 13 s left"}, "FINAL"]`
 * **S9 Oct 15 replica**: 99.8c ask -> PREDICTED LOCKED (NO EDGE, qualifying price shown), empty book -> NO OFFERS, < LAST -> TOO LATE, never TRADE NOW; a 97c ask -> TRADE NOW at >= LAST s
-  `{"window": "KXBTC15M-26JUL212215-15", "firstLockedTau": 65.25, "noEdgeSeconds": 31, "exampleWhy": "NO EDGE — Kalshi already prices UP at 99.8¢ (≈99.8% sure) vs the model's 99.51%: buying at 99.8¢ + 0.1¢ fee has expected value -0.39¢ (cautious -1.07¢) per contract. It would qualify only at ≤ 98.2¢.", "maxAskForTradeNow": 98.2, "noOffersSeconds": 19, "tooLateSeconds": 15, "tradeNowSecondsAt97c": 32}`
+  `{"window": "KXBTC15M-26JUL212215-15", "firstLockedTau": 65.25, "noEdgeSeconds": 31, "exampleWhy": "NO EDGE — Kalshi already prices UP at 99.8¢ (≈99.8% sure) vs the model's 99.51%: buying at 99.8¢ + 0.1¢ fee has expected value -0.39¢ (cautious -1.07¢) per contract. It would qualify only at ≤ 97.1¢.", "maxAskForTradeNow": 97.1, "noOffersSeconds": 19, "tooLateSeconds": 15, "tradeNowSecondsAt97c": 32}`
 
 Per-configuration restart detail (R2), 2.8 vs 2.8.1: [locked windows, wrong windows, locked seconds the warm engine does not support]:
 

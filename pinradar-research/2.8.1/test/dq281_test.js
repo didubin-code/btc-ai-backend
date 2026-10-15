@@ -3,8 +3,10 @@
          "only k/n locked prints sampled" -> DATA UNRELIABLE for most of the final minute; 2.8.1 never does, at any phase.
      Q2  a REAL gap (no index sample for 5 s inside the settlement minute) still makes 2.8.1 DATA UNRELIABLE (not suppressed).
      Q3  the aligned sampler, run on real timers for ~4 s, samples at the second + SAMPLE_PHASE_MS (no drift).
-     Q4  one lagging venue (quote 2.6 s old) in the final 20 s: 2.8 is DATA UNRELIABLE ("oldest index input ... budget"); 2.8.1 rebuilds the
-         index from the two fresh, agreeing venues. Two lagging venues: 2.8.1 is still DATA UNRELIABLE.
+     Q4  one lagging venue (quote 2.6 s old) in the final 20 s: DATA UNRELIABLE in 2.8 AND 2.8.1 (a legitimate warning: the 1 Hz settlement
+         ring samples every venue, so the index cannot simply be rebuilt without the lagging one; review round 2 withdrew that change).
+     Q6  a FROZEN venue (price stuck, heartbeats alive) from T-28 and from T-45 on 12 real windows: 2.8.1 is DATA UNRELIABLE wherever 2.8 is,
+         and never shows LOCKED / TRADE NOW where the same window without the freeze does not (regression for the review-round-2 finding).
      Q5  /dq diagnostics record the hard-gate reason and the venue state.
    usage: node test/dq281_test.js <2.8 server> <2.8.1 server>                                                                    */
 'use strict';
@@ -19,7 +21,7 @@ const ok = (name, cond, got) => { res[name] = got; if (!cond) { fail++; console.
 let seed = 5; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
 
 /* drive one window: sampler at T*1000 + phase(T), decision late in the second; hooks can alter venues / skip samples */
-function run(S, w, { phase = () => 100, skip = () => false, venues = null, from = 60 } = {}) {
+function run(S, w, { phase = () => 100, skip = () => false, venues = null, pre = null, from = 60, book = false } = {}) {
   const px = L.priceAt(w), realNow = Date.now; let NOW = 0; Date.now = () => NOW;
   const rows = [];
   try {
@@ -31,17 +33,19 @@ function run(S, w, { phase = () => 100, skip = () => false, venues = null, from 
       const x = px.get(T); if (x == null) continue;
       NOW = T * 1000 + phase(T);
       for (const v of Object.values(S.VENUES)) Object.assign(v, { mid: x + (v.name === 'coinbase' ? 0.4 : v.name === 'kraken' ? -0.4 : 0), bidDepth: 2, askDepth: 2, lastQuoteTs: NOW - 50, lastMsgTs: NOW });
+      if (pre) pre(S, NOW, w.C - T, x);
       if (!skip(w.C - T)) S.sampleIndex();
       const tau = w.C - T; if (tau > from) continue;
       NOW = T * 1000 + 950; S.KAL.ts = NOW - 100;
       if (venues) venues(S, NOW, tau, x);
+      if (book) { S.KAL.ob = { ticker: w.ticker, yes: [[3, 500]], no: [[3, 500]] }; S.KAL.obTs = NOW - 100; }   // a 97c ask on both sides, deep
       const kal = S.getKalshiContext();
-      const li = S.liveIndexFor281 ? S.liveIndexFor281(NOW, (w.C * 1000 - NOW) / 1000).idx : S.computeIndex(NOW);
+      const li = S.computeIndex(NOW);
       const used = li ? Object.values(S.VENUES).filter(v => li.used.includes(v.name)) : [];
       const age = used.length ? Math.max(...used.map(v => NOW - v.lastQuoteTs)) : Infinity;
       const q = S.assessQuality(NOW, kal);
       const snap = S.computeLockSnapshot({ now: NOW, kal, strike: kal.strike, strikeIssue: null, overrides: [], quality: q, liveIdx: li, liveIndexAgeMs: age, side: null, mutate: true, basisMu: w.mu });
-      rows.push({ tau, state: snap.signal.state, hard: (snap.signal.gates || snap.gates).hard.slice(), used: li ? li.used.slice() : [] });
+      rows.push({ tau, state: snap.signal.state, side: snap.signal.side, act: snap.signal.exec ? snap.signal.exec.headline : null, hard: (snap.signal.gates || snap.gates).hard.slice(), used: li ? li.used.slice() : [] });
     }
   } finally { Date.now = realNow; }
   return rows;
@@ -86,13 +90,59 @@ function run(S, w, { phase = () => 100, skip = () => false, venues = null, from 
 {
   const w = W.find(x => x.ticker === 'KXBTC15M-26OCT131100-00');
   const oneStale = (S, NOW, tau) => { if (tau <= 20 && tau >= 10) S.VENUES.bitstamp.lastQuoteTs = NOW - 2600; };
-  const twoStale = (S, NOW, tau) => { if (tau <= 20 && tau >= 10) { S.VENUES.bitstamp.lastQuoteTs = NOW - 2600; S.VENUES.kraken.lastQuoteTs = NOW - 2600; } };
   const a = run(S28, w, { venues: oneStale }).filter(r => r.tau <= 20 && r.tau >= 10);
   const b = run(S1, w, { venues: oneStale }).filter(r => r.tau <= 20 && r.tau >= 10);
-  const c = run(S1, w, { venues: twoStale }).filter(r => r.tau <= 20 && r.tau >= 10);
-  ok('Q4 one lagging venue: 2.8 DATA UNRELIABLE, 2.8.1 uses the two fresh venues; two lagging venues: 2.8.1 still DATA UNRELIABLE',
-    a.every(r => r.state === 'DATA UNRELIABLE') && b.every(r => r.state !== 'DATA UNRELIABLE' && r.used.length === 2 && !r.used.includes('bitstamp')) && c.every(r => r.state === 'DATA UNRELIABLE'),
-    { '2.8': [...new Set(a.map(r => r.state))], '2.8.1': [...new Set(b.map(r => r.state + ' via ' + r.used.join('+')))], '2.8.1 two stale': [...new Set(c.map(r => r.state))], example: a[0] && a[0].hard[0] });
+  ok('Q4 one lagging venue in the final 20 s: DATA UNRELIABLE in 2.8 and in 2.8.1 (legitimate; not suppressed)',
+    a.length > 5 && a.every(r => r.state === 'DATA UNRELIABLE') && b.every(r => r.state === 'DATA UNRELIABLE'),
+    { '2.8': [...new Set(a.map(r => r.state))], '2.8.1': [...new Set(b.map(r => r.state))], example: b[0] && b[0].hard[0] });
+}
+/* Q6: through the server's OWN background path (bgTick: its live index, its gates, its snapshot), as in production */
+function runBg(S, w, { freezeAt = null, from = 60 } = {}) {
+  const px = L.priceAt(w), realNow = Date.now; let NOW = 0; Date.now = () => NOW;
+  const rows = []; let fz = null;
+  try {
+    S.IDX.ring.length = 0; S.IDX.value = NaN; S.IDX.ts = 0;
+    Object.assign(S.LOCK25, { ticker: null, hist: [], lockedSide: null, lockedAtTau: null, revNoted: false });
+    S.SKEW.samples.length = 0; for (let i = 0; i < 10; i++) S.SKEW.samples.push(20); S.SKEW.estMs = 20; S.RESTF.active = false;
+    S.BASIS.samples.length = 0; S.BASIS.byKey.clear();
+    for (let i = 0; i < 20; i++) { S.BASIS.samples.push({ key: 'q6-' + i, e: 0, proxy: 0, official: 0, ts: 0 }); S.BASIS.byKey.add('q6-' + i); }   // a warm basis model (mean 0)
+    S.KAL.market = { ticker: w.ticker, strike: w.K, closeMs: w.C * 1000, openMs: (w.C - 900) * 1000, status: 'active', yesBid: 50, yesAsk: 51 };
+    const setV = (NOW, x, tau) => {
+      for (const v of Object.values(S.VENUES)) Object.assign(v, { mid: x + (v.name === 'coinbase' ? 0.4 : v.name === 'kraken' ? -0.4 : 0), bidDepth: 2, askDepth: 2, lastQuoteTs: NOW - 50, lastMsgTs: NOW });
+      if (freezeAt != null && tau <= freezeAt) { if (!fz) fz = { mid: S.VENUES.kraken.mid, ts: NOW - 50 }; Object.assign(S.VENUES.kraken, { mid: fz.mid, lastQuoteTs: fz.ts, lastMsgTs: NOW }); }
+    };
+    for (let T = w.C - 1300; T < w.C; T++) {
+      const x = px.get(T); if (x == null) continue; const tau = w.C - T;
+      NOW = T * 1000 + 100; setV(NOW, x, tau); S.sampleIndex();
+      if (tau > from) continue;
+      NOW = T * 1000 + 950; setV(NOW, x, tau); S.KAL.ts = NOW - 100;
+      S.KAL.ob = { ticker: w.ticker, yes: [[3, 500]], no: [[3, 500]] }; S.KAL.obTs = NOW - 100;   // a 97c ask on both sides, deep
+      const snap = S.bgTick(NOW); if (!snap || !snap.signal) continue;
+      const sg = snap.signal;
+      rows.push({ tau, state: sg.state, side: sg.side, act: sg.exec ? sg.exec.headline : (sg.trade && sg.trade.action === 'TRADE NOW' ? 'TRADE NOW' : null), hard: (sg.gates || snap.gates).hard.slice() });
+    }
+  } finally { Date.now = realNow; }
+  return rows;
+}
+{
+  const out = {}; let bad = 0; const ex = [];
+  const isL = st => st === 'LOCKED' || st === 'PROVEN LOCKED';
+  for (const FZ of [28, 45]) {
+    const c = { decisions: 0, unreliable28: 0, unreliable281: 0, unreliable281not28: 0, locked281NotClean: 0, tradeNow281NotClean: 0, lockedClean: 0 };
+    for (const w of W.slice(-12)) {
+      const f28 = runBg(S28, w, { freezeAt: FZ, from: FZ }), f281 = runBg(S1, w, { freezeAt: FZ, from: FZ }), clean = runBg(S1, w, { from: FZ });
+      for (const r of f281) {
+        const o = f28.find(x => x.tau === r.tau), t = clean.find(x => x.tau === r.tau); if (!o || !t) continue;
+        c.decisions++; if (o.state === 'DATA UNRELIABLE') c.unreliable28++; if (r.state === 'DATA UNRELIABLE') c.unreliable281++; if (isL(t.state)) c.lockedClean++;
+        if (o.state === 'DATA UNRELIABLE' && r.state !== 'DATA UNRELIABLE') { c.unreliable281not28++; bad++; if (ex.length < 3) ex.push({ ticker: w.ticker, FZ, tau: r.tau, s281: r.state, s28: o.state }); }
+        if (isL(r.state) && !(isL(t.state) && t.side === r.side)) { c.locked281NotClean++; bad++; if (ex.length < 3) ex.push({ ticker: w.ticker, FZ, tau: r.tau, frozen: r.state + ' ' + r.side, clean: t.state + ' ' + t.side }); }
+        if (r.act === 'TRADE NOW' && t.act !== 'TRADE NOW') { c.tradeNow281NotClean++; bad++; }
+      }
+    }
+    out['frozen from T-' + FZ] = c;
+  }
+  ok('Q6 frozen venue (price stuck, heartbeats alive), server background path: 2.8.1 DATA UNRELIABLE wherever 2.8 is; no LOCKED / TRADE NOW the unfrozen window would not show',
+    bad === 0 && Object.values(out).every(c => c.decisions > 100 && c.unreliable281 > 0 && c.lockedClean > 0), { ...out, ex });
 }
 /* Q5 */
 {

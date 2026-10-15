@@ -8,8 +8,8 @@
   "median": 78.25,
   "p90": 184.25
  },
- "inTimeFor10sOrder": 53,
- "tooLateFor10sOrder": 1,
+ "inTimeFor12sOrder": 52,
+ "tooLateFor12sOrder": 2,
  "spearman_lockTau_vs": {
   "officialMargin": 0.847,
   "sigmaAtT300": 0.202,
@@ -20,25 +20,25 @@
    "margin": "$0-20",
    "n": 6,
    "medianLockTau": 46.25,
-   "lockedAfterT13": 1
+   "lockedAfterT15": 2
   },
   {
    "margin": "$20-50",
    "n": 22,
    "medianLockTau": 53.25,
-   "lockedAfterT13": 0
+   "lockedAfterT15": 0
   },
   {
    "margin": "$50-100",
    "n": 9,
    "medianLockTau": 84.25,
-   "lockedAfterT13": 0
+   "lockedAfterT15": 0
   },
   {
    "margin": "$100-",
    "n": 17,
    "medianLockTau": 151.25,
-   "lockedAfterT13": 0
+   "lockedAfterT15": 0
   }
  ],
  "neverLocked": 4,

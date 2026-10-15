@@ -56,9 +56,14 @@ s = rep(s, """    else if (!(tr.evConsCents >= cfg.minEdgeCents)) { tr.action = 
     else { tr.action = 'TRADE NOW';""",
         """    else if (!(tr.evConsCents >= cfg.minEdgeCents)) { tr.action = 'LOCKED — DO NOT TRADE'; tr.why = `price ${tr.avgCents}¢ + fee ${tr.feeCents}¢ leaves ${tr.evConsCents}¢ conservative edge (< ${cfg.minEdgeCents}¢)`; }
     else if (pUpStress != null && Number.isFinite(pUpStress) && (100 * (out.side === 'UP' ? pUpStress : 1 - pUpStress) - tr.avgCents - tr.feeCents) < 0) {   // v2.8.1
-      tr.evStressCents = Math.round((100 * (out.side === 'UP' ? pUpStress : 1 - pUpStress) - tr.avgCents - tr.feeCents) * 100) / 100;
-      tr.action = 'LOCKED — DO NOT TRADE'; tr.why = `the edge does not survive a ${EXEC_STRESS_Z}σ BTC move against ${out.side} during your ${cfg.execSec || 0} s order time (stress value ${tr.evStressCents}¢)`; }
+      tr.action = 'LOCKED — DO NOT TRADE'; tr.why = `the cautious edge does not survive a ${EXEC_STRESS_Z}σ BTC move against ${out.side} during your ${cfg.execSec || 0} s order time (stressed value ${tr.evStressCents}¢)`; }
     else { tr.action = 'TRADE NOW';""")
+
+# the stressed cautious win probability and value, recorded on every decision with a book (the page's qualifying price uses it)
+s = rep(s, "    tr.evConsCents = Math.round((100 * (1 - out.pFlipCons) - a.avgCents - tr.feeCents) * 100) / 100;\n",
+        "    tr.evConsCents = Math.round((100 * (1 - out.pFlipCons) - a.avgCents - tr.feeCents) * 100) / 100;\n"
+        "    if (pUpStress != null && Number.isFinite(pUpStress)) { tr.pWinStressCons = Math.round(1e6 * (out.side === 'UP' ? pUpStress : 1 - pUpStress)) / 1e6;   // v2.8.1\n"
+        "      tr.evStressCents = Math.round((100 * (out.side === 'UP' ? pUpStress : 1 - pUpStress) - a.avgCents - tr.feeCents) * 100) / 100; }\n")
 
 # no offers on the called side is a MARKET state (nobody sells below 100c), not a timing state: keep 2.8's action string
 # (compatibility) but flag it and say what it means; exec281 shows it as PREDICTED LOCKED (NO OFFERS), not TOO LATE
@@ -97,21 +102,6 @@ s = rep(s, """  if (IDX.sampler) return;
   };
   if (!DQ_FIXES281) { IDX.sampler = setInterval(sampleIndex, 1000); if (IDX.sampler.unref) IDX.sampler.unref(); sampleIndex(); return; }   // 2.8 behaviour
   IDX.sampler = true; schedule();""")
-# DATA UNRELIABLE (input age): the lock gate used the OLDEST quote among the venues in the index, and its budget shrinks to 100 ms per
-# second of tau (0.75 s minimum) in the final 30 s. One lagging venue therefore made the call DATA UNRELIABLE even when two other venues
-# were fresh and agreed. v2.8.1: when the full index would exceed the budget, the index is rebuilt from the venues whose quotes are within
-# the budget, if they still form a quorum (>= MIN_INDEX_VENUES, outlier rule unchanged). Otherwise nothing changes and the gate fires.
-s = rep(s, "function computeIndex(now = Date.now()) {\n  const live = VENUE_LIST().filter(v => venueFresh(v, now));",
-        "function computeIndex(now = Date.now(), maxQuoteAgeMs = Infinity) {\n  const live = VENUE_LIST().filter(v => venueFresh(v, now) && now - v.lastQuoteTs <= maxQuoteAgeMs);   // v2.8.1: optional age cap")
-s = rep(s, """    const liveIdx = computeIndex(now);
-    const used = liveIdx ? VENUE_LIST().filter(v => liveIdx.used.includes(v.name)) : [];
-    const age = used.length ? Math.max(...used.map(v => now - v.lastQuoteTs)) : Infinity;""",
-        """    const li281 = liveIndexFor281(now, Number.isFinite(kal.closeMs) ? (kal.closeMs - now) / 1000 : NaN);   // v2.8.1: fresh quorum
-    const liveIdx = li281.idx;
-    const used = liveIdx ? VENUE_LIST().filter(v => liveIdx.used.includes(v.name)) : [];
-    const age = used.length ? Math.max(...used.map(v => now - v.lastQuoteTs)) : Infinity;""")
-s = rep(s, "  const liveIdx = computeIndex(now);\n  const liveValue = liveIdx ? liveIdx.value : IDX.value;",
-        "  const liveIdx = liveIndexFor281(now, kal && Number.isFinite(kal.closeMs) ? (kal.closeMs - now) / 1000 : NaN).idx;   // v2.8.1: fresh quorum\n  const liveValue = liveIdx ? liveIdx.value : IDX.value;")
 # classify25: order time and stress; the 2.8 warm-up gate stays for the first COLD_MIN_SEC (geo.sigmaWarm is true once the envelope covers it)
 s = rep(s, "function classify25({ now = Date.now(), tau, ticker, closeMs, strike, geo, gates, kal, contracts, mutate = false }) {\n  const ls = lock25For(ticker);\n  const cfg = m25Cfg(contracts);",
         "function classify25({ now = Date.now(), tau, ticker, closeMs, strike, geo, gates, kal, contracts, mutate = false, execSec }) {\n  const ls = lock25For(ticker);\n  const cfg = m25Cfg(contracts, execSec);")
@@ -178,7 +168,7 @@ s = rep(s, "  const failed = checks.filter(c => !c.pass);", ST + "\n  const fail
 # exports
 s = rep(s, "  clientLat28, ledgerVerify28, tapeWrite28, TAPE28_FILE_MAX\n};",
         "  clientLat28, ledgerVerify28, tapeWrite28, TAPE28_FILE_MAX,\n"
-        "  // v2.8.1\n  coldVol281, basisCold281, coldGeometry281, stressPUp281, exec281, exec281Summary, warmup281, execSec281, EXEC281, COLD_TABLE281,\n  liveIndexFor281, dqNote281, dqSummary281, DQ281, startSampler,\n"
+        "  // v2.8.1\n  coldVol281, basisCold281, coldGeometry281, stressPUp281, exec281, exec281Summary, warmup281, execSec281, EXEC281, COLD_TABLE281,\n  maxAskFor281, dqNote281, dqSummary281, DQ281, startSampler,\n"
         "  COLD_MIN_SEC, COLD_FULL_SEC, COLD281_ON, BASIS_WARM_N, BASIS_COLD_LO, BASIS_COLD_HI, EXEC_SEC, EXEC_STRESS_Z\n};")
 
 # the environment variables the server reads (config hash input): recomputed over the final source

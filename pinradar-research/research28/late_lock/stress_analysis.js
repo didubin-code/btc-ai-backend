@@ -1,6 +1,7 @@
 /* Execution stress test, measured (review finding: the earlier figures had no committed source).
-   Warm server, basis known, 58 real windows: stressed flip risk at the first LOCKED second for order times 3/10/30 s, and how many
-   TRADE NOW seconds the stress test refuses with a synthetic book (leader ask 95-99.9c, varied depth).
+   Warm server, basis known, 58 real windows: stressed CAUTIOUS flip risk (the standard TRADE NOW's edge uses) at the first LOCKED second
+   for order times 3/12/30 s, and how many TRADE NOW seconds the stress test refuses with the default 12 s order time and a synthetic book
+   (leader ask 95-99.9c, 300 contracts).
    usage: node stress_analysis.js <pinradar_server.js 2.8.1> <out.json>                                                         */
 'use strict';
 const L = require('./sim_lib.js');
@@ -8,7 +9,7 @@ const S = L.loadServer(process.argv[2]);
 const W = L.loadWindows();
 const q = (a, p) => { if (!a.length) return null; const b = [...a].sort((x, y) => x - y); return b[Math.min(b.length - 1, Math.floor(p * (b.length - 1) + 0.5))]; };
 const out = { firstLocked: {}, tradeNow: {} };
-for (const ex of [3, 10, 30]) {
+for (const ex of [3, 12, 30]) {
   const f = [];
   for (const w of W) {
     let done = false;
@@ -25,10 +26,10 @@ const book = (T, tau, x, w) => { seed = (T * 7919 + 13) % 2147483647 || 1; const
   const tb = asks => asks.map(([p, s]) => [Math.round((100 - p) * 100) / 100, s]); const la = [[a, 300]], lg = [[Math.max(0.5, Math.round((101 - a) * 10) / 10), 300]];
   return { yes: tb(lead === 'UP' ? lg : la), no: tb(lead === 'UP' ? la : lg), ageMs: 150 }; };
 let tn = 0, refused = 0;
-for (const w of W) for (const r of L.runWindow(S, w, w.C - 1300, { basisMu: w.mu, book, execSec: 10, decide: (S2, snap) => ({ why: snap.signal.trade ? snap.signal.trade.why : '' }) })) {
+for (const w of W) for (const r of L.runWindow(S, w, w.C - 1300, { basisMu: w.mu, book, execSec: 12, decide: (S2, snap) => ({ why: snap.signal.trade ? snap.signal.trade.why : '' }) })) {
   if (r.action === 'TRADE NOW') tn++;
   if (r.action === 'LOCKED — DO NOT TRADE' && /survive/.test(r.why || '')) refused++;
 }
-out.tradeNow = { orderTimeSec: 10, z: S.EXEC_STRESS_Z, tradeNowSeconds: tn, refusedByStress: refused, book: 'synthetic leader ask 95-99.9c, 300 contracts' };
+out.tradeNow = { orderTimeSec: 12, z: S.EXEC_STRESS_Z, tradeNowSeconds: tn, refusedByStress: refused, book: 'synthetic leader ask 95-99.9c, 300 contracts' };
 require('fs').writeFileSync(process.argv[3], JSON.stringify(out, null, 1));
 console.log(JSON.stringify(out, null, 1));

@@ -77,6 +77,16 @@ s = rep(s, "function markCallStale(age){\n  $('call').className='call stale';",
 s = rep(s, "  $('bigTau').style.color=t<=10?'var(--red)':t<=60?'var(--amber)':'var(--text)';",
         "  $('bigTau').style.color=t<=10?'var(--red)':t<=60?'var(--amber)':'var(--text)';\n"
         "  if(t<=0){const b=$('act281');if(b&&/go|pred|late/.test(b.className))act281Down('WINDOW CLOSED — FINAL / SETTLEMENT','the window has closed: nothing here is an opportunity',true);}")
+# TRADE NOW never outlives the last order moment or a fresh server reading (review finding: at T >= 120 s the stale downgrade waited
+# 6 s, and nothing compared the local clock with the last order moment)
+s = rep(s, "  if(d&&d.signal&&age>CALL_STALE_MS&&t>0&&t<120)markCallStale(age);\n}",
+        "  if(d&&d.signal&&age>CALL_STALE_MS&&t>0&&t<120)markCallStale(age);\n"
+        "  state.tau281=t;   // v2.8.1\n"
+        "  {const b=$('act281'),ex=d&&d.signal&&d.signal.exec;\n"
+        "   if(b&&/\\bgo\\b/.test(b.className)&&t>0){\n"
+        "     if(ex&&Number.isFinite(ex.lastOrderTau)&&t<ex.lastOrderTau){act281Down('TOO LATE','T−'+t.toFixed(1)+' s: past the last moment to place an order (T−'+ex.lastOrderTau+' s with your '+ex.execSec+' s order time)');b.className='act281 late';}\n"
+        "     else if(age>CALL_STALE_MS)act281Down('STALE — DO NOT TRADE','last server reading is '+(age/1000).toFixed(1)+' s old; TRADE NOW may no longer hold');}}\n"
+        "}")
 s = rep(s, "function renderCall(d){",
         """/* v2.8.1: the one action to take now. TRADE NOW only when the server says so; a LOCKED call that cannot be traded
    is PREDICTED LOCKED (with why); past the last moment an order can be placed it is TOO LATE TO TRADE; after the
@@ -94,6 +104,7 @@ function render281(sg,downgraded,divergent){
   /* the decision in three words, the reversal risk, one reason: TRADE NOW / SIT OUT / TOO LATE */
   let head=ex.headline||'SIT OUT', cls=head==='TRADE NOW'?'go':head==='TOO LATE'?'late':'sit', why=ex.reason||ex.why||'';
   if(downgraded){head='SIT OUT';why='DATA SUSPECT — '+downgraded;cls='bad';}
+  else if(head==='TRADE NOW'&&Number.isFinite(state.tau281)&&state.tau281>0&&state.tau281<ex.lastOrderTau){head='TOO LATE';cls='late';why='past the last moment to place an order (T−'+ex.lastOrderTau+' s with your '+ex.execSec+' s order time)';}   // the browser's clock is later than the server's
   else if(sg.state==='REVERSAL WARNING'||sg.state==='DATA UNRELIABLE')cls='bad';
   else if(ex.state==='FINAL')cls='fin';
   box.className='act281 '+cls;

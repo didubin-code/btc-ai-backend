@@ -3,36 +3,36 @@
   "order 3 s": {
    "n": 54,
    "stressedFlipPct": {
-    "p10": 0.487,
-    "median": 0.677,
-    "p90": 1.046
+    "p10": 1.107,
+    "median": 1.561,
+    "p90": 2.358
    },
-   "shareUnder05pct": 0.111
+   "shareUnder05pct": 0.019
   },
-  "order 10 s": {
-   "n": 53,
+  "order 12 s": {
+   "n": 52,
    "stressedFlipPct": {
-    "p10": 0.583,
-    "median": 0.87,
-    "p90": 1.904
+    "p10": 1.419,
+    "median": 2.108,
+    "p90": 3.872
    },
-   "shareUnder05pct": 0.038
+   "shareUnder05pct": 0
   },
   "order 30 s": {
    "n": 50,
    "stressedFlipPct": {
-    "p10": 0.862,
-    "median": 1.456,
-    "p90": 3.212
+    "p10": 1.92,
+    "median": 3.093,
+    "p90": 6.733
    },
    "shareUnder05pct": 0
   }
  },
  "tradeNow": {
-  "orderTimeSec": 10,
+  "orderTimeSec": 12,
   "z": 1.645,
-  "tradeNowSeconds": 2422,
-  "refusedByStress": 6,
+  "tradeNowSeconds": 2291,
+  "refusedByStress": 76,
   "book": "synthetic leader ask 95-99.9c, 300 contracts"
  }
 }

@@ -44,8 +44,15 @@
     push('2.8.1 stress: TRADE NOW is refused when an adverse move during the order time removes the edge', dStress.trade.action === 'LOCKED — DO NOT TRADE' && /survive/.test(dStress.trade.why), dStress.trade);
     const gS = lockGeometry25({ ...args, ring: ringW });
     const ps0 = stressPUp281(gS, 45, 10, 0), ps3 = stressPUp281(gS, 45, 3), ps10 = stressPUp281(gS, 45, 10), ps30 = stressPUp281(gS, 45, 30);
-    push('2.8.1 stress: never more confident than the live call, and less confident the longer the order time',
-      gS && ps0 != null && Math.abs(ps0 - gS.pUp) < 1e-5 && ps3 <= ps0 + 1e-12 && ps10 <= ps3 + 1e-12 && ps30 <= ps10 + 1e-12, [gS && gS.pUp, ps0, ps3, ps10, ps30]);   // ps0: z = 0 (geo fields are rounded, so not bit-equal to pUp)
+    const cautS = gS ? (gS.pUp >= 0.5 ? Math.min(gS.pUp, gS.pUpCons) : Math.max(gS.pUp, gS.pUpCons)) : null;   // the cautious P(UP) TRADE NOW's edge uses
+    push('2.8.1 stress: at z = 0 it is the live cautious probability; never more confident than that, and less confident the longer the order time',
+      gS && ps0 != null && Math.abs(ps0 - cautS) < 1e-5 && ps3 <= ps0 + 1e-12 && ps10 <= ps3 + 1e-12 && ps30 <= ps10 + 1e-12, [gS && gS.pUp, cautS, ps0, ps3, ps10, ps30]);   // ps0: z = 0 (geo fields are rounded, so not bit-equal)
+    /* the qualifying price uses the fee AT that price and the stress condition (review finding: the fee at the current ask was used) */
+    const mA = maxAskFor281(98.83, null, 10, 99.8), feeAt = a => kalshiFeeCents(a, 10);
+    push('2.8.1 qualifying price: the cautious edge after the fee at that price clears MIN_EDGE, one tick higher it does not',
+      mA > 0 && 98.83 - mA - feeAt(mA) >= MIN_EDGE_CENTS - 1e-9 && 98.83 - (mA + 0.1) - feeAt(mA + 0.1) < MIN_EDGE_CENTS, [mA, feeAt(mA), feeAt(mA + 0.1)]);
+    const mS = maxAskFor281(98.83, 0.97, 10, 99.8);
+    push('2.8.1 qualifying price: also requires the stressed cautious value >= 0', mS > 0 && mS <= 97 - feeAt(mS) + 1e-9 && mS < mA, [mS, mA]);
     /* action states */
     const a1 = exec281({ state: 'LOCKED', side: 'UP', trade: { action: 'LOCKED — DO NOT TRADE', why: 'x' }, ticker: null }, { tau: 40, execSec: 10, now: nowS });
     const a2 = exec281({ state: 'LOCKED', side: 'UP', trade: { action: 'LOCKED — TOO LATE', why: 'y' }, ticker: null }, { tau: 8, execSec: 10, now: nowS });

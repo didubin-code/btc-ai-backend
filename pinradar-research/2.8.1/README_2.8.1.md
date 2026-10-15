@@ -19,7 +19,7 @@ The full investigation is in `../research28/late_lock/REPORT_LATE_LOCKED.md`.
      * every settlement print takes its nearest sample;
      * the sampler is aligned to the second plus 100 ms and re-aligned on every tick.
    * **A real data gap still triggers the warning.**
-   * **One lagging venue no longer blocks a fresh two-venue quorum.** Two lagging venues still trigger the warning.
+   * **One lagging venue still triggers it, as in 2.8.** A change that rebuilt the index without that venue was withdrawn after review: it let a frozen venue keep feeding the settlement prints while the warning was suppressed.
    * **New endpoint `/dq`.** It counts every hard-gate reason with the venue state at that moment. `/health` shows the same counts.
 2. **Restart handling (the Oct 14 mechanism).**
    * In 2.8, every server start (any upload to `main` redeploys the service) withheld LOCKED for 300 s.
@@ -28,13 +28,15 @@ The full investigation is in `../research28/late_lock/REPORT_LATE_LOCKED.md`.
    * If the leading side itself depends on that unknown, there is no call.
    * The basis model (official settlement minus our index) restarts empty. Until 12 windows have settled, the call uses the worst probability over basis means of −$7 to +$9.
 3. **15 s execution buffer.** TRADE NOW requires at least 3 s fill time plus your order time (default 12 s) before the close. A LOCKED call that arrives later than that is **TOO LATE**, never TRADE NOW.
-4. **Execution stress test.** TRADE NOW also requires the edge after fees to survive this case: BTC has already moved against the call by 1.645σ of your order time, and the whole remaining time is still random.
+4. **Execution stress test.** TRADE NOW also requires the cautious value after fees to stay ≥ 0 in this case: BTC has already moved against the call by 1.645σ of your order time, and the whole remaining time is still random.
+   * This is a conservative choice. It refused 3.3 % of TRADE NOW seconds on a synthetic book; its cost in real trades cannot be measured without historical books.
+   * `EXEC_STRESS_Z=0` turns it off.
 5. **One action line at the top of the page:** **TRADE NOW — BUY YES/NO**, **SIT OUT** or **TOO LATE**, followed by the reversal risk (%) and one reason.
 
    | Situation | What the line says |
    |---|---|
    | All conditions hold | TRADE NOW — BUY YES (UP) at ≤ 97¢: +1.2¢ per contract after fees (cautious) |
-   | LOCKED, but the market is already at the model's confidence | SIT OUT — LOCKED UP, but no edge at 99.8¢ (worth it only at ≤ 98.2¢) |
+   | LOCKED, but the market is already at the model's confidence | SIT OUT — LOCKED UP, but no edge at 99.8¢ (worth it only at ≤ 97.1¢); the price includes the fee at that price and the stress test |
    | LOCKED, but nobody is selling the called side | SIT OUT — LOCKED UP, but nobody is selling UP: the market treats it as decided |
    | LOCKED, but less than 15 s left | TOO LATE — LOCKED UP with 9 s left: an order needs 15 s |
    | Not LOCKED, data unreliable, or a reversal warning | SIT OUT with the reason |
@@ -43,14 +45,17 @@ The full investigation is in `../research28/late_lock/REPORT_LATE_LOCKED.md`.
    * A yellow **GET READY** note appears only when LOCKED is projected within about 20 s, no other gate blocks it, and there would still be time to trade.
    * A dashed amber banner says when the server restarted recently and what that limits.
    * If the backend goes stale or the window closes, the line drops to STALE or WINDOW CLOSED.
+   * TRADE NOW turns into TOO LATE at the last order moment by the browser's own clock, and into STALE after 1.5 s without a server reading.
    * The page layout is otherwise the 2.8 layout.
 6. **New endpoint `/exec`.** For each window it records when LOCKED, TRADE NOW and TOO LATE first appeared. `/health` adds `warmup`, `execution` and `dataQuality`.
 
 **Unchanged:** the probability model, the LOCKED threshold (0.5 %), and all 2.8 evidence and forward-test machinery.
 
 **Proposed but not adopted** (evidence in report section 5):
-* A 0.2 % threshold would have prevented 8 of 13 development and 2 of 3 holdout losing LOCKED calls, but cut TRADE NOW profit by about half. The shadow policy C1 keeps measuring it in the forward test.
+* A 0.2 % threshold would have prevented about two thirds of the losing LOCKED calls: development 13 → 5, holdout 3 → 1. It would also have cut TRADE NOW profit by about half. The shadow policy C1 keeps measuring it in the forward test.
 * A momentum veto would have prevented none of the 15 losses.
+
+**Not fixed: a model limit.** Oct 12 20:45 ET reversed after the model's LOCKED UP at about T−17. 2.8.1 avoids that call only while its basis model is cold, i.e. for about 3 h after a restart. With a known basis, it makes the same call as 2.8.
 
 ## Equivalence with 2.8
 
@@ -85,7 +90,7 @@ Same procedure you used for 2.8.
 
 5. **Check after deploy:**
    * `/health` shows `pin-radar-2.8.1` and `warmup.lockedAvailable`.
-   * `/selftest` shows 146/146.
+   * `/selftest` shows 148/148.
    * `/dq` shows how often, and why, data was unreliable.
    * The page shows the action line.
 6. **Rollback:** re-upload `2.8/dist/pinradar_server.js` and `2.8/dist/btc_pin_radar_28.html` (2.8), or `versions/2.3/` (2.3).

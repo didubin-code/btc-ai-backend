@@ -35,7 +35,7 @@
    * the decision was correct, a pricing limit: there was no edge at 99.8 ¢;
    * the "TOO LATE" text was a coding defect (wrong label);
    * there was no data latency (index 340 ms, book 526 ms) and no excess conservatism (the point estimate was also negative).
-5. **An earlier, safe and profitable entry** would have needed the UP ask at or below about 98.2 ¢ while the model was LOCKED (from T−96). That is the cautious 98.83 % win probability, minus the 0.1 ¢ fee, minus the 0.5 ¢ minimum edge. Whether that happened is in the server's `/tape` and `/predictions` for this ticker; it can't be determined from the screenshots. Before T−96 the model was below the LOCKED standard. Buying there would mean trading on a call the model does not rate LOCKED. The earlier research also contains an *exploratory* (not validated) fit suggesting that cheap market prices go with weaker calls. It is not evidence for or against an earlier entry.
+5. **An earlier, safe and profitable entry** would have needed the UP ask at or below about 98.1 ¢ while the model was LOCKED (from T−96), on the cautious edge alone. (This note first said 98.2 ¢; at 98.2 ¢ the fee is 0.2 ¢, not 0.1 ¢, and the edge falls to 0.43 ¢. The independent review caught it.) 2.8.1's stress test for a 12 s order time lowers that price further; by how much needs the server's geometry. The same situation replayed on a real window gave 97.1 ¢. That is the cautious 98.83 % win probability, minus the 0.1 ¢ fee, minus the 0.5 ¢ minimum edge. Whether that happened is in the server's `/tape` and `/predictions` for this ticker; it can't be determined from the screenshots. Before T−96 the model was below the LOCKED standard. Buying there would mean trading on a call the model does not rate LOCKED. The earlier research also contains an *exploratory* (not validated) fit suggesting that cheap market prices go with weaker calls. It is not evidence for or against an earlier entry.
 
 ## Fix (2.8.1, research branch, not deployed)
 
@@ -44,7 +44,7 @@
   * The trade box says "LOCKED — NO OFFERS".
   * **TOO LATE** is used only past the last moment an order can be placed: 15 s before the close with the default 12 s order time.
   * The decision is unchanged.
-* **No edge is explained, with the price that would qualify.** The action line says **SIT OUT — LOCKED UP, but no edge at 99.8 ¢ (worth it only at ≤ 98.2 ¢)**. The detail line gives the expected values.
+* **No edge is explained, with the price that would qualify.** The action line says **SIT OUT — LOCKED UP, but no edge at 99.8 ¢ (worth it only at ≤ X ¢)**, where X includes the fee at that price and the stress test. The detail line gives the expected values.
 * **Stale data downgrades the action banner too.** If the backend goes stale, or the window closes, the banner now says STALE — DO NOT TRADE or WINDOW CLOSED. This was an adversarial-review finding.
 * **No threshold or probability changes, so reversal risk is unchanged.** Tests:
   * `late281_test.js` S9: a replica of these two screens on a real UP window (99.8 ¢ → NO EDGE, never TRADE NOW; empty book → NO OFFERS; under 15 s → TOO LATE; with a 97 ¢ ask → TRADE NOW at 15 s or more);

@@ -1,5 +1,5 @@
 /* Lead-time structure on the 58 real windows (warm, validated configuration, 2.8 decisions):
-   first LOCKED tau vs official margin |A-K|, volatility, basis; share LOCKED in time for a 10 s order;
+   first LOCKED tau vs official margin |A-K|, volatility, basis; share LOCKED in time for the default 12 s order time (15 s buffer);
    accuracy of the "if BTC holds, LOCKED in ~X s" projection used by 2.8.1's GET READY note.
    usage: node lead_analysis.js <pinradar_server.js> <out.json>                                               */
 'use strict';
@@ -24,9 +24,9 @@ const lt = rows.map(r => r.lockTau).sort((a, b) => a - b), q = p => lt[Math.min(
 const out = {
   windows: W.length, locked: rows.length, wrong: rows.filter(r => !r.correct).length,
   leadToClose: { mean: +(lt.reduce((a, b) => a + b, 0) / lt.length).toFixed(1), p10: q(0.1), median: q(0.5), p90: q(0.9) },
-  inTimeFor10sOrder: rows.filter(r => r.lockTau >= 13).length, tooLateFor10sOrder: rows.filter(r => r.lockTau < 13).length,
+  inTimeFor12sOrder: rows.filter(r => r.lockTau >= 15).length, tooLateFor12sOrder: rows.filter(r => r.lockTau < 15).length,
   spearman_lockTau_vs: { officialMargin: spearman(rows.map(r => r.lockTau), rows.map(r => r.margin)), sigmaAtT300: spearman(rows.map(r => r.lockTau), rows.map(r => r.sigma)), absBasis: spearman(rows.map(r => r.lockTau), rows.map(r => r.basis)) },
-  byMargin: [[0, 20], [20, 50], [50, 100], [100, 1e9]].map(([a, b]) => { const s = rows.filter(r => r.margin >= a && r.margin < b).map(r => r.lockTau).sort((x, y) => x - y); return { margin: `$${a}-${b > 1e8 ? '' : b}`, n: s.length, medianLockTau: s.length ? s[Math.floor(s.length / 2)] : null, lockedAfterT13: s.filter(x => x < 13).length }; }),
+  byMargin: [[0, 20], [20, 50], [50, 100], [100, 1e9]].map(([a, b]) => { const s = rows.filter(r => r.margin >= a && r.margin < b).map(r => r.lockTau).sort((x, y) => x - y); return { margin: `$${a}-${b > 1e8 ? '' : b}`, n: s.length, medianLockTau: s.length ? s[Math.floor(s.length / 2)] : null, lockedAfterT15: s.filter(x => x < 15).length }; }),
   neverLocked: W.length - rows.length,
   projection: { firstSaidWithin20s: proj.said, lockedWithinProjectedTime: proj.cameStrict, lockedWithinProjectedTimePlus10s: proj.cameWithin, neverLocked: proj.never, medianWarningSecondsBeforeLocked: proj.gainedS.length ? proj.gainedS.sort((a, b) => a - b)[Math.floor(proj.gainedS.length / 2)] : null },
   rows

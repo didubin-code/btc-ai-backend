@@ -16,10 +16,10 @@ function mkGeo(pUp, extra = {}) {
     sigmaBps: 0.42, sigmaRawBps: 0.41, sigmaWarm: true, sigmaParts: [], sigmaPathUsd: 6.1, basisSdUsd: 4.8, basisMeanUsd: 0.9,
     cushionSigma: 22.2, requiredMoveUsd: 346.6, inputAgeMs: 120, volInflation: 1.001, provenUp: false, regime: { kind: 'sig', bucket: 3 }, ...extra };
 }
-function signal({ pUp, tau = 30, book, execSec = 12, warmup = null, ticker = 'KXBTC15M-TEST' }) {
+function signal({ pUp, tau = 30, book, execSec = 12, warmup = null, ticker = 'KXBTC15M-TEST', geoExtra = {} }) {
   S.KAL.ob = book ? { ticker, yes: book.yes, no: book.no } : null; S.KAL.obTs = Date.now() - (book && book.ageMs || 100);
   Object.assign(S.LOCK25, { ticker, hist: [], lockedSide: null, lockedAtTau: null, revNoted: false });
-  const now = Date.now(), closeMs = now + tau * 1000, geo = mkGeo(pUp, { tau });
+  const now = Date.now(), closeMs = now + tau * 1000, geo = mkGeo(pUp, { tau, ...geoExtra });
   const panel = S.settlePanel27({ now, closeMs, strike: 83600.72, geo, tau });
   const gates = { hard: [], soft: [], budgetMs: 1000 }; S.brtiGate27(gates, panel, geo);
   const sig = S.enrich28(S.brtiAfterClassify27(S.classify25({ now, tau, ticker, closeMs, strike: 83600.72, geo, gates, kal: { ok: true, ticker }, contracts: 10, mutate: false, execSec }), panel, ticker),
@@ -78,10 +78,21 @@ const bookDown = (askNo, size = 500, ageMs = 100) => ({ yes: [[100 - askNo, size
   ok('a 2.8 backend (no exec field) -> NO ACTION DATA, not TRADE NOW', txt('act281S') === 'NO ACTION DATA', txt('act281S'));
   /* the Oct 15 12:00 ET screens: LOCKED UP at 99.8c (no edge), then no UP offers */
   const bookUp = (askYes, size = 500) => ({ yes: [[0.3, 900]], no: askYes == null ? [] : [[Math.round((100 - askYes) * 100) / 100, size]], ageMs: 520 });
-  await show(response(signal({ pUp: 0.9954, tau: 70, book: bookUp(99.8) })));
+  await show(response(signal({ pUp: 0.9954, tau: 70, book: bookUp(99.8), geoExtra: { gapUsd: 81.44, index: 82391.47, sigmaBps: 0.53, leader: 'UP' } })));   // the screen's geometry (the stress test reads it)
   ok('Oct 15 replica, 99.8c: SIT OUT — LOCKED UP but no edge, with the price that would qualify', txt('act281S') === 'SIT OUT' && /LOCKED UP, but no edge at 99.8¢/.test(txt('act281W')) && /worth it only at ≤/.test(txt('act281W')), [txt('act281S'), txt('act281W')]);
   await show(response(signal({ pUp: 0.9999, tau: 33, book: bookUp(null) })));
   ok('Oct 15 replica, no UP offers at T-33: SIT OUT — nobody is selling (not TOO LATE), trade box NO OFFERS', /nobody is selling UP/.test(txt('act281W')) && txt('act281S') === 'SIT OUT' && txt('tradeAct') === 'LOCKED — NO OFFERS', [txt('act281S'), txt('act281W'), txt('tradeAct')]);
+  /* review round 2: TRADE NOW never outlives the last order moment on the BROWSER's clock, nor a fresh reading at tau >= 120 s */
+  const rLate = response(signal({ pUp: 0.004, tau: 30, book: bookDown(96) })); rLate.market.closeMs = Date.now() + 14000; rLate.secondsLeft = 14;
+  await show(rLate);
+  ok('server said TRADE NOW at T-30, but the browser clock is at T-14 (< 15 s) -> TOO LATE, never TRADE NOW', txt('act281S') === 'TOO LATE' && !/TRADE NOW/.test(txt('act281S')) && $('act281').className.includes('late'), [txt('act281S'), txt('act281W'), $('act281').className]);
+  const rFar = response(signal({ pUp: 0.004, tau: 200, book: bookDown(96) }));
+  await show(rFar);
+  const farBefore = txt('act281S'), fetch0 = w.fetch;
+  w.fetch = async () => { throw new Error('network down'); };
+  await sleep(2300);
+  ok('TRADE NOW at T-200 then 2 s without a server reading -> STALE (no 6 s grace for TRADE NOW)', /TRADE NOW/.test(farBefore) && txt('act281S') === 'STALE — DO NOT TRADE', [farBefore, txt('act281S')]);
+  w.fetch = fetch0;
   /* review finding: the banner must be downgraded when the backend goes stale (the page may downgrade, never upgrade) */
   await show(response(signal({ pUp: 0.004, tau: 30, book: bookDown(96) })));
   const okBefore = txt('act281S');

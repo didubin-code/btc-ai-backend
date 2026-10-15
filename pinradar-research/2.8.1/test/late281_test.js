@@ -8,7 +8,8 @@
          2.8.1 call is a window the warm validated engine also gets wrong
      R2  restart subset property: every second 2.8.1 shows LOCKED after a restart, the warm validated engine shows
          LOCKED on the same side (counted over boots 600/420/330/300/180 s before the close, basis cold and warm)
-     S1  Oct 12 20:45 ET adverse reversal (real window): never LOCKED UP in 2.8.1 in any restart configuration
+     S1  Oct 12 20:45 ET adverse reversal (real window), input age ~0.7 s and 50 ms: with a cold basis 2.8.1 never LOCKED; with a known basis it
+         adds no LOCKED second to the warm engine's (which itself calls LOCKED UP at ~T-17 at 50 ms: reported, a model limit)
      S2  safely ahead: TRADE NOW only with >= LAST (15 s) left; TOO LATE TO TRADE after the last order moment
      S3  narrowly ahead (real path moved so the settlement lands $1 from the strike): REPORTED only (model limit, not a safety check)
      S4  final-second adverse jump: REVERSAL WARNING within 1 s, never TRADE NOW after the jump
@@ -153,20 +154,34 @@ const execOf = (S, snap) => ({ exec: snap.signal.exec ? snap.signal.exec.state :
   ok('R4 bracket robustness: no LOCKED second after a restart has a sigma_900 inside the bracket with flip > 0.5 %', checked > 200 && notRobust === 0, { checked, notRobust, maxWorstOverShownRatio: +maxRatio.toFixed(3), ex });
 }
 
-/* S1: Oct 12 20:45 ET (= 5:45 pm PT) adverse reversal */
+/* S1: Oct 12 20:45 ET (= 5:45 pm PT) adverse reversal (settled DOWN). Run at the harness's default input age (~0.7 s) AND at a
+   production-like 50 ms (review round 2: at 50 ms the warm engine with a KNOWN basis does call LOCKED UP at about T-17, in 2.8 and in
+   2.8.1 alike; only a cold basis model prevents it). Checked: with a cold basis 2.8.1 never LOCKED / TRADE NOW; with a known basis
+   2.8.1 is never LOCKED where the warm engine is not (a restart adds no wrong call). The warm engine's own call is REPORTED. */
 {
   const w = W.find(x => x.ticker === 'KXBTC15M-26OCT122045-45');
   const cfgs = [['warm basis known', w.C - 1300, w.mu], ['warm basis cold', w.C - 1300, null]];
   for (const B of [900, 600, 420, 330, 300, 180]) cfgs.push([`boot T-${B} basis cold`, w.C - B, null], [`boot T-${B} basis known`, w.C - B, w.mu]);
-  const got = {}; let bad = 0;
-  for (const [name, boot, mu] of cfgs) {
-    const r1 = L.runWindow(S1, w, boot, { basisMu: mu, book: bookFor(false), decide: execOf });
-    const r8 = L.runWindow(S28, w, boot, { basisMu: mu });
-    const l1 = r1.find(r => L.isLocked(r.state)), l8 = r8.find(r => L.isLocked(r.state));
-    if (l1 || r1.some(r => r.exec === 'TRADE NOW')) bad++;
-    got[name] = { '2.8.1': l1 ? `LOCKED ${l1.side} T-${l1.tau}` : 'never LOCKED', '2.8': l8 ? `LOCKED ${l8.side} T-${l8.tau}` : 'never LOCKED' };
+  const got = {}, warmCall = {}; let bad = 0;
+  for (const qa of [null, 50]) {
+    const tag = qa == null ? 'input age ~0.7 s' : 'input age 50 ms';
+    const g = got[tag] = {};
+    const warmRows = L.runWindow(S1, w, w.C - 1300, { basisMu: w.mu, book: bookFor(false), decide: execOf, decisionQuoteAgeMs: qa });
+    const warmLocked = new Map(warmRows.filter(r => L.isLocked(r.state)).map(r => [r.tau, r.side]));
+    const wl = warmRows.find(r => L.isLocked(r.state)), wt = warmRows.find(r => r.exec === 'TRADE NOW');
+    warmCall[tag] = { firstLocked: wl ? `LOCKED ${wl.side} T-${wl.tau}` : 'never LOCKED', firstTradeNow: wt ? `TRADE NOW ${wt.side} T-${wt.tau}` : 'never TRADE NOW', truth: 'DOWN' };
+    for (const [name, boot, mu] of cfgs) {
+      const r1 = L.runWindow(S1, w, boot, { basisMu: mu, book: bookFor(false), decide: execOf, decisionQuoteAgeMs: qa });
+      const r8 = L.runWindow(S28, w, boot, { basisMu: mu, decisionQuoteAgeMs: qa });
+      const l1 = r1.find(r => L.isLocked(r.state)), l8 = r8.find(r => L.isLocked(r.state));
+      const extra = r1.filter(r => L.isLocked(r.state) && warmLocked.get(r.tau) !== r.side).length;
+      const coldBad = mu == null && (l1 || r1.some(r => r.exec === 'TRADE NOW'));
+      if (coldBad || extra) bad++;
+      g[name] = { '2.8.1': l1 ? `LOCKED ${l1.side} T-${l1.tau}` : 'never LOCKED', '2.8': l8 ? `LOCKED ${l8.side} T-${l8.tau}` : 'never LOCKED', lockedNotInWarmEngine: extra };
+    }
   }
-  ok('S1 Oct 12 20:45 ET adverse reversal: 2.8.1 never LOCKED and never TRADE NOW (all restart / basis configurations)', bad === 0, got);
+  res.reported['S1 the warm engine with a KNOWN basis on Oct 12 (a model limit 2.8.1 does not change)'] = warmCall;
+  ok('S1 Oct 12 20:45 ET adverse reversal: with a cold basis 2.8.1 never LOCKED / TRADE NOW; with a known basis no LOCKED the warm engine does not show (both input ages)', bad === 0, got);
 }
 
 /* S2: safely ahead (official margin >= $50): TRADE NOW only with >= LAST (15 s) left, then TOO LATE TO TRADE */
