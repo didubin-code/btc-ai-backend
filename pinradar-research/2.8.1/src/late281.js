@@ -114,7 +114,17 @@ function exec281(sig, { tau, execSec, now }) {
   if (Number.isFinite(tau) && tau <= 0) { state = 'FINAL'; why = (des && des.label) || 'window closed: awaiting settlement'; }
   else if (st === 'LOCKED' || st === 'PROVEN LOCKED') {
     if (a === 'TRADE NOW') { state = 'TRADE NOW'; why = tr.why; }
+    else if (/TOO LATE/.test(a) && tr.noOffers && !(left != null && left < 0)) { state = 'PREDICTED LOCKED'; why = 'NO OFFERS — ' + tr.why + '; nothing to buy (not a timing problem)'; }
     else if (/TOO LATE/.test(a)) { state = 'TOO LATE TO TRADE'; why = tr.why; }
+    else if (a === 'LOCKED — DO NOT TRADE' && tr.askCents != null && sig.pWin != null && !/survive/.test(tr.why || '')) {
+      /* no edge: say plainly that the market is already at least as sure as the model, and at what price the trade would qualify */
+      const pW = 100 * sig.pWin, pC = 100 * (1 - (sig.pFlipCons != null ? sig.pFlipCons : sig.pFlip)), fee = tr.feeCents || 0;
+      const maxAsk = Math.floor((pC - fee - MIN_EDGE_CENTS) * 10) / 10;
+      state = 'PREDICTED LOCKED';
+      why = `NO EDGE — Kalshi already prices ${sig.side} at ${tr.askCents}¢ (≈${tr.askCents}% sure) vs the model's ${pW.toFixed(2)}%: buying at ${tr.avgCents}¢ + ${fee}¢ fee has expected value ${tr.evCents}¢ (cautious ${tr.evConsCents}¢) per contract. `
+        + (maxAsk > 0 ? `It would qualify only at ≤ ${maxAsk}¢.` : 'No price qualifies.');
+      sig.exec_edge = { askCents: tr.askCents, avgCents: tr.avgCents, feeCents: fee, modelWinPct: round(pW, 3), cautiousWinPct: round(pC, 3), evCents: tr.evCents, evConsCents: tr.evConsCents, maxAskForTradeNow: maxAsk };
+    }
     else { state = 'PREDICTED LOCKED'; why = 'not tradable now — ' + (tr.why || a); }
   } else {
     state = 'SIT OUT';
@@ -124,7 +134,8 @@ function exec281(sig, { tau, execSec, now }) {
     if (st === 'HIGH CONFIDENCE' && pj && pj.lockInSec != null && pj.lockInSec <= PREPARE_SEC281 && left != null && left - pj.lockInSec >= 0)
       prepare = `GET READY: LOCKED ${pj.side} projected in ~${Math.round(pj.lockInSec)} s if BTC holds — open the Kalshi ${pj.side === 'UP' ? 'YES' : 'NO'} ticket now; submit only on TRADE NOW`;
   }
-  sig.exec = { state, why, prepare, execSec, lastOrderTau, secondsToLastOrder: left == null ? null : round(left, 1),
+  const edge = sig.exec_edge || null; delete sig.exec_edge;
+  sig.exec = { state, why, prepare, execSec, lastOrderTau, secondsToLastOrder: left == null ? null : round(left, 1), edge, noOffers: !!tr.noOffers,
     note: 'TRADE NOW needs LOCKED, a fresh book with enough offers, a positive conservative edge after fees that survives an adverse move during your order time, and at least ' + lastOrderTau + ' s left' };
   /* per-window record of when the call became tradable / too late (diagnostic, /exec) */
   if (sig.ticker && Number.isFinite(tau) && tau > 0) {

@@ -65,13 +65,26 @@ s = rep(s, "  const ct=parseInt($('contracts').value,10);if(Number.isFinite(ct)&
 s = rep(s, "  ['backendUrl','target','contracts'].forEach(id=>$(id).addEventListener('change',save));",
         "  ['backendUrl','target','contracts','execSec'].forEach(id=>$(id).addEventListener('change',save));")
 # render: action banner (server's exec state; a client-side data downgrade always wins)
+s = rep(s, "  else if(/TOO LATE|TOO THIN|DO NOT TRADE|BOOK STALE|NO BOOK/.test(act))tcls='tradeBox late';",
+        "  else if(/TOO LATE|TOO THIN|DO NOT TRADE|BOOK STALE|NO BOOK/.test(act))tcls='tradeBox late';\n"
+        "  if(!downgraded&&tr.noOffers&&/TOO LATE/.test(act)){act='LOCKED — NO OFFERS';tcls='tradeBox late';}   // v2.8.1: an empty book is not a timing problem")
 s = rep(s, "  $('tradeBox').className=tcls;$('tradeAct').textContent=act;$('tradeWhy').textContent=why;",
         "  $('tradeBox').className=tcls;$('tradeAct').textContent=act;$('tradeWhy').textContent=why;\n"
         "  render281(sg,downgraded);")
+# a stale or dead backend, and the close, downgrade the action banner too (the page may downgrade a call, never upgrade it)
+s = rep(s, "function markCallStale(age){\n  $('call').className='call stale';",
+        "function markCallStale(age){\n  act281Down('STALE — DO NOT TRADE','last server reading is '+(age/1000).toFixed(1)+' s old; the action shown may no longer hold');\n  $('call').className='call stale';")
+s = rep(s, "  $('bigTau').style.color=t<=10?'var(--red)':t<=60?'var(--amber)':'var(--text)';",
+        "  $('bigTau').style.color=t<=10?'var(--red)':t<=60?'var(--amber)':'var(--text)';\n"
+        "  if(t<=0){const b=$('act281');if(b&&/go|pred|late/.test(b.className))act281Down('WINDOW CLOSED — FINAL / SETTLEMENT','the window has closed: nothing here is an opportunity',true);}")
 s = rep(s, "function renderCall(d){",
         """/* v2.8.1: the one action to take now. TRADE NOW only when the server says so; a LOCKED call that cannot be traded
    is PREDICTED LOCKED (with why); past the last moment an order can be placed it is TOO LATE TO TRADE; after the
    close it is FINAL (never an opportunity). */
+function act281Down(title,why,fin){
+  const b=$('act281');if(!b)return;
+  b.className='act281 '+(fin?'fin':'bad');$('act281S').textContent=title;$('act281W').textContent=why;$('act281C').textContent='';$('act281P').textContent='';
+}
 function render281(sg,downgraded){
   const ex=sg&&sg.exec, wu=sg&&sg.warmup, box=$('act281');
   const wb=$('warm281');

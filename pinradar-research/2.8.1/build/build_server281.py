@@ -60,6 +60,10 @@ s = rep(s, """    else if (!(tr.evConsCents >= cfg.minEdgeCents)) { tr.action = 
       tr.action = 'LOCKED — DO NOT TRADE'; tr.why = `the edge does not survive a ${EXEC_STRESS_Z}σ BTC move against ${out.side} during your ${cfg.execSec || 0} s order time (stress value ${tr.evStressCents}¢)`; }
     else { tr.action = 'TRADE NOW';""")
 
+# no offers on the called side is a MARKET state (nobody sells below 100c), not a timing state: keep 2.8's action string
+# (compatibility) but flag it and say what it means; exec281 shows it as PREDICTED LOCKED (NO OFFERS), not TOO LATE
+s = rep(s, "    else if (!lv || !lv.length) { tr.action = 'LOCKED — TOO LATE'; tr.why = `no ${out.side} offers left on Kalshi`; }",
+        "    else if (!lv || !lv.length) { tr.action = 'LOCKED — TOO LATE'; tr.noOffers = true; tr.why = `no ${out.side} offers on Kalshi: nobody is selling ${out.side} below 100¢ (the market already treats it as decided)`; }   // v2.8.1")
 # classify25: order time and stress; the 2.8 warm-up gate stays for the first COLD_MIN_SEC (geo.sigmaWarm is true once the envelope covers it)
 s = rep(s, "function classify25({ now = Date.now(), tau, ticker, closeMs, strike, geo, gates, kal, contracts, mutate = false }) {\n  const ls = lock25For(ticker);\n  const cfg = m25Cfg(contracts);",
         "function classify25({ now = Date.now(), tau, ticker, closeMs, strike, geo, gates, kal, contracts, mutate = false, execSec }) {\n  const ls = lock25For(ticker);\n  const cfg = m25Cfg(contracts, execSec);")

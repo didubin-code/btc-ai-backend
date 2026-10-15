@@ -13,7 +13,9 @@
      S3  narrowly ahead (real path moved so the settlement lands $1 from the strike): no TRADE NOW
      S4  final-second adverse jump: REVERSAL WARNING within 1 s, never TRADE NOW after the jump
      S5  late data: stale index input -> DATA UNRELIABLE / SIT OUT; stale book -> PREDICTED LOCKED, never TRADE NOW
-     S6  signal after the book closes: LOCKED with no offers -> TOO LATE TO TRADE
+     S6  signal after the book empties: LOCKED with no offers -> PREDICTED LOCKED (NO OFFERS) while time remains, TOO LATE only past the last order moment
+     S9  Oct 15 12:00 ET replica: LOCKED UP with the leader at 99.8c -> PREDICTED LOCKED (NO EDGE, with the price that would qualify), never TRADE NOW;
+         the same window with a 97c leader ask -> TRADE NOW while >= 13 s remain
      S7  valid signal with insufficient time: 9 s left, 10 s order time -> TOO LATE TO TRADE; 3 s order time -> TRADE NOW
      S8  after the close: FINAL, never an opportunity
    usage: node test/late281_test.js <2.8 server> <2.8.1 server> [out.json]                                          */
@@ -39,7 +41,7 @@ const bookFor = (stale = true) => (T, tau, x, w) => {
 };
 const key = r => [r.state, r.side, r.pWin, r.pFlip, r.pFlipCons, r.action, r.ev].join('|');
 const keyP = r => [r.state, r.side, r.pWin, r.pFlip, r.pFlipCons].join('|');
-const execOf = (S, snap) => ({ exec: snap.signal.exec ? snap.signal.exec.state : null, why: snap.signal.trade ? snap.signal.trade.why : null });
+const execOf = (S, snap) => ({ exec: snap.signal.exec ? snap.signal.exec.state : null, why: snap.signal.trade ? snap.signal.trade.why : null, execWhy: snap.signal.exec ? snap.signal.exec.why : null, edge: snap.signal.exec ? snap.signal.exec.edge : null });
 
 /* P1 / P2: warm parity */
 {
@@ -184,7 +186,10 @@ const execOf = (S, snap) => ({ exec: snap.signal.exec ? snap.signal.exec.state :
   const w = W.find(x => x.ticker === 'KXBTC15M-26OCT131100-00');
   const empty = L.runWindow(S1, w, w.C - 1300, { basisMu: w.mu, book: (T, tau, x) => (tau <= 25 ? { yes: [], no: [[96, 300]], ageMs: 100 } : bookFor(false)(T, tau, x, w)), decide: execOf });   // DOWN call: no NO offers left
   const e25 = empty.filter(r => r.tau <= 24.8 && L.isLocked(r.state));
-  ok('S6 LOCKED after the book has no offers on the called side -> TOO LATE TO TRADE', e25.length > 5 && e25.every(r => r.exec === 'TOO LATE TO TRADE'), [...new Set(e25.map(r => r.exec + ': ' + r.why))].slice(0, 2));
+  const e25a = e25.filter(r => r.tau >= 13), e25b = e25.filter(r => r.tau < 13);
+  ok('S6 LOCKED with no offers on the called side -> PREDICTED LOCKED (NO OFFERS) while time remains; TOO LATE TO TRADE only past the last order moment',
+    e25a.length > 5 && e25a.every(r => r.exec === 'PREDICTED LOCKED' && /NO OFFERS/.test(r.execWhy || '')) && e25b.length > 3 && e25b.every(r => r.exec === 'TOO LATE TO TRADE'),
+    [...new Set(e25.map(r => r.exec + ': ' + (r.execWhy || '').slice(0, 90)))].slice(0, 3));
   const deep = () => { const tb = a => a.map(([p, s]) => [Math.round((100 - p) * 100) / 100, s]); return { yes: tb([[97, 500]]), no: tb([[4, 500]]), ageMs: 100 }; };   // NO asks 97c, YES asks 4c
   const r10 = L.runWindow(S1, w, w.C - 1300, { basisMu: w.mu, book: deep, execSec: 10, decide: execOf }).find(r => r.tau <= 9.3 && r.tau > 8.5);
   const r3 = L.runWindow(S1, w, w.C - 1300, { basisMu: w.mu, book: deep, execSec: 3, decide: execOf }).find(r => r.tau <= 9.3 && r.tau > 8.5);
@@ -192,6 +197,26 @@ const execOf = (S, snap) => ({ exec: snap.signal.exec ? snap.signal.exec.state :
   const a = S1.exec281({ state: 'AWAITING SETTLEMENT', side: 'DOWN', trade: { action: 'TRADE NOW' }, ticker: null, v28: { designation: { label: 'AWAITING SETTLEMENT' } } }, { tau: -1, execSec: 10, now: Date.now() });
   const b = S1.exec281({ state: 'LOCKED', side: 'DOWN', trade: { action: 'TRADE NOW' }, ticker: null }, { tau: 0, execSec: 10, now: Date.now() });
   ok('S8 after the close: FINAL (never TRADE NOW, never an opportunity)', a.exec.state === 'FINAL' && b.exec.state === 'FINAL', [a.exec, b.exec.state]);
+}
+
+
+/* S9: replica of the Oct 15 12:00 ET (16:00 UTC) window from the user's screenshots: LOCKED UP, the UP ask at 99.8c with depth,
+   then no UP offers at T-33. Real UP window, synthetic book with exactly that shape. */
+{
+  const w = W.filter(x => x.yes && Math.abs(x.A - x.K) >= 40 && Math.abs(x.A - x.K) <= 120)[0];
+  const tb = a => a.map(([p, s]) => [Math.round((100 - p) * 100) / 100, s]);
+  const shape = askUp => (T, tau) => (tau <= 34 ? { yes: tb([[0.3, 900]]), no: [], ageMs: 500 } : { yes: tb([[0.3, 900]]), no: tb([[askUp, 500]]), ageMs: 500 });   // ob.no = NO bids = 100 - YES asks
+  const r998 = L.runWindow(S1, w, w.C - 1300, { basisMu: w.mu, book: shape(99.8), decide: execOf });
+  const lk = r998.filter(r => L.isLocked(r.state) && r.side === 'UP');
+  const noEdge = lk.filter(r => r.tau > 34.5), empty = lk.filter(r => r.tau <= 33.8 && r.tau >= 13), late = lk.filter(r => r.tau < 13);
+  const r97 = L.runWindow(S1, w, w.C - 1300, { basisMu: w.mu, book: shape(97), decide: execOf });
+  const tn97 = r97.filter(r => r.exec === 'TRADE NOW');
+  ok('S9 Oct 15 replica: 99.8c ask -> PREDICTED LOCKED (NO EDGE, qualifying price shown), empty book -> NO OFFERS, < 13 s -> TOO LATE, never TRADE NOW; a 97c ask -> TRADE NOW at >= 13 s',
+    noEdge.length > 10 && noEdge.every(r => r.exec === 'PREDICTED LOCKED' && /NO EDGE/.test(r.execWhy) && r.edge && r.edge.maxAskForTradeNow < 99.8)
+      && empty.length > 5 && empty.every(r => r.exec === 'PREDICTED LOCKED' && /NO OFFERS/.test(r.execWhy)) && late.every(r => r.exec === 'TOO LATE TO TRADE')
+      && !r998.some(r => r.exec === 'TRADE NOW') && tn97.length > 0 && tn97.every(r => r.tau >= 13),
+    { window: w.ticker, firstLockedTau: lk.length ? lk[0].tau : null, noEdgeSeconds: noEdge.length, exampleWhy: noEdge.length ? noEdge[0].execWhy : null,
+      maxAskForTradeNow: noEdge.length ? noEdge[0].edge.maxAskForTradeNow : null, noOffersSeconds: empty.length, tooLateSeconds: late.length, tradeNowSecondsAt97c: tn97.length });
 }
 
 console.log(JSON.stringify({ fails }, null, 1));

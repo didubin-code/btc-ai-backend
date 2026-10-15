@@ -58,7 +58,7 @@ const bookDown = (askNo, size = 500, ageMs = 100) => ({ yes: [[100 - askNo, size
   ok('TRADE NOW banner: buy NO (DOWN), green, with the last order moment', /^TRADE NOW — BUY NO \(DOWN\)$/.test(txt('act281S')) && $('act281').className.includes('go') && /last moment to place an order: T−13 s/.test(txt('act281C')), [txt('act281S'), $('act281').className, txt('act281C')]);
   ok('the request carries the order time (default 10 s)', lastBody && JSON.parse(lastBody).execSec === 10, lastBody && JSON.parse(lastBody).execSec);
   await show(response(signal({ pUp: 0.004, book: bookDown(99.9) })));
-  ok('LOCKED with no edge -> PREDICTED LOCKED DOWN — NOT TRADABLE NOW, with the reason', /^PREDICTED LOCKED DOWN — NOT TRADABLE NOW$/.test(txt('act281S')) && /not tradable now/.test(txt('act281W')) && $('act281').className.includes('pred'), [txt('act281S'), txt('act281W')]);
+  ok('LOCKED with no edge -> PREDICTED LOCKED DOWN — NOT TRADABLE NOW, with the reason', /^PREDICTED LOCKED DOWN — NOT TRADABLE NOW$/.test(txt('act281S')) && /NO EDGE|not tradable now/.test(txt('act281W')) && $('act281').className.includes('pred'), [txt('act281S'), txt('act281W')]);
   await show(response(signal({ pUp: 0.004, tau: 9, book: bookDown(96) })));
   ok('LOCKED with 9 s left and a 10 s order time -> TOO LATE TO TRADE (amber), never TRADE NOW', txt('act281S') === 'TOO LATE TO TRADE' && $('act281').className.includes('late') && /past the last moment/.test(txt('act281C')), [txt('act281S'), txt('act281W'), txt('act281C')]);
   await show(response(signal({ pUp: 0.03, book: bookDown(96) })));
@@ -76,6 +76,18 @@ const bookDown = (askNo, size = 500, ageMs = 100) => ({ yes: [[100 - askNo, size
   const s0 = signal({ pUp: 0.004, book: bookDown(96) }); delete s0.exec;
   await show(response(s0));
   ok('a 2.8 backend (no exec field) -> NO ACTION DATA, not TRADE NOW', txt('act281S') === 'NO ACTION DATA', txt('act281S'));
+  /* the Oct 15 12:00 ET screens: LOCKED UP at 99.8c (no edge), then no UP offers */
+  const bookUp = (askYes, size = 500) => ({ yes: [[0.3, 900]], no: askYes == null ? [] : [[Math.round((100 - askYes) * 100) / 100, size]], ageMs: 520 });
+  await show(response(signal({ pUp: 0.9954, tau: 70, book: bookUp(99.8) })));
+  ok('Oct 15 replica, 99.8c: PREDICTED LOCKED UP — NOT TRADABLE NOW, NO EDGE with the price that would qualify', /^PREDICTED LOCKED UP — NOT TRADABLE NOW$/.test(txt('act281S')) && /NO EDGE/.test(txt('act281W')) && /qualify only at ≤/.test(txt('act281W')), [txt('act281S'), txt('act281W')]);
+  await show(response(signal({ pUp: 0.9999, tau: 33, book: bookUp(null) })));
+  ok('Oct 15 replica, no UP offers at T-33: NO OFFERS (not TOO LATE) in the banner and the trade box', /NO OFFERS/.test(txt('act281W')) && txt('act281S') !== 'TOO LATE TO TRADE' && txt('tradeAct') === 'LOCKED — NO OFFERS', [txt('act281S'), txt('act281W'), txt('tradeAct')]);
+  /* review finding: the banner must be downgraded when the backend goes stale (the page may downgrade, never upgrade) */
+  await show(response(signal({ pUp: 0.004, tau: 30, book: bookDown(96) })));
+  const okBefore = txt('act281S');
+  w.fetch = async () => { throw new Error('network down'); };
+  await sleep(3200);
+  ok('backend stale after a TRADE NOW -> the banner says STALE — DO NOT TRADE', /TRADE NOW/.test(okBefore) && txt('act281S') === 'STALE — DO NOT TRADE' && $('act281').className.includes('bad'), [okBefore, txt('act281S'), $('act281').className]);
   ok('no script errors', errs.length === 0, errs.join(' | '));
   const failed = results.filter(r => !r.pass);
   for (const f of failed) console.log('FAIL', f.name, '::', f.got);

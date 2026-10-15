@@ -1509,7 +1509,7 @@ function m25Decide({ tau, pUp, pUpCons, pUpStress = null, gates, book, cfg, hist
     /* v2.8.1: with an order time, time is checked first (past the last order moment nothing else matters); EXEC_SEC=0 keeps 2.8's order */
     if (ex > 0 && Number.isFinite(tau) && tau < cfg.minExecTau) { tr.action = 'LOCKED — TOO LATE'; tr.why = `${Math.max(0, tau).toFixed(1)} s left: an order needs ~${ex} s to place + ${MIN_EXEC_TAU} s to fill (last moment was T−${cfg.minExecTau} s)`; }
     else if (!bookOk) { tr.action = book && book.ok ? 'LOCKED — BOOK STALE' : 'LOCKED — NO BOOK'; tr.why = book && book.ok ? `order book ${book.ageMs} ms old: waiting for a fresh one` : 'no Kalshi order book for this market'; }
-    else if (!lv || !lv.length) { tr.action = 'LOCKED — TOO LATE'; tr.why = `no ${out.side} offers left on Kalshi`; }
+    else if (!lv || !lv.length) { tr.action = 'LOCKED — TOO LATE'; tr.noOffers = true; tr.why = `no ${out.side} offers on Kalshi: nobody is selling ${out.side} below 100¢ (the market already treats it as decided)`; }   // v2.8.1
     else if (Number.isFinite(tau) && tau < cfg.minExecTau) { tr.action = 'LOCKED — TOO LATE'; tr.why = `${Math.max(0, tau).toFixed(1)} s left: not enough time to fill`; }
     else if (tr.depth < cfg.contracts) { tr.action = 'LOCKED — TOO THIN'; tr.why = `only ${Math.floor(tr.depth)} contracts offered`; }
     else if (!(tr.evConsCents >= cfg.minEdgeCents)) { tr.action = 'LOCKED — DO NOT TRADE'; tr.why = `price ${tr.avgCents}¢ + fee ${tr.feeCents}¢ leaves ${tr.evConsCents}¢ conservative edge (< ${cfg.minEdgeCents}¢)`; }
@@ -4226,7 +4226,17 @@ function exec281(sig, { tau, execSec, now }) {
   if (Number.isFinite(tau) && tau <= 0) { state = 'FINAL'; why = (des && des.label) || 'window closed: awaiting settlement'; }
   else if (st === 'LOCKED' || st === 'PROVEN LOCKED') {
     if (a === 'TRADE NOW') { state = 'TRADE NOW'; why = tr.why; }
+    else if (/TOO LATE/.test(a) && tr.noOffers && !(left != null && left < 0)) { state = 'PREDICTED LOCKED'; why = 'NO OFFERS — ' + tr.why + '; nothing to buy (not a timing problem)'; }
     else if (/TOO LATE/.test(a)) { state = 'TOO LATE TO TRADE'; why = tr.why; }
+    else if (a === 'LOCKED — DO NOT TRADE' && tr.askCents != null && sig.pWin != null && !/survive/.test(tr.why || '')) {
+      /* no edge: say plainly that the market is already at least as sure as the model, and at what price the trade would qualify */
+      const pW = 100 * sig.pWin, pC = 100 * (1 - (sig.pFlipCons != null ? sig.pFlipCons : sig.pFlip)), fee = tr.feeCents || 0;
+      const maxAsk = Math.floor((pC - fee - MIN_EDGE_CENTS) * 10) / 10;
+      state = 'PREDICTED LOCKED';
+      why = `NO EDGE — Kalshi already prices ${sig.side} at ${tr.askCents}¢ (≈${tr.askCents}% sure) vs the model's ${pW.toFixed(2)}%: buying at ${tr.avgCents}¢ + ${fee}¢ fee has expected value ${tr.evCents}¢ (cautious ${tr.evConsCents}¢) per contract. `
+        + (maxAsk > 0 ? `It would qualify only at ≤ ${maxAsk}¢.` : 'No price qualifies.');
+      sig.exec_edge = { askCents: tr.askCents, avgCents: tr.avgCents, feeCents: fee, modelWinPct: round(pW, 3), cautiousWinPct: round(pC, 3), evCents: tr.evCents, evConsCents: tr.evConsCents, maxAskForTradeNow: maxAsk };
+    }
     else { state = 'PREDICTED LOCKED'; why = 'not tradable now — ' + (tr.why || a); }
   } else {
     state = 'SIT OUT';
@@ -4236,7 +4246,8 @@ function exec281(sig, { tau, execSec, now }) {
     if (st === 'HIGH CONFIDENCE' && pj && pj.lockInSec != null && pj.lockInSec <= PREPARE_SEC281 && left != null && left - pj.lockInSec >= 0)
       prepare = `GET READY: LOCKED ${pj.side} projected in ~${Math.round(pj.lockInSec)} s if BTC holds — open the Kalshi ${pj.side === 'UP' ? 'YES' : 'NO'} ticket now; submit only on TRADE NOW`;
   }
-  sig.exec = { state, why, prepare, execSec, lastOrderTau, secondsToLastOrder: left == null ? null : round(left, 1),
+  const edge = sig.exec_edge || null; delete sig.exec_edge;
+  sig.exec = { state, why, prepare, execSec, lastOrderTau, secondsToLastOrder: left == null ? null : round(left, 1), edge, noOffers: !!tr.noOffers,
     note: 'TRADE NOW needs LOCKED, a fresh book with enough offers, a positive conservative edge after fees that survives an adverse move during your order time, and at least ' + lastOrderTau + ' s left' };
   /* per-window record of when the call became tradable / too late (diagnostic, /exec) */
   if (sig.ticker && Number.isFinite(tau) && tau > 0) {
