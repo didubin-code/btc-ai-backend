@@ -70,7 +70,7 @@ def main():
     a = ap.parse_args()
     D = a.data
     res = {}
-    for run in ('r281_usdc', 'r28_usdc', 'r281_usdt', 'cand_usdc', 'cand_usdt'):
+    for run in ('r281_usdc', 'r28_usdc', 'r281_usdt', 'cand_usdc', 'cand_usdt', 'thr02_usdc'):
         fn = os.path.join(D, 'replay', run + '.ndjson')
         if not os.path.exists(fn):
             continue

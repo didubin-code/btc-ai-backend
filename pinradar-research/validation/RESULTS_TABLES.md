@@ -56,6 +56,16 @@ U = U1 + U2 is decisive (never used for fitting). "Seen" = Jul 22 – Oct 13 (S1
 | seen (Jul 22 - Oct 13) | 7956 | 84.7 % | 29 / 6736 | 0.430 % (0.288 %–0.618 %) | 0 / 4282 (0.070) | 2 / 6083 (0.103) | 4 / 6470 (0.141) | 3 / 6564 (0.118) | 2 / 6619 (0.095) | 4 / 6632 (0.138) |
 | all | 25982 | 87.2 % | 52 / 22646 | 0.230 % (0.172 %–0.301 %) | 4 / 14881 (0.061) | 5 / 20554 (0.051) | 7 / 21718 (0.060) | 7 / 22009 (0.060) | 5 / 22177 (0.047) | 7 / 22255 (0.059) |
 
+### candidate LOCK_MAX_FLIP=0.002 (0.2 % threshold, designed on seen data in earlier work), BTCUSDC feed
+
+| Split | Windows | LOCKED at some point | First-LOCKED wrong | Rate (95 % CI) | T−60 | T−30 | T−20 | T−15 | T−10 | T−5 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| U (U1+U2) | 18026 | 92.6 % | 15 / 16700 | 0.090 % (0.050 %–0.148 %) | 1 / 8776 (0.054) | 1 / 14219 (0.033) | 1 / 15601 (0.030) | 1 / 16077 (0.029) | 2 / 16381 (0.038) | 7 / 16506 (0.080) |
+| U2 | 17841 | 92.7 % | 15 / 16530 | 0.091 % (0.051 %–0.150 %) | 1 / 8691 (0.055) | 1 / 14075 (0.034) | 1 / 15439 (0.031) | 1 / 15912 (0.030) | 2 / 16211 (0.039) | 7 / 16336 (0.081) |
+| U1 | 185 | 91.9 % | 0 / 170 | 0.000 % (0.000 %–2.147 %) | 0 / 85 (3.463) | 0 / 144 (2.059) | 0 / 162 (1.832) | 0 / 165 (1.799) | 0 / 170 (1.747) | 0 / 170 (1.747) |
+| seen (Jul 22 - Oct 13) | 7956 | 90.6 % | 7 / 7205 | 0.097 % (0.039 %–0.200 %) | 0 / 3442 (0.087) | 1 / 5927 (0.080) | 0 / 6617 (0.045) | 0 / 6875 (0.044) | 1 / 7050 (0.067) | 2 / 7131 (0.088) |
+| all | 25982 | 92.0 % | 22 / 23905 | 0.092 % (0.058 %–0.139 %) | 1 / 12218 (0.039) | 2 / 20146 (0.031) | 1 / 22218 (0.021) | 1 / 22952 (0.021) | 3 / 23431 (0.033) | 9 / 23637 (0.066) |
+
 ### Pre-registered verdict rules for $50,000 at 99.9 ¢ (primary engine, U)
 
 | Rule | Needed | Observed | Result |
@@ -66,7 +76,45 @@ U = U1 + U2 is decisive (never used for fitting). "Seen" = Jul 22 – Oct 13 (S1
 | NO-a: E20 two-sided CI wholly above break-even | — | no | not triggered |
 | NO-b: 50,046 contracts in < 10 % of E20 entries | — | 0.0063 % | triggers NO |
 
-## Trading at realistic sizes, unseen period U2 (Jan 13 – Jul 21): DECISIVE
+### Pre-registered verdict rules at other sizes and prices (U2 E20 entries with a tape)
+
+| Price | Contracts | Break-even | Entries with that volume in 12 s | YES-1 | YES-2 | NO-b | Verdict |
+|---|---|---|---|---|---|---|---|
+| 99.9 ¢ | 10 | 0.093 % | 16.618 % | True | False | False | NOT YET VALIDATED |
+| 99.9 ¢ | 100 | 0.093 % | 14.830 % | True | False | False | NOT YET VALIDATED |
+| 99.9 ¢ | 1000 | 0.093 % | 8.845 % | True | False | True | NO |
+| 99.9 ¢ | 10000 | 0.093 % | 1.122 % | True | False | True | NO |
+| 99.9 ¢ | 50046 | 0.093 % | 0.006 % | True | False | True | NO |
+| 99.8 ¢ | 10 | 0.186 % | 9.048 % | True | False | True | NO |
+| 99.8 ¢ | 100 | 0.186 % | 7.868 % | True | False | True | NO |
+| 99.8 ¢ | 1000 | 0.186 % | 3.937 % | True | False | True | NO |
+| 99.8 ¢ | 10000 | 0.186 % | 0.355 % | True | False | True | NO |
+| 99.8 ¢ | 50046 | 0.186 % | 0.000 % | True | False | True | NO |
+| 99.0 ¢ | 10 | 0.930 % | 3.411 % | True | False | True | NO |
+| 99.0 ¢ | 100 | 0.930 % | 2.853 % | True | False | True | NO |
+| 99.0 ¢ | 1000 | 0.930 % | 1.236 % | True | False | True | NO |
+| 99.0 ¢ | 10000 | 0.930 % | 0.120 % | True | False | True | NO |
+| 99.0 ¢ | 50046 | 0.930 % | 0.000 % | True | False | True | NO |
+
+### Wrong first-LOCKED calls by what the replay feed showed
+
+| Split | Wrong | Feed also ended on the other side (real reversal) | Basis-decided | Real reversals passing buffer + guard with the market ≥ 90 ¢ |
+|---|---|---|---|---|
+| U | 28 | 19 (DOWN 16, UP 3) | 9 | 13 (0.077 % of calls) |
+| all | 47 | 34 (DOWN 27, UP 7) | 13 | 14 (0.058 % of calls) |
+
+### Predictors at the first LOCKED second (U)
+
+* Required move ($): [0, 20) 3/680; [20, 50) 8/2804; [50, 100) 8/5754; [100, 200) 5/4860; [200, 1e+09) 4/2675
+* Prior adverse excursion, 60 s (σ): [0, 0.5) 21/13065; [0.5, 1) 6/2581; [1, 1.5) 1/880; [1.5, 2) 0/210; [2, 3) 0/36; [3, 1e+09) 0/1
+* Volatility change (last 60 s / previous 240 s): [0, 0.5) 8/3423; [0.5, 0.8) 6/5282; [0.8, 1.25) 5/5408; [1.25, 2) 4/2030; [2, 1e+09) 5/630
+* Engine volatility bucket: [0, 1) 3/543; [1, 2) 1/1081; [2, 3) 1/1967; [3, 4) 5/2570; [4, 5) 7/3794; [5, 6) 6/3351; [6, 7) 5/3467
+* Volatility-jump rule (ratio ≥ 2) out of sample, seen: flagged 0/463, rest 19/6766, Fisher p = 0.62994
+* Volatility-jump rule (ratio ≥ 2) out of sample, proxy: flagged 7/3295, rest 181/71516, Fisher p = 0.85789
+
+Day-block bootstrap (U): first LOCKED 0.107–0.2409 %; T−20 upper 0.0311 %.
+
+## Trading at realistic sizes, unseen period U2 (Jan 13 – Jul 21): unseen data, EXPLORATORY strategy definitions (not pre-registered), optimistic fill model
 
 Fill rule: an order of C contracts fills only if other takers bought ≥ C contracts of that side at ≤ 99.9 ¢ in the 12 s after the entry (market baseline: strictly after the trigger print), plus 0 s latency; price = their VWAP (or the worst of them), plus Kalshi's taker fee. 95 % CI: day-level block bootstrap. Markets in period 17841, with a Kalshi tape 17841.
 
@@ -131,6 +179,8 @@ Paired difference (same days resampled), ¢ per contract:
 | 0 s | +0.410 (10586 trades) | +1.970 (392 trades) | +0.292 (2305 trades) | +0.047 (16025 trades) | -0.000 (10158 trades) |
 | 2 s | +0.371 (10113 trades) | +2.054 (310 trades) | +0.274 (2106 trades) | +0.025 (15676 trades) | -0.001 (10018 trades) |
 | 5 s | +0.283 (9426 trades) | +1.234 (246 trades) | +0.250 (1773 trades) | +0.019 (14906 trades) | -0.001 (9742 trades) |
+| 15 s buffer, 0 s | +0.413 (10399 trades) | +2.118 (375 trades) | +0.292 (2305 trades) | +0.047 (16025 trades) | -0.000 (10158 trades) |
+| 15 s buffer, 12 s | +0.236 (7684 trades) | +0.811 (194 trades) | +0.146 (850 trades) | -0.028 (13294 trades) | +0.020 (8831 trades) |
 
 ### By month, C = 100, VWAP (all periods with a tape)
 
@@ -147,7 +197,7 @@ Paired difference (same days resampled), ¢ per contract:
 | 2026-09 | +0.057 ¢, 439 trades, 2 lost | +0.204 ¢, 82 trades, 0 lost | +0.026 ¢, 494 trades, 4 lost | +0.011 ¢, 489 trades, 2 lost |
 | 2026-10 | — | — | +12.288 ¢, 1 trades, 0 lost | +0.681 ¢, 1 trades, 0 lost |
 
-## Trading, seen period (Jul 22 – Oct 16): reported, not decisive, PARTIAL tape coverage
+## Trading, Jul 22 – Oct 16 (seen period plus U1 dates; U1 has no tapes): reported, not decisive, PARTIAL tape coverage
 
 Fill rule: an order of C contracts fills only if other takers bought ≥ C contracts of that side at ≤ 99.9 ¢ in the 12 s after the entry (market baseline: strictly after the trigger print), plus 0 s latency; price = their VWAP (or the worst of them), plus Kalshi's taker fee. 95 % CI: day-level block bootstrap. Markets in period 8153, with a Kalshi tape 3275. The tape download for this period was incomplete when this table was built.
 

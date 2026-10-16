@@ -35,7 +35,8 @@ def main():
     dv = load(os.path.join(D, 'decisive.json'))
     labels = {'r281_usdc': '2.8.1 (pre-registered build), BTCUSDC feed: PRIMARY', 'r28_usdc': '2.8 (deployed), BTCUSDC feed',
               'r281_usdt': '2.8.1, BTCUSDT feed (robustness)', 'cand_usdc': 'candidate ADAPTIVE_BASIS=1, BTCUSDC feed (exploratory: designed after seeing U2 calibration)',
-              'cand_usdt': 'candidate ADAPTIVE_BASIS=1, BTCUSDT feed (exploratory)'}
+              'cand_usdt': 'candidate ADAPTIVE_BASIS=1, BTCUSDT feed (exploratory)',
+              'thr02_usdc': 'candidate LOCK_MAX_FLIP=0.002 (0.2 % threshold, designed on seen data in earlier work), BTCUSDC feed'}
     if dv:
         w('\n## LOCKED reliability on real Kalshi contracts, by pre-registered split\n')
         w('U = U1 + U2 is decisive (never used for fitting). "Seen" = Jul 22 – Oct 13 (S1 + S2 + S0), used during development: reported, not decisive. '
