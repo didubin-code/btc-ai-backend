@@ -57,10 +57,11 @@ def main():
     p.add_argument('--to', required=True)
     p.add_argument('--out', default='data/sec')
     p.add_argument('--symbol', default='BTCUSDT')
+    p.add_argument('--subdir', default='proxy')
     a = p.parse_args()
-    od = os.path.join(a.out, 'proxy')
+    od = os.path.join(a.out, a.subdir)
     os.makedirs(od, exist_ok=True)
-    H.init(os.path.join(a.out, 'PROVENANCE_binance.ndjson'))
+    H.init(os.path.join(a.out, 'PROVENANCE_binance_%s.ndjson' % a.symbol))
     for d in day_range(a.frm, a.to):
         fn = os.path.join(od, d.isoformat() + '.f64')
         if os.path.exists(fn):

@@ -1,5 +1,6 @@
 """Long-horizon PROXY windows (clearly not Kalshi contracts): one window per UTC quarter hour over the 1 Hz proxy history.
-  strike   = the proxy price at the window's open second (C - 900)
+  strike   = round2(mean of the 60 proxy prints C-959 .. C-900), i.e. the 60 s average before the open (Kalshi's KXBTC15M rule
+             since Jan 2026: 'the simple average of the sixty seconds of BRTI before <open>')
   official = round2(mean of the 60 proxy prints C-59 .. C)       (all 60 present, else the window is skipped)
   result   = 'yes' iff official >= strike
 These test the engine's price-path model (volatility, jumps, settlement averaging) over years of BTC behaviour. They do NOT test
@@ -36,8 +37,9 @@ def main():
             t0 = int(datetime.datetime(d.year, d.month, d.day, tzinfo=datetime.timezone.utc).timestamp())
             for q in range(1, 97):                     # closes at 00:15 ... 24:00
                 C = t0 + q * 900
-                k_open = q * 900 - 900
-                strike = arr[k_open] if k_open < 86400 else math.nan
+                k_open = q * 900 - 900                     # second index of the open (C - 900) within this day
+                pre = [arr[k] if k >= 0 else (prev[86400 + k] if prev else math.nan) for k in range(k_open - 59, k_open + 1)]
+                strike = round(sum(pre) / 60 + 1e-9, 2) if not any(math.isnan(x) for x in pre) else math.nan
                 last = [arr[k] if k < 86400 else math.nan for k in range(q * 900 - 59, q * 900 + 1)]
                 if q == 96:                            # the close second 24:00:00 is the next day's second 0
                     nxt = load(a.sec, (d + datetime.timedelta(days=1)).isoformat())
@@ -47,9 +49,10 @@ def main():
                     continue
                 off = round(sum(last) / 60 + 1e-9, 2)
                 f.write(json.dumps({'ticker': 'PROXY15M-' + datetime.datetime.fromtimestamp(C, datetime.timezone.utc).strftime('%Y%m%dT%H%M'),
-                                    'openTs': C - 900, 'closeTs': C, 'strike': round(strike, 2), 'official': off,
-                                    'result': 'yes' if off >= round(strike, 2) else 'no', 'proxy': True}) + '\n')
+                                    'openTs': C - 900, 'closeTs': C, 'strike': strike, 'official': off,
+                                    'result': 'yes' if off >= strike else 'no', 'proxy': True}) + '\n')
                 n += 1
+            prev = arr
             d += datetime.timedelta(days=1)
     print(json.dumps({'windows': n, 'skipped': skipped}))
 

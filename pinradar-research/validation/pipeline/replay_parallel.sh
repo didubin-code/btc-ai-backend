@@ -1,9 +1,10 @@
 #!/bin/bash
 # Splits a long chronological replay into month chunks run in parallel (each chunk starts with its own 4 h warm-up, so the basis
 # model and the volatility ring are warm before its first scored window), then concatenates the records in time order.
-# usage: bash replay_parallel.sh <server.js> <secDir> <venues> <markets.ndjson> <fromYYYY-MM> <toYYYY-MM(excl)> <out.ndjson> [jobs]
+# usage: bash replay_parallel.sh <server.js> <secDir> <venues> <markets.ndjson> <fromYYYY-MM> <toYYYY-MM(excl)> <out.ndjson> [jobs] [extra replay_chrono args...]
+# Each chunk warms up for 24 h (WARM env to change) so the basis model is warm, as on a long-running server.
 set -euo pipefail
-SRV=$1; SEC=$2; VEN=$3; MK=$4; FROM=$5; TO=$6; OUT=$7; JOBS=${8:-$(nproc)}
+SRV=$1; SEC=$2; VEN=$3; MK=$4; FROM=$5; TO=$6; OUT=$7; JOBS=${8:-$(nproc)}; shift 8 || shift $#; EXTRA=("$@"); WARM=${WARM:-86400}
 HERE="$(cd "$(dirname "$0")/.." && pwd)"; TMP=$(mktemp -d)
 months=$(python3 -c "
 import datetime
@@ -13,7 +14,7 @@ while (y,m)<(ye,me):
 i=0
 while read -r F T; do
   i=$((i+1)); while [ "$(jobs -rp | wc -l)" -ge "$JOBS" ]; do sleep 2; done
-  node "$HERE/replay_chrono.js" --server "$SRV" --sec "$SEC" --venues "$VEN" --markets "$MK" --from "$F" --to "$T" \
+  node "$HERE/replay_chrono.js" --server "$SRV" --sec "$SEC" --venues "$VEN" --markets "$MK" --from "$F" --to "$T" --warm "$WARM" "${EXTRA[@]}" \
     --out "$TMP/$(printf %04d $i).ndjson" --trace "$TMP/$(printf %04d $i).trace" 2> "$TMP/$(printf %04d $i).log" &
 done <<< "$months"
 wait

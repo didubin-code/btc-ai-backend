@@ -13,7 +13,7 @@
    Inputs
      --server <pinradar_server.js>        the build under test (any 2.x build with the 2.5+ API)
      --sec <dir>                          1 Hz prices: <dir>/<venue>/<YYYY-MM-DD>.f64 (86,400 float64 LE, NaN = no price that second)
-     --venues proxy | cb,kr[,bs]          'proxy': <dir>/proxy/*.f64 drives all three venues (+0.4 / -0.4 / 0 $ offsets);
+     --venues proxy | cb,kr[,bs]          'proxy': <dir>/<proxy-dir, default proxy>/*.f64 drives all three venues (+0.4 / -0.4 / 0 $ offsets);
                                           otherwise each listed venue reads its own directory (missing venue = never fresh)
      --markets <markets.ndjson>           {ticker, openTs, closeTs, strike, official, result} (unix s; official = expiration_value)
      --from / --to <ISO>                  closes in [from, to) are scored; sampling starts --warm seconds before --from
@@ -40,7 +40,8 @@ function dayArr(venue, day) {
   cache.set(k, a); if (cache.size > 12) cache.delete(cache.keys().next().value); return a;
 }
 function px(venue, t) { const d = new Date(t * 1000).toISOString().slice(0, 10), a = dayArr(venue, d); if (!a) return NaN; const v = a[t - Date.parse(d + 'T00:00:00Z') / 1000]; return v > 0 ? v : NaN; }
-const VMAP = VEN[0] === 'proxy' ? [['coinbase', 'proxy', 0.4], ['kraken', 'proxy', -0.4], ['bitstamp', 'proxy', 0]]
+const PDIR = A['proxy-dir'] || 'proxy';                     // which single feed drives the three venues in proxy mode
+const VMAP = VEN[0] === 'proxy' ? [['coinbase', PDIR, 0.4], ['kraken', PDIR, -0.4], ['bitstamp', PDIR, 0]]
   : [['coinbase', 'cb', 0], ['kraken', 'kr', 0], ['bitstamp', 'bs', 0]].filter(x => VEN.includes(x[1]));
 const lastSeen = {};
 function setVenues(t, nowMs) {
@@ -70,7 +71,7 @@ function emit(m, rs) {
       sigmaRawBps: fl.sig, bucket: fl.bk, momentum: fl.mom, nLock: fl.nl, requiredMoveUsd: fl.req, basisMu: fl.mu } : null,
     reversalAfterLocked: rev ? { tau: rev.tau, st: rev.st, side: rev.side, pFlip: rev.pf } : null,
     lockedSeconds: rs.filter(r => isL(r.st)).length, wrongLockedSeconds: truth ? rs.filter(r => isL(r.st) && r.side !== truth).length : null,
-    fixed: Object.fromEntries(FIX.map(T => { const r = at(T); return [T, r ? { st: r.st, side: r.side, pFlip: r.pf, correct: isL(r.st) && truth ? r.side === truth : null } : null]; })),
+    fixed: Object.fromEntries(FIX.map(T => { const r = at(T); return [T, r ? { st: r.st, side: r.side, pFlip: r.pf, correct: isL(r.st) && truth ? r.side === truth : null, gate: r.hard || r.soft || null } : null]; })),
     basisN: S.BASIS ? S.BASIS.samples.length : null };
   out.write(JSON.stringify(rec) + '\n'); nOut++;
   if (trace) for (const r of rs) if (isL(r.st) || r.st === 'REVERSAL WARNING') trace.write(JSON.stringify({ tk: m.ticker, ts: r.ts, tau: r.tau, st: r.st, side: r.side, pf: r.pf, pfc: r.pfc, gap: r.gap }) + '\n');
@@ -107,7 +108,8 @@ try {
       side: null, mutate: true, contracts: 10, basisMu: null, execSec: A['exec-sec'] != null ? +A['exec-sec'] : undefined });
     const s = snap.signal, g = snap.geo || {}; nDec++;
     rows.push({ ts: NOW, tau: +tau.toFixed(2), st: s.state, side: s.side, pf: s.pFlip, pfc: s.pFlipCons, gap: g.gapUsd, cush: g.cushionSigma, sig: g.sigmaRawBps,
-      bk: g.regime ? g.regime.bucket : null, mom: g.momentum ? g.momentum.r : null, nl: g.nLock, req: g.requiredMoveUsd, mu: g.basisMeanUsd });
+      bk: g.regime ? g.regime.bucket : null, mom: g.momentum ? g.momentum.r : null, nl: g.nLock, req: g.requiredMoveUsd, mu: g.basisMeanUsd,
+      soft: ((s.gates || snap.gates || {}).soft || [])[0] || null, hard: ((s.gates || snap.gates || {}).hard || [])[0] || null });
   }
   if (cur && cur.closeTs >= t0 && cur.closeTs < t1) emit(cur, rows);
 } finally { Date.now = realNow; }

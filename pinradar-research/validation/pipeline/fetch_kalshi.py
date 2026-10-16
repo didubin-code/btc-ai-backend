@@ -102,7 +102,7 @@ def markets(a):
 
 def per_market(a, sub, fetch_one):
     os.makedirs(os.path.join(a.out, sub), exist_ok=True)
-    ms = [json.loads(l) for l in open(os.path.join(a.out, 'markets.ndjson'))]
+    ms = [json.loads(l) for l in open(os.path.join(a.out, a.markets))]
     if a.since:
         ms = [m for m in ms if m['closeTs'] >= ts(a.since)]
     done = 0
@@ -120,12 +120,23 @@ def per_market(a, sub, fetch_one):
     print(json.dumps({sub: done, 'markets': len(ms)}))
 
 
+HIST_CUT = None
+
+
 def trades(a):
+    global HIST_CUT
+    if HIST_CUT is None:                               # trades before this moment live in the historical store
+        HIST_CUT = ts(H.get(BASE + '/historical/cutoff').json().get('trades_created_ts'))
+
     def one(m):
-        out = []
-        for j in page_all(BASE + '/markets/trades', {'ticker': m['ticker'], 'limit': 1000, 'min_ts': m['closeTs'] - a.last, 'max_ts': m['closeTs'] + 5}, 'trades'):
-            out.extend(j.get('trades') or [])
-        return {'ticker': m['ticker'], 'closeTs': m['closeTs'], 'window': a.last, 'trades': out}
+        out, src = [], ('/historical/trades' if HIST_CUT and m['closeTs'] < HIST_CUT else '/markets/trades')
+        for path in (src, '/markets/trades' if src != '/markets/trades' else '/historical/trades'):
+            for j in page_all(BASE + path, {'ticker': m['ticker'], 'limit': 1000, 'min_ts': m['closeTs'] - a.last, 'max_ts': m['closeTs'] + 5}, 'trades'):
+                out.extend(j.get('trades') or [])
+            if out:
+                src = path
+                break
+        return {'ticker': m['ticker'], 'closeTs': m['closeTs'], 'window': a.last, 'source': src, 'trades': out}
     per_market(a, 'trades', one)
 
 
@@ -143,6 +154,7 @@ if __name__ == '__main__':
     p.add_argument('--out', default='data/kalshi')
     p.add_argument('--last', type=int, default=300)
     p.add_argument('--since', default=None)
+    p.add_argument('--markets', default='markets.ndjson')
     a = p.parse_args()
     H.init(os.path.join(a.out, 'PROVENANCE.ndjson'))
     {'probe': probe, 'markets': markets, 'trades': trades, 'candles': candles}[a.cmd](a)
