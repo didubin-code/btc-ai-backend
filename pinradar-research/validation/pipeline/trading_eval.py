@@ -153,6 +153,7 @@ def main():
     p.add_argument('--records', default=None, help='replay records (for pFlipCons at the first LOCKED: model:first+edge)')
     p.add_argument('--latency', type=float, default=0, help='seconds between the entry signal and the order reaching Kalshi (all strategies)')
     p.add_argument('--guard', type=float, default=90)
+    p.add_argument('--min-tau', type=float, default=0, help='model entries only: skip entries with fewer seconds left (2.8.1 TRADE NOW buffer: 15)')
     p.add_argument('--out', required=True)
     a = p.parse_args()
     pcons = {}
@@ -180,6 +181,8 @@ def main():
             continue
         trades = tr(r['ticker'])
         if trades is None:
+            continue
+        if r['tau'] < a.min_tau:
             continue
         t_in = r['closeTs'] - r['tau']
         lp = last_price(trades, t_in, r['side'])
@@ -218,7 +221,7 @@ def main():
                 if strat.get(mk) and strat.get(bk):
                     paired['%s - %s @C%d' % (mk, bk, C)] = boot_diff(pnl(strat[mk], C), pnl(strat[bk], C))
     res['_paired'] = paired
-    res['_params'] = {'orderSec': a.order_sec, 'limitCents': a.limit, 'latencySec': a.latency, 'guardCents': a.guard, 'from': a.frm, 'to': a.to,
+    res['_params'] = {'orderSec': a.order_sec, 'limitCents': a.limit, 'latencySec': a.latency, 'guardCents': a.guard, 'minTauModel': a.min_tau, 'from': a.frm, 'to': a.to,
                       'marketsInPeriod': len(truth), 'marketsWithTape': sum(1 for tk in truth if tk in tape), 'parityVsExecutionPy': parity}
     json.dump(res, open(a.out, 'w'), indent=1)
     for k, v in res.items():

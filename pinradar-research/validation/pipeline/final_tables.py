@@ -62,6 +62,29 @@ def main():
           'fail' if any(not f['guardBlocks'] for f in pr['rule3_E20_failures_on_U']) else 'pass'))
         w('| NO-a: E20 two-sided CI wholly above break-even | — | %s | %s |' % ('yes' if pr['NO_if_CI_wholly_above'] else 'no', 'triggers NO' if pr['NO_if_CI_wholly_above'] else 'not triggered'))
         w('| NO-b: 50,046 contracts in < 10 %% of E20 entries | — | %.4f %% | %s |' % (r2['sharePct'], 'triggers NO' if pr['NO_if_volume_below_10pct'] else 'not triggered'))
+    # 1b. supplementary analyses (supplement.py)
+    sp = load(os.path.join(D, 'supplement.json'))
+    if sp:
+        w('\n### Pre-registered verdict rules at other sizes and prices (U2 E20 entries with a tape)\n')
+        w('| Price | Contracts | Break-even | Entries with that volume in 12 s | YES-1 | YES-2 | NO-b | Verdict |')
+        w('|---|---|---|---|---|---|---|---|')
+        for r in sp['9_preregRulesBySizePrice']['rows']:
+            w('| %.1f ¢ | %d | %.3f %% | %.3f %% | %s | %s | %s | %s |' % (r['price'], r['contracts'], r['breakEvenPct'], r['volumeSharePct'], r['YES1'], r['YES2'], r['NOb'], r['verdict']))
+        c = sp['1_failureClasses']
+        w('\n### Wrong first-LOCKED calls by what the replay feed showed\n')
+        w('| Split | Wrong | Feed also ended on the other side (real reversal) | Basis-decided | Real reversals passing buffer + guard with the market ≥ 90 ¢ |')
+        w('|---|---|---|---|---|')
+        for k, v in c.items():
+            w('| %s | %d | %d (DOWN %s, UP %s) | %d | %d (%.3f %% of calls) |' % (k, v['wrong'], v['realReversal_feedThroughStrike'], v['real_bySide'].get('DOWN', 0), v['real_bySide'].get('UP', 0), v['basisDecided'], len(v['real_notBlocked_marketAgreeing']), v['realNotBlockedRatePct']))
+        w('\n### Predictors at the first LOCKED second (U)\n')
+        for name, key in (('Required move ($)', 'requiredMoveUsd'), ('Prior adverse excursion, 60 s (σ)', 'priorAdverseExcursion60s_sigma'), ('Volatility change (last 60 s / previous 240 s)', 'volChange_last60_vs_prev240'), ('Engine volatility bucket', 'engineVolBucket')):
+            w('* %s: ' % name + '; '.join('%s %d/%d' % (b_, x['k'], x['n']) for b_, x in sp['2_predictors_U'][key].items()))
+        for fn, lab in (('volchange_seen', 'seen'), ('volchange_proxy', 'proxy')):
+            v = load(os.path.join(D, fn + '.json'))
+            if v:
+                w('* Volatility-jump rule (ratio ≥ 2) out of sample, %s: flagged %d/%d, rest %d/%d, Fisher p = %s' % (lab, v['jump'][0], v['jump'][1], v['rest'][0], v['rest'][1], v['fisherP']))
+        bb = sp['3_dayBlockBootstrap_U']
+        w('\nDay-block bootstrap (U): first LOCKED %s %%; T−20 upper %s %%.' % ('–'.join(str(x) for x in bb['firstLocked_ci95_and_upper95'][:2]), bb['T20_ci95_and_upper95'][2]))
     # 2. trading (trading_eval.py, corrected baseline)
     def trading_table(t, label, note=''):
         w('\n## %s\n' % label)
@@ -86,8 +109,8 @@ def main():
                     w('| %s | %+.3f | %+.3f to %+.3f |' % (k, v['diff'], v['ci95BootDays'][0], v['ci95BootDays'][1]))
     t = load(os.path.join(D, 'trading2_U2_L0.json'))
     if t:
-        trading_table(t, 'Trading at realistic sizes, unseen period U2 (Jan 13 – Jul 21): DECISIVE')
-    lat = [(lt, load(os.path.join(D, "trading2_U2_L%d.json" % lt))) for lt in (0, 2, 5)]
+        trading_table(t, 'Trading at realistic sizes, unseen period U2 (Jan 13 – Jul 21): unseen data, EXPLORATORY strategy definitions (not pre-registered), optimistic fill model')
+    lat = [(lt, load(os.path.join(D, "trading2_U2_L%d.json" % lt))) for lt in (0, 2, 5)] + [('15 s buffer, 0', load(os.path.join(D, 'trading2_U2_L0_buf15.json'))), ('15 s buffer, 12', load(os.path.join(D, 'trading2_U2_L12_buf15.json')))]
     lat = [(lt, x) for lt, x in lat if x]
     if lat:
         w('\n### Entry latency sensitivity (U2, C = 100, VWAP)\n')
@@ -95,7 +118,7 @@ def main():
         w('|---|---|---|---|---|---|')
         for lt, x in lat:
             cell = lambda k: ('%+.3f (%d trades)' % (x[k]['C100_vwap']['meanCentsPerContract'], x[k]['C100_vwap']['trades'])) if x.get(k, {}).get('C100_vwap') else '—'
-            w('| %d s | %s | %s | %s | %s | %s |' % (lt, cell('model:first'), cell('model:first+edge'), cell('model:T20'), cell('market:99'), cell('market:99.5')))
+            w('| %s s | %s | %s | %s | %s | %s |' % (lt, cell('model:first'), cell('model:first+edge'), cell('model:T20'), cell('market:99'), cell('market:99.5')))
     t = load(os.path.join(D, 'trading2_full_L0.json'))
     if t:
         w('\n### By month, C = 100, VWAP (all periods with a tape)\n')
@@ -107,7 +130,7 @@ def main():
             w('| %s | ' % m + ' | '.join(('%+.3f ¢, %d trades, %d lost' % (lambda b: (b['meanCentsPerContract'], b['trades'], b['lost']))(t[k]['C100_vwap']['byMonth'][m])) if m in t[k]['C100_vwap']['byMonth'] else '—' for k in ks) + ' |')
     t = load(os.path.join(D, 'trading2_seen_L0.json'))
     if t:
-        trading_table(t, 'Trading, seen period (Jul 22 – Oct 16): reported, not decisive, PARTIAL tape coverage', ' The tape download for this period was incomplete when this table was built.')
+        trading_table(t, 'Trading, Jul 22 – Oct 16 (seen period plus U1 dates; U1 has no tapes): reported, not decisive, PARTIAL tape coverage', ' The tape download for this period was incomplete when this table was built.')
     for name, lab in (('trading2_cand_U2_L0', 'Trading, candidate ADAPTIVE_BASIS=1, U2 (exploratory)'),):
         t = load(os.path.join(D, name + '.json'))
         if t:
