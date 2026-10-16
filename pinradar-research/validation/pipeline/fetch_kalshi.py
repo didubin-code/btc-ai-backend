@@ -22,7 +22,7 @@ def ts(iso):
 
 def fnum(x):
     try:
-        return float(x)
+        return float(x.replace(',', '')) if isinstance(x, str) else float(x)   # Kalshi sometimes publishes '79,604.96'
     except (TypeError, ValueError):
         return None
 

@@ -7,7 +7,8 @@
 | Use | Verdict | Deciding evidence |
 |---|---|---|
 | **The intended trade: about $50,000 at about 99.9 ¢** | **NO** | See the four points below this table. |
-| Small sizes (10–1,000 contracts), first LOCKED, 90 ¢ guard, 15 s buffer | **NOT YET VALIDATED** | See below. |
+| Small sizes (10–100 contracts), first LOCKED, 90 ¢ guard, 15 s buffer | **NOT YET VALIDATED** | See below. |
+| 1,000 contracts and more | **NO** under the pre-registered rules | At T−20, 1,000 contracts were available in only 8.8 % of entries (the NO rule needs at least 10 %). |
 | As a forecast display (directional certainty) | usable, with documented limits; not a guarantee | See below. |
 
 **Why NO at $50,000.**
@@ -18,15 +19,15 @@
 
 **Why small sizes are NOT YET VALIDATED.**
 * **It looked positive on unseen data.** On 6 unseen months (Jan 13 – Jul 21) this rule beat a market-only rule by about +0.4 ¢ per contract under an optimistic fill model.
-* **It fell with the page's own timing.** With the page's own 12 s order time it fell to **+0.24 ¢** (CI +0.15 to +0.32): about $1,800 in 6 months at 100 contracts.
+* **It fell with the page's own timing.** With the page's own 12 s order time and the 15 s buffer, the rule itself made **+0.24 ¢** per contract (CI +0.15 to +0.32): about $1,800 in 6 months at 100 contracts. Its margin over the market-only ≥ 99.5 ¢ rule fell to +0.22 ¢ (CI +0.08 to +0.35).
 * **The edge has decayed.** It fell from +1.1–1.2 ¢ in Jan–Feb to +0.2–0.3 ¢ in Apr–Aug, with +0.06 ¢ in the September tapes so far. On Jul 22 – Oct 16 it is not significantly better than the market-only ≥ 99.5 ¢ rule.
 * **The rule was not pre-registered.** This strategy was defined after the pre-registration and is exploratory.
-* **What the pre-registered rules say.** Applied at these sizes, they give NOT YET VALIDATED at 10–100 contracts and NO at 1,000 or more.
+* **What the pre-registered rules say.** Applied at these sizes, they give NOT YET VALIDATED at 10–100 contracts (at 99.9 ¢) and NO at 1,000 or more.
 * Only a forward test with real small orders can decide.
 
 **What the forecast display does and does not deliver.**
 * **The design and the unseen record.** LOCKED is designed as "flip risk ≤ 0.5 %". On unseen data it was wrong 0.17 % of the time.
-* **On another feed, recent months broke the design.** On a BTCUSDT feed, the recent (seen) months were wrong 0.58 % of the time, above its own 0.5 % design.
+* **On another feed, recent months reached the design limit.** On a BTCUSDT feed, the recent (seen) months were wrong 0.58 % of the time (CI 0.42–0.78 %). That is at or above the 0.5 % design, though not significantly, and twice that feed's unseen rate (0.27 %, p = 0.0007).
 * **Failures are mostly real price reversals.** 19 of 28 unseen failures were the price itself moving back through the strike, and the market agreed with 13 of those calls.
 * **The forward record is too small.** The page's own record is 1 wrong in 84 LOCKED calls (1.2 %, CI 0.03–6.5 %). It cannot estimate a rate near 0.1 %, and it is not reassuring.
 
@@ -62,11 +63,11 @@ Generated tables: `RESULTS_TABLES.md` (`pipeline/final_tables.py`). Per-analysis
 | Split | Period (UTC closes) | Status |
 |---|---|---|
 | **U2** | 2026-01-13 → 07-21 | unseen, decisive: 17,841 windows, all with Kalshi tapes |
-| **U1** | 2026-10-14 → 10-16 00:00 | unseen, decisive: **185 of the 197 U1 contracts**. The 12 closing Oct 16 00:15–03:00, which include the Oct 15 20:30 ET live loss, are beyond the Binance archive and are not scored. No Kalshi tapes yet. |
+| **U1** | 2026-10-14 → 10-16 00:00 | unseen, decisive: **185 of the 197 U1 contracts**. The 12 closing Oct 16 00:15–03:00, which include the Oct 15 20:30 ET live loss, are beyond the Binance archive and are not scored. No Kalshi tapes for the 185 scored windows; only the unscored incident window has one. |
 | **Seen** | 2026-07-22 → 10-13 | used while building 2.6–2.8: reported, not decisive (7,956 windows) |
-| **P (proxy)** | 2023-10-01 → 2026-01-13 | Binance prices only; outcomes defined by the proxy itself; never pooled with contract results |
+| **P (proxy)** | 2023-10-01 → 2026-01-13 (pre-registered to 2026-07-21; shortened so it does not overlap the contracts; see Deviations) | Binance prices only; outcomes defined by the proxy itself; never pooled with contract results |
 
-U2 lies *before* the period the probability tables were fitted on. It is out-of-sample, but backward in time. The only forward holdout, U1, is far too small to bound a rate near 0.1 %: 0 of 170 wrong, upper bound 2.15 %.
+U2 lies *before* the period the probability tables were fitted on. It is out-of-sample, but backward in time. The only forward holdout, U1, is far too small to bound a rate near 0.1 %: 0 of 170 wrong, one-sided 95 % bound 1.75 % (two-sided CI 0–2.15 %).
 
 ---
 
@@ -89,9 +90,11 @@ U2 lies *before* the period the probability tables were fitted on. It is out-of-
 | LOCKED at T−10 | 4 / 16,479 | 0.024 % | ≤ 0.056 % | — | below |
 | LOCKED at T−5 | 8 / 16,536 | 0.048 % | ≤ 0.087 % | — | borderline |
 
-* "LOCKED at T−x" is the state at that second, including calls first made then. For example, 176 of the 15,936 at T−20 were first LOCKED at T−20, and one of the two T−20 failures was such a fresh call.
+* "LOCKED at T−x" is the state at that second, including calls first made just then.
+  * 176 of the 15,936 at T−20 were first LOCKED in the last two decision seconds up to T−20: 85 at T−20 itself and 91 one second earlier.
+  * One of the two T−20 failures (KXBTC15M-26MAY300415-15) was first LOCKED one second before T−20.
 * The cells overlap, because the same windows appear at several times.
-* Treating each day as a block (correlated windows) gives similar intervals, so the conclusions do not rest on independence.
+* **Correlated windows.** For the first LOCKED (28 failures), treating each day as a block gives a similar interval (0.107–0.241 %). For T−20 (2 failures), a bootstrap cannot assess clustering, so the exact bound (0.040 %) is the one to use.
 * **Feed dependence.** On the BTCUSDT feed, T−20 on U is 5 / 16,035 (bound 0.066 %). On the seen period it is 7 / 6,865 (bound 0.19 %, **above** break-even).
 * **The 27-month proxy** [RUN]: first LOCKED 188 / 74,811 (0.251 %, CI 0.217–0.290 %); T−20 3 / 71,414; T−10 0 / 73,487.
 
@@ -99,7 +102,7 @@ U2 lies *before* the period the probability tables were fitted on. It is out-of-
 
 | Variable | Result |
 |---|---|
-| σ-cushion | **The strongest separator.** Below 3σ: 0.50 % (11 / 2,199). At 3σ and above: 0.117 % (17 / 14,574); Fisher p = 0.0005. Even ≥ 3σ is above break-even; only the 4σ-and-above group (0.08 %, 5 / 6,454) is near it. |
+| σ-cushion | **The strongest separator apart from time left** (time left under 15 s is far stronger, p ≈ 4·10⁻⁹, and is what the 15 s buffer addresses). Below 3σ: 0.50 % (11 / 2,199). At 3σ and above: 0.117 % (17 / 14,574); Fisher p = 0.0005. Even ≥ 3σ is above break-even; only the 4σ-and-above group (0.08 %, 5 / 6,454) is near it. |
 | Required move to flip | Falls steadily: under $20, 0.44 % (3 / 680); $20–50, 0.29 %; $50–100, 0.14 %; $100–200, 0.10 %; $200 and above, 0.15 %. No band is below break-even. |
 | Time left at the call | Under 15 s: 2.49 % (9 / 362); 15–30 s: 0.35 %; 30–120 s: 0.07 %; 120–300 s: 0.14 %. |
 | Direction | DOWN 20 / 8,421 against UP 8 / 8,352 (p = 0.036). At T−20 there is no difference: 1 / 8,001 against 1 / 7,935. [EXPLORATORY; see B for where the DOWN excess comes from.] |
@@ -113,7 +116,7 @@ U2 lies *before* the period the probability tables were fitted on. It is out-of-
 
 **What this means.** The LOCKED threshold is honestly calibrated to "≤ 0.5 %", five times looser than your trade needs.
 * Loosening it would add small-size opportunities at roughly the current first-LOCKED failure rate.
-* Tightening it (section G) lowers the rate toward break-even, but not below it.
+* Tightening it (section G) lowers the rate to about break-even (0.090 % on U), but its interval (up to 0.148 %) does not show it to be below.
 * No single observable at the call isolates the remaining failures.
 
 ## B. Can the newest Pin Radar be relied on for sufficiently accurate LOCKED signals?
@@ -147,7 +150,8 @@ U2 lies *before* the period the probability tables were fitted on. It is out-of-
    * The price itself moved back through the strike after the call.
    * 16 of the 19 are DOWN calls; this is where the DOWN excess lives.
    * **13 of them passed both safeguards with the market agreeing**: the called side last traded at 97.8–99.8 ¢, they were called 26–288 s before the close, and they settled $2.48–$244 on the other side.
-   * These 13 are **0.078 % of all unseen first-LOCKED calls**. That is the irreducible rate at the first LOCKED, and it alone is close to break-even.
+   * These 13 are **0.078 % of all unseen first-LOCKED calls**, close to break-even on their own.
+   * The guard and the 15 s buffer cannot remove them. The replayed 0.2 % threshold (section G) avoids 10 of the 13: 3 never lock, and 7 lock later on the correct side.
    * The proxy shows no direction asymmetry over 2023–2026 (94 / 37,014 against 94 / 37,797). The DOWN excess is therefore more likely a feature of the 2026 market than of the method. **Cause undetermined** [EXPLORATORY].
 2. **Basis-decided: 9 of 28.** The feed showed the called side winning, and only the official BRTI average ended on the other side. 8 of the 9 were called in the last 30 s.
 
@@ -221,7 +225,8 @@ U2 lies *before* the period the probability tables were fitted on. It is out-of-
 ## D. Missed opportunities
 
 * **Never LOCKED, with an official margin of $100 or more: 291 windows (1.1 %).**
-  * In **all 291**, the volatility estimate (1.77–6.64 bps/√s) was above the range the tables were validated on (up to 1.767), so the soft gate held the call at HIGH CONFIDENCE. This was checked by replaying each window with the gate reasons recorded.
+  * In **all 291**, the volatility estimate was above the range the tables were validated on (up to 1.767 bps/√s), so the soft gate held the call at HIGH CONFIDENCE. Each window's lowest reading was 1.77–6.64, and readings went up to 8.75.
+  * This was checked by a separate per-window rerun with the gate reasons recorded: `gate_recheck.py`, `gate_recheck.json`. The rerun used a short 1 h warm-up; its states at T−30 … T−3 match the main replay.
   * 148 of the 291 are from February 2026.
   * **Value** [RUN, `missed_value.py`, `supplement.json` §11]: buy the side the engine leaned to at T−60, with the same fill rule.
     * 262 of the 291 windows have a tape, and the leaned side won in 261.
@@ -248,7 +253,8 @@ U2 lies *before* the period the probability tables were fitted on. It is out-of-
   * Coinbase (32 days) and Kraken (93 days: Jan 13 – Apr 7, Sep 14–18, Oct 14–16) were fetched for cross-checks only. Bitstamp, a live index venue, was not fetched.
 * **Excluded markets: 2,880, each listed with its reason.**
   * 2,806 closed before the first usable contract (2026-01-13 23:00) and publish no strike or official value.
-  * 72 within the period lack one field: 65 in U2 and 7 seen.
+  * 70 within the period lack one field: 65 in U2 and 5 seen.
+  * 2 seen-period markets were excluded by a parser error (a comma-formatted official value read as missing). This is negligible, and fixed for future runs.
   * 2 have corrupted strikes.
   * Nothing was imputed.
 * **Proxy results by month:** the first-LOCKED failure rate ranged **0.04–0.48 %** over 28 months. 24 of the 28 months were above the 0.093 % break-even.
@@ -414,7 +420,7 @@ C = 100, VWAP, no buffer; all periods, 21,057 of 25,994 markets with a tape when
 | 1,000 | 8,604 | 73 | 7 / 66 | +0.345 | +0.333 |
 
 * Selling at the first warning recovered a mean 69.5 ¢ on the 9 losing calls (100 contracts) and gave up a mean 8.9 ¢ on each of the 101 false alarms that could be exited.
-* Net, it is slightly worse than holding (−0.02 ¢ per contract). It is not adopted, and it is not harmful.
+* Net, it is slightly worse than holding (−0.02 ¢ per contract; no interval computed). It is not adopted.
 
 **Answer.**
 * **At $50,000: NO.** The pre-registered rules say NO. Where the size can be filled, the call is wrong too often and the realistic-fill result is negative.
@@ -428,7 +434,7 @@ C = 100, VWAP, no buffer; all periods, 21,057 of 25,994 markets with a tape when
 | Scenario | How tested | Result |
 |---|---|---|
 | Abrupt reversals, adverse momentum, volatility spikes | real data: anatomy of all wrong calls; momentum, prior adverse move, changing volatility | real reversals are 19 of 28 unseen failures; none of these observables predicts them (the volatility-jump signal did not replicate) |
-| Final-second moves, settlement-reference divergence | calibration by time left on two feeds; proxy | over-confident in the final seconds: from about T−10 on BTCUSDC and from T−20 on BTCUSDT; not on the proxy. TRADE NOW is barred below 3 s + the order time: 15 s with the default 12 s, but a shorter order time on the page moves that later. |
+| Final-second moves, settlement-reference divergence | calibration by time left on two feeds; proxy | over-confident in the final seconds: from about T−10 on BTCUSDC (unseen), and from T−15 on BTCUSDT unseen (T−20 once the seen months are included); not on the proxy. TRADE NOW is barred below 3 s + the order time: 15 s with the default 12 s, but a shorter order time on the page moves that later. |
 | Settlement-average maths | every contract: `round2(expiration_value) ≥ floor_strike ⇔ result = yes` holds for all 25,994; engine self-test 150 / 150 | no error found |
 | Stale / missing data, WebSocket loss, one lagging venue | fault injection (`dq281_test.js` 6 / 6) [SIM]; with Kraken as the only real venue, the replay shows DATA UNRELIABLE throughout the incident window | detected |
 | Clock / time synchronisation | sampler-phase sweep [SIM]; feed timing shifted 0.9 s [EARLIER WORK] | phase bug fixed in 2.8.1; the timing shift **doubled T−20 failures (2 → 4)**, though the bound stays below break-even, and gave 44–47 first-LOCKED failures |
@@ -441,7 +447,7 @@ C = 100, VWAP, no buffer; all periods, 21,057 of 25,994 markets with a tape when
 
 Synthetic or simulated items in `2.8.1/TEST_RESULTS.md`:
 * the injected final-second and T−35 jumps (S4, S4b);
-* the stale-data and empty-book cases (S5–S7);
+* the synthetic-book, stale-data, empty-book and order-time cases (S2, S5–S7);
 * the "Oct 15 replica" with assumed asks (S9);
 * the restart fixtures and the sampler-phase sweep.
 
@@ -473,9 +479,14 @@ They test the logic. They are not evidence of a failure rate.
 
    * **The strongest candidate.** On unseen data it halves the first-LOCKED failure rate (0.167 % → 0.090 %) at almost no cost in coverage, and calls a median 14 s later.
    * At small sizes it cuts losing trades from 8 to 2 (no latency) and from 12 to 2 (12 s order time).
-   * The edge per contract is a little lower and the total profit roughly halves, because the cheapest early entries disappear.
+   * The edge per contract falls from +0.41 to +0.28 ¢ with no latency (the intervals do not overlap), and from +0.24 to +0.22 ¢ with the 12 s order time. The total profit roughly halves.
+   * About 60 % of the lost profit comes from entries that no longer fill. About half comes from the same windows being entered later at higher prices. New entries offset part of it.
    * It is **not enough for the $50,000 trade**: 0.090 % is at break-even, and its interval reaches 0.148 %.
    * The seen-period figures are in-sample, because the threshold was chosen there in earlier work.
+   * **Expected value at the named size** ($50,000 at 99.9 ¢), as the pre-registration asks:
+     * at the point rate it is +$1.6 per trade;
+     * at the one-sided upper bound (0.138 %) it is −$23.
+     * Executable volume is still almost never there.
    * Status: **the most defensible change for a small-size forward test**, not validated.
 
 2. **`ADAPTIVE_BASIS=1`** widens the basis uncertainty when recent feed-vs-official errors are large. [EXPLORATORY: designed after seeing U2 calibration, so its U results are not independent.]
@@ -488,9 +499,11 @@ They test the logic. They are not evidence of a failure rate.
 
    * **On the seen period, which its design did not look at:** it removes only 1 of 19 wrong first-LOCKED calls on BTCUSDC (0.263 % → 0.253 %).
    * It remains over-confident at T−5 (9.8×).
-   * Its first-LOCKED rate stays above break-even.
+   * Its first-LOCKED rate stays above break-even: about −$2 per $50,000 trade at its point rate.
    * Trading on U2: first LOCKED at 100 contracts: +0.40 ¢ (CI +0.35 to +0.46), 10,374 trades, 7 lost, against 2.8.1's +0.41 ¢, 10,586 trades, 9 lost (same fill model, no buffer).
-   * It addresses basis-decided failures only, not real reversals.
+   * It removed 12 of the 28 unseen wrong calls: 6 of the 9 basis-decided, and 6 of the 19 real reversals (all near the strike and late).
+   * 10 of the 12 were already blocked by the 90 ¢ guard.
+   * It leaves 12 of the 13 real reversals that pass the guard.
 3. **`MARKET_VETO_CENTS=90`** shows the guard on the LOCKED headline itself.
    * It cannot be replayed, because there is no order-book history.
    * Assessed from last prints over all periods (in-sample): the guard fired on 132 of 18,623 first-LOCKED calls, and 13 were wrong (9.8 %). Of the other 18,491, 17 were wrong (0.092 %).
@@ -542,9 +555,9 @@ $50,000 at 99.9 ¢ is not reachable with this signal in this market. What the ev
 
 * **Primary feed.** The pre-registered plan listed Coinbase + Kraken. The primary feed is Binance BTCUSDC driving the index, because Coinbase / Kraken history was available only for weeks. Coinbase + Kraken were used for Oct 14–16 only.
 * **Replay mode.** Month chunks with a 24 h warm-up each, instead of one continuous replay with 4 h.
-* **U1 contracts dropped.** 12 U1 contracts (closes Oct 16 00:15–03:00 UTC), including KXBTC15M-26OCT152030-30, have 0 of 60 settlement-minute prices in the Binance archive. They were removed before the replay, which is what the 57-of-60 exclusion rule implies. No other window was excluded.
-* **U1 is small** (185 windows) and **has no Kalshi tapes**. All execution evidence is U2 only.
-  * Replays of Oct 14–16 that include the 12 windows give 3 wrong of 170 first-LOCKED calls when Kraken drives the index. With Coinbase + Kraken as two real venues, they give 0 of 169.
+* **U1 contracts dropped.** 12 U1 contracts (closes Oct 16 00:15–03:00 UTC), including KXBTC15M-26OCT152030-30, have 0 of 60 settlement-minute prices in the Binance archive. They were removed before the replay, which is what the 57-of-60 exclusion rule implies. No other window was excluded by that rule. The 74 in-period markets Kalshi published without a usable strike or official value are listed in section E.
+* **U1 is small** (185 windows) and has **no Kalshi tapes for its replayed windows**. All *decisive* execution evidence is U2 only. Seen-period execution results are reported, not decisive.
+  * Replays of Oct 14–16 that include these windows: 3 wrong of 170 first-LOCKED calls when Kraken drives the index (all 12). With Coinbase + Kraken as two real venues, 0 of 169 (11 of the 12; the 03:00 close was outside that run).
 * **Proxy period.** Oct 2023 → Jan 13 2026, not → Jul 21 2026, so it does not overlap the contracts.
 * **Trading strategies.** The small-size strategies (first LOCKED with the guard, the edge rule, the market-only baselines) were not pre-registered, and the baseline was corrected after U2 had been seen. They are labelled exploratory.
 * **Pre-registered reporting added late.** The rules at smaller sizes and other prices, and contract failure rates by month, were pre-registered but first reported in this revision.
@@ -565,20 +578,27 @@ $50,000 at 99.9 ¢ is not reachable with this signal in this market. What the ev
 
 ## Reproduce
 
-Data (about 2 GB, not committed): `pipeline/run_pipeline.sh` fetches Kalshi markets and tapes, and Binance 1 s archives (`fetch_binance_1s.py --symbol BTCUSDC --subdir usdc` for the primary feed). `clean_markets.py` produces `markets_clean.ndjson`. `markets_usdc.ndjson` is `markets_clean.ndjson` restricted to closes ≤ 2026-10-16 00:00 UTC (the BTCUSDC archive end).
+Data (about 2 GB, not committed).
+* `pipeline/run_pipeline.sh` fetches the Kalshi markets and tapes and the BTCUSDT archive only. Its steps 4–5 (a Coinbase + Kraken replay) are superseded by the commands below.
+* Also run:
+  * `python3 fetch_binance_1s.py --symbol BTCUSDC --subdir usdc --from 2026-01-12 --to 2026-10-16 --out $D/sec`
+  * `python3 clean_markets.py $D/kalshi/markets.ndjson $D/kalshi/markets_clean.ndjson $D/kalshi/excluded.ndjson`
+* `markets_usdc.ndjson` is `markets_clean.ndjson` restricted to closes ≤ 2026-10-16 00:00 UTC, the BTCUSDC archive end.
+* The trade tapes used for all execution figures are one snapshot: 22,071 of 25,994 markets, with the download stopped on 2026-10-16 at 14:12 UTC. All of U2 is included.
 
 ```
 # contract replays (run from pinradar-research; D = data dir); prefix LOCK_MAX_FLIP=0.002 or ADAPTIVE_BASIS=1 for the candidates
 bash validation/pipeline/replay_parallel.sh 2.8.1/dist/pinradar_server.js $D/sec proxy $D/kalshi/markets_usdc.ndjson 2026-01 2026-11 $D/replay/r281_usdc.ndjson 4 --proxy-dir usdc
 #   2.8: 2.8/dist/pinradar_server.js ; BTCUSDT: --proxy-dir proxy ; proxy study: make_proxy_markets.py, then the same with --proxy-dir proxy
 node validation/replay_chrono.js --server 2.8.1/dist/pinradar_server.js --sec $D/sec --venues cb,kr --markets $D/kalshi/markets_clean.ndjson --from 2026-10-14T04:00:00Z --to 2026-10-16T03:00:00Z --out $D/replay/cbkr_oct_2.8.1.ndjson
-#   Kraken driving the index: --venues proxy --proxy-dir kr
+#   Kraken driving the index (kr_oct_*, 181 windows): --venues proxy --proxy-dir kr --to 2026-10-16T03:15:00Z
 cd validation/pipeline
 python3 analyze.py --records $D/replay/<run>.ndjson --splits "<U2|S1|S2|S0|U1 as in VALIDATION_PREREG.md>" --out $D/summary_<run>.json
 python3 decisive.py --data $D --out $D/decisive.json
 python3 calibration.py --records $D/replay/r281_usdc.ndjson --records $D/replay/r281_usdt.ndjson --records $D/replay/cand_usdc.ndjson --records $D/replay/r281_proxy27m.ndjson --out $D/calibration.json
 python3 anatomy.py --records $D/replay/r281_usdc.ndjson --out $D/anatomy_r281_usdc.json
 python3 execution.py --records $D/replay/r281_usdc.ndjson --trace $D/replay/r281_usdc.trace.ndjson --trades $D/kalshi/trades --out $D/exec_r281_usdc_full.json && cp $D/exec_r281_usdc_full.json $D/exec_r281_full.json
+#   same for the candidates: --records/--trace replay/cand_usdc* -> exec_cand_usdc_full.json ; replay/thr02_usdc* -> exec_thr02_usdc_full.json
 python3 prevented.py --records $D/replay/r281_usdc.ndjson --exec-rows $D/exec_r281_usdc_full_rows.ndjson --out $D/prevented_r281_usdc.json
 python3 missed_value.py --records $D/replay/r281_usdc.ndjson --trades $D/kalshi/trades --out $D/missed_value.json
 python3 supplement.py --data $D --out $D/supplement.json
@@ -586,7 +606,9 @@ python3 volchange.py --records $D/replay/r281_usdc.ndjson --sec-dir $D/sec/usdc 
 python3 volchange.py --records $D/replay/r281_proxy27m.ndjson --sec-dir $D/sec/proxy --out $D/volchange_proxy.json
 for L in 0 2 5; do python3 trading_eval.py --exec-rows $D/exec_r281_usdc_full_rows.ndjson --markets $D/kalshi/markets_clean.ndjson --trades $D/kalshi/trades --records $D/replay/r281_usdc.ndjson --to 2026-07-22T00:00:00+00:00 --latency $L --out $D/trading2_U2_L$L.json; done
 #   buffer: --min-tau 15 (trading2_U2_L0_buf15), plus --latency 12 (trading2_U2_L12_buf15); seen: --from 2026-07-22T00:00:00+00:00 (trading2_seen_L0); all: no --from/--to (trading2_full_L0)
-#   candidates: the same with the candidate's execution rows and records (trading2_cand_U2_L0, trading2_thr02_U2_L0)
+#   candidates: ADAPTIVE_BASIS with exec_cand rows and cand records (trading2_cand_U2_L0); 0.2 % threshold with exec_thr02 rows and thr02 records,
+#   --min-tau 15 (trading2_thr02_U2_L0_buf15) and --min-tau 15 --latency 12 (trading2_thr02_U2_L12_buf15); then python3 candidate_summary.py
+python3 gate_recheck.py --records $D/replay/r281_usdc.ndjson --server ../../2.8.1/dist/pinradar_server.js --sec $D/sec --markets $D/kalshi/markets_clean.ndjson --work $D/gate_recheck --out $D/gate_recheck.json
 python3 exit_eval.py --exec-rows $D/exec_r281_usdc_full_rows.ndjson --trace $D/replay/r281_usdc.trace.ndjson --trades $D/kalshi/trades --C 100 --out $D/exit_full_C100.json   # and --C 1000
 python3 final_tables.py --data $D --out ../RESULTS_TABLES.md
 bash ../../2.8.1/test/run_all281.sh                                      # software suite

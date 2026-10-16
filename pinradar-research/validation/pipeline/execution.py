@@ -111,7 +111,7 @@ def main():
                         'vwapCents': round(sum(pr * c for pr, c in ok) / vol, 3) if vol else None, 'worstCents': max((pr for pr, _ in ok), default=None),
                         'contractsAtOrBelowLimitUntilClose': round(until_close, 2)})
             rows_by_rule[rule].append(row)
-    need = a.budget / (a.limit / 100)
+    need = math.floor(a.budget / (a.limit / 100 + 0.07 * (a.limit / 100) * (1 - a.limit / 100)))   # contracts the budget buys incl. Kalshi's taker fee (50,046 at 99.9 c)
     for rule, rows in rows_by_rule.items():
         tape = [r for r in rows if not r.get('noTape')]
         traded = [r for r in tape if not r['guardBlocks'] and r['contractsAtOrBelowLimit'] > 0]

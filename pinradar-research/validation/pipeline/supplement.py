@@ -284,7 +284,8 @@ def main():
     be = {99.9: 0.093, 99.8: 0.186, 99.0: 0.93}
     rules = []
     for lim in (99.9, 99.8, 99.0):
-        for C in (10, 100, 1000, 10000, 50046):
+        big = {99.9: 50046, 99.8: 50093, 99.0: 50469}[lim]           # contracts that $50,000 buys at that price, fee included (economics.js)
+        for C in (10, 100, 1000, 10000, big):
             share = 100 * sum(1 for v in vols if v[lim] >= C) / len(vols)
             y1, y2 = ub < be[lim], share >= 50
             nob = share < 10
