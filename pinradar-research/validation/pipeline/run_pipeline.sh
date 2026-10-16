@@ -22,8 +22,7 @@ echo "== 4. chronological replays (primary 2.8.1 and baseline 2.8), contract win
 for V in 2.8.1 2.8; do
   node ../replay_chrono.js --server ../../$V/dist/pinradar_server.js --sec "$DATA/sec" --venues cb,kr --markets "$DATA/kalshi/markets.ndjson" \
     --from "${FIRST}T00:00:00Z" --to "${TODAY}T00:00:00Z" --out "$DATA/replay_${V}_contracts.ndjson" --trace "$DATA/trace_${V}_contracts.ndjson"
-  node ../replay_chrono.js --server ../../$V/dist/pinradar_server.js --sec "$DATA/sec" --venues proxy --markets "$DATA/proxy_markets.ndjson" \
-    --from "${PFROM}T04:00:00Z" --to "${FIRST}T00:00:00Z" --out "$DATA/replay_${V}_proxy.ndjson"
+  bash replay_parallel.sh ../../$V/dist/pinradar_server.js "$DATA/sec" proxy "$DATA/proxy_markets.ndjson" "${PFROM:0:7}" "${FIRST:0:7}" "$DATA/replay_${V}_proxy.ndjson"
 done
 echo "== 5. scoring by the pre-registered splits (VALIDATION_PREREG.md)"
 SPL="S1|2026-07-22T00:00:00+00:00|2026-08-14T00:00:00+00:00,S2|2026-08-14T00:00:00+00:00|2026-09-04T00:00:00+00:00,S0|2026-09-04T00:00:00+00:00|2026-10-14T00:00:00+00:00,U1|2026-10-14T00:00:00+00:00|2100-01-01T00:00:00+00:00,U2|2000-01-01T00:00:00+00:00|2026-07-22T00:00:00+00:00"
