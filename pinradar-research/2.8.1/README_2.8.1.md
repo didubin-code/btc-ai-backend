@@ -88,6 +88,8 @@ Same procedure you used for 2.8.
    | `COLD_MIN_SEC` | 120 | Index history needed before LOCKED is possible. |
    | `BASIS_WARM_N` | 12 | Settled windows before the basis model counts as warm. |
    | `BASIS_COLD_LO` / `BASIS_COLD_HI` | −7 / 9 | Basis-mean range (dollars) used while it is cold. |
+   | `ADAPTIVE_BASIS` | 0 | **Candidate, off by default.** 1 scales the model's basis spread by the error the server measures on its own index (never below the trained level). In the real-contract replay it cut wrong first-LOCKED calls by about a quarter, mostly in the last 15 s, for about 1.5 % fewer LOCKED calls. Exploratory: it was designed after the calibration result it fixes. See `validation/VALIDATION_REPORT.md`. |
+   | `MARKET_VETO_CENTS` | 0 | **Candidate, off by default.** For example 90: a LOCKED call is shown as HIGH CONFIDENCE while Kalshi offers the called side below that price, i.e. while the market strongly disagrees. In the real data, first LOCKED calls whose side last traded below 90 ¢ were wrong about 10 % of the time, against 0.1–0.4 % otherwise. |
 
 5. **Check after deploy:**
    * `/health` shows `pin-radar-2.8.1` and `warmup.lockedAvailable`.

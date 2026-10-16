@@ -55,6 +55,8 @@
     push('2.8.1 qualifying price: also requires the stressed cautious value >= 0', mS > 0 && mS <= 97 - feeAt(mS) + 1e-9 && mS < mA, [mS, mA]);
     const mG = maxAskFor281(95, 0.80, 10, 99.8);
     push('2.8.1 qualifying price: never below MIN_TRADE_ASK_CENTS (there the server says MARKET DISAGREES, never TRADE NOW)', mG === 0 && maxAskFor281(99.9, null, 10, 99.8) >= MIN_TRADE_ASK_CENTS, [mG]);
+    /* candidates are off by default: the decisions equal 2.8.1's */
+    push('2.8.1 candidates ADAPTIVE_BASIS / MARKET_VETO_CENTS are off unless set', (process.env.ADAPTIVE_BASIS === '1' || basisScale281() === 1) && (process.env.MARKET_VETO_CENTS ? true : MARKET_VETO_CENTS281 === 0), [basisScale281(), MARKET_VETO_CENTS281]);
     /* action states */
     const a1 = exec281({ state: 'LOCKED', side: 'UP', trade: { action: 'LOCKED — DO NOT TRADE', why: 'x' }, ticker: null }, { tau: 40, execSec: 10, now: nowS });
     const a2 = exec281({ state: 'LOCKED', side: 'UP', trade: { action: 'LOCKED — TOO LATE', why: 'y' }, ticker: null }, { tau: 8, execSec: 10, now: nowS });

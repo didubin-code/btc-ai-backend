@@ -114,6 +114,24 @@ function coldGeometry281(base, args, cv, bc) {
   Object.defineProperty(out, 'cands281', { value: cands, enumerable: false });
   return out;
 }
+/* ADAPTIVE BASIS (candidate, off by default: ADAPTIVE_BASIS=1). The probability model's basis spread (M25_MODEL.basisQ, sd 3.29 $) was
+   fitted on the original Coinbase+Kraken trade proxy. Near the close the basis dominates the remaining uncertainty, so a feed whose
+   official-minus-index error is larger makes the model overconfident there (validation/VALIDATION_REPORT.md, calibration by time).
+   With the switch on, the basis quantiles are scaled by the error the server measures on ITS OWN feed (basisModel().sd: one-step
+   errors of its walk-forward basis predictor, pooled with the prior) relative to the prior BASIS_SD_USD; never below 1. */
+const ADAPTIVE_BASIS281 = String(process.env.ADAPTIVE_BASIS ?? '0') === '1';
+const BS281 = { n: -1, key: null, scale: 1 };
+/* MARKET VETO (candidate, off by default: MARKET_VETO_CENTS=90): see build_server281.py */
+const MARKET_VETO_CENTS281 = clampEnv(process.env.MARKET_VETO_CENTS, 0, 0, 99);
+function basisScale281() {
+  if (!ADAPTIVE_BASIS281) return 1;
+  const n = BASIS.samples.length, key = n ? BASIS.samples[n - 1].key : null;
+  if (n !== BS281.n || key !== BS281.key) {
+    const b = basisModel();
+    BS281.n = n; BS281.key = key; BS281.scale = Math.max(1, Math.min(4, (b.sd || BASIS_SD_USD) / BASIS_SD_USD));
+  }
+  return BS281.scale;
+}
 /* execution stress: BTC has ALREADY moved against the call by a one-sided z quantile of the order-time move, and the whole remaining
    time is still random (the order-time diffusion is not removed). Returns the CAUTIOUS P(UP) in that state: the worse (for the leader)
    of the point and conservative models, both recalibrated, i.e. the same standard as the TRADE NOW edge (evConsCents). At z = 0 it is
@@ -134,8 +152,8 @@ function stressPUp281(geo, tau, execSec, z = EXEC_STRESS_Z, recalFor = null) {
   const shift = z * geo.sigmaBps * 1e-4 * geo.index * Math.sqrt(d), frac = Math.min(1, (geo.nRemaining == null ? 60 : geo.nRemaining) / 60);
   const b = geo.regime ? geo.regime.bucket : m25Bucket(M25_MODEL, 0);
   const r = recalFor ? recalFor(geo) : (geo.recal && Number.isFinite(geo.recal.ratio) ? geo.recal.ratio : recalRatio26(b));
-  const q = { tau: Math.max(0, tau), gap: geo.gapUsd - sgn * shift * frac, sigBps: geo.sigmaBps, S: geo.index, mu: geo.basisMeanUsd, bucket: b };
-  const p = recalPUp26(m25PUp(M25_MODEL, q), r), pc = recalPUp26(m25PUp(M25_MODEL, { ...q, volMult: CONS_VOL_MULT, basisMult: CONS_BASIS_MULT }), r);
+  const q = { tau: Math.max(0, tau), gap: geo.gapUsd - sgn * shift * frac, sigBps: geo.sigmaBps, S: geo.index, mu: geo.basisMeanUsd, bucket: b, basisMult: basisScale281() };
+  const p = recalPUp26(m25PUp(M25_MODEL, q), r), pc = recalPUp26(m25PUp(M25_MODEL, { ...q, volMult: CONS_VOL_MULT, basisMult: CONS_BASIS_MULT * basisScale281() }), r);
   if (p == null || pc == null) return null;
   return sgn > 0 ? Math.min(p, pc) : Math.max(p, pc);
 }

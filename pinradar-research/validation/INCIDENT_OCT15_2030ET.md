@@ -1,46 +1,74 @@
-# Oct 15 2026, 20:30 ET window (KXBTC15M-26OCT152030-30, close 00:30 UTC Oct 16): LOCKED DOWN, then REVERSAL WARNING
+# Oct 15 2026, 20:30 ET window (KXBTC15M-26OCT152030-30, close 00:30 UTC Oct 16): LOCKED DOWN was wrong
 
-**Source:** one photo of the deployed 2.8 page (IMG_7268), taken at T−71 s. The outcome and the server's logs are not available here: Kalshi's API is blocked in this environment, and no log has been uploaded. Every number below is read off the photo.
+**Sources:**
+* your photo of the deployed 2.8 page (IMG_7268), taken at T−71 s;
+* Kalshi's settled market record and its full trade tape for the last 300 s (37,042 prints), fetched from Kalshi's public API on 2026-10-16;
+* chronological replays of 2.8 and 2.8.1 on Kraken trades alone, and on Coinbase + Kraken trades, as 1 Hz feeds (`replay_chrono.js`).
 
-## What the page showed at T−71 s
+**Not available:** the live server's own logs. Without them, the replays approximate the live inputs but cannot reproduce them exactly.
 
-| Item | Value |
-|---|---|
-| Headline | **REVERSAL WARNING — DOWN AT RISK**: "earlier LOCKED call breaking down", "EXIT / NO TRADE" |
-| First LOCKED | DOWN at T−89 s |
-| Model | P(DOWN) 53.82 %, flip risk 46.18 % (conservative ≤ 46.85 %), active-tape recalibration ×0.52 |
-| Index (3 venues) vs strike | $82,259.41 vs $82,263.34: **$3.93 below**; expected settlement −$4; cushion 0.2σ |
-| Volatility | 0.45 bps/√s, about $15.7 per 1σ over 18 s at this price |
-| Official BRTI panel | 0/60 prints recorded; "spot −$7.25", proxy difference −$5.22 (572 ms old); flip 37.73 % on the official reference |
-| Kalshi | **DOWN offered at 8.8 ¢**, i.e. the market priced UP at about 91 % |
-| Execution readiness | READY (book 487 ms old, depth 10) |
-| Forward record shown | "0 of 83 forward LOCKED calls lost"; edge not established (16 paper trades, mean +1.99 ¢) |
+## Outcome
 
-## What this does and does not show
+| Item | Value | Source |
+|---|---|---|
+| Strike (60 s average BRTI before the open) | $82,263.34 | Kalshi `floor_strike` |
+| Settlement (60 s average BRTI before the close) | $82,273.40 | Kalshi `expiration_value` |
+| Result | **YES = UP, by $10.06** | Kalshi `result` |
+| Live call | LOCKED **DOWN** from T−89 s; REVERSAL WARNING ("EXIT / NO TRADE") by T−71 s | photo |
 
-1. **The engine called LOCKED DOWN at T−89 s, and within 18 s BTC moved up to about $4 below the strike.**
-   * LOCKED needs a flip risk of at most 0.5 %. At about 0.45 bps/√s that implies a cushion of several tens of dollars at T−89, so the move was several σ in 18 s.
-   * This is the same failure class as all 15 recorded losing LOCKED calls ([HIST]): a call made 54–300 s before the close, then overturned by a sharp move. The 2.8.1 safeguards do not change this class; the 0.2 % threshold would have prevented about two thirds of past cases (`REPORT_LATE_LOCKED.md`, section 5).
-2. **The warning worked as designed.** The call was withdrawn (REVERSAL WARNING, EXIT / NO TRADE) at least 18 s before the settlement minute began.
-   * A trader who bought DOWN at the first LOCKED would have been holding a position the model then rated about 54 / 46.
-   * A trader following the rule "trade only if still LOCKED at T−20" would not have entered, unless the window re-locked DOWN later.
-3. **The market disagreed strongly.** At T−71, Kalshi priced DOWN at 8.8 ¢ while both our index and the official BRTI had BTC below the strike. The market saw something our three venues did not, most plausibly continuing upward momentum or other BRTI constituents.
-   * The earlier research saw a pattern in the same direction, but it is not statistically established. TRADE NOW, which only happens when the leader is offered cheaply, lost 2 of 261 times in development (0.77 %, 95 % CI 0.09–2.74 %), against 13 of 3,484 for LOCKED overall (0.37 %). The "cheap ask means a weaker call" fit was labelled exploratory.
-   * Whether the market already disagreed at T−89 is the key fact for a possible "market-disagreement veto". It needs the server's tape.
-4. **Not known yet: the outcome.** If the window settled UP, the forward record becomes 1 loss in 84 LOCKED calls (1.19 %, 95 % CI 0.03–6.46 %). The forward record is still far too small to estimate a rate near 0.1 %.
+**The LOCKED call was wrong.** It is the first loss in the page's forward record: 1 of 84 LOCKED calls (1.19 %, 95 % CI 0.03–6.46 %). That record is far too small to estimate a rate near 0.1 %. The 26,000-contract replay (`VALIDATION_REPORT.md`) is the evidence on rates.
 
-## What would settle it
+## What the market showed (Kalshi's tape)
 
-* **Kalshi:** the market's `result` and `expiration_value` (`fetch_kalshi.py markets`, once `api.elections.kalshi.com` is allowed), and its trade prints from T−120 to the close (`fetch_kalshi.py trades`).
-* **The server's logs, saved by you:**
-  * `/tape?format=ndjson`;
-  * `/predictions?ticker=KXBTC15M-26OCT152030-30`;
-  * `/signals?n=5000`;
-  * `/ledger?since=0&n=5000`;
-  * `/health`, with the time saved.
+Last print before each moment:
 
-  `2.8.1/tools/forensic281.js` then reconstructs, second by second:
-  * the gap at T−89;
-  * the official-vs-proxy difference;
-  * the Kalshi price when LOCKED was first shown;
-  * whether 2.8.1 would have called it.
+| Moment | DOWN traded at | UP traded at |
+|---|---|---|
+| T−120 s | 92.2 ¢ | 7.8 ¢ |
+| T−95 s | 84 ¢ | 16 ¢ |
+| **T−89 s (first LOCKED on the live page)** | **79 ¢** | 21 ¢ |
+| T−85 s | 63 ¢ | 37 ¢ |
+| T−82 s | 42 ¢ | 58 ¢ |
+| T−80 s | 12 ¢ | 88 ¢ |
+| T−71 s (photo; the page showed DOWN offered at 8.8 ¢) | 3.1 ¢ | 96.9 ¢ |
+| T−20 s | 0.9 ¢ | 99.1 ¢ |
+
+* **The market did not agree with a 99.5 % DOWN call.** At the moment LOCKED DOWN first appeared, DOWN traded at 79 ¢, and it had fallen from 92 ¢ thirty seconds earlier.
+* **Both 2.8 and 2.8.1 contain the 90 ¢ market-disagreement guard** (`MIN_TRADE_ASK_CENTS = 90`). It refuses TRADE NOW while the called side is offered below 90 ¢.
+  * The guard reads the live ask. The tape shows trades, not asks: DOWN taker buys in the 12 s after T−89 were at 8–81 ¢.
+  * The guard therefore would almost certainly have refused the trade. The page would still have *shown* LOCKED; the guard blocks only the trade.
+* **Across all 18,623 first-LOCKED calls with a Kalshi tape, the guard matters.** It fired on 132 calls, and 13 of those were wrong (9.8 %). Among the other 18,491 calls, 17 were wrong (0.092 %). This is in-sample and was not pre-registered as a test. It supports making the guard visible on the LOCKED headline itself (`MARKET_VETO_CENTS`, a candidate, off by default; section G of the report).
+
+## Replays of the same window
+
+| Feed | 2.8 / 2.8.1 at T−90 | First LOCKED | Then |
+|---|---|---|---|
+| Kraken trades only | LOCKED DOWN | **DOWN at T−95**: gap −$92.71, 5.36σ, flip 0.49 %; lowest flip 0.30 % at T−86 | REVERSAL WARNING at T−82 (the gap shrank to −$32, then −$17 one second later); DOWN never recovers |
+| Coinbase + Kraken trades | HIGH CONFIDENCE DOWN, flip **0.58 %** (LOCKED needs ≤ 0.5 %) | **UP at T−17** (correct) | stays LOCKED UP to the close |
+| Binance BTCUSDC / BTCUSDT | not covered: the daily archives end at 2026-10-15 23:59:59 UTC | — | — |
+
+* 2.8 and 2.8.1 make identical decisions in both replays. 2.8.1 does not change the probability model.
+* **What the replays do and do not show.**
+  * The live page used order-book mid-prices from three venues (Coinbase, Kraken, Bitstamp). The replays use last-trade prices from one or two venues.
+  * Kraken traded about $8 below Coinbase in those seconds ($82,167–82,171 against $82,171–82,179).
+  * With Kraken alone the index sat further below the strike, and the engine locked. With both venues it came within 0.08 percentage points of the threshold without locking.
+  * So the call was borderline. It depended on which venues' prices the index held in those seconds.
+* **Size of the move.** BTC rose by about $85 on Coinbase and $98 on Kraken in 7 seconds (T−87 → T−80).
+  * The engine measured volatility at the call at 0.27 bps/√s (Kraken replay) and 0.47 (two-venue replay). One σ over 7 s is then $6–10, so the move was roughly 8–17σ.
+  * That is a jump, not ordinary diffusion. It is the same class as every loss in the replay set: an early call overturned by a sharp move (`VALIDATION_REPORT.md`, section A).
+
+## What would have avoided the loss
+
+| Rule | This window | Cost across 26,000 contracts (`VALIDATION_REPORT.md`) |
+|---|---|---|
+| The 90 ¢ guard (in 2.8 and 2.8.1) | **blocks the trade** (DOWN at 79 ¢) | already in force |
+| Enter only if still LOCKED at T−20 | **no entry**: REVERSAL WARNING / UP by then in every replay | far fewer fills (section F) |
+| Exit on REVERSAL WARNING | the warning came at T−82 / T−71, when DOWN traded at 42 ¢ / 3 ¢: an exit would have recovered little | neutral on average (section F) |
+| A 0.2 % threshold | the Kraken replay's flip never went below 0.30 % before the reversal, so **no LOCKED** | fewer calls; designed on seen data (section G) |
+
+## Still unknown without the server's logs
+
+* What the live page's TRADE NOW panel showed between T−89 and T−71.
+* The exact index and quotes the live engine used.
+
+`2.8.1/tools/forensic281.js` reconstructs both from `/tape?format=ndjson`, `/predictions?ticker=KXBTC15M-26OCT152030-30`, `/signals` and `/health`, saved from the running server.

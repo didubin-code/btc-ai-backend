@@ -66,6 +66,27 @@ s = rep(s, "    tr.evConsCents = Math.round((100 * (1 - out.pFlipCons) - a.avgCe
         "    if (pUpStress != null && Number.isFinite(pUpStress)) { tr.pWinStressCons = Math.round(1e6 * (out.side === 'UP' ? pUpStress : 1 - pUpStress)) / 1e6;   // v2.8.1\n"
         "      tr.evStressCents = Math.round((100 * (out.side === 'UP' ? pUpStress : 1 - pUpStress) - a.avgCents - tr.feeCents) * 100) / 100; }\n")
 
+# candidate ADAPTIVE_BASIS (off by default): the basis spread follows the server's measured feed error (src/late281.js basisScale281)
+s = rep(s, "  const pUpModel = m25PUp(M25_MODEL, { tau: Math.max(0, tau), gap: gapUsd, sigBps: sigEff, S: indexNow, mu, bucket });\n"
+           "  const pUpConsModel = m25PUp(M25_MODEL, { tau: Math.max(0, tau), gap: gapUsd, sigBps: sigEff, S: indexNow, mu, volMult: CONS_VOL_MULT, basisMult: CONS_BASIS_MULT, bucket });",
+        "  const bs281 = typeof basisScale281 === 'function' ? basisScale281() : 1;   // v2.8.1 candidate ADAPTIVE_BASIS (1 when off)\n"
+        "  const pUpModel = m25PUp(M25_MODEL, { tau: Math.max(0, tau), gap: gapUsd, sigBps: sigEff, S: indexNow, mu, basisMult: bs281, bucket });\n"
+        "  const pUpConsModel = m25PUp(M25_MODEL, { tau: Math.max(0, tau), gap: gapUsd, sigBps: sigEff, S: indexNow, mu, volMult: CONS_VOL_MULT, basisMult: CONS_BASIS_MULT * bs281, bucket });")
+
+# candidate MARKET_VETO_CENTS (off by default): a LOCKED call is withheld (HIGH CONFIDENCE) while Kalshi offers the called side below the
+# threshold, i.e. the market strongly disagrees. Validation (Jan-Jun 2026, Kalshi prints): first LOCKED calls whose side last traded
+# below 90 c lost 12 of 124 times, against 0.1-0.4 % above it. PROVEN LOCKED (price-only bound) is never vetoed; no book = no veto.
+s = rep(s, "  if (mutate && geo && geo.pUp != null && !g.hard.length) {\n    ls.hist.push({ t: now / 1000, pUp: geo.pUp });",
+        "  if (MARKET_VETO_CENTS281 > 0 && d.state === 'LOCKED' && d.trade && d.trade.askCents != null && d.trade.askCents < MARKET_VETO_CENTS281) {   // v2.8.1 candidate\n"
+        "    d.state = 'HIGH CONFIDENCE'; d.reasons.unshift(`LOCKED withheld: Kalshi offers ${d.side} at ${d.trade.askCents}¢ (< ${MARKET_VETO_CENTS281}¢), the market strongly disagrees`);\n"
+        "    d.trade = { ...d.trade, action: 'WAIT', why: `market disagrees: ${d.side} offered at ${d.trade.askCents}¢` };\n"
+        "  }\n"
+        "  if (mutate && geo && geo.pUp != null && !g.hard.length) {\n    ls.hist.push({ t: now / 1000, pUp: geo.pUp });")
+
+# the 2.6 self-test of the 85 c guard: with the MARKET_VETO_CENTS candidate above 85 c the call is withheld instead (intended)
+s = rep(s, "    push('2.6 LOCKED offered at 85c -> LOCKED — MARKET DISAGREES (no TRADE NOW)', sCheap.state === 'LOCKED' && sCheap.trade.action === 'LOCKED — MARKET DISAGREES',",
+        "    push('2.6 LOCKED offered at 85c -> LOCKED — MARKET DISAGREES (no TRADE NOW); with MARKET_VETO_CENTS > 85: withheld (HIGH CONFIDENCE, WAIT)', (typeof MARKET_VETO_CENTS281 !== 'undefined' && MARKET_VETO_CENTS281 > 85) ? (sCheap.state === 'HIGH CONFIDENCE' && sCheap.trade.action === 'WAIT') : (sCheap.state === 'LOCKED' && sCheap.trade.action === 'LOCKED — MARKET DISAGREES'),")
+
 # no offers on the called side is a MARKET state (nobody sells below 100c), not a timing state: keep 2.8's action string
 # (compatibility) but flag it and say what it means; exec281 shows it as PREDICTED LOCKED (NO OFFERS), not TOO LATE
 s = rep(s, "    else if (!lv || !lv.length) { tr.action = 'LOCKED — TOO LATE'; tr.why = `no ${out.side} offers left on Kalshi`; }",
@@ -183,7 +204,7 @@ s = rep(s, "  const failed = checks.filter(c => !c.pass);", ST + "\n  const fail
 # exports
 s = rep(s, "  clientLat28, ledgerVerify28, tapeWrite28, TAPE28_FILE_MAX\n};",
         "  clientLat28, ledgerVerify28, tapeWrite28, TAPE28_FILE_MAX,\n"
-        "  // v2.8.1\n  coldVol281, basisCold281, coldGeometry281, stressPUp281, exec281, exec281Summary, warmup281, execSec281, EXEC281, COLD_TABLE281,\n  maxAskFor281, dqNote281, dqSummary281, DQ281, startSampler,\n"
+        "  // v2.8.1\n  coldVol281, basisCold281, coldGeometry281, stressPUp281, exec281, exec281Summary, warmup281, execSec281, EXEC281, COLD_TABLE281,\n  maxAskFor281, dqNote281, dqSummary281, DQ281, startSampler, basisScale281, MARKET_VETO_CENTS281,\n"
         "  COLD_MIN_SEC, COLD_FULL_SEC, COLD281_ON, BASIS_WARM_N, BASIS_COLD_LO, BASIS_COLD_HI, EXEC_SEC, EXEC_STRESS_Z\n};")
 
 # the environment variables the server reads (config hash input): recomputed over the final source

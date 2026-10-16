@@ -1,14 +1,14 @@
-# Pin Radar 2.8.1 — test results (actually run, 2026-10-16T02:31Z)
+# Pin Radar 2.8.1 — test results (actually run, 2026-10-16T07:32Z)
 
 Command: `bash pinradar-research/2.8.1/test/run_all281.sh` (offline; no network, no orders). Output, verbatim:
 
 ```
 == build (sha-checked patches of the delivered 2.8 files) into a temp dir; the committed dist must be identical
-dist/pinradar_server.js is the build of these sources (95367709cca2172c)
+dist/pinradar_server.js is the build of these sources (55d0555c65e4f8a4)
 dist/btc_pin_radar_281.html is the build of these sources (900509eb07de1d15)
 == 1. server self-test (default config, and with the new features off)
-selftest 149/149 OK (pin-radar-2.8.1)
-selftest 149/149 OK (pin-radar-2.8.1)
+selftest 150/150 OK (pin-radar-2.8.1)
+selftest 150/150 OK (pin-radar-2.8.1)
 == 2. late-LOCKED suite on 58 real windows: warm parity, restarts (Oct 14 mechanism), Oct 12 reversal, scenarios
 late281: 15/15 passed
 == 2b. DATA UNRELIABLE: sampler phase, real gaps, aligned sampler on real timers, one lagging venue, /dq diagnostics
@@ -30,7 +30,7 @@ ALL 2.8.1 CHECKS PASSED
 exit 0
 ```
 
-Detail of the late-LOCKED suite (`test/late281_test.js` on the same build, server sha256 95367709cca2172c…, run separately so its JSON could be kept). LAST = 3 s fill + 12 s default order time = 15 s:
+Detail of the late-LOCKED suite (`test/late281_test.js` on the same build, server sha256 55d0555c65e4f8a4…, run separately so its JSON could be kept). LAST = 3 s fill + 12 s default order time = 15 s:
 
 * **P1 warm parity**: 2.8.1 (EXEC_SEC=0) = 2.8 on every second
   `{"seconds": 17400, "differences": 0, "ex": []}`

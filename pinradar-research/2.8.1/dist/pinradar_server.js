@@ -1639,8 +1639,9 @@ function lockGeometry25({ indexNow, strike, closeMs, now = Date.now(), inputAgeM
   const rMom = Number.isFinite(sPast) && sg.value > 0 ? (indexNow - sPast) / (sg.value * indexNow * 1e-4 * Math.sqrt(RL)) : NaN;
   const regVar = RK === 'sig' ? sg.value : rMom;
   const bucket = m25Bucket(M25_MODEL, regVar);
-  const pUpModel = m25PUp(M25_MODEL, { tau: Math.max(0, tau), gap: gapUsd, sigBps: sigEff, S: indexNow, mu, bucket });
-  const pUpConsModel = m25PUp(M25_MODEL, { tau: Math.max(0, tau), gap: gapUsd, sigBps: sigEff, S: indexNow, mu, volMult: CONS_VOL_MULT, basisMult: CONS_BASIS_MULT, bucket });
+  const bs281 = typeof basisScale281 === 'function' ? basisScale281() : 1;   // v2.8.1 candidate ADAPTIVE_BASIS (1 when off)
+  const pUpModel = m25PUp(M25_MODEL, { tau: Math.max(0, tau), gap: gapUsd, sigBps: sigEff, S: indexNow, mu, basisMult: bs281, bucket });
+  const pUpConsModel = m25PUp(M25_MODEL, { tau: Math.max(0, tau), gap: gapUsd, sigBps: sigEff, S: indexNow, mu, volMult: CONS_VOL_MULT, basisMult: CONS_BASIS_MULT * bs281, bucket });
   const recalR = recalRatio26(RK === 'sig' ? bucket : -1);
   const pUp = recalPUp26(pUpModel, recalR), pUpCons = recalPUp26(pUpConsModel, recalR);
   const sigmaPathUsd = sigEff * indexNow * 1e-4 * Math.sqrt(Math.max(0, units));
@@ -1742,6 +1743,10 @@ function classify25({ now = Date.now(), tau, ticker, closeMs, strike, geo, gates
   if ((d.state === 'LOCKED' || d.state === 'PROVEN LOCKED') && d.trade && d.trade.action === 'TRADE NOW' && d.trade.askCents != null && d.trade.askCents < MIN_TRADE_ASK_CENTS) {
     d.trade = { ...d.trade, action: 'LOCKED — MARKET DISAGREES', why: `Kalshi offers ${d.side} at ${d.trade.askCents}¢ (< ${MIN_TRADE_ASK_CENTS}¢) while the model says LOCKED; `
       + 'out of sample 1 of 10 such calls lost. Check the index and strike before acting; no TRADE NOW.' };
+  }
+  if (MARKET_VETO_CENTS281 > 0 && d.state === 'LOCKED' && d.trade && d.trade.askCents != null && d.trade.askCents < MARKET_VETO_CENTS281) {   // v2.8.1 candidate
+    d.state = 'HIGH CONFIDENCE'; d.reasons.unshift(`LOCKED withheld: Kalshi offers ${d.side} at ${d.trade.askCents}¢ (< ${MARKET_VETO_CENTS281}¢), the market strongly disagrees`);
+    d.trade = { ...d.trade, action: 'WAIT', why: `market disagrees: ${d.side} offered at ${d.trade.askCents}¢` };
   }
   if (mutate && geo && geo.pUp != null && !g.hard.length) {
     ls.hist.push({ t: now / 1000, pUp: geo.pUp });
@@ -3823,7 +3828,7 @@ const AUDIT28 = (() => {
 const BOOT28 = { id: crypto.randomBytes(6).toString('hex'), ts: Date.now() };
 /* every environment variable the server reads (list generated at build time) except secrets and I/O paths: an
    override of ANY decision input changes CONFIG28_HASH; the embedded model tables are hashed too */
-const ENV_KEYS28 = ["BASIS_COLD_HI", "BASIS_COLD_LO", "BASIS_DF", "BASIS_EWMA_HL", "BASIS_MAX_SAMPLES", "BASIS_MEAN_UNC_K", "BASIS_MEAN_USD", "BASIS_PRIOR_N", "BASIS_SD_USD", "BASIS_WARM_N", "BG_TICK_MS", "BOOK_FAST_MS", "BOOK_FAST_TAU", "BRTI_5HZ", "BRTI_COUNT_TOL", "BRTI_ENABLE", "BRTI_GATE", "BRTI_GATE_MAX_FLIP", "BRTI_INDEX_ID", "BRTI_MAX_DIVERGENCE_USD", "BRTI_NODATA_MS", "BRTI_STALE_MS", "COLD_MIN_SEC", "COLD_START_ENVELOPE", "CONS_BASIS_MULT", "CONS_VOL_MULT", "DEFAULT_CONTRACTS", "DQ_FIXES", "DRIFT_HORIZON_SEC", "DRIFT_SHRINK", "ENABLE_OPENAI", "ENABLE_WS", "EXEC_SEC", "EXEC_STRESS_Z", "FEE_MAKER_MULT", "FEE_PER_FILL", "FEE_ROUNDING", "FEE_TAKER_MULT", "GREEN_MIN_CUSHION_K", "HIGH_MAX_FLIP", "IMP_BASELINE_FLOOR", "IMP_IMBALANCE_MIN", "IMP_MAX_TAU", "IMP_NOTIONAL_MIN", "IMP_QUIET_GAP_SEC", "IMP_SURGE_MIN", "INDEX_ERR_USD", "INDEX_HARD_STALE_MS", "INDEX_STALE_MS", "KALSHI_BASE", "KALSHI_FAST_TAU_SEC", "KALSHI_KEY_ID", "KALSHI_POLL_FAST_MS", "KALSHI_POLL_MS", "KALSHI_PRIVATE_KEY", "KALSHI_SERIES", "KALSHI_STALE_MS", "KALSHI_WS_URL", "LADDER_SIZES", "LEAN_MAX_FLIP", "LEDGER_FILE", "LEDGER_MAX", "LIVE_VOL_SCALE", "LOCK_MAX_FLIP", "LOCK_MAX_TAU", "LOCK_VENUE_QUOTE_MAX_MS", "MAX_BOOK_AGE_MS", "MAX_DISPERSION_BPS_LOCK", "MIN_EDGE_CENTS", "MIN_EXEC_TAU", "MIN_INDEX_VENUES", "MIN_TRADE_ASK_CENTS", "MOMENTUM_BETA", "MOMENTUM_LAG_SEC", "MONITOR_P0", "OPENAI_API_KEY", "OPENAI_MODEL", "OUTLIER_BPS", "PINRADAR_REPLAY", "PINRADAR_STATE_FILE", "PORT", "PRED_LOG_FILE", "PRED_LOG_MAX", "PROVEN_MARGIN_FRAC", "P_CLAMP_LO", "REACH_K_LIVE", "REACH_K_ONSET", "REACH_K_QUIET", "RECAL_ACTIVE", "RECAL_NORMAL", "RECAL_QUIET", "RESOLUTION_MAX_TAU", "REST_FALLBACK_MS", "REVERSAL_JUMP_X", "REVERSAL_P", "REV_FLIP", "SAMPLE_PHASE_MS", "SETTLE_ALIGN", "SETTLE_POLL_MS", "SETTLE_TAIL_A", "SETTLE_TAIL_B", "SETTLE_WINDOW_SEC", "STALE_BUDGET_FRAC", "STALE_BUDGET_MAX_MS", "STALE_BUDGET_MIN_MS", "STRIKE_MAX_DEV_FRAC", "STRIKE_OVERRIDE_TOL_USD", "TAPE_FILE", "TAPE_FILE_MAX_MB", "TAPE_MAX", "TIER_HIGH_MAX", "TIER_LOCK_MAX", "TIER_MOD_MAX", "VENUE_QUOTE_MAX_MS", "VENUE_SILENT_MS", "VENUE_STALE_MS", "VOL_FAST_SEC", "VOL_FAST_WEIGHT", "VOL_LONG_SEC", "VOL_MIN_SAMPLES", "VOL_PRIOR", "VOL_SHRINK_N", "VOL_UNC_MULT"];
+const ENV_KEYS28 = ["ADAPTIVE_BASIS", "BASIS_COLD_HI", "BASIS_COLD_LO", "BASIS_DF", "BASIS_EWMA_HL", "BASIS_MAX_SAMPLES", "BASIS_MEAN_UNC_K", "BASIS_MEAN_USD", "BASIS_PRIOR_N", "BASIS_SD_USD", "BASIS_WARM_N", "BG_TICK_MS", "BOOK_FAST_MS", "BOOK_FAST_TAU", "BRTI_5HZ", "BRTI_COUNT_TOL", "BRTI_ENABLE", "BRTI_GATE", "BRTI_GATE_MAX_FLIP", "BRTI_INDEX_ID", "BRTI_MAX_DIVERGENCE_USD", "BRTI_NODATA_MS", "BRTI_STALE_MS", "COLD_MIN_SEC", "COLD_START_ENVELOPE", "CONS_BASIS_MULT", "CONS_VOL_MULT", "DEFAULT_CONTRACTS", "DQ_FIXES", "DRIFT_HORIZON_SEC", "DRIFT_SHRINK", "ENABLE_OPENAI", "ENABLE_WS", "EXEC_SEC", "EXEC_STRESS_Z", "FEE_MAKER_MULT", "FEE_PER_FILL", "FEE_ROUNDING", "FEE_TAKER_MULT", "GREEN_MIN_CUSHION_K", "HIGH_MAX_FLIP", "IMP_BASELINE_FLOOR", "IMP_IMBALANCE_MIN", "IMP_MAX_TAU", "IMP_NOTIONAL_MIN", "IMP_QUIET_GAP_SEC", "IMP_SURGE_MIN", "INDEX_ERR_USD", "INDEX_HARD_STALE_MS", "INDEX_STALE_MS", "KALSHI_BASE", "KALSHI_FAST_TAU_SEC", "KALSHI_KEY_ID", "KALSHI_POLL_FAST_MS", "KALSHI_POLL_MS", "KALSHI_PRIVATE_KEY", "KALSHI_SERIES", "KALSHI_STALE_MS", "KALSHI_WS_URL", "LADDER_SIZES", "LEAN_MAX_FLIP", "LEDGER_FILE", "LEDGER_MAX", "LIVE_VOL_SCALE", "LOCK_MAX_FLIP", "LOCK_MAX_TAU", "LOCK_VENUE_QUOTE_MAX_MS", "MARKET_VETO_CENTS", "MAX_BOOK_AGE_MS", "MAX_DISPERSION_BPS_LOCK", "MIN_EDGE_CENTS", "MIN_EXEC_TAU", "MIN_INDEX_VENUES", "MIN_TRADE_ASK_CENTS", "MOMENTUM_BETA", "MOMENTUM_LAG_SEC", "MONITOR_P0", "OPENAI_API_KEY", "OPENAI_MODEL", "OUTLIER_BPS", "PINRADAR_REPLAY", "PINRADAR_STATE_FILE", "PORT", "PRED_LOG_FILE", "PRED_LOG_MAX", "PROVEN_MARGIN_FRAC", "P_CLAMP_LO", "REACH_K_LIVE", "REACH_K_ONSET", "REACH_K_QUIET", "RECAL_ACTIVE", "RECAL_NORMAL", "RECAL_QUIET", "RESOLUTION_MAX_TAU", "REST_FALLBACK_MS", "REVERSAL_JUMP_X", "REVERSAL_P", "REV_FLIP", "SAMPLE_PHASE_MS", "SETTLE_ALIGN", "SETTLE_POLL_MS", "SETTLE_TAIL_A", "SETTLE_TAIL_B", "SETTLE_WINDOW_SEC", "STALE_BUDGET_FRAC", "STALE_BUDGET_MAX_MS", "STALE_BUDGET_MIN_MS", "STRIKE_MAX_DEV_FRAC", "STRIKE_OVERRIDE_TOL_USD", "TAPE_FILE", "TAPE_FILE_MAX_MB", "TAPE_MAX", "TIER_HIGH_MAX", "TIER_LOCK_MAX", "TIER_MOD_MAX", "VENUE_QUOTE_MAX_MS", "VENUE_SILENT_MS", "VENUE_STALE_MS", "VOL_FAST_SEC", "VOL_FAST_WEIGHT", "VOL_LONG_SEC", "VOL_MIN_SAMPLES", "VOL_PRIOR", "VOL_SHRINK_N", "VOL_UNC_MULT"];
 const ENV_EXCLUDE28 = /^(KALSHI_PRIVATE_KEY|KALSHI_KEY_ID|OPENAI_API_KEY|OPENAI_MODEL|ENABLE_OPENAI|PORT|PINRADAR_STATE_FILE|PRED_LOG_FILE|LEDGER_FILE|TAPE_FILE|PINRADAR_REPLAY|ENABLE_WS|KALSHI_WS_URL|PRED_LOG_MAX|LEDGER_MAX|TAPE_MAX|TAPE_FILE_MAX_MB)$/;
 function config28Env() { return Object.fromEntries(ENV_KEYS28.filter(k => !ENV_EXCLUDE28.test(k) && process.env[k] !== undefined && process.env[k] !== '').sort().map(k => [k, String(process.env[k])])); }
 const MODEL28_SHA = sha28(JSON.stringify(M25_MODEL ? { v: M25_MODEL.version, fit: M25_MODEL.fit, sigma: M25_MODEL.sigma, regime: M25_MODEL.regime,
@@ -4246,6 +4251,24 @@ function coldGeometry281(base, args, cv, bc) {
   Object.defineProperty(out, 'cands281', { value: cands, enumerable: false });
   return out;
 }
+/* ADAPTIVE BASIS (candidate, off by default: ADAPTIVE_BASIS=1). The probability model's basis spread (M25_MODEL.basisQ, sd 3.29 $) was
+   fitted on the original Coinbase+Kraken trade proxy. Near the close the basis dominates the remaining uncertainty, so a feed whose
+   official-minus-index error is larger makes the model overconfident there (validation/VALIDATION_REPORT.md, calibration by time).
+   With the switch on, the basis quantiles are scaled by the error the server measures on ITS OWN feed (basisModel().sd: one-step
+   errors of its walk-forward basis predictor, pooled with the prior) relative to the prior BASIS_SD_USD; never below 1. */
+const ADAPTIVE_BASIS281 = String(process.env.ADAPTIVE_BASIS ?? '0') === '1';
+const BS281 = { n: -1, key: null, scale: 1 };
+/* MARKET VETO (candidate, off by default: MARKET_VETO_CENTS=90): see build_server281.py */
+const MARKET_VETO_CENTS281 = clampEnv(process.env.MARKET_VETO_CENTS, 0, 0, 99);
+function basisScale281() {
+  if (!ADAPTIVE_BASIS281) return 1;
+  const n = BASIS.samples.length, key = n ? BASIS.samples[n - 1].key : null;
+  if (n !== BS281.n || key !== BS281.key) {
+    const b = basisModel();
+    BS281.n = n; BS281.key = key; BS281.scale = Math.max(1, Math.min(4, (b.sd || BASIS_SD_USD) / BASIS_SD_USD));
+  }
+  return BS281.scale;
+}
 /* execution stress: BTC has ALREADY moved against the call by a one-sided z quantile of the order-time move, and the whole remaining
    time is still random (the order-time diffusion is not removed). Returns the CAUTIOUS P(UP) in that state: the worse (for the leader)
    of the point and conservative models, both recalibrated, i.e. the same standard as the TRADE NOW edge (evConsCents). At z = 0 it is
@@ -4266,8 +4289,8 @@ function stressPUp281(geo, tau, execSec, z = EXEC_STRESS_Z, recalFor = null) {
   const shift = z * geo.sigmaBps * 1e-4 * geo.index * Math.sqrt(d), frac = Math.min(1, (geo.nRemaining == null ? 60 : geo.nRemaining) / 60);
   const b = geo.regime ? geo.regime.bucket : m25Bucket(M25_MODEL, 0);
   const r = recalFor ? recalFor(geo) : (geo.recal && Number.isFinite(geo.recal.ratio) ? geo.recal.ratio : recalRatio26(b));
-  const q = { tau: Math.max(0, tau), gap: geo.gapUsd - sgn * shift * frac, sigBps: geo.sigmaBps, S: geo.index, mu: geo.basisMeanUsd, bucket: b };
-  const p = recalPUp26(m25PUp(M25_MODEL, q), r), pc = recalPUp26(m25PUp(M25_MODEL, { ...q, volMult: CONS_VOL_MULT, basisMult: CONS_BASIS_MULT }), r);
+  const q = { tau: Math.max(0, tau), gap: geo.gapUsd - sgn * shift * frac, sigBps: geo.sigmaBps, S: geo.index, mu: geo.basisMeanUsd, bucket: b, basisMult: basisScale281() };
+  const p = recalPUp26(m25PUp(M25_MODEL, q), r), pc = recalPUp26(m25PUp(M25_MODEL, { ...q, volMult: CONS_VOL_MULT, basisMult: CONS_BASIS_MULT * basisScale281() }), r);
   if (p == null || pc == null) return null;
   return sgn > 0 ? Math.min(p, pc) : Math.max(p, pc);
 }
@@ -5046,7 +5069,7 @@ function runSelfTest() {
         gates: { hard: [], soft: [] }, kal: { ok: true, ticker: 'SELFTEST26' }, contracts: 10, mutate: false });
     };
     const sCheap = run(15), sFair = run(4);
-    push('2.6 LOCKED offered at 85c -> LOCKED — MARKET DISAGREES (no TRADE NOW)', sCheap.state === 'LOCKED' && sCheap.trade.action === 'LOCKED — MARKET DISAGREES',
+    push('2.6 LOCKED offered at 85c -> LOCKED — MARKET DISAGREES (no TRADE NOW); with MARKET_VETO_CENTS > 85: withheld (HIGH CONFIDENCE, WAIT)', (typeof MARKET_VETO_CENTS281 !== 'undefined' && MARKET_VETO_CENTS281 > 85) ? (sCheap.state === 'HIGH CONFIDENCE' && sCheap.trade.action === 'WAIT') : (sCheap.state === 'LOCKED' && sCheap.trade.action === 'LOCKED — MARKET DISAGREES'),
       sCheap.state + ' ' + sCheap.trade.action + ' ask ' + sCheap.trade.askCents);
     push('2.6 the same call offered at 96c is still TRADE NOW', sFair.state === 'LOCKED' && sFair.trade.action === 'TRADE NOW', sFair.trade.action + ' ' + sFair.trade.evConsCents);
     const lines = sFair.validation && sFair.validation.lines;
@@ -5303,6 +5326,8 @@ function runSelfTest() {
     push('2.8.1 qualifying price: also requires the stressed cautious value >= 0', mS > 0 && mS <= 97 - feeAt(mS) + 1e-9 && mS < mA, [mS, mA]);
     const mG = maxAskFor281(95, 0.80, 10, 99.8);
     push('2.8.1 qualifying price: never below MIN_TRADE_ASK_CENTS (there the server says MARKET DISAGREES, never TRADE NOW)', mG === 0 && maxAskFor281(99.9, null, 10, 99.8) >= MIN_TRADE_ASK_CENTS, [mG]);
+    /* candidates are off by default: the decisions equal 2.8.1's */
+    push('2.8.1 candidates ADAPTIVE_BASIS / MARKET_VETO_CENTS are off unless set', (process.env.ADAPTIVE_BASIS === '1' || basisScale281() === 1) && (process.env.MARKET_VETO_CENTS ? true : MARKET_VETO_CENTS281 === 0), [basisScale281(), MARKET_VETO_CENTS281]);
     /* action states */
     const a1 = exec281({ state: 'LOCKED', side: 'UP', trade: { action: 'LOCKED — DO NOT TRADE', why: 'x' }, ticker: null }, { tau: 40, execSec: 10, now: nowS });
     const a2 = exec281({ state: 'LOCKED', side: 'UP', trade: { action: 'LOCKED — TOO LATE', why: 'y' }, ticker: null }, { tau: 8, execSec: 10, now: nowS });
@@ -5550,6 +5575,6 @@ module.exports = {
   clientLat28, ledgerVerify28, tapeWrite28, TAPE28_FILE_MAX,
   // v2.8.1
   coldVol281, basisCold281, coldGeometry281, stressPUp281, exec281, exec281Summary, warmup281, execSec281, EXEC281, COLD_TABLE281,
-  maxAskFor281, dqNote281, dqSummary281, DQ281, startSampler,
+  maxAskFor281, dqNote281, dqSummary281, DQ281, startSampler, basisScale281, MARKET_VETO_CENTS281,
   COLD_MIN_SEC, COLD_FULL_SEC, COLD281_ON, BASIS_WARM_N, BASIS_COLD_LO, BASIS_COLD_HI, EXEC_SEC, EXEC_STRESS_Z
 };
