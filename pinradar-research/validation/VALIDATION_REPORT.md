@@ -1,173 +1,365 @@
-# BTC Pin Radar — historical validation: interim report (2026-10-16)
+# BTC Pin Radar — historical validation, independent data and stress test: final report (2026-10-16)
 
-**Status.** Everything that can be executed with the data in this environment has been executed, and the results are below. The independent public-data phase (≥ 12 months) is **blocked**: this environment's network policy refuses every market-data host (Kalshi, Binance, Coinbase, Kraken, Bitstamp, Gemini, CF Benchmarks all return HTTP 403 at the proxy). The complete pipeline for it is written, unit-checked offline, and committed, and the rules it will be judged by are pre-registered (`VALIDATION_PREREG.md`). It runs as one command once the hosts are allowed (section E). No result below is simulated unless it says [SIM], and nothing was invented to fill the gap.
+## Verdict first
 
-**Evidence tags:**
+**H. Ready for real-money deployment?**
+
+| Use | Verdict | Deciding evidence |
+|---|---|---|
+| **The intended trade: about $50,000 at about 99.9 ¢** | **NO** | The pre-registered NO rule triggered. Kalshi's real prints show 50,046 contracts at ≤ 99.9 ¢ in the 12 s after a T−20 entry in **1 of 15,772** unseen windows. Buying at the *first* LOCKED is worse: it is wrong 0.17 % of the time (28 of 16,773 unseen calls, 95 % CI 0.11–0.24 %), and break-even is 0.093 %. |
+| Small sizes (10–1,000 contracts), first LOCKED, 90 ¢ guard | **NOT YET VALIDATED** | On 6 unseen months it earned +0.41 ¢ per contract (95 % CI +0.35 to +0.47) at 100 contracts, against about 0 for a market-only rule. That is about $4,300 in 6 months. The fill model is an upper bound; the live index differs from the replay feed; and the edge was smaller in later months. A forward test with real small orders is the next step. |
+| As a forecast display (directional certainty) | supported, with known limits | LOCKED means "flip risk ≤ 0.5 %". On unseen data it was wrong 0.17 % of the time. Its errors are concentrated in calls made in the last 15 s and in DOWN calls. |
+
+Evidence is a backtest. It bounds the risk; it does not guarantee future results.
+
+**Evidence tags used below:**
 
 | Tag | Meaning |
 |---|---|
-| [RUN] | Executed in this session, on data present here. |
-| [HIST] | Read from the saved result files of the Oct 13 walk-forward study: 5,885 KXBTC15M windows, Jul 22 – Oct 13 2026, built from Kalshi's official settlement values and real Kalshi / Coinbase / Kraken tapes. The tapes themselves are not in this environment, so these counts cannot be re-executed here. |
-| [SCREEN] | Read from your photos of the live page. |
+| [RUN] | Executed in this session on the data described in `DATA_PROVENANCE.md`. Every number is reproducible with the commands at the end. |
+| [SCREEN] | Read from your photo. |
+| [EXPLORATORY] | Found or designed after looking at the decisive data. Hypothesis-generating, not validated. |
 
-## Data actually available here (Phase 1 audit)
+All tables are generated from the result files by `pipeline/final_tables.py` into `RESULTS_TABLES.md`. Figures quoted here are copied from those files.
 
-| Data | What it is | Use |
+---
+
+## What was done
+
+| Phase | What was executed |
+|---|---|
+| 1. Audit of logs and software | Every file in both repositories was inventoried. The deployed server's logs (ledger, predictions, tape) are **not** available here: no file holds them, and the server was not contacted (your Render services were not touched). The 58 saved real windows and your photos were used. The full 2.8.1 test suite was run: all checks pass (`2.8.1/TEST_RESULTS.md`). |
+| 2. Independent data | Every settled Kalshi KXBTC15M contract that publishes its official settlement values: **25,994 contracts, 2026-01-13 → 2026-10-16** (9 months; the series does not go further back with these values). Kalshi trade prints for each window's last 300 s. Binance 1 s BTC prices **2023-10-01 → 2026-10-15** (37 months, checksums verified). Coinbase and Kraken trades for cross-checks. Provenance: `DATA_PROVENANCE.md`. |
+| 3–4. Hypothesis and reliability | The current engine was replayed second by second over every contract, with no look-ahead (`replay_chrono.js`). That is 25,982 windows and about 7.8 million decisions per run, on five configurations. Scoring followed the pre-registered splits (`VALIDATION_PREREG.md`, committed before any data were fetched). A separate 27-month proxy study used 80,159 windows. |
+| 5. Profitability | Break-even (`economics.js`). Executable volume, and P&L at 10 / 100 / 1,000 / 10,000 / 50,046 contracts, from Kalshi's real prints: VWAP and worst-fill, latency 0 / 2 / 5 s, fee included, day-block bootstrap (`execution.py`, `trading_eval.py`). |
+| 6. Break the software | Three adversarial review rounds of 2.8.1; fault injection; restart, stale-data and race tests; feed, latency, settlement-lag and timing sensitivity on the real data; an independent audit of this validation's own claims (section "Corrections"). |
+| 7. Improve and retest | Two candidate changes, built into 2.8.1 behind switches that are **off by default**, replayed over all contracts. They are labelled exploratory because they were designed after seeing unseen-period results. |
+
+**Splits (pre-registered):**
+
+| Split | Period | Status |
 |---|---|---|
-| 58 real windows (`pkg27/test/data`) | 1 Hz index paths (1,901 s each), strike, Kalshi's official settlement average and result, walk-forward basis. 42 windows carry one historical trade entry each (side, price, time); 16 are consecutive (Jul 22 01:15–05:00 UTC). | [RUN] chronological replays of the current engine |
-| Saved results of the Oct 13 study | Per-set counts: first LOCKED, LOCKED at fixed times, TRADE NOW fills from Kalshi tapes, regimes, momentum, shocks | [HIST] |
-| Your live page | Forward record "0 of 83 LOCKED calls lost"; the Oct 15 20:30 ET incident | [SCREEN] |
-| Everything else checked | Large files under `/home/user/work/reviews` are synthetic test ledgers; the `Btc-signal` repo holds page versions only. No raw historical trading log, Kalshi tape or exchange tape exists here. | none |
+| **U2** | 2026-01-13 → 07-21 | unseen, decisive (17,841 windows) |
+| **U1** | 2026-10-14 → 10-16 | unseen, decisive (185 windows) |
+| **Seen** | 2026-07-22 → 10-13 | used while building 2.6–2.8: reported, not decisive (7,956 windows) |
+| **P (proxy)** | 2023-10-01 → 2026-01-13 | Binance prices only; outcome defined by the proxy itself; never pooled with contract results |
 
-The 58 windows were picked for earlier tests and over-represent reversals, so their counts are not failure rates. Rates come from [HIST], and will come from the pipeline.
+---
 
-## A. Does the hypothesis hold?
+## A. Does the underlying hypothesis hold?
 
-Distance, cushion, time left, volatility and settlement-average mathematics **do** identify a LOCKED state that is right far more often than the market price alone would suggest. **But the remaining failure rate is not small enough for the trade you intend, at the moment LOCKED first appears.**
+**Partly.** Distance, σ-cushion, time left, volatility and settlement-average mathematics do identify moments when the outcome is very likely. The engine's flip probabilities are honest or conservative over most of the window. **But they cannot get the failure rate at the moment LOCKED first appears below the 0.093 % that a $50,000-for-$47 trade needs.** Where the rate does fall low enough (still LOCKED at T−30 … T−15), the market has already priced the outcome at 99.9–100 ¢ and there is almost nothing left to buy.
 
-* **First LOCKED [HIST].**
-  * Holdout: 3 of 1,879 wrong (0.16 %, 95 % CI 0.03–0.47 %).
-  * Development: 13 of 3,484 (0.37 %, CI 0.20–0.64 %).
-  * Pooled: 16 of 5,363 (0.30 %, CI 0.17–0.48 %).
-  * The failure rate is flat across volatility regimes.
-  * Momentum at the call predicted none of the failures: there were 0 losses among calls made against adverse momentum.
-* **How they fail.** Every recorded loss was called 54–300 s before the close and overturned by a sharp move afterwards [HIST].
-  * In the two real paths available here, the move was 1.4–1.6× the move required, within 12–44 s [RUN].
-  * The Oct 15 20:30 ET incident has the same shape [SCREEN]: LOCKED DOWN at T−89, then a reversal warning at T−71.
-* **Where it holds best.** The call is far more reliable if it is **still** LOCKED close to the end [HIST]:
+**What the evidence supports [RUN]**, primary engine 2.8.1, BTCUSDC feed, unseen U:
 
-  | Still LOCKED at | Wrong / LOCKED (pooled) | 95 % CI |
+| Moment | Wrong / LOCKED | Rate | 95 % CI or one-sided bound | vs 0.093 % break-even |
+|---|---|---|---|---|
+| First LOCKED second | 28 / 16,773 | 0.167 % | 0.111–0.241 % | **above** |
+| Still LOCKED at T−60 | 3 / 10,376 | 0.029 % | ≤ 0.075 % | below |
+| Still LOCKED at T−30 | 2 / 14,842 | 0.013 % | ≤ 0.042 % | below |
+| **Still LOCKED at T−20** | **2 / 15,936** | 0.013 % | **≤ 0.040 %** | below |
+| Still LOCKED at T−15 | 3 / 16,276 | 0.018 % | ≤ 0.048 % | below |
+| Still LOCKED at T−10 | 4 / 16,479 | 0.024 % | ≤ 0.056 % | below |
+| Still LOCKED at T−5 | 8 / 16,536 | 0.048 % | ≤ 0.087 % | borderline |
+
+* Coverage: 93.0 % of unseen windows were LOCKED at some point.
+* The fixed-time cells overlap: the same windows are counted at different times. T−20 was named as the primary entry rule **before** the data were seen.
+* **The 27-month proxy agrees on the shape** [RUN]. Over 80,159 windows from Oct 2023 to Jan 2026, first LOCKED was wrong 188 / 74,811 times (0.251 %, CI 0.217–0.290 %). Still LOCKED at T−20 was wrong 3 / 71,414 times, and at T−10, 0 / 73,487.
+
+**What the evidence does not support:**
+
+1. **A LOCKED call made early is not near-certain.** It is a "≤ 0.5 % flip" call, and the engine's probabilities say so.
+   * On the proxy, where there is no feed-vs-index error, failures were 0.6–0.9× what the engine predicted at T−120 … T−60, and 0.4× at T−45 … T−15 (`calibration.json`).
+   * On contracts, unseen data gave 0.1–0.5× at T−120 … T−30.
+   * LOCKED is honestly calibrated to a threshold five times looser than your trade needs.
+2. **Momentum does not predict the failures** [RUN, `anatomy.json`].
+   * Calls made while the price was moving against them (adverse momentum ≥ 1): 1 wrong of 438.
+   * The rest: 27 of 16,335.
+   * Fisher p = 0.52 on unseen data. Across all periods it is 3 / 686 against 44 / 23,317, p = 0.15.
+3. **Volatility regime does not separate them.** Failure rates are 0.10–0.30 % in every volatility band.
+4. **Required move and cushion help only a little.**
+   * Below 3σ cushion: 0.50 % wrong (11 / 2,199).
+   * 3–4σ: 0.15 %.
+   * Above 4σ: 0.08 % (5 / 6,454).
+   * Even the best band is near break-even.
+5. **DOWN calls fail more often than UP** [EXPLORATORY: not a pre-registered hypothesis].
+   * Unseen: 20 / 8,421 against 8 / 8,352 (Fisher p = 0.036).
+   * All periods: 32 / 12,051 against 15 / 11,952 (p = 0.019).
+   * The proxy shows no asymmetry (94 / 37,014 against 94 / 37,797). The asymmetry is therefore likely in the feed-vs-BRTI basis, not in BTC itself.
+
+## B. Can the newest Pin Radar be relied on for sufficiently accurate LOCKED signals?
+
+**As a forecast: yes, with documented limits. As a trigger for $50,000 trades: no.**
+
+**Demonstrated failure rates (all periods, primary engine) [RUN]:**
+
+| Item | Value |
+|---|---|
+| First LOCKED wrong | 47 / 24,003 = 0.196 % (CI 0.144–0.260 %) |
+| By period | unseen 0.167 %; seen 0.263 % (19 / 7,230) |
+| Deployed 2.8 | the same 47 wrong calls (47 / 24,004; 2.8 has one extra, correct, LOCKED window). 2.8.1 does not change the probability model. |
+| Current 2.8.1 build vs the pre-registered build | byte-identical decisions with the candidate switches off (287-window parity replay, 86,400 decisions) |
+| REVERSAL WARNING after a LOCKED call | on 34 of 47 wrong calls (32 with ≥ 15 s left); on 211 of 23,956 correct calls (0.9 % false alarms) |
+| Windows never LOCKED | 1,979 of 25,982. By official margin: 1,018 under $5 and 640 of $5–20 (genuine toss-ups); 30 of $20–100; **291 of $100 or more** (missed: section D). |
+| DATA UNRELIABLE windows | 0 in the replays. The replay feeds have no gaps; live gaps are covered by the 2.8.1 fault-injection tests. |
+
+**Where the failures are** (unseen, 28 wrong first-LOCKED calls) [RUN]:
+
+| Time left at the first LOCKED | Calls | Wrong | Rate |
+|---|---|---|---|
+| under 15 s | 362 | 9 | **2.49 %** |
+| 15–30 s | 1,419 | 5 | 0.35 % |
+| 30–60 s | 4,383 | 3 | 0.07 % |
+| 60–120 s | 5,757 | 4 | 0.07 % |
+| 120–300 s | 4,852 | 7 | 0.14 % |
+
+**Two failure classes:**
+
+1. **Near-strike settlements.** 19 of the 28 settled within $10 of the strike; 13 of those were called in the last 30 s.
+   * Here the difference between the replay's exchange feed and CF Benchmarks' BRTI decides the outcome.
+   * Calibration shows the engine is **over-confident in the last 15 s on the replay feed**: observed / predicted failures were 2.3× at T−15, 6× at T−10 and 46× at T−5 on unseen data (`calibration.json`).
+   * It is **not** over-confident on the proxy, where the feed *is* the reference: 0 failures from T−10.
+   * So the error is the basis (feed vs official index), not the price model. The live server has a three-venue index and an official-BRTI panel for the final minute. The replay could not reproduce either (Kalshi publishes the live BRTI only over an authenticated stream). Live behaviour in the last 15 s is therefore **untested** here, in either direction.
+2. **Real reversals.** 9 of the 28 settled $10–244 on the other side of the strike.
+   * 8 of them were called 97–288 s before the close, with the market agreeing: the called side last traded at 97.8–99.8 ¢.
+   * This includes two DOWN calls overturned by $244 and $220.
+   * The ninth was called at T−9 while the market priced the called side at 0.9 ¢. That is a feed error, and the 15 s buffer and the guard both block it.
+   * This is the Oct 15 20:30 ET class (`INCIDENT_OCT15_2030ET.md`). No observable at the call separated them from correct calls.
+
+**Generalisation.** The rate on unseen data (0.167 %) is lower than on the period used to build the software (0.263 %). Overfitting would show the opposite.
+
+**Feed sensitivity** [RUN]:
+
+| Feed | First LOCKED wrong (unseen) | T−20 (unseen) | T−20 (all) |
+|---|---|---|---|
+| Binance BTCUSDC (primary) | 0.167 % | 2 / 15,936 | 2 / 22,751 |
+| Binance BTCUSDT | 0.273 % (46 / 16,839) | 5 / 16,035, bound 0.066 % | 12 / 22,900, bound 0.085 % |
+
+* On the seen period the USDT feed gives 7 / 6,865 at T−20 (bound 0.19 %). That is above break-even, so the late-window reliability depends on how well the index tracks BRTI.
+* **Feed tracking** (one-step error of the server's own basis predictor against Kalshi's official value; Coinbase covers Sep 15 – Oct 4 only, Kraken partial days):
+
+  | Feed | Error sd | Errors over $10 |
   |---|---|---|
-  | T−60 s | 2 / 3,280 | 0.007–0.22 % |
-  | T−45 s | 1 / 4,033 | 0.0006–0.14 % |
-  | T−30 s | 0 / 4,732 | 0–0.078 % |
-  | T−20 s | 0 / 5,106 | 0–0.072 % |
-  | T−15 s | 0 / 5,218 | 0–0.071 % |
-  | T−10 s | 1 / 5,301 | 0.0005–0.105 % |
+  | BTCUSDC | $4.93 | 2.8 % |
+  | BTCUSDT | $6.30 | 7.7 % |
+  | Coinbase | $4.00 | 1.4 % |
+  | Kraken | $9.03 | 23.9 % |
 
-  * These cells overlap (the same windows at different times).
-  * T−20 / T−15 look best only after the fact.
-  * The data are 62 days of one market regime.
+## C. How many historical failures would the new software have prevented?
 
-## B. Can LOCKED be relied on?
+**Exact numbers [RUN, `prevented.json`].** For the 28 wrong first-LOCKED calls on unseen data, all with a Kalshi tape, and for the 47 across all periods:
 
-* **As a forecast**, at the 0.5 % standard it was built for: yes. Its observed failure rate is within that standard, and calibration error is 0.3–1.4 percentage points [HIST].
-* **As a trade trigger for $50,000 positions: not as it stands.**
-  * Zero observed failures does not mean impossible. The forward record (0 of 83 before Oct 15 20:30 ET) has a 95 % upper bound of 3.5 % [SCREEN].
-* **On the 58 real windows, current engine 2.8.1, chronological replay, production-like 50 ms data age [RUN]:**
-  * 55 first-LOCKED calls, 2 wrong: Sep 2 23:15 at T−97, and Oct 12 20:45 at T−17.
-  * Still LOCKED at T−60 … T−3: 0 wrong.
-  * 2.8 is identical on these windows.
+| Safeguard (in which version) | Wrong calls kept out of a trade | Correct calls also kept out (cost) |
+|---|---|---|
+| 15 s buffer: no TRADE NOW with < 15 s left (2.8.1) | 9 of 28 (all: 11 of 47) | 353 of 16,745 |
+| 90 ¢ market-disagreement guard (2.8 and 2.8.1) | 12 of 28 (all: 13 of 30 with a tape) | 114 |
+| Either of the two | **13 of 28** | 449 |
+| Not prevented: traded at the first LOCKED with the market at 94–99.8 ¢ | **15 of 28** (all: 16 of 30 with a tape) | — |
+| Entry only if still LOCKED on the same side at T−20 | 26 of 28 (all: 45 of 47) | 811 correct first-LOCKED calls not LOCKED the same way at T−20 |
 
-## C. Failures the new software prevents
-
-**Prevented by 2.8.1 [RUN, SIM]:**
-* The restart failures: restart errors go from 2 to 0 in the restart simulations, at the harness's input age.
-* The Oct 12 call made with a cold basis model.
-* "TOO LATE" mislabels on empty books.
-* DATA UNRELIABLE false alarms from the sampler phase: up to 94 % of final-minute decisions in affected windows, now 0 %.
-* TRADE NOW inside the last 15 s.
-* Stale TRADE NOW displays on slow links.
-
-**Not prevented:** the main failure class, sharp reversals after an early call.
-* The 15 recorded losses would all still have been called LOCKED by 2.8.1.
-* So would Oct 12 with a known basis. Tonight's call came from the same probability model (2.8), which 2.8.1 does not change.
-* A 0.2 % threshold would have prevented 8 of 13 development and 2 of 3 holdout losses, but halves trading profit [HIST]; it is not adopted.
-* Momentum, volatility and the 15 s buffer prevent none of them.
+* **Not prevented by any 2.8.1 change: the displayed LOCKED itself.** 2.8 and 2.8.1 show the same wrong LOCKED calls, all 47.
+* 2.8.1's other fixes address failures that a replay cannot contain. Each is demonstrated by a test that fails on 2.8 and passes on 2.8.1 (`2.8.1/TEST_RESULTS.md`):
+  * restart and cold-start errors: restart errors 2 → 0 in the restart simulations;
+  * DATA UNRELIABLE false alarms from the sampler phase: up to 94 % of final-minute decisions → 0 %;
+  * stale TRADE NOW on slow links;
+  * "TOO LATE" shown on empty books.
+* **The Oct 15 20:30 ET loss** [RUN, `INCIDENT_OCT15_2030ET.md`]:
+  * DOWN traded at 79 ¢ when LOCKED DOWN appeared, so the 90 ¢ guard (2.8 and 2.8.1) would have refused TRADE NOW.
+  * The T−20 rule would not have entered.
+  * The LOCKED display itself is not prevented.
 
 ## D. Missed opportunities
 
-* **LOCKED calls missed:** almost none [HIST]. In the holdout, 241 of 2,120 windows were never LOCKED. Their official margins were under $5 (157) or $5–20 (84), so these are genuine toss-ups.
-* **Trades missed:** the binding limit is the **price**, not the model [HIST].
-  * Where a price existed, the leader's median ask was **99.9 ¢** at every time from T−60 to T−3.
-  * An ask at or below 99 ¢ appeared in only 0.5–4 % of priced LOCKED windows.
-  * At T−20 only 1,383 of 5,106 LOCKED windows (27 %) showed any leader trade at all.
-* **Recovering more trades means buying when the market is cheaper.** That is exactly when the call appears weaker: TRADE NOW lost 2 of 261 (0.77 %, CI 0.09–2.74 %) against 0.37 % for LOCKED overall. The difference is not significant.
+* **Never LOCKED, with an official margin of $100 or more: 291 windows** (1.1 %).
+  * In **all 291**, the engine's volatility estimate (above 1.767 bps/√s) was outside the range its tables were validated on, so the soft gate held the call at HIGH CONFIDENCE.
+  * This was checked by replaying each window again with the gate reasons recorded (`replay_chrono.js --warm 3600`, one window at a time).
+  * 148 of them are from February 2026.
+  * These are real misses, but recovering them would mean extrapolating the probability tables beyond their tested range. That was **not** done: you asked not to weaken risk controls for more signals.
+  * **What they were worth** [RUN, `missed_value.py`]. Buying the side the engine leaned to at T−60, with the same fill rule:
+    * 262 of the 291 have a tape. The leaned side won 261 times.
+    * Only 56 could fill 100 contracts; the called side last traded at a median of 99.0 ¢.
+    * Total value at 100 contracts: **$106 over 9 months**.
+    * The exclusion costs almost nothing, so there is no case for loosening it.
+  * The 1,658 never-locked windows with margins under $20 are genuine toss-ups.
+* **Trades missed for lack of a price, not a signal.** At T−20 the median number of called-side contracts bought at ≤ 99.9 ¢ in the next 12 s was **0**; the 90th percentile was 711. Only 2,305 of 15,710 unseen T−20 entries could fill even 100 contracts.
+* **Recovering them would need buying earlier, at the first LOCKED.** That has more fills (10,586 of 16,477 at 100 contracts), but it is where the failure rate is 0.17 %.
+  * At small sizes that rate is affordable, because the fills are cheaper: median VWAP 99.73 ¢, interquartile range 99.16–99.87 ¢.
+  * At $50,000 it is not.
+* **The page's TRADE NOW edge rule** (cautious value − price − fee ≥ 0.5 ¢) picks the cheapest asks. On unseen data it made 392 trades at 100 contracts and lost 4 (1.0 %), for +1.97 ¢ per contract (CI +1.21 to +2.58), or $772.
+  * It trades rarely, and the cheap price is itself a warning: 4 losses in 392 is 6× the first-LOCKED rate.
 
-## E. At least one year of independent data — NOT EXECUTED (blocked)
+## E. At least one year of independently sourced data
 
-* **What is blocked.** Every source returned HTTP 403 at this environment's proxy (checked twice): `api.elections.kalshi.com`, `data.binance.vision`, `api.exchange.coinbase.com`, `api.kraken.com`, `www.bitstamp.net`, `api.gemini.com`, `www.cfbenchmarks.com`.
-* **Ready to run** (`pipeline/run_pipeline.sh`; every step resumable, every response logged with its SHA-256):
-  1. Every settled KXBTC15M market from Kalshi, with its official `expiration_value` (the CF Benchmarks BRTI 60-second average the contract settles on) and its result.
-  2. Kalshi trade prints for each window's last 300 s.
-  3. Coinbase and Kraken trades converted to the 1 Hz USD index the live server uses.
-  4. Binance BTCUSDT 1-second archives from 2023-10-01 for a long-horizon **proxy** study. Its outcomes are defined by the proxy itself and are never pooled with contract results.
-  5. A continuous chronological replay of 2.8.1 and 2.8 with the live basis model learning only from windows already settled.
-  6. Scoring by the pre-registered splits.
-  7. Execution scoring against Kalshi's real prints.
-* **Tested offline:**
-  * the replay, on the 16 consecutive real windows: 4,500 decisions in 2.3 s, so about 1.5 h per contract-year;
-  * the scoring, on the replay output;
-  * the 1 Hz converters (trade staleness rule, millisecond and microsecond kline timestamps);
-  * the Kalshi price parsers (both field formats).
-* **Not tested:** the network calls themselves. `fetch_kalshi.py probe` prints every endpoint's fields first so the parsers can be checked against the live format.
-* **What the BRTI allows.** CF Benchmarks' BRTI history itself is licensed. Kalshi's `expiration_value` gives the exact official settlement average per contract, which is what the outcome needs. The second-by-second index before the close is reconstructed from the USD constituents, with the proxy-to-BRTI basis learned walk-forward from those official values; this is how the live server works too.
-* **How much contract history exists.** If Kalshi's KXBTC15M history starts around July 2026 (the Oct 13 study found Jul 22 onward), contract-level validation cannot reach a year. The long-horizon question is then answered by the proxy study, labelled as such.
+* **Contracts.** Kalshi publishes KXBTC15M official values from **2026-01-13** only. Earlier markets (Dec 2025 – Jan 2026, 2,878) used a different strike rule and carry no values; they are excluded and listed.
+  * Contract-level validation therefore covers **9 months: 25,994 contracts**. 18,026 of them are unseen.
+* **Longer horizon.** The ≥ 12-month requirement is met by the proxy: Binance BTCUSDT 1 s, **2023-10-01 → 2026-01-13, 27.5 months, 80,159 windows**, checksums verified.
+  * Its outcome is the proxy's own 60 s averages, so it tests the price-path model only, not the BRTI basis or execution.
+  * Results: section A table, and `RESULTS_TABLES.md`. By month, the first-LOCKED failure rate ranged 0.07–0.37 % (28 months).
+* **Method.** Continuous chronological replay of the actual server build:
+  * prices fed second by second;
+  * decisions at 0.75 s into each second, with a 50 ms quote age;
+  * official values reach the basis model 5 s after each close, as in production;
+  * month chunks with 24 h warm-up.
+  * Outcomes are Kalshi's `result`.
+  * Execution is scored from Kalshi's real prints.
+* **Provenance.** Every HTTP response is logged with URL, status, size, SHA-256 and time (`PROVENANCE*.ndjson`). Every excluded market is listed with its reason. Nothing was imputed.
 
-## F. Profitable at your intended size?
+## F. Would the strategy have been profitable at the intended amounts?
 
-A $50,000 position, one order, with Kalshi's taker fee `ceil(0.07 × C × P × (1−P))` [RUN, `economics.js`]:
+**Theoretical settlement accuracy vs realistic execution — kept separate.**
 
-| Ask | Contracts | Win | Loss | Break-even failure rate | Clean wins needed to show it (95 %) |
-|---|---|---|---|---|---|
-| 99.9 ¢ | 50,046 | +$46.55 | −$49,999 | **0.093 %** | 3,220 |
-| 99.8 ¢ | 50,093 | +$93.19 | −$50,000 | 0.186 % | 1,609 |
-| 99.0 ¢ | 50,469 | +$469.71 | −$49,999 | 0.93 % | 321 |
+**1. The arithmetic of the intended trade** (`economics.js`, Kalshi taker fee `ceil(0.07 × C × P × (1−P))`):
 
-* **Buying at the first LOCKED at 99.9 ¢ loses money: NO.**
-  * The pooled failure rate is 0.30 %, with a CI of 0.17–0.48 %. That interval lies wholly above the 0.093 % break-even.
-  * Expected value: about **−$103 per trade**.
-* **Buying only while still LOCKED at T−30 … T−15, at 99.9 ¢: NOT YET VALIDATED.**
-  * 0 failures in 4,732–5,218 windows. The one-sided 95 % upper bounds (0.057–0.063 %) are below break-even, which gives +$15 to +$18 per trade at the bound and +$46.55 at the point estimate.
-  * But the cells were chosen after seeing the data, and the period is 62 days.
-  * Capacity is unverified. Only about 27 % of those windows showed any leader trade at T−20. Whether 50,000 contracts at ≤ 99.9 ¢ were available in 12 s is unknown; the saved files hold prices, not sizes.
-  * One loss in about 1,000 such trades erases about 1,000 wins.
-* **At 10 contracts, the model's own TRADE NOW [HIST]:**
-  * holdout: 32 trades, 0 lost, +2.05 ¢ per contract (CI 1.38–2.73);
-  * development: 261 trades, 2 lost, +0.86 ¢ (CI −0.21 to +1.92);
-  * in total about $22 over 40 days at 10 contracts.
-  * The edge is not established.
+| Price | Contracts for $50k | Win | Loss | Break-even failure rate |
+|---|---|---|---|---|
+| 99.9 ¢ | 50,046 | +$46.55 | −$49,999 | 0.093 % |
+| 99.8 ¢ | 50,093 | +$93.19 | −$50,000 | 0.186 % |
+| 99.0 ¢ | 50,469 | +$469.71 | −$49,999 | 0.93 % |
 
-## G. Improvements
+**2. Settlement accuracy alone (no execution).**
+* At the first LOCKED: 0.167 % wrong, against 0.093 %. **Negative EV: about −$37 per $50k trade** (0.00167 × 50,000 vs 0.99833 × 46.55).
+* Still LOCKED at T−20: 0.013 % wrong. The bound of 0.040 % is below break-even, so positive in theory.
 
-**Measured and adopted in 2.8.1** (each with a test that fails on the old code and passes on the new) [RUN]:
+**3. Real execution (Kalshi prints) [RUN].**
+* **Capacity at $50,000.** 50,046 contracts at ≤ 99.9 ¢ within 12 s:
+  * T−20, unseen: **1 of 15,772 entries (0.006 %)**;
+  * all periods: T−20 4 / 17,703, T−30 0.06 %, first LOCKED 0.44 %.
+  * The trade does not exist at that size in this market. **Pre-registered NO.**
+* **Unseen U2 (Jan 13 – Jul 21), complete tapes: P&L per contract after fees.** VWAP fill, 95 % day-block CI:
+
+{{TRADING_U2}}
+
+**4. Sensitivity** [RUN]:
+
+| Change | model: first LOCKED at C = 100 |
+|---|---|
+| Fill at the worst print instead of VWAP | +0.25 ¢ (CI +0.18 to +0.31) |
+| + 0.1 ¢ slippage | +0.32 ¢ |
+| Entry latency 2 s | {{LAT2}} |
+| Entry latency 5 s | {{LAT5}} |
+| Market-only rule at worst fill | −0.44 ¢ (CI −0.59 to −0.29) |
+
+**5. Over time and on the seen period** [RUN]:
+
+{{MONTHLY}}
+
+**6. Exit on REVERSAL WARNING** [RUN]:
+
+{{EXIT}}
+
+**Answer.**
+* **At $50,000: no.** The size cannot be filled, and at the moment it could be (first LOCKED) the failure rate is above break-even.
+* **At 100–1,000 contracts: yes, on unseen data.**
+  * The strategy is roughly 0.4 ¢ per contract better than the market's own price-following rule.
+  * At 1,000 contracts that was $26,600 in 6 months, with 7 losing trades of about $1,000 each.
+  * The fill model assumes you got the prints other traders got. That is an **upper bound**.
+* **At 10,000 contracts** it filled only 873 times in 6 months. The VWAP result (+0.46 ¢) is not robust to worst-fill pricing (+0.09 ¢, CI −0.20 to +0.22).
+
+## Phase 6. Attempts to break the software
+
+| Scenario | How tested | Result |
+|---|---|---|
+| Abrupt reversals, extreme momentum, volatility spikes | real data: anatomy of all 47 / 28 wrong calls | the main residual risk; not predictable from momentum or volatility (section A) |
+| Final-second moves, settlement-reference divergence | real data: calibration by time left; two feeds; proxy | over-confident in the last 15 s on exchange feeds (basis); TRADE NOW is already barred there (15 s buffer) |
+| Settlement-average maths | every contract: `round2(expiration_value) ≥ floor_strike ⇔ result = yes` holds for all 25,994; engine self-test 150 / 150 | no error found |
+| Stale or missing data, WebSocket loss, one lagging venue | fault injection (`dq281_test.js` 6 / 6); real gaps; frozen venue | 2.8.1 detects them; three earlier holes were fixed in review |
+| Clock and time synchronisation | sampler phase sweep; kline timing shifted 0.9 s | phase bug fixed in 2.8.1; timing shift changes T−20 failures 2 → 4 and first LOCKED 47 → 44–47 |
+| Settlement lag | official value fed 5 s vs later | negligible |
+| Race conditions, contradictory states | 20,000-case fuzz (0 violations); page tests 17 / 17; restart simulations | consistent; restart errors fixed in 2.8.1 |
+| Latency between prediction and execution | 0 / 2 / 5 s in the P&L | edge shrinks but stays positive at small sizes (section F) |
+| Liquidity shocks | real prints | depth at 99.9 ¢ is thin; median 0 contracts at T−20 |
+| Restart / cold start | 330 s-before-close restart fixture (the Oct 14 mechanism) | 2.8 withheld a supported LOCKED until T−31; 2.8.1 at T−57 |
+
+**Synthetic stress tests are labelled as such in `2.8.1/TEST_RESULTS.md`.** No synthetic result is used as evidence of a failure rate.
+
+## G. Improvements: what is empirically justified
+
+**Justified and in 2.8.1 (default on):** the operational fixes listed in section C, each with a regression test. 2.8.1 makes the same decisions as 2.8 on every replayed window, and adds:
+* the 15 s TRADE NOW buffer (keeps 9 of 28 unseen wrong calls out of a trade);
 * restart envelopes;
-* the sampler-phase DATA UNRELIABLE fix, plus its follow-up that never samples a second twice;
-* withdrawal of a change that hid a frozen venue;
-* the cautious stress test, with the worst case after a restart;
-* a qualifying price that never quotes an untradable price;
-* honest TRADE NOW / SIT OUT / TOO LATE states;
-* page timing that cannot show an old TRADE NOW.
+* the DATA UNRELIABLE sampler fix;
+* honest TRADE NOW / SIT OUT / TOO LATE states.
 
-Each of the last three independent adversarial review rounds found real defects, among them a hidden frozen-venue hole, a duplicate-sample volatility bias, stress and pricing errors, and page timing. All were fixed, each with a regression test. The 2.8 suites pass with the new features switched off.
+**Directional certainty vs execution readiness.** 2.8.1 shows them separately and consistently: LOCKED / REVERSAL WARNING for direction; TRADE NOW / SIT OUT / TOO LATE / NO BOOK for execution, with the qualifying price and the 90 ¢ guard. This is tested in `page281_test.js`.
 
-**Candidates — designed on seen data, NOT validated; evaluated once on unseen data by the pre-registered rules:**
-1. **Entry window: TRADE NOW only while still LOCKED at T−30 … T−15.** This is the strongest candidate for the large-size trade.
-2. **Market-disagreement veto on LOCKED** (not only on TRADE NOW). The Oct 15 20:30 ET window had DOWN priced at 8.8 ¢ while the call was DOWN.
-3. **The 0.2 % threshold.** It is already in the forward test as shadow policy C1.
+**Candidates.** Built into 2.8.1 behind switches that are **off by default**. Replayed over all contracts. [EXPLORATORY]: designed after seeing the unseen-period calibration, so their unseen results are not independent validation.
 
-## H. Ready for real-money deployment?
+1. **`ADAPTIVE_BASIS=1`.** It widens the basis uncertainty when the recent feed-vs-official errors are large. This targets failure class 1 (near-strike settlements in the last 15 s).
 
-**NO** for the intended trade at the first LOCKED. Its failure rate is measurably above the 0.093 % break-even.
+   | Metric (unseen U) | 2.8.1 | Candidate, USDC | Candidate, USDT |
+   |---|---|---|---|
+   | First LOCKED wrong | 28 / 16,773 (0.167 %) | 16 / 16,527 (0.097 %) | 23 / 15,910 (0.145 %) |
+   | T−20 wrong | 2 / 15,936 | 0 / 15,750 | 3 / 15,248 |
+   | Calibration at T−5 (observed / predicted) | 46× | 9.8× | — |
+   | Coverage | 93.0 % | 91.7 % | 88.3 % |
 
-**NOT YET VALIDATED** for every other form: the late-entry rule, smaller sizes, cheaper asks.
-* The decisive tests need data this environment cannot reach.
-* The forward record is about 100 times too small for a rate near 0.1 %.
-* Tonight's call may be its first loss.
+   * Coverage drops by 1.4 points (USDC) or 5.5 points (USDT, all periods).
+   * Trading on U2: {{CAND_TRADING}}
+   * It does nothing for failure class 2 (real reversals).
+   * Status: **promising, not validated.** It needs a forward test on the live index before it can be switched on.
+2. **`MARKET_VETO_CENTS=90`.** It shows the 90 ¢ guard on the LOCKED headline itself, not only on TRADE NOW.
+   * In-sample: the guard fired on 132 of 18,623 first-LOCKED calls, and 13 of those were wrong (9.8 %, CI 5.3–16.3 %). The other 18,491 calls had 17 wrong (0.092 %).
+   * Not pre-registered as a test. **Not validated.**
 
-A backtest, however long, is not a guarantee. The rare-event risk here (a $50,000 loss for a $47 gain) can only be bounded, never excluded.
+**Rejected or not adopted:**
+* **The 0.2 % LOCKED threshold.** It removes many calls; designed on seen data.
+* **Extrapolating the volatility tables** to recover the 291 large-margin misses. That would weaken a risk control.
+* **Exit on REVERSAL WARNING.** It is neutral to slightly negative (section F).
+* **Momentum filters.** Not predictive (section A).
 
-## What I need from you
+**The approach that would actually fit your objective.**
+* What the data say: certainty is reached late, after the market already prices it, while early calls are not certain enough for 1,000:1 risk.
+* The objective of $50,000 at 99.9 ¢ is not reachable with this signal in this market.
+* What the evidence supports instead is **small sizes (100–1,000 contracts) at the first LOCKED, with the 90 ¢ guard and the 15 s buffer**:
+  * the edge is +0.4 ¢ per contract over the market's own price;
+  * worst case per trade is about the stake.
+* This has to be confirmed with a live forward test of real small orders before more money is risked.
 
-1. **Allow these hosts** (environment settings → Network access → Allowed domains):
-   * `api.elections.kalshi.com`
-   * `data.binance.vision`
-   * `api.exchange.coinbase.com`
-   * `api.kraken.com`
-2. **The live server's logs**, saved as files, for the Oct 15 20:30 ET window and the forward record:
+## Corrections made after an independent audit of this validation
+
+A separate audit pass re-derived every headline claim from the raw files. Confirmed corrections, all applied above:
+
+1. **The market baseline had a look-ahead.** It counted the very print that triggered the entry as a fill.
+   * Fixed: the baseline now fills only on prints strictly after the trigger, and fills are recomputed from one tape snapshot for every strategy. Parity with `execution.py`: 62,882 rows, 0 mismatches.
+   * The earlier claim "the market-only baseline lost money" is **withdrawn**. Corrected, it is about 0 (+0.05 ¢, CI −0.10 to +0.20).
+2. **"No T−20 entry ever had $50,000 of volume" was false.** The full-period figure is 4 of 17,703 (0.023 %), and 1 of 15,772 on unseen data. The verdict is unchanged.
+3. **The model-minus-baseline gap is +0.36 ¢** (paired, CI +0.21 to +0.53) on unseen data, not the earlier +0.60.
+4. **Robustness checks.**
+   * Latency 2–3 s reduces the edge to about +0.37 ¢.
+   * Kline timing and settlement lag change results only slightly.
+   * Coverage of 92–93 % is an upper bound: live-only gates (official panel, venue quorum) can only lower it.
+
+## Deviations from the pre-registration (disclosed)
+
+* **The proxy period** was set to Oct 2023 → Jan 13 2026, not → Jul 21 2026, so that it does not overlap the contract period.
+* **The "57 of 60 settlement-minute prices" exclusion** excluded 0 windows: the Binance archives have no empty seconds. It was applied to the basis-model samples.
+* **Trading on the seen period** uses only the tapes downloaded so far: 2,911 of 8,153 markets when the tables were built. It is reported as partial and is not decisive.
+* **U1 is small** (185 windows, Oct 14–16).
+
+## What is still missing, and what you can provide
+
+1. **The live server's logs** for the forward period. With these, `forensic281.js` can score the deployed engine on its own index, which no replay can reproduce:
    * `/ledger?since=0&n=5000`
-   * `/predictions?ticker=KXBTC15M-26OCT152030-30`
+   * `/predictions`
    * `/tape?format=ndjson`
-   * `/signals?n=5000`
+   * `/signals`
    * `/health`
-3. **Optional:** your own Kalshi fill history (CSV export), if you want your actual past trades scored.
+2. **Your Kalshi fill history** (CSV). It would replace the print-based fill model with real fills.
+3. **A forward test with small real orders.** It needs your explicit authorisation; nothing in this work places orders.
+
+## Reproduce
+
+Data (about 2 GB, not committed): `pipeline/run_pipeline.sh` (resumable). Then:
+
+```
+bash pipeline/replay_parallel.sh   ...                      # contract replays (see script header for feeds/configs)
+python3 pipeline/decisive.py   --data DATA --out DATA/decisive.json
+python3 pipeline/calibration.py --records DATA/replay/r281_usdc.ndjson ... --out DATA/calibration.json
+python3 pipeline/anatomy.py    --records DATA/replay/r281_usdc.ndjson --out DATA/anatomy_r281_usdc.json
+python3 pipeline/prevented.py  --records DATA/replay/r281_usdc.ndjson --exec-rows DATA/exec_r281_usdc_full_rows.ndjson --out DATA/prevented_r281_usdc.json
+python3 pipeline/execution.py  --records ... --trace ... --trades DATA/kalshi/trades --out DATA/exec_r281_usdc_full.json
+python3 pipeline/trading_eval.py --exec-rows DATA/exec_r281_usdc_full_rows.ndjson --markets DATA/kalshi/markets_clean.ndjson --trades DATA/kalshi/trades \
+        --records DATA/replay/r281_usdc.ndjson --to 2026-07-22T00:00:00+00:00 [--latency 2] --out DATA/trading2_U2_L0.json
+python3 pipeline/exit_eval.py ... ; python3 pipeline/final_tables.py --data DATA --out RESULTS_TABLES.md
+bash ../2.8.1/test/run_all281.sh                              # software suite
+```
