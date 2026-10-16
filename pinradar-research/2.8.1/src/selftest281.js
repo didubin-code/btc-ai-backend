@@ -53,6 +53,8 @@
       mA > 0 && 98.83 - mA - feeAt(mA) >= MIN_EDGE_CENTS - 1e-9 && 98.83 - (mA + 0.1) - feeAt(mA + 0.1) < MIN_EDGE_CENTS, [mA, feeAt(mA), feeAt(mA + 0.1)]);
     const mS = maxAskFor281(98.83, 0.97, 10, 99.8);
     push('2.8.1 qualifying price: also requires the stressed cautious value >= 0', mS > 0 && mS <= 97 - feeAt(mS) + 1e-9 && mS < mA, [mS, mA]);
+    const mG = maxAskFor281(95, 0.80, 10, 99.8);
+    push('2.8.1 qualifying price: never below MIN_TRADE_ASK_CENTS (there the server says MARKET DISAGREES, never TRADE NOW)', mG === 0 && maxAskFor281(99.9, null, 10, 99.8) >= MIN_TRADE_ASK_CENTS, [mG]);
     /* action states */
     const a1 = exec281({ state: 'LOCKED', side: 'UP', trade: { action: 'LOCKED — DO NOT TRADE', why: 'x' }, ticker: null }, { tau: 40, execSec: 10, now: nowS });
     const a2 = exec281({ state: 'LOCKED', side: 'UP', trade: { action: 'LOCKED — TOO LATE', why: 'y' }, ticker: null }, { tau: 8, execSec: 10, now: nowS });

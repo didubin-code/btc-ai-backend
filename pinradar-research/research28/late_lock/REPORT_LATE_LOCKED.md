@@ -84,6 +84,10 @@ Real 2.8 code, 12 real windows, `research28/dq/sampler_phase.js`:
 1. Every print takes its nearest sample within 600 ms.
 2. The sampler is aligned to the second plus 100 ms, and re-aligned on every tick.
 3. Result: 0 % at every phase.
+   * **A second review found a defect in the first version of this fix, now fixed.** A timer firing about 1 ms early made the scheduler target the same second again, so that second was sampled twice. The extra zero return made volatility read low. The review measured (its scripts are not in the repo): with 6–17 % of seconds duplicated, the first LOCKED came earlier in 32–41 of 54 windows, and Oct 12 became LOCKED UP + TRADE NOW at T−17 with a 0 s order time.
+   * Each target is now strictly after the previous one, and a sample within 500 ms of the last is skipped. On real timers under load: 0 duplicates and 0 gaps in 25 s at three load levels.
+   * `dq281` Q3 now runs under timer load. It fails on the previous build and passes now.
+   * The [SIM] runs call the sampler directly, so their results are unaffected.
 4. A real 5 s gap is still DATA UNRELIABLE, in 8 of 8 windows (`test/dq281_test.js` Q1–Q3).
 
 ### One lagging venue: a legitimate warning (the change for it was withdrawn)
@@ -93,8 +97,8 @@ Real 2.8 code, 12 real windows, `research28/dq/sampler_phase.js`:
   * The independent review showed the flaw: the 1 Hz settlement ring kept sampling every venue, including a frozen one whose socket was still alive.
   * With a Kraken quote frozen from T−28 on 12 real windows, 2.8 flagged 312 of 336 decisions; that version flagged none. It also showed 3 LOCKED seconds the unfrozen data did not support.
 * **Now.** 2.8.1 behaves as 2.8 here: one lagging venue is DATA UNRELIABLE.
-  * `dq281` Q4 checks this.
-  * Q6 checks the frozen-venue case through the server's own background path. It fails on the withdrawn version and passes now.
+  * `dq281` Q4 checks the gate itself.
+  * Q6 is the guard against the withdrawn change: it runs the frozen-venue case through the server's own background path. It fails on the withdrawn version and passes now.
 * **Whether this case is common in production is unknown.** `/dq` will show it.
 
 **Not yet confirmed from production.** Which of these fires on the deployed server needs its logs. 2.8.1 adds `/dq`, which counts every hard-gate reason with the venue state at that moment; the same counts are on `/health`. On the deployed 2.8, `/signals?n=5000` holds the gate texts.
@@ -186,7 +190,7 @@ By 30 s momentum at the first LOCKED (`settle_metrics.json`):
 | Momentum veto | 0 (no loss in the adverse classes) | 84 development / 44 holdout calls | Rejected. |
 | Exit on REVERSAL WARNING (flip ≥ 10 %) [HIST] | warned 11 of 12 development losers; exits about break-even | 25 false alarms | Unchanged (a warning, not an exit rule). |
 | Restart envelopes [SIM] | Oct 12 basis-cold error (not its known-basis error); restart errors 2 → 0 at the harness input age | about 8 of 58 LOCKED windows in the first 15 min after a restart | **Adopted.** |
-| Execution stress test (1.645σ during the order time) [SIM] | not measurable here (no historical books) | 76 of 2,291 TRADE NOW seconds refused (3.3 %, synthetic book, 12 s order time) | **Adopted as a conservative choice; its cost in real trades is unmeasured.** Requires the cautious value to stay ≥ 0 after the adverse move. The stressed cautious flip at the first LOCKED has a median of 1.56 / 2.11 / 3.09 % for 3 / 12 / 30 s order times (`results_stress.json`). `EXEC_STRESS_Z=0` turns it off. |
+| Execution stress test (1.645σ during the order time) [SIM] | not measurable here (no historical books) | 76 of 2,291 TRADE NOW seconds refused (3.3 %, synthetic book, 12 s order time) | **Adopted as a conservative choice; its cost in real trades is unmeasured.** Requires the cautious value to stay ≥ 0 after the adverse move. After a restart it takes the worst case over the envelope; a second review found a version that used one candidate's volatility, now fixed. The stressed cautious flip at the first LOCKED has a median of 1.56 / 2.11 / 3.09 % for 3 / 12 / 30 s order times (`results_stress.json`). `EXEC_STRESS_Z=0` turns it off. |
 
 The LOCKED threshold stays at 0.5 % (development total profit: 0.2 % → 101, 0.3 % → 42, **0.5 % → 223**, 1.0 % → 153 cent-contracts). On holdout, 1.0 % did best (99 vs 66), so the choice is not robust either way. The forward test's shadow policies keep measuring it.
 
@@ -215,7 +219,7 @@ The LOCKED threshold stays at 0.5 % (development total profit: 0.2 % → 101, 0.
 
 | Situation | Reason shown |
 |---|---|
-| LOCKED but overpriced | "LOCKED UP, but no edge at 99.8 ¢ (worth it only at ≤ 97.1 ¢)". The price includes the fee at that price and the stress test. |
+| LOCKED but overpriced | "LOCKED UP, but no edge at 99.8 ¢ (worth it only at ≤ 97.1 ¢)". The price includes the fee at that price and the stress test, uses the same rounding as the decision, and is never below 90 ¢ (below that the server says MARKET DISAGREES). A second review showed the earlier version could quote prices that would never trade. |
 | LOCKED but no offers | "nobody is selling UP: the market treats it as decided" |
 | LOCKED but no time | "LOCKED UP with 9 s left: an order needs 15 s" |
 | After the close | "window closed" |
@@ -226,7 +230,10 @@ The LOCKED threshold stays at 0.5 % (development total profit: 0.2 % → 101, 0.
 * A GET READY note, only when LOCKED could actually be shown.
 * A restart banner.
 * If the backend goes stale or the window closes, the line drops to STALE or WINDOW CLOSED.
-* TRADE NOW also turns into TOO LATE at the last order moment by the browser's own clock, and into STALE after 1.5 s without a server reading at any time before the close. This was a review finding: before, the page waited 6 s when more than 120 s were left.
+* TRADE NOW also turns into TOO LATE at the last order moment, and into STALE when the reading may be more than 1.5 s old, at any time before the close. Review findings:
+  * Before the first fix, the page waited 6 s when more than 120 s were left.
+  * Before the second fix, it measured age from when a reading arrived. On a slow connection it could show a 2–5 s old TRADE NOW, or one past the last order moment.
+  * Age now counts from when the page requested the reading, and the trade box, card and alert sound follow the action line.
 
 The big outcome headline (PREDICTED LOCKED — UP) is unchanged. The page layout is otherwise the 2.8 layout.
 
@@ -234,7 +241,7 @@ The big outcome headline (PREDICTED LOCKED — UP) is unchanged. The page layout
 
 `bash pinradar-research/2.8.1/test/run_all281.sh` runs offline. Results are in `2.8.1/TEST_RESULTS.md`, and checksums in `2.8.1/SHA256SUMS.txt`.
 
-* **Self-test:** 148/148.
+* **Self-test:** 149/149.
 * **Real-window suite (`late281`), 15 checks:**
   * P1 and P2: parity with 2.8 when warm; the stress test binds.
   * R1–R4: restarts.
@@ -242,7 +249,7 @@ The big outcome headline (PREDICTED LOCKED — UP) is unchanged. The page layout
   * S1 runs at both input ages. With a cold basis, 2.8.1 never calls LOCKED. With a known basis, it adds no LOCKED second to the warm engine's; the warm engine's own Oct 12 call is reported.
   * S3 (narrow margins) is reported only: a $1 margin is decided by the basis, so wrong-side LOCKED there is a model limit.
 * **`dq281`:** 6/6, including Q6, the frozen venue.
-* **Page:** 16/16, including TRADE NOW expiring by the browser's clock and on a stale server.
+* **Page:** 17/17, including TRADE NOW expiring by the browser's clock, on a stale server and on a slow connection.
 * **Forensic tool:** fixture check.
 * **Cold-band coverage.**
 * **The 2.8 suites against 2.8.1** with every new feature off (`COLD_START_ENVELOPE=0 EXEC_SEC=0 DQ_FIXES=0`), confirming it behaves as 2.8.

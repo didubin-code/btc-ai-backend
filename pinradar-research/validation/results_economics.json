@@ -1,0 +1,642 @@
+{
+ "budgetUsd": 50000,
+ "positions": [
+  {
+   "pCents": 99,
+   "contracts": 50469,
+   "costUsd": 49964.31,
+   "feeUsd": 34.98,
+   "winUsd": 469.71,
+   "lossUsd": 49999.29,
+   "breakEvenFailProb": 0.00930690126612376
+  },
+  {
+   "pCents": 99.5,
+   "contracts": 50233,
+   "costUsd": 49981.835,
+   "feeUsd": 17.5,
+   "winUsd": 233.665,
+   "lossUsd": 49999.335,
+   "breakEvenFailProb": 0.00465162343479386
+  },
+  {
+   "pCents": 99.7,
+   "contracts": 50139,
+   "costUsd": 49988.583,
+   "feeUsd": 10.5,
+   "winUsd": 139.91699999999858,
+   "lossUsd": 49999.083,
+   "breakEvenFailProb": 0.0027905821815353035
+  },
+  {
+   "pCents": 99.8,
+   "contracts": 50093,
+   "costUsd": 49992.81399999999,
+   "feeUsd": 7,
+   "winUsd": 93.18600000000143,
+   "lossUsd": 49999.81399999999,
+   "breakEvenFailProb": 0.0018602599165552362
+  },
+  {
+   "pCents": 99.9,
+   "contracts": 50046,
+   "costUsd": 49995.954000000005,
+   "feeUsd": 3.5,
+   "winUsd": 46.54599999999716,
+   "lossUsd": 49999.454000000005,
+   "breakEvenFailProb": 0.0009300643408064013
+  }
+ ],
+ "cleanSampleNeeded": {
+  "99c": 321,
+  "99.5c": 643,
+  "99.7c": 1073,
+  "99.8c": 1609,
+  "99.9c": 3220
+ },
+ "evidence": [
+  {
+   "name": "first LOCKED, holdout (Jul 22 - Aug 13)",
+   "k": 3,
+   "n": 1879,
+   "src": "settle_metrics.json holdout A",
+   "note": "trade at the first LOCKED second",
+   "ratePct": 0.1597,
+   "ci95Pct": [
+    0.0329,
+    0.4659
+   ],
+   "upper95OneSidedPct": 0.4121,
+   "evUsd": {
+    "99c": {
+     "atRate": 389.13,
+     "atUpper95": 261.71
+    },
+    "99.5c": {
+     "atRate": 153.46,
+     "atUpper95": 26.64
+    },
+    "99.7c": {
+     "atRate": 59.87,
+     "atUpper95": -66.72
+    },
+    "99.8c": {
+     "atRate": 13.21,
+     "atUpper95": -113.26
+    },
+    "99.9c": {
+     "atRate": -33.36,
+     "atUpper95": -159.71
+    }
+   }
+  },
+  {
+   "name": "first LOCKED, development (Sep 4 - Oct 13)",
+   "k": 13,
+   "n": 3484,
+   "src": "settle_metrics.json dev A",
+   "note": "the tables were fitted on this period: not independent",
+   "ratePct": 0.3731,
+   "ci95Pct": [
+    0.1988,
+    0.6372
+   ],
+   "upper95OneSidedPct": 0.5926,
+   "evUsd": {
+    "99c": {
+     "atRate": 281.39,
+     "atUpper95": 170.64
+    },
+    "99.5c": {
+     "atRate": 46.23,
+     "atUpper95": -64.01
+    },
+    "99.7c": {
+     "atRate": -47.17,
+     "atUpper95": -157.2
+    },
+    "99.8c": {
+     "atRate": -93.73,
+     "atUpper95": -203.66
+    },
+    "99.9c": {
+     "atRate": -140.19,
+     "atUpper95": -250.02
+    }
+   }
+  },
+  {
+   "name": "first LOCKED, pooled",
+   "k": 16,
+   "n": 5363,
+   "src": "both",
+   "note": "",
+   "ratePct": 0.2983,
+   "ci95Pct": [
+    0.1706,
+    0.484
+   ],
+   "upper95OneSidedPct": 0.4528,
+   "evUsd": {
+    "99c": {
+     "atRate": 319.14,
+     "atUpper95": 241.2
+    },
+    "99.5c": {
+     "atRate": 83.8,
+     "atUpper95": 6.22
+    },
+    "99.7c": {
+     "atRate": -9.67,
+     "atUpper95": -87.1
+    },
+    "99.8c": {
+     "atRate": -56.26,
+     "atUpper95": -133.62
+    },
+    "99.9c": {
+     "atRate": -102.76,
+     "atUpper95": -180.05
+    }
+   }
+  },
+  {
+   "name": "still LOCKED at T-60 s, pooled",
+   "k": 2,
+   "n": 3280,
+   "src": "settle_metrics.json locked_at_fixed_times (holdout + dev)",
+   "note": "holdout 0/1157, dev 2/2123",
+   "ratePct": 0.061,
+   "ci95Pct": [
+    0.0074,
+    0.2201
+   ],
+   "upper95OneSidedPct": 0.1918,
+   "evUsd": {
+    "99c": {
+     "atRate": 438.94,
+     "atUpper95": 372.9
+    },
+    "99.5c": {
+     "atRate": 203.04,
+     "atUpper95": 137.31
+    },
+    "99.7c": {
+     "atRate": 109.34,
+     "atUpper95": 43.74
+    },
+    "99.8c": {
+     "atRate": 62.64,
+     "atUpper95": -2.9
+    },
+    "99.9c": {
+     "atRate": 16.03,
+     "atUpper95": -49.45
+    }
+   }
+  },
+  {
+   "name": "still LOCKED at T-45 s, pooled",
+   "k": 1,
+   "n": 4033,
+   "src": "settle_metrics.json locked_at_fixed_times (holdout + dev)",
+   "note": "holdout 0/1434, dev 1/2599",
+   "ratePct": 0.0248,
+   "ci95Pct": [
+    0.0006,
+    0.1381
+   ],
+   "upper95OneSidedPct": 0.1176,
+   "evUsd": {
+    "99c": {
+     "atRate": 457.2,
+     "atUpper95": 410.37
+    },
+    "99.5c": {
+     "atRate": 221.21,
+     "atUpper95": 174.61
+    },
+    "99.7c": {
+     "atRate": 127.48,
+     "atUpper95": 80.97
+    },
+    "99.8c": {
+     "atRate": 80.77,
+     "atUpper95": 34.29
+    },
+    "99.9c": {
+     "atRate": 34.14,
+     "atUpper95": -12.29
+    }
+   }
+  },
+  {
+   "name": "still LOCKED at T-30 s, pooled",
+   "k": 0,
+   "n": 4732,
+   "src": "settle_metrics.json locked_at_fixed_times (holdout + dev)",
+   "note": "holdout 0/1686, dev 0/3046",
+   "ratePct": 0,
+   "ci95Pct": [
+    0,
+    0.0779
+   ],
+   "upper95OneSidedPct": 0.0633,
+   "evUsd": {
+    "99c": {
+     "atRate": 469.71,
+     "atUpper95": 437.77
+    },
+    "99.5c": {
+     "atRate": 233.66,
+     "atUpper95": 201.87
+    },
+    "99.7c": {
+     "atRate": 139.92,
+     "atUpper95": 108.19
+    },
+    "99.8c": {
+     "atRate": 93.19,
+     "atUpper95": 61.48
+    },
+    "99.9c": {
+     "atRate": 46.55,
+     "atUpper95": 14.87
+    }
+   }
+  },
+  {
+   "name": "still LOCKED at T-20 s, pooled",
+   "k": 0,
+   "n": 5106,
+   "src": "settle_metrics.json locked_at_fixed_times (holdout + dev)",
+   "note": "holdout 0/1810, dev 0/3296",
+   "ratePct": 0,
+   "ci95Pct": [
+    0,
+    0.0722
+   ],
+   "upper95OneSidedPct": 0.0587,
+   "evUsd": {
+    "99c": {
+     "atRate": 469.71,
+     "atUpper95": 440.11
+    },
+    "99.5c": {
+     "atRate": 233.66,
+     "atUpper95": 204.2
+    },
+    "99.7c": {
+     "atRate": 139.92,
+     "atUpper95": 110.51
+    },
+    "99.8c": {
+     "atRate": 93.19,
+     "atUpper95": 63.8
+    },
+    "99.9c": {
+     "atRate": 46.55,
+     "atUpper95": 17.19
+    }
+   }
+  },
+  {
+   "name": "still LOCKED at T-15 s, pooled",
+   "k": 0,
+   "n": 5218,
+   "src": "settle_metrics.json locked_at_fixed_times (holdout + dev)",
+   "note": "holdout 0/1844, dev 0/3374",
+   "ratePct": 0,
+   "ci95Pct": [
+    0,
+    0.0707
+   ],
+   "upper95OneSidedPct": 0.0574,
+   "evUsd": {
+    "99c": {
+     "atRate": 469.71,
+     "atUpper95": 440.74
+    },
+    "99.5c": {
+     "atRate": 233.66,
+     "atUpper95": 204.83
+    },
+    "99.7c": {
+     "atRate": 139.92,
+     "atUpper95": 111.14
+    },
+    "99.8c": {
+     "atRate": 93.19,
+     "atUpper95": 64.44
+    },
+    "99.9c": {
+     "atRate": 46.55,
+     "atUpper95": 17.82
+    }
+   }
+  },
+  {
+   "name": "still LOCKED at T-10 s, pooled",
+   "k": 1,
+   "n": 5301,
+   "src": "settle_metrics.json locked_at_fixed_times (holdout + dev)",
+   "note": "holdout 0/1860, dev 1/3441",
+   "ratePct": 0.0189,
+   "ci95Pct": [
+    0.0005,
+    0.1051
+   ],
+   "upper95OneSidedPct": 0.0895,
+   "evUsd": {
+    "99c": {
+     "atRate": 460.19,
+     "atUpper95": 424.56
+    },
+    "99.5c": {
+     "atRate": 224.19,
+     "atUpper95": 188.73
+    },
+    "99.7c": {
+     "atRate": 130.46,
+     "atUpper95": 95.06
+    },
+    "99.8c": {
+     "atRate": 83.74,
+     "atUpper95": 48.37
+    },
+    "99.9c": {
+     "atRate": 37.11,
+     "atUpper95": 1.78
+    }
+   }
+  },
+  {
+   "name": "still LOCKED at T-5 s, pooled",
+   "k": 0,
+   "n": 5323,
+   "src": "settle_metrics.json locked_at_fixed_times (holdout + dev)",
+   "note": "holdout 0/1864, dev 0/3459",
+   "ratePct": 0,
+   "ci95Pct": [
+    0,
+    0.0693
+   ],
+   "upper95OneSidedPct": 0.0563,
+   "evUsd": {
+    "99c": {
+     "atRate": 469.71,
+     "atUpper95": 441.31
+    },
+    "99.5c": {
+     "atRate": 233.66,
+     "atUpper95": 205.4
+    },
+    "99.7c": {
+     "atRate": 139.92,
+     "atUpper95": 111.71
+    },
+    "99.8c": {
+     "atRate": 93.19,
+     "atUpper95": 65
+    },
+    "99.9c": {
+     "atRate": 46.55,
+     "atUpper95": 18.39
+    }
+   }
+  },
+  {
+   "name": "still LOCKED at T-3 s, pooled",
+   "k": 0,
+   "n": 5327,
+   "src": "settle_metrics.json locked_at_fixed_times (holdout + dev)",
+   "note": "holdout 0/1864, dev 0/3463",
+   "ratePct": 0,
+   "ci95Pct": [
+    0,
+    0.0692
+   ],
+   "upper95OneSidedPct": 0.0562,
+   "evUsd": {
+    "99c": {
+     "atRate": 469.71,
+     "atUpper95": 441.34
+    },
+    "99.5c": {
+     "atRate": 233.66,
+     "atUpper95": 205.42
+    },
+    "99.7c": {
+     "atRate": 139.92,
+     "atUpper95": 111.73
+    },
+    "99.8c": {
+     "atRate": 93.19,
+     "atUpper95": 65.02
+    },
+    "99.9c": {
+     "atRate": 46.55,
+     "atUpper95": 18.41
+    }
+   }
+  },
+  {
+   "name": "forward, user live 2.8 page, before Oct 15 20:30 ET",
+   "k": 0,
+   "n": 83,
+   "src": "[SCREEN] IMG_7268 failure monitor \"0 of 83 forward LOCKED calls lost\"",
+   "note": "first LOCKED calls",
+   "ratePct": 0,
+   "ci95Pct": [
+    0,
+    4.3471
+   ],
+   "upper95OneSidedPct": 3.545,
+   "evUsd": {
+    "99c": {
+     "atRate": 469.71,
+     "atUpper95": -1319.39
+    },
+    "99.5c": {
+     "atRate": 233.66,
+     "atUpper95": -1547.07
+    },
+    "99.7c": {
+     "atRate": 139.92,
+     "atUpper95": -1637.49
+    },
+    "99.8c": {
+     "atRate": 93.19,
+     "atUpper95": -1682.59
+    },
+    "99.9c": {
+     "atRate": 46.55,
+     "atUpper95": -1727.56
+    }
+   }
+  },
+  {
+   "name": "forward incl. Oct 15 20:30 ET IF it settled UP (outcome not yet known here)",
+   "k": 1,
+   "n": 84,
+   "src": "[SCREEN] + hypothetical outcome",
+   "note": "scenario, not data",
+   "ratePct": 1.1905,
+   "ci95Pct": [
+    0.0301,
+    6.4552
+   ],
+   "upper95OneSidedPct": 5.5232,
+   "evUsd": {
+    "99c": {
+     "atRate": -131.11,
+     "atUpper95": -2317.77
+    },
+    "99.5c": {
+     "atRate": -364.35,
+     "atUpper95": -2540.78
+    },
+    "99.7c": {
+     "atRate": -456.98,
+     "atUpper95": -2629.34
+    },
+    "99.8c": {
+     "atRate": -503.16,
+     "atUpper95": -2673.53
+    },
+    "99.9c": {
+     "atRate": -549.24,
+     "atUpper95": -2717.57
+    }
+   }
+  }
+ ],
+ "executable": [
+  {
+   "t": 60,
+   "holdout": {
+    "locked": 1157,
+    "withPrice": 424,
+    "medianAsk": 99.9,
+    "shareAskLe99Pct": 1.2
+   },
+   "dev": {
+    "locked": 2123,
+    "withPrice": 1368,
+    "medianAsk": 99.9,
+    "shareAskLe99Pct": 3.9
+   }
+  },
+  {
+   "t": 45,
+   "holdout": {
+    "locked": 1434,
+    "withPrice": 456,
+    "medianAsk": 99.9,
+    "shareAskLe99Pct": 1.1
+   },
+   "dev": {
+    "locked": 2599,
+    "withPrice": 1376,
+    "medianAsk": 99.9,
+    "shareAskLe99Pct": 2.3
+   }
+  },
+  {
+   "t": 30,
+   "holdout": {
+    "locked": 1686,
+    "withPrice": 344,
+    "medianAsk": 99.9,
+    "shareAskLe99Pct": 2.6
+   },
+   "dev": {
+    "locked": 3046,
+    "withPrice": 1178,
+    "medianAsk": 99.9,
+    "shareAskLe99Pct": 4
+   }
+  },
+  {
+   "t": 20,
+   "holdout": {
+    "locked": 1810,
+    "withPrice": 301,
+    "medianAsk": 99.9,
+    "shareAskLe99Pct": 3.3
+   },
+   "dev": {
+    "locked": 3296,
+    "withPrice": 1082,
+    "medianAsk": 99.9,
+    "shareAskLe99Pct": 2.7
+   }
+  },
+  {
+   "t": 15,
+   "holdout": {
+    "locked": 1844,
+    "withPrice": 251,
+    "medianAsk": 99.9,
+    "shareAskLe99Pct": 2.8
+   },
+   "dev": {
+    "locked": 3374,
+    "withPrice": 895,
+    "medianAsk": 99.9,
+    "shareAskLe99Pct": 1.6
+   }
+  },
+  {
+   "t": 10,
+   "holdout": {
+    "locked": 1860,
+    "withPrice": 194,
+    "medianAsk": 99.9,
+    "shareAskLe99Pct": 0.5
+   },
+   "dev": {
+    "locked": 3441,
+    "withPrice": 760,
+    "medianAsk": 99.9,
+    "shareAskLe99Pct": 1.7
+   }
+  },
+  {
+   "t": 5,
+   "holdout": {
+    "locked": 1864,
+    "withPrice": 142,
+    "medianAsk": 99.9,
+    "shareAskLe99Pct": 0.7
+   },
+   "dev": {
+    "locked": 3459,
+    "withPrice": 554,
+    "medianAsk": 99.9,
+    "shareAskLe99Pct": 0.7
+   }
+  },
+  {
+   "t": 3,
+   "holdout": {
+    "locked": 1864,
+    "withPrice": 99,
+    "medianAsk": 99.9,
+    "shareAskLe99Pct": 1
+   },
+   "dev": {
+    "locked": 3463,
+    "withPrice": 467,
+    "medianAsk": 99.9,
+    "shareAskLe99Pct": 0.2
+   }
+  }
+ ],
+ "caveats": [
+  "[HIST] counts come from the Oct 13 walk-forward study of the 2.6 probability model (2.8 / 2.8.1 use the same model); its raw Kalshi and exchange tapes are not in this environment, so the counts cannot be re-executed here.",
+  "Fixed-time cells overlap (the same windows at several times) and T-20 / T-15 were not chosen in advance: picking the best cell after seeing the data overstates it.",
+  "62 days (Jul 22 - Oct 13 2026) of one market regime; rare jumps can cluster, so the effective sample is smaller than the window count.",
+  "Depth: the saved files hold whether a leader price existed and its median, not the size offered. Whether 50,000 contracts could be bought at 99.9c in the last 30 s is NOT established."
+ ]
+}

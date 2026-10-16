@@ -62,6 +62,7 @@ s = rep(s, """    else if (!(tr.evConsCents >= cfg.minEdgeCents)) { tr.action = 
 # the stressed cautious win probability and value, recorded on every decision with a book (the page's qualifying price uses it)
 s = rep(s, "    tr.evConsCents = Math.round((100 * (1 - out.pFlipCons) - a.avgCents - tr.feeCents) * 100) / 100;\n",
         "    tr.evConsCents = Math.round((100 * (1 - out.pFlipCons) - a.avgCents - tr.feeCents) * 100) / 100;\n"
+        "    tr.pCautiousPct = Math.round(1e6 * 100 * (1 - out.pFlipCons)) / 1e6;   // v2.8.1: the exact cautious win % the edge uses (for the qualifying price)\n"
         "    if (pUpStress != null && Number.isFinite(pUpStress)) { tr.pWinStressCons = Math.round(1e6 * (out.side === 'UP' ? pUpStress : 1 - pUpStress)) / 1e6;   // v2.8.1\n"
         "      tr.evStressCents = Math.round((100 * (out.side === 'UP' ? pUpStress : 1 - pUpStress) - a.avgCents - tr.feeCents) * 100) / 100; }\n")
 
@@ -95,9 +96,16 @@ s = rep(s, """  if (IDX.sampler) return;
   if (IDX.sampler.unref) IDX.sampler.unref();""", """  if (IDX.sampler) return;
   /* v2.8.1: aligned to the second (+SAMPLE_PHASE_MS), re-aligned on every tick: no setInterval drift through the x.5 s phase */
   const phase = clampEnv(process.env.SAMPLE_PHASE_MS, 100, 0, 400);
+  /* review round 2: a timer can fire ~1 ms before its target by Date.now(); recomputing "the next second" then returned the SAME target
+     and the second was sampled twice (a zero return that biased the volatility low). Each target is now strictly after the last one,
+     and a sample less than 500 ms after the previous one is skipped. */
+  let target = 0;
   const schedule = () => {
-    const now = Date.now(), next = (Math.floor((now - phase) / 1000) + 1) * 1000 + phase;
-    IDX.sampler = setTimeout(() => { try { sampleIndex(); } finally { schedule(); } }, Math.max(1, next - now));
+    const now = Date.now();
+    let next = (Math.floor((now - phase) / 1000) + 1) * 1000 + phase;
+    if (next <= target) next = target + 1000;
+    target = next;
+    IDX.sampler = setTimeout(() => { try { if (!(IDX.lastSampleTs && Date.now() - IDX.lastSampleTs < 500)) sampleIndex(); } finally { schedule(); } }, Math.max(1, next - now));
     if (IDX.sampler.unref) IDX.sampler.unref();
   };
   if (!DQ_FIXES281) { IDX.sampler = setInterval(sampleIndex, 1000); if (IDX.sampler.unref) IDX.sampler.unref(); sampleIndex(); return; }   // 2.8 behaviour
@@ -145,7 +153,14 @@ s = rep(s, "  return { ts: now, kal: kal ? { ok: kal.ok, ticker: kal.ticker, clo
         "  return { ts: now, basisN: BASIS.samples.length, kal: kal ? { ok: kal.ok, ticker: kal.ticker, closeMs: kal.closeMs, openMs: kal.openMs, strike: kal.strike } : null,")
 # shadow candidates see the same stress input as production
 s = rep(s, "  const dec = (pUp, pUpCons, c = cfg) => guard(deps.m25Decide({ tau, pUp, pUpCons, gates, book, cfg: c, hist, lockedSide, provenSide: geo.provenUp ? 'UP' : null }));",
-        "  const dec = (pUp, pUpCons, c = cfg) => guard(deps.m25Decide({ tau, pUp, pUpCons, pUpStress: deps.stressPUp ? deps.stressPUp(geo, tau, c.execSec) : null, gates, book, cfg: c, hist, lockedSide, provenSide: geo.provenUp ? 'UP' : null }));")
+        "  const dec = (pUp, pUpCons, c = cfg, st) => guard(deps.m25Decide({ tau, pUp, pUpCons, pUpStress: st !== undefined ? st : (deps.stressPUp ? deps.stressPUp(geo, tau, c.execSec) : null), gates, book, cfg: c, hist, lockedSide, provenSide: geo.provenUp ? 'UP' : null }));")
+# review round 2: each shadow policy is stress-tested with ITS OWN probability (C2: its recalibration; E: the official flip as well)
+s = rep(s, "      return dec(deps.recalPUp26(geo.pUpModel, r), deps.recalPUp26(geo.pUpConsModel, r));",
+        "      const rf = g => (g.recal && g.recal.group === 'active' ? 1.0 : (g.recal ? g.recal.ratio : 1));   // v2.8.1: C2's own stress\n"
+        "      return dec(deps.recalPUp26(geo.pUpModel, r), deps.recalPUp26(geo.pUpConsModel, r), cfg, deps.stressPUp ? deps.stressPUp(geo, tau, cfg.execSec, undefined, rf) : null);")
+s = rep(s, "      return dec(up ? 1 - f : f, up ? 1 - fc : fc);",
+        "      const sp = deps.stressPUp ? deps.stressPUp(geo, tau, cfg.execSec) : null;   // v2.8.1: E's own stress = the worse of the stressed proxy and the official flip\n"
+        "      return dec(up ? 1 - f : f, up ? 1 - fc : fc, cfg, sp == null ? null : (up ? Math.min(sp, 1 - fOff) : Math.max(sp, fOff)));")
 s = rep(s, "      try { d = shadowDecide28(p.id, { snap: view, deps: { m25Decide, recalPUp26, recalRatio26 }, cfg, lockedSide: rec ? rec.lockedSide : null, hist: LOCK25.hist, impulse: imp, tau }); }",
         "      try { d = shadowDecide28(p.id, { snap: view, deps: { m25Decide, recalPUp26, recalRatio26, stressPUp: stressPUp281 }, cfg, lockedSide: rec ? rec.lockedSide : null, hist: LOCK25.hist, impulse: imp, tau }); }")
 

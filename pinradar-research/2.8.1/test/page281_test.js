@@ -39,12 +39,12 @@ const bookDown = (askNo, size = 500, ageMs = 100) => ({ yes: [[100 - askNo, size
 (async () => {
   const vc = new VirtualConsole(); const errs = [];
   vc.on('jsdomError', e => errs.push(String(e && e.message || e)));
-  let current = null, lastBody = null;
+  let current = null, lastBody = null, delayMs = 0;
   const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://didubin-code.github.io/Btc-signal/btc_pin_radar.html', virtualConsole: vc,
     beforeParse(w) {
       w.WebSocket = class { constructor() { setTimeout(() => this.onclose && this.onclose(), 10); } send() { } close() { } };
       w.AudioContext = function () { return { createOscillator() { return { connect() { }, start() { }, stop() { }, frequency: {} }; }, createGain() { return { connect() { }, gain: { setValueAtTime() { }, exponentialRampToValueAtTime() { } } }; }, currentTime: 0, destination: {} }; };
-      w.fetch = async (url, opts) => { if (opts && opts.body) lastBody = opts.body; const body = /\/health$/.test(url) ? { ok: true, version: 'pin-radar-2.8.1', streaming: true } : current; return { ok: true, status: 200, text: async () => JSON.stringify(body) }; };
+      w.fetch = async (url, opts) => { if (opts && opts.body) lastBody = opts.body; if (delayMs) await new Promise(r => setTimeout(r, delayMs)); const body = /\/health$/.test(url) ? { ok: true, version: 'pin-radar-2.8.1', streaming: true } : current; return { ok: true, status: 200, text: async () => JSON.stringify(body) }; };
     } });
   const w = dom.window, $ = id => w.document.getElementById(id);
   const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -91,8 +91,14 @@ const bookDown = (askNo, size = 500, ageMs = 100) => ({ yes: [[100 - askNo, size
   const farBefore = txt('act281S'), fetch0 = w.fetch;
   w.fetch = async () => { throw new Error('network down'); };
   await sleep(2300);
-  ok('TRADE NOW at T-200 then 2 s without a server reading -> STALE (no 6 s grace for TRADE NOW)', /TRADE NOW/.test(farBefore) && txt('act281S') === 'STALE — DO NOT TRADE', [farBefore, txt('act281S')]);
+  ok('TRADE NOW at T-200 then 2 s without a server reading -> STALE (no 6 s grace), and the trade box / card follow (review round 3)',
+    /TRADE NOW/.test(farBefore) && txt('act281S') === 'STALE — DO NOT TRADE' && txt('tradeAct') !== 'TRADE NOW' && !/trade/.test($('call').className), [farBefore, txt('act281S'), txt('tradeAct'), $('call').className]);
   w.fetch = fetch0;
+  /* review round 3: a reading's age counts from when it was requested: on a 2.5 s round trip a TRADE NOW reading is never shown as TRADE NOW */
+  delayMs = 2500; current = response(signal({ pUp: 0.004, tau: 60, book: bookDown(96) })); w.PIN_RADAR.state.nextPollAt = 0;
+  let sawGo = false; for (let i = 0; i < 40; i++) { await sleep(100); if (/TRADE NOW/.test(txt('act281S')) || txt('tradeAct') === 'TRADE NOW') sawGo = true; }
+  ok('slow connection (2.5 s per reading): TRADE NOW never shown, the line says STALE', !sawGo && /STALE/.test(txt('act281S')), [sawGo, txt('act281S'), txt('tradeAct')]);
+  delayMs = 0; await sleep(2600);
   /* review finding: the banner must be downgraded when the backend goes stale (the page may downgrade, never upgrade) */
   await show(response(signal({ pUp: 0.004, tau: 30, book: bookDown(96) })));
   const okBefore = txt('act281S');

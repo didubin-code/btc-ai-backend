@@ -2,7 +2,8 @@
      Q1  sampler phase: with the 1 Hz sampler firing near x.5 s (where Node's drifting setInterval regularly passes), 2.8 reports
          "only k/n locked prints sampled" -> DATA UNRELIABLE for most of the final minute; 2.8.1 never does, at any phase.
      Q2  a REAL gap (no index sample for 5 s inside the settlement minute) still makes 2.8.1 DATA UNRELIABLE (not suppressed).
-     Q3  the aligned sampler, run on real timers for ~4 s, samples at the second + SAMPLE_PHASE_MS (no drift).
+     Q3  the aligned sampler, run on real timers for ~8 s under timer load, samples once per second at the second + SAMPLE_PHASE_MS
+         (no drift, no duplicate sample of the same second).
      Q4  one lagging venue (quote 2.6 s old) in the final 20 s: DATA UNRELIABLE in 2.8 AND 2.8.1 (a legitimate warning: the 1 Hz settlement
          ring samples every venue, so the index cannot simply be rebuilt without the lagging one; review round 2 withdrew that change).
      Q6  a FROZEN venue (price stuck, heartbeats alive) from T-28 and from T-45 on 12 real windows: 2.8.1 is DATA UNRELIABLE wherever 2.8 is,
@@ -76,15 +77,19 @@ function run(S, w, { phase = () => 100, skip = () => false, venues = null, pre =
   }
   ok('Q2 a real 5 s index gap inside the settlement minute is still DATA UNRELIABLE in 2.8.1', flagged === windows, { windows, flagged });
 }
-/* Q3: real timers, separate process (the aligned sampler must not drift) */
+/* Q3: real timers, separate process: the aligned sampler must not drift AND must never sample the same second twice (review round 2: a
+   timer firing ~1 ms early re-targeted the same second; the zero return biased the volatility low). Run with other timer work (8 ms busy
+   every 500 ms, like bgTick), which made the defect appear in ~17 % of seconds. */
 {
   const code = `process.env.ENABLE_WS='0';process.env.PINRADAR_REPLAY='1';const S=require(${JSON.stringify(F281)});
     for (const v of Object.values(S.VENUES)) Object.assign(v,{mid:80000,bidDepth:1,askDepth:1});
     const keep=setInterval(()=>{for(const v of Object.values(S.VENUES)){v.lastQuoteTs=Date.now();v.lastMsgTs=Date.now();}},20);
+    const busy=setInterval(()=>{const t=Date.now();while(Date.now()-t<8){}},500);
     S.startSampler();
-    setTimeout(()=>{clearInterval(keep);const ph=S.IDX.ring.slice(1).map(p=>p[0]%1000);console.log(JSON.stringify(ph));process.exit(0);},4300);`;
-  const ph = JSON.parse(execFileSync(process.execPath, ['-e', code], { encoding: 'utf8' }).trim());
-  ok('Q3 aligned sampler on real timers: every tick at the second + 100 ms (+ scheduling delay < 150 ms)', ph.length >= 3 && ph.every(p => p >= 100 && p < 250), ph);
+    setTimeout(()=>{clearInterval(keep);clearInterval(busy);const r=S.IDX.ring.map(p=>p[0]);console.log(JSON.stringify({ph:r.slice(1).map(t=>t%1000),dt:r.slice(1).map((t,i)=>t-r[i])}));process.exit(0);},8300);`;
+  const o = JSON.parse(execFileSync(process.execPath, ['-e', code], { encoding: 'utf8' }).trim());
+  ok('Q3 aligned sampler on real timers under load: every tick at the second + ~100 ms, exactly one sample per second (no duplicates, no gaps)',
+    o.ph.length >= 6 && o.ph.every(p => p >= 95 && p < 250) && o.dt.every(d => d >= 500 && d <= 1500), o);
 }
 /* Q4 */
 {

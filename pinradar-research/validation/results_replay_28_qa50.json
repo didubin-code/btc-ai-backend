@@ -1,0 +1,5610 @@
+{
+ "summary": {
+  "engine": "2.8/pinradar_server.js",
+  "files": [
+   "replay_sample.ndjson",
+   "consecutive_sample.ndjson"
+  ],
+  "decisionQuoteAgeMs": 50,
+  "windows": 58,
+  "skipped": 0,
+  "firstLocked": {
+   "n": 55,
+   "wrong": 2,
+   "up": 26,
+   "down": 29,
+   "wrongUp": 1,
+   "wrongDown": 1,
+   "reversalWarnings": 2,
+   "wrongTickers": [
+    "KXBTC15M-26SEP022315-15",
+    "KXBTC15M-26OCT122045-45"
+   ],
+   "ci95": {
+    "k": 2,
+    "n": 55,
+    "rate": 0.03636363636363636,
+    "lo": 0.004434547318590911,
+    "hi": 0.12526425709715017,
+    "conf": 0.95,
+    "sided": "two"
+   }
+  },
+  "neverLocked": 3,
+  "fixedTimes": {
+   "3": {
+    "locked": 53,
+    "wrong": 0
+   },
+   "5": {
+    "locked": 53,
+    "wrong": 0
+   },
+   "10": {
+    "locked": 53,
+    "wrong": 0
+   },
+   "15": {
+    "locked": 52,
+    "wrong": 0
+   },
+   "20": {
+    "locked": 51,
+    "wrong": 0
+   },
+   "30": {
+    "locked": 50,
+    "wrong": 0
+   },
+   "45": {
+    "locked": 43,
+    "wrong": 0
+   },
+   "60": {
+    "locked": 32,
+    "wrong": 0
+   }
+  },
+  "userEntries": {
+   "n": 40,
+   "won": 21,
+   "engineLockedSameSideAtEntry": 0,
+   "engineTradeNowAtEntry": 0,
+   "lostTradesEngineLockedSameSide": 0,
+   "entryTauMedian": 596.58,
+   "sumPnlCentsPerContract": -169
+  },
+  "note": "These 58 windows were selected for earlier tests (42 around sampled historical trade entries, 16 consecutive) and over-represent reversals: counts are NOT failure rates."
+ },
+ "windows": [
+  {
+   "ticker": "KXBTC15M-26JUL212115-15",
+   "closeUtc": "2026-07-22T01:15:00.000Z",
+   "strike": 66621.97,
+   "official": 66456.84,
+   "marginUsd": -165.13,
+   "truth": "DOWN",
+   "basisMu": 2.136530019592777,
+   "firstLocked": {
+    "tau": 181.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004946,
+    "gapUsd": -133.95,
+    "cushionSigma": 5.7,
+    "sigmaRawBps": 0.2853,
+    "regimeBucket": 2,
+    "momentum": -1.06,
+    "requiredMoveUsd": 133.95
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 182,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000002,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.00003,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26JUL212130-30",
+   "closeUtc": "2026-07-22T01:30:00.000Z",
+   "strike": 66456.84,
+   "official": 66358.96,
+   "marginUsd": -97.88,
+   "truth": "DOWN",
+   "basisMu": 2.055246882462684,
+   "firstLocked": {
+    "tau": 90.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004865,
+    "gapUsd": -77.81,
+    "cushionSigma": 5.41,
+    "sigmaRawBps": 0.2876,
+    "regimeBucket": 2,
+    "momentum": -1.16,
+    "requiredMoveUsd": 77.81
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 91,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000002,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000042,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000433,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26JUL212145-45",
+   "closeUtc": "2026-07-22T01:45:00.000Z",
+   "strike": 66358.96,
+   "official": 66330.16,
+   "marginUsd": -28.8,
+   "truth": "DOWN",
+   "basisMu": 2.084008297782863,
+   "firstLocked": {
+    "tau": 131.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.00419,
+    "gapUsd": -102.49,
+    "cushionSigma": 5.05,
+    "sigmaRawBps": 0.3064,
+    "regimeBucket": 3,
+    "momentum": -4.38,
+    "requiredMoveUsd": 102.49
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 95,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000002,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.00001,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000247,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.001557,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "HIGH CONFIDENCE",
+     "side": "DOWN",
+     "pFlip": 0.012539,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26JUL212200-00",
+   "closeUtc": "2026-07-22T02:00:00.000Z",
+   "strike": 66330.16,
+   "official": 66367.31,
+   "marginUsd": 37.15,
+   "truth": "UP",
+   "basisMu": 3.2130207467512406,
+   "firstLocked": {
+    "tau": 40.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004792,
+    "gapUsd": 19.3,
+    "cushionSigma": 3.56,
+    "sigmaRawBps": 0.2516,
+    "regimeBucket": 2,
+    "momentum": 0.13,
+    "requiredMoveUsd": 28.24
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 41,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000004,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000029,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000518,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "HIGH CONFIDENCE",
+     "side": "UP",
+     "pFlip": 0.014278,
+     "locked": false,
+     "correct": null
+    },
+    "60": {
+     "state": "HIGH CONFIDENCE",
+     "side": "UP",
+     "pFlip": 0.044495,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26JUL212215-15",
+   "closeUtc": "2026-07-22T02:15:00.000Z",
+   "strike": 66367.31,
+   "official": 66423.74,
+   "marginUsd": 56.43,
+   "truth": "UP",
+   "basisMu": 4.356480177624843,
+   "firstLocked": {
+    "tau": 65.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004597,
+    "gapUsd": 41.61,
+    "cushionSigma": 4.35,
+    "sigmaRawBps": 0.2586,
+    "regimeBucket": 2,
+    "momentum": 0.2,
+    "requiredMoveUsd": 41.61
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 66,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000009,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000151,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.001032,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26JUL212230-30",
+   "closeUtc": "2026-07-22T02:30:00.000Z",
+   "strike": 66423.74,
+   "official": 66380.33,
+   "marginUsd": -43.41,
+   "truth": "DOWN",
+   "basisMu": 4.768505635038952,
+   "firstLocked": {
+    "tau": 50.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004983,
+    "gapUsd": -35.81,
+    "cushionSigma": 5.35,
+    "sigmaRawBps": 0.2445,
+    "regimeBucket": 2,
+    "momentum": -0.93,
+    "requiredMoveUsd": 42.13
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 51,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000003,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000057,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.0009,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "HIGH CONFIDENCE",
+     "side": "DOWN",
+     "pFlip": 0.016515,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26JUL212245-45",
+   "closeUtc": "2026-07-22T02:45:00.000Z",
+   "strike": 66380.33,
+   "official": 66333.53,
+   "marginUsd": -46.8,
+   "truth": "DOWN",
+   "basisMu": 4.802199342098524,
+   "firstLocked": {
+    "tau": 61.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004999,
+    "gapUsd": -51.49,
+    "cushionSigma": 6.94,
+    "sigmaRawBps": 0.2086,
+    "regimeBucket": 1,
+    "momentum": 0.1,
+    "requiredMoveUsd": 51.49
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 62,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000002,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000013,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000491,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.003846,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26JUL212300-00",
+   "closeUtc": "2026-07-22T03:00:00.000Z",
+   "strike": 66333.53,
+   "official": 66275.85,
+   "marginUsd": -57.68,
+   "truth": "DOWN",
+   "basisMu": 5.243406061998321,
+   "firstLocked": {
+    "tau": 86.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004992,
+    "gapUsd": -73.73,
+    "cushionSigma": 7.3,
+    "sigmaRawBps": 0.2045,
+    "regimeBucket": 1,
+    "momentum": -0.86,
+    "requiredMoveUsd": 73.73
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 86,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000017,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000112,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000611,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26JUL212315-15",
+   "closeUtc": "2026-07-22T03:15:00.000Z",
+   "strike": 66275.85,
+   "official": 66171.59,
+   "marginUsd": -104.26,
+   "truth": "DOWN",
+   "basisMu": 5.5932161316632465,
+   "firstLocked": {
+    "tau": 106.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004845,
+    "gapUsd": -97.24,
+    "cushionSigma": 5.09,
+    "sigmaRawBps": 0.3379,
+    "regimeBucket": 3,
+    "momentum": -0.81,
+    "requiredMoveUsd": 97.24
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 107,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000003,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000047,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000195,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26JUL212330-30",
+   "closeUtc": "2026-07-22T03:30:00.000Z",
+   "strike": 66171.59,
+   "official": 66264.15,
+   "marginUsd": 92.56,
+   "truth": "UP",
+   "basisMu": 5.248672395198031,
+   "firstLocked": {
+    "tau": 145.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004931,
+    "gapUsd": 81.04,
+    "cushionSigma": 5.89,
+    "sigmaRawBps": 0.1903,
+    "regimeBucket": 1,
+    "momentum": 1.29,
+    "requiredMoveUsd": 81.04
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 146,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000003,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.00002,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26JUL212345-45",
+   "closeUtc": "2026-07-22T03:45:00.000Z",
+   "strike": 66264.15,
+   "official": 66235.06,
+   "marginUsd": -29.09,
+   "truth": "DOWN",
+   "basisMu": 4.89037021092057,
+   "firstLocked": {
+    "tau": 67.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.00438,
+    "gapUsd": -48.53,
+    "cushionSigma": 5.65,
+    "sigmaRawBps": 0.2204,
+    "regimeBucket": 2,
+    "momentum": 1.79,
+    "requiredMoveUsd": 48.53
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 65,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000006,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000023,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000336,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.00245,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "HIGH CONFIDENCE",
+     "side": "DOWN",
+     "pFlip": 0.006798,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26JUL220000-00",
+   "closeUtc": "2026-07-22T04:00:00.000Z",
+   "strike": 66235.06,
+   "official": 66167.76,
+   "marginUsd": -67.3,
+   "truth": "DOWN",
+   "basisMu": 4.837792394254819,
+   "firstLocked": {
+    "tau": 88.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004384,
+    "gapUsd": -85.33,
+    "cushionSigma": 3.93,
+    "sigmaRawBps": 0.4505,
+    "regimeBucket": 4,
+    "momentum": -3.28,
+    "requiredMoveUsd": 85.33
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 89,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000009,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000079,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000267,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26JUL220015-15",
+   "closeUtc": "2026-07-22T04:15:00.000Z",
+   "strike": 66167.76,
+   "official": 66295.23,
+   "marginUsd": 127.47,
+   "truth": "UP",
+   "basisMu": 5.476523195135102,
+   "firstLocked": {
+    "tau": 251.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.00497,
+    "gapUsd": 123.53,
+    "cushionSigma": 4.96,
+    "sigmaRawBps": 0.2484,
+    "regimeBucket": 2,
+    "momentum": 0.43,
+    "requiredMoveUsd": 123.53
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 252,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000011,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26JUL220030-30",
+   "closeUtc": "2026-07-22T04:30:00.000Z",
+   "strike": 66295.23,
+   "official": 66349.67,
+   "marginUsd": 54.44,
+   "truth": "UP",
+   "basisMu": 4.975251875513625,
+   "firstLocked": {
+    "tau": 63.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004567,
+    "gapUsd": 40.59,
+    "cushionSigma": 5.34,
+    "sigmaRawBps": 0.2055,
+    "regimeBucket": 1,
+    "momentum": 2.56,
+    "requiredMoveUsd": 40.59
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 64,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000007,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000233,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.002536,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26JUL220045-45",
+   "closeUtc": "2026-07-22T04:45:00.000Z",
+   "strike": 66349.67,
+   "official": 66376.09,
+   "marginUsd": 26.42,
+   "truth": "UP",
+   "basisMu": 4.580885351873472,
+   "firstLocked": {
+    "tau": 38.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004562,
+    "gapUsd": 18.19,
+    "cushionSigma": 3.35,
+    "sigmaRawBps": 0.2713,
+    "regimeBucket": 2,
+    "momentum": 0.29,
+    "requiredMoveUsd": 27.99
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 39,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000004,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000026,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000424,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "HIGH CONFIDENCE",
+     "side": "UP",
+     "pFlip": 0.018387,
+     "locked": false,
+     "correct": null
+    },
+    "60": {
+     "state": "LEANING",
+     "side": "UP",
+     "pFlip": 0.055291,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26JUL220100-00",
+   "closeUtc": "2026-07-22T05:00:00.000Z",
+   "strike": 66376.09,
+   "official": 66339.43,
+   "marginUsd": -36.66,
+   "truth": "DOWN",
+   "basisMu": 4.462948909248025,
+   "firstLocked": {
+    "tau": 56.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.0046,
+    "gapUsd": -44.5,
+    "cushionSigma": 6.86,
+    "sigmaRawBps": 0.1988,
+    "regimeBucket": 1,
+    "momentum": 0.5,
+    "requiredMoveUsd": 46.85
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 57,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000004,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000093,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.00116,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "HIGH CONFIDENCE",
+     "side": "DOWN",
+     "pFlip": 0.006468,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26JUL231145-45",
+   "closeUtc": "2026-07-23T15:45:00.000Z",
+   "strike": 64823.58,
+   "official": 64870.52,
+   "marginUsd": 46.94,
+   "truth": "UP",
+   "basisMu": 3.922864852934225,
+   "firstLocked": {
+    "tau": 88.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004151,
+    "gapUsd": 70.47,
+    "cushionSigma": 4.42,
+    "sigmaRawBps": 0.3342,
+    "regimeBucket": 3,
+    "momentum": 0.26,
+    "requiredMoveUsd": 70.47
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 89,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000004,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000162,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000876,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 0,
+     "tau": 572.71,
+     "side": "UP",
+     "px": 0.79,
+     "won": true,
+     "pnlCentsPerContract": 21,
+     "engineAtEntry": {
+      "tau": 573.25,
+      "state": "LEANING",
+      "side": "UP",
+      "pWin": 0.818497,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26JUL241545-45",
+   "closeUtc": "2026-07-24T19:45:00.000Z",
+   "strike": 64156.46,
+   "official": 64194.25,
+   "marginUsd": 37.79,
+   "truth": "UP",
+   "basisMu": 3.49670839440597,
+   "firstLocked": {
+    "tau": 51.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004621,
+    "gapUsd": 30.27,
+    "cushionSigma": 5.08,
+    "sigmaRawBps": 0.2094,
+    "regimeBucket": 1,
+    "momentum": 1,
+    "requiredMoveUsd": 34.93
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 52,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000005,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000103,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.001708,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "HIGH CONFIDENCE",
+     "side": "UP",
+     "pFlip": 0.012836,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 101,
+     "tau": 573.27,
+     "side": "UP",
+     "px": 0.62,
+     "won": true,
+     "pnlCentsPerContract": 38,
+     "engineAtEntry": {
+      "tau": 574.25,
+      "state": "TOSS-UP",
+      "side": "UP",
+      "pWin": 0.688733,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26JUL251930-30",
+   "closeUtc": "2026-07-25T23:30:00.000Z",
+   "strike": 64359.54,
+   "official": 64346.28,
+   "marginUsd": -13.26,
+   "truth": "DOWN",
+   "basisMu": 2.0616796328482856,
+   "firstLocked": {
+    "tau": 50.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.00469,
+    "gapUsd": -17.89,
+    "cushionSigma": 4.91,
+    "sigmaRawBps": 0.0671,
+    "regimeBucket": 0,
+    "momentum": 0.18,
+    "requiredMoveUsd": 21.04
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 51,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000011,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000052,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000444,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.003295,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "HIGH CONFIDENCE",
+     "side": "DOWN",
+     "pFlip": 0.010586,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 201,
+     "tau": 594.98,
+     "side": "DOWN",
+     "px": 0.75,
+     "won": true,
+     "pnlCentsPerContract": 25,
+     "engineAtEntry": {
+      "tau": 595.25,
+      "state": "TOSS-UP",
+      "side": "DOWN",
+      "pWin": 0.701729,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26JUL270145-45",
+   "closeUtc": "2026-07-27T05:45:00.000Z",
+   "strike": 65353.83,
+   "official": 65343.63,
+   "marginUsd": -10.2,
+   "truth": "DOWN",
+   "basisMu": 3.546807178879416,
+   "firstLocked": {
+    "tau": 30.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004929,
+    "gapUsd": -18.17,
+    "cushionSigma": 4.81,
+    "sigmaRawBps": 0.1668,
+    "regimeBucket": 1,
+    "momentum": -0.3,
+    "requiredMoveUsd": 35.16
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 31,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000002,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000043,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000253,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.004106,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "HIGH CONFIDENCE",
+     "side": "DOWN",
+     "pFlip": 0.030712,
+     "locked": false,
+     "correct": null
+    },
+    "60": {
+     "state": "LEANING",
+     "side": "DOWN",
+     "pFlip": 0.083419,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 302,
+     "tau": 457.6,
+     "side": "DOWN",
+     "px": 0.73,
+     "won": true,
+     "pnlCentsPerContract": 27,
+     "engineAtEntry": {
+      "tau": 458.25,
+      "state": "LEANING",
+      "side": "DOWN",
+      "pWin": 0.752645,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26JUL281045-45",
+   "closeUtc": "2026-07-28T14:45:00.000Z",
+   "strike": 63107.35,
+   "official": 63286.19,
+   "marginUsd": 178.84,
+   "truth": "UP",
+   "basisMu": 6.513074705518668,
+   "firstLocked": {
+    "tau": 184.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004157,
+    "gapUsd": 196.21,
+    "cushionSigma": 3.52,
+    "sigmaRawBps": 0.7083,
+    "regimeBucket": 5,
+    "momentum": 2.43,
+    "requiredMoveUsd": 196.21
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 185,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000002,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000013,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000052,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 403,
+     "tau": 599.35,
+     "side": "DOWN",
+     "px": 0.59,
+     "won": false,
+     "pnlCentsPerContract": -59,
+     "engineAtEntry": {
+      "tau": 600.25,
+      "state": "TOSS-UP",
+      "side": "DOWN",
+      "pWin": 0.580877,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26JUL291415-15",
+   "closeUtc": "2026-07-29T18:15:00.000Z",
+   "strike": 64142.73,
+   "official": 64289.05,
+   "marginUsd": 146.32,
+   "truth": "UP",
+   "basisMu": 6.644916762004143,
+   "firstLocked": {
+    "tau": 97.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004742,
+    "gapUsd": 191.51,
+    "cushionSigma": 3.2,
+    "sigmaRawBps": 1.1848,
+    "regimeBucket": 6,
+    "momentum": 0.1,
+    "requiredMoveUsd": 191.51
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 98,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000012,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000224,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000778,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 528,
+     "tau": 598.58,
+     "side": "DOWN",
+     "px": 0.14,
+     "won": false,
+     "pnlCentsPerContract": -14,
+     "engineAtEntry": {
+      "tau": 599.25,
+      "state": "LEANING",
+      "side": "UP",
+      "pWin": 0.83561,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26JUL301915-15",
+   "closeUtc": "2026-07-30T23:15:00.000Z",
+   "strike": 64786.74,
+   "official": 64879.67,
+   "marginUsd": 92.93,
+   "truth": "UP",
+   "basisMu": 3.2266448370293292,
+   "firstLocked": {
+    "tau": 128.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004852,
+    "gapUsd": 79.96,
+    "cushionSigma": 5.94,
+    "sigmaRawBps": 0.2073,
+    "regimeBucket": 1,
+    "momentum": 0.39,
+    "requiredMoveUsd": 79.96
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 127,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000005,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000078,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 654,
+     "tau": 599.25,
+     "side": "UP",
+     "px": 0.72,
+     "won": true,
+     "pnlCentsPerContract": 28,
+     "engineAtEntry": {
+      "tau": 599.25,
+      "state": "TOSS-UP",
+      "side": "UP",
+      "pWin": 0.695725,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26JUL312030-30",
+   "closeUtc": "2026-08-01T00:30:00.000Z",
+   "strike": 62905.7,
+   "official": 62927.42,
+   "marginUsd": 21.72,
+   "truth": "UP",
+   "basisMu": 5.92803729299054,
+   "firstLocked": {
+    "tau": 62.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004455,
+    "gapUsd": 30.22,
+    "cushionSigma": 6,
+    "sigmaRawBps": 0.1231,
+    "regimeBucket": 0,
+    "momentum": 1,
+    "requiredMoveUsd": 30.22
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 63,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000003,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000015,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000109,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000818,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.00298,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 780,
+     "tau": 599.56,
+     "side": "UP",
+     "px": 0.48,
+     "won": true,
+     "pnlCentsPerContract": 52,
+     "engineAtEntry": {
+      "tau": 600.25,
+      "state": "TOSS-UP",
+      "side": "DOWN",
+      "pWin": 0.510538,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG020545-45",
+   "closeUtc": "2026-08-02T09:45:00.000Z",
+   "strike": 63179.83,
+   "official": 63214.41,
+   "marginUsd": 34.58,
+   "truth": "UP",
+   "basisMu": 4.826241141339749,
+   "firstLocked": {
+    "tau": 54.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004921,
+    "gapUsd": 27.2,
+    "cushionSigma": 5.7,
+    "sigmaRawBps": 0.136,
+    "regimeBucket": 0,
+    "momentum": 0.11,
+    "requiredMoveUsd": 29.67
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 55,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000007,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000027,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000177,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.00137,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "HIGH CONFIDENCE",
+     "side": "UP",
+     "pFlip": 0.007498,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 885,
+     "tau": 559.95,
+     "side": "DOWN",
+     "px": 0.1,
+     "won": false,
+     "pnlCentsPerContract": -10,
+     "engineAtEntry": {
+      "tau": 560.25,
+      "state": "LEANING",
+      "side": "UP",
+      "pWin": 0.879147,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG030800-00",
+   "closeUtc": "2026-08-03T12:00:00.000Z",
+   "strike": 62621.99,
+   "official": 62486.2,
+   "marginUsd": -135.79,
+   "truth": "DOWN",
+   "basisMu": 5.775616481219941,
+   "firstLocked": {
+    "tau": 204.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.003932,
+    "gapUsd": -154.82,
+    "cushionSigma": 4.04,
+    "sigmaRawBps": 0.4617,
+    "regimeBucket": 4,
+    "momentum": -2.85,
+    "requiredMoveUsd": 154.82
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 202,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000005,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000045,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 1001,
+     "tau": 599.82,
+     "side": "DOWN",
+     "px": 0.66,
+     "won": true,
+     "pnlCentsPerContract": 34,
+     "engineAtEntry": {
+      "tau": 600.25,
+      "state": "TOSS-UP",
+      "side": "DOWN",
+      "pWin": 0.704823,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG040945-45",
+   "closeUtc": "2026-08-04T13:45:00.000Z",
+   "strike": 63853.84,
+   "official": 63973.67,
+   "marginUsd": 119.83,
+   "truth": "UP",
+   "basisMu": 5.09009753180999,
+   "firstLocked": {
+    "tau": 148.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004959,
+    "gapUsd": 135.18,
+    "cushionSigma": 3.39,
+    "sigmaRawBps": 0.5789,
+    "regimeBucket": 5,
+    "momentum": 0.54,
+    "requiredMoveUsd": 135.18
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 147,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000009,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000077,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000259,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 1126,
+     "tau": 599.31,
+     "side": "DOWN",
+     "px": 0.3,
+     "won": false,
+     "pnlCentsPerContract": -30,
+     "engineAtEntry": {
+      "tau": 600.25,
+      "state": "TOSS-UP",
+      "side": "UP",
+      "pWin": 0.700282,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG052315-15",
+   "closeUtc": "2026-08-06T03:15:00.000Z",
+   "strike": 64519.95,
+   "official": 64511.43,
+   "marginUsd": -8.52,
+   "truth": "DOWN",
+   "basisMu": 4.4326260998249625,
+   "firstLocked": {
+    "tau": 13.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004979,
+    "gapUsd": -13.01,
+    "cushionSigma": 3.9,
+    "sigmaRawBps": 0.1682,
+    "regimeBucket": 1,
+    "momentum": -0.51,
+    "requiredMoveUsd": 55.74
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 14,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000024,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000241,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.001737,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "HIGH CONFIDENCE",
+     "side": "DOWN",
+     "pFlip": 0.006085,
+     "locked": false,
+     "correct": null
+    },
+    "20": {
+     "state": "HIGH CONFIDENCE",
+     "side": "DOWN",
+     "pFlip": 0.013711,
+     "locked": false,
+     "correct": null
+    },
+    "30": {
+     "state": "HIGH CONFIDENCE",
+     "side": "DOWN",
+     "pFlip": 0.042363,
+     "locked": false,
+     "correct": null
+    },
+    "45": {
+     "state": "LEANING",
+     "side": "DOWN",
+     "pFlip": 0.129889,
+     "locked": false,
+     "correct": null
+    },
+    "60": {
+     "state": "LEANING",
+     "side": "DOWN",
+     "pFlip": 0.248989,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 1244,
+     "tau": 599.58,
+     "side": "UP",
+     "px": 0.33,
+     "won": false,
+     "pnlCentsPerContract": -33,
+     "engineAtEntry": {
+      "tau": 600.25,
+      "state": "TOSS-UP",
+      "side": "DOWN",
+      "pWin": 0.720145,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG070300-00",
+   "closeUtc": "2026-08-07T07:00:00.000Z",
+   "strike": 64305.78,
+   "official": 64268,
+   "marginUsd": -37.78,
+   "truth": "DOWN",
+   "basisMu": 3.509722262772318,
+   "firstLocked": {
+    "tau": 36.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.001199,
+    "gapUsd": -35.27,
+    "cushionSigma": 6.58,
+    "sigmaRawBps": 0.297,
+    "regimeBucket": 2,
+    "momentum": -1.89,
+    "requiredMoveUsd": 57.19
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 37,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000005,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000021,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000268,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "HIGH CONFIDENCE",
+     "side": "DOWN",
+     "pFlip": 0.020547,
+     "locked": false,
+     "correct": null
+    },
+    "60": {
+     "state": "LEANING",
+     "side": "DOWN",
+     "pFlip": 0.055917,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 1359,
+     "tau": 552.67,
+     "side": "UP",
+     "px": 0.18,
+     "won": false,
+     "pnlCentsPerContract": -18,
+     "engineAtEntry": {
+      "tau": 553.25,
+      "state": "LEANING",
+      "side": "DOWN",
+      "pWin": 0.781517,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG080545-45",
+   "closeUtc": "2026-08-08T09:45:00.000Z",
+   "strike": 64979.95,
+   "official": 64975.17,
+   "marginUsd": -4.78,
+   "truth": "DOWN",
+   "basisMu": 4.661857796365902,
+   "firstLocked": null,
+   "reversalAfterLocked": null,
+   "lockedSeconds": 0,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LEANING",
+     "side": "DOWN",
+     "pFlip": 0.170285,
+     "locked": false,
+     "correct": null
+    },
+    "5": {
+     "state": "LEANING",
+     "side": "DOWN",
+     "pFlip": 0.169678,
+     "locked": false,
+     "correct": null
+    },
+    "10": {
+     "state": "LEANING",
+     "side": "DOWN",
+     "pFlip": 0.169238,
+     "locked": false,
+     "correct": null
+    },
+    "15": {
+     "state": "LEANING",
+     "side": "DOWN",
+     "pFlip": 0.171016,
+     "locked": false,
+     "correct": null
+    },
+    "20": {
+     "state": "LEANING",
+     "side": "DOWN",
+     "pFlip": 0.175277,
+     "locked": false,
+     "correct": null
+    },
+    "30": {
+     "state": "LEANING",
+     "side": "DOWN",
+     "pFlip": 0.125239,
+     "locked": false,
+     "correct": null
+    },
+    "45": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.252007,
+     "locked": false,
+     "correct": null
+    },
+    "60": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.290443,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 1467,
+     "tau": 586.97,
+     "side": "UP",
+     "px": 0.33,
+     "won": false,
+     "pnlCentsPerContract": -33,
+     "engineAtEntry": {
+      "tau": 587.25,
+      "state": "TOSS-UP",
+      "side": "DOWN",
+      "pWin": 0.546446,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG101500-00",
+   "closeUtc": "2026-08-10T19:00:00.000Z",
+   "strike": 63805.95,
+   "official": 63826.44,
+   "marginUsd": 20.49,
+   "truth": "UP",
+   "basisMu": 5.761170068477624,
+   "firstLocked": {
+    "tau": 69.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004757,
+    "gapUsd": 37.69,
+    "cushionSigma": 5.1,
+    "sigmaRawBps": 0.1845,
+    "regimeBucket": 1,
+    "momentum": -1.16,
+    "requiredMoveUsd": 37.69
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 60,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000006,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000026,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.0001,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.004917,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.00192,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 1567,
+     "tau": 598.21,
+     "side": "UP",
+     "px": 0.79,
+     "won": true,
+     "pnlCentsPerContract": 21,
+     "engineAtEntry": {
+      "tau": 598.25,
+      "state": "LEANING",
+      "side": "UP",
+      "pWin": 0.798054,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG112045-45",
+   "closeUtc": "2026-08-12T00:45:00.000Z",
+   "strike": 63615.59,
+   "official": 63657.44,
+   "marginUsd": 41.85,
+   "truth": "UP",
+   "basisMu": 1.9884649136682762,
+   "firstLocked": {
+    "tau": 82.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004743,
+    "gapUsd": 42.61,
+    "cushionSigma": 5.59,
+    "sigmaRawBps": 0.1601,
+    "regimeBucket": 1,
+    "momentum": 0.17,
+    "requiredMoveUsd": 42.61
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 83,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000002,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000013,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000129,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000909,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000799,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 1667,
+     "tau": 599.48,
+     "side": "UP",
+     "px": 0.76,
+     "won": true,
+     "pnlCentsPerContract": 24,
+     "engineAtEntry": {
+      "tau": 600.25,
+      "state": "LEANING",
+      "side": "UP",
+      "pWin": 0.823911,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG130900-00",
+   "closeUtc": "2026-08-13T13:00:00.000Z",
+   "strike": 63515.41,
+   "official": 63629.15,
+   "marginUsd": 113.74,
+   "truth": "UP",
+   "basisMu": 4.544468607915929,
+   "firstLocked": {
+    "tau": 198.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.00384,
+    "gapUsd": 95.32,
+    "cushionSigma": 5.12,
+    "sigmaRawBps": 0.2221,
+    "regimeBucket": 2,
+    "momentum": 1.74,
+    "requiredMoveUsd": 95.32
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 182,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000006,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 1767,
+     "tau": 598.1,
+     "side": "UP",
+     "px": 0.82,
+     "won": true,
+     "pnlCentsPerContract": 18,
+     "engineAtEntry": {
+      "tau": 598.25,
+      "state": "LEANING",
+      "side": "UP",
+      "pWin": 0.772304,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG160315-15",
+   "closeUtc": "2026-08-16T07:15:00.000Z",
+   "strike": 63003.28,
+   "official": 62991.4,
+   "marginUsd": -11.88,
+   "truth": "DOWN",
+   "basisMu": 4.263750566001538,
+   "firstLocked": {
+    "tau": 46.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004676,
+    "gapUsd": -15.44,
+    "cushionSigma": 4.51,
+    "sigmaRawBps": 0.0463,
+    "regimeBucket": 0,
+    "momentum": 0.03,
+    "requiredMoveUsd": 19.71
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 47,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000008,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000038,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000381,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.003833,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "HIGH CONFIDENCE",
+     "side": "DOWN",
+     "pFlip": 0.013337,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 1867,
+     "tau": 336.91,
+     "side": "UP",
+     "px": 0.12,
+     "won": false,
+     "pnlCentsPerContract": -12,
+     "engineAtEntry": {
+      "tau": 337.25,
+      "state": "LEANING",
+      "side": "DOWN",
+      "pWin": 0.794117,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG180030-30",
+   "closeUtc": "2026-08-18T04:30:00.000Z",
+   "strike": 64103.94,
+   "official": 64095.93,
+   "marginUsd": -8.01,
+   "truth": "DOWN",
+   "basisMu": 7.449736013647152,
+   "firstLocked": {
+    "tau": 47.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004792,
+    "gapUsd": -28.66,
+    "cushionSigma": 7.23,
+    "sigmaRawBps": 0.1051,
+    "regimeBucket": 0,
+    "momentum": 0.19,
+    "requiredMoveUsd": 35.82
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 48,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000015,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000144,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.00091,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.003435,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.003445,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "HIGH CONFIDENCE",
+     "side": "DOWN",
+     "pFlip": 0.012812,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 1970,
+     "tau": 599.57,
+     "side": "DOWN",
+     "px": 0.62,
+     "won": true,
+     "pnlCentsPerContract": 38,
+     "engineAtEntry": {
+      "tau": 600.25,
+      "state": "TOSS-UP",
+      "side": "DOWN",
+      "pWin": 0.639078,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG191200-00",
+   "closeUtc": "2026-08-19T16:00:00.000Z",
+   "strike": 68588.78,
+   "official": 68497.5,
+   "marginUsd": -91.28,
+   "truth": "DOWN",
+   "basisMu": 5.877367910322038,
+   "firstLocked": {
+    "tau": 66.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004884,
+    "gapUsd": -140.85,
+    "cushionSigma": 3.39,
+    "sigmaRawBps": 1.1336,
+    "regimeBucket": 6,
+    "momentum": -0.04,
+    "requiredMoveUsd": 140.85
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 62,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000011,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000042,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000183,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.001407,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.004496,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 2083,
+     "tau": 593.64,
+     "side": "UP",
+     "px": 0.34,
+     "won": false,
+     "pnlCentsPerContract": -34,
+     "engineAtEntry": {
+      "tau": 594.25,
+      "state": "TOSS-UP",
+      "side": "DOWN",
+      "pWin": 0.603343,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG201530-30",
+   "closeUtc": "2026-08-20T19:30:00.000Z",
+   "strike": 72476.28,
+   "official": 72601.71,
+   "marginUsd": 125.43,
+   "truth": "UP",
+   "basisMu": 6.2594778556013315,
+   "firstLocked": {
+    "tau": 99.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004428,
+    "gapUsd": 76.76,
+    "cushionSigma": 3.26,
+    "sigmaRawBps": 0.4032,
+    "regimeBucket": 4,
+    "momentum": 0.83,
+    "requiredMoveUsd": 76.76
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 100,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000025,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000201,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 2183,
+     "tau": 586.03,
+     "side": "DOWN",
+     "px": 0.27,
+     "won": false,
+     "pnlCentsPerContract": -27,
+     "engineAtEntry": {
+      "tau": 586.25,
+      "state": "LEANING",
+      "side": "UP",
+      "pWin": 0.764129,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG211645-45",
+   "closeUtc": "2026-08-21T20:45:00.000Z",
+   "strike": 77442.92,
+   "official": 77474.51,
+   "marginUsd": 31.59,
+   "truth": "UP",
+   "basisMu": 3.433995162503367,
+   "firstLocked": {
+    "tau": 48.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.000868,
+    "gapUsd": 51.97,
+    "cushionSigma": 4.71,
+    "sigmaRawBps": 0.4018,
+    "regimeBucket": 4,
+    "momentum": 1,
+    "requiredMoveUsd": 63.64
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 49,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000002,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000016,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000287,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.00216,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "HIGH CONFIDENCE",
+     "side": "UP",
+     "pFlip": 0.029534,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 2284,
+     "tau": 598.68,
+     "side": "UP",
+     "px": 0.65,
+     "won": true,
+     "pnlCentsPerContract": 35,
+     "engineAtEntry": {
+      "tau": 599.25,
+      "state": "TOSS-UP",
+      "side": "UP",
+      "pWin": 0.725738,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG222230-30",
+   "closeUtc": "2026-08-23T02:30:00.000Z",
+   "strike": 77090.57,
+   "official": 77091.14,
+   "marginUsd": 0.57,
+   "truth": "UP",
+   "basisMu": -6.125605141652786,
+   "firstLocked": null,
+   "reversalAfterLocked": null,
+   "lockedSeconds": 0,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.43843,
+     "locked": false,
+     "correct": null
+    },
+    "5": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.43793,
+     "locked": false,
+     "correct": null
+    },
+    "10": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.438363,
+     "locked": false,
+     "correct": null
+    },
+    "15": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.440072,
+     "locked": false,
+     "correct": null
+    },
+    "20": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.341119,
+     "locked": false,
+     "correct": null
+    },
+    "30": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.487676,
+     "locked": false,
+     "correct": null
+    },
+    "45": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.378134,
+     "locked": false,
+     "correct": null
+    },
+    "60": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.33035,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 2385,
+     "tau": 594.06,
+     "side": "DOWN",
+     "px": 0.5,
+     "won": false,
+     "pnlCentsPerContract": -50,
+     "engineAtEntry": {
+      "tau": 594.25,
+      "state": "TOSS-UP",
+      "side": "DOWN",
+      "pWin": 0.561085,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG232345-45",
+   "closeUtc": "2026-08-24T03:45:00.000Z",
+   "strike": 77140.35,
+   "official": 76994.55,
+   "marginUsd": -145.8,
+   "truth": "DOWN",
+   "basisMu": 3.0320749952857824,
+   "firstLocked": {
+    "tau": 151.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004886,
+    "gapUsd": -139.97,
+    "cushionSigma": 3.72,
+    "sigmaRawBps": 0.4473,
+    "regimeBucket": 4,
+    "momentum": 0.35,
+    "requiredMoveUsd": 139.97
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 120,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000019,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000112,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 2490,
+     "tau": 577.03,
+     "side": "DOWN",
+     "px": 0.7,
+     "won": true,
+     "pnlCentsPerContract": 30,
+     "engineAtEntry": {
+      "tau": 577.25,
+      "state": "TOSS-UP",
+      "side": "DOWN",
+      "pWin": 0.702019,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG250115-15",
+   "closeUtc": "2026-08-25T05:15:00.000Z",
+   "strike": 80312.36,
+   "official": 80527.36,
+   "marginUsd": 215,
+   "truth": "UP",
+   "basisMu": 1.575577100986657,
+   "firstLocked": {
+    "tau": 299.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004309,
+    "gapUsd": 229.12,
+    "cushionSigma": 4.72,
+    "sigmaRawBps": 0.3625,
+    "regimeBucket": 3,
+    "momentum": 0.13,
+    "requiredMoveUsd": 229.12
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 300,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000003,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000019,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000029,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 2590,
+     "tau": 599.16,
+     "side": "UP",
+     "px": 0.78,
+     "won": true,
+     "pnlCentsPerContract": 22,
+     "engineAtEntry": {
+      "tau": 599.25,
+      "state": "LEANING",
+      "side": "UP",
+      "pWin": 0.906935,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG261115-15",
+   "closeUtc": "2026-08-26T15:15:00.000Z",
+   "strike": 77807.65,
+   "official": 77841.92,
+   "marginUsd": 34.27,
+   "truth": "UP",
+   "basisMu": 0.0021630740363840495,
+   "firstLocked": {
+    "tau": 41.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004622,
+    "gapUsd": 48.65,
+    "cushionSigma": 3.46,
+    "sigmaRawBps": 0.6549,
+    "regimeBucket": 5,
+    "momentum": 0.65,
+    "requiredMoveUsd": 69.5
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 42,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000005,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000051,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000266,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.0016,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "HIGH CONFIDENCE",
+     "side": "UP",
+     "pFlip": 0.007529,
+     "locked": false,
+     "correct": null
+    },
+    "60": {
+     "state": "LEANING",
+     "side": "UP",
+     "pFlip": 0.176353,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 2691,
+     "tau": 574.98,
+     "side": "UP",
+     "px": 0.3,
+     "won": true,
+     "pnlCentsPerContract": 70,
+     "engineAtEntry": {
+      "tau": 575.25,
+      "state": "TOSS-UP",
+      "side": "DOWN",
+      "pWin": 0.726329,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG271445-45",
+   "closeUtc": "2026-08-27T18:45:00.000Z",
+   "strike": 79923.01,
+   "official": 79947.12,
+   "marginUsd": 24.11,
+   "truth": "UP",
+   "basisMu": 3.2122616377014106,
+   "firstLocked": {
+    "tau": 28.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004304,
+    "gapUsd": 16.95,
+    "cushionSigma": 2.76,
+    "sigmaRawBps": 0.4232,
+    "regimeBucket": 4,
+    "momentum": 1.79,
+    "requiredMoveUsd": 35.08
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 29,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000019,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000198,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "HIGH CONFIDENCE",
+     "side": "UP",
+     "pFlip": 0.005305,
+     "locked": false,
+     "correct": null
+    },
+    "45": {
+     "state": "HIGH CONFIDENCE",
+     "side": "UP",
+     "pFlip": 0.043731,
+     "locked": false,
+     "correct": null
+    },
+    "60": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.269816,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 2792,
+     "tau": 596.58,
+     "side": "DOWN",
+     "px": 0.68,
+     "won": false,
+     "pnlCentsPerContract": -68,
+     "engineAtEntry": {
+      "tau": 597.25,
+      "state": "TOSS-UP",
+      "side": "DOWN",
+      "pWin": 0.693321,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG281545-45",
+   "closeUtc": "2026-08-28T19:45:00.000Z",
+   "strike": 77700.85,
+   "official": 77550.29,
+   "marginUsd": -150.56,
+   "truth": "DOWN",
+   "basisMu": -0.8950177769669803,
+   "firstLocked": {
+    "tau": 95.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004822,
+    "gapUsd": -88.61,
+    "cushionSigma": 4.73,
+    "sigmaRawBps": 0.3088,
+    "regimeBucket": 3,
+    "momentum": -0.65,
+    "requiredMoveUsd": 88.61
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 94,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000025,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000275,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 2892,
+     "tau": 572.24,
+     "side": "DOWN",
+     "px": 0.78,
+     "won": true,
+     "pnlCentsPerContract": 22,
+     "engineAtEntry": {
+      "tau": 572.25,
+      "state": "LEANING",
+      "side": "DOWN",
+      "pWin": 0.76749,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG291645-45",
+   "closeUtc": "2026-08-29T20:45:00.000Z",
+   "strike": 78184.54,
+   "official": 78138.16,
+   "marginUsd": -46.38,
+   "truth": "DOWN",
+   "basisMu": 0.8753807934113422,
+   "firstLocked": {
+    "tau": 71.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.00455,
+    "gapUsd": -51.54,
+    "cushionSigma": 6.68,
+    "sigmaRawBps": 0.1539,
+    "regimeBucket": 1,
+    "momentum": -1.05,
+    "requiredMoveUsd": 51.54
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 72,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000002,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000034,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000218,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.001521,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 2993,
+     "tau": 599.41,
+     "side": "DOWN",
+     "px": 0.74,
+     "won": true,
+     "pnlCentsPerContract": 26,
+     "engineAtEntry": {
+      "tau": 600.25,
+      "state": "LEANING",
+      "side": "DOWN",
+      "pWin": 0.881633,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26AUG302100-00",
+   "closeUtc": "2026-08-31T01:00:00.000Z",
+   "strike": 78022.46,
+   "official": 77922,
+   "marginUsd": -100.46,
+   "truth": "DOWN",
+   "basisMu": 1.478106615196511,
+   "firstLocked": {
+    "tau": 97.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004834,
+    "gapUsd": -83.47,
+    "cushionSigma": 5.39,
+    "sigmaRawBps": 0.248,
+    "regimeBucket": 2,
+    "momentum": -1.11,
+    "requiredMoveUsd": 83.47
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 98,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000002,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000027,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000244,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 3094,
+     "tau": 574.69,
+     "side": "UP",
+     "px": 0.42,
+     "won": false,
+     "pnlCentsPerContract": -42,
+     "engineAtEntry": {
+      "tau": 575.25,
+      "state": "TOSS-UP",
+      "side": "DOWN",
+      "pWin": 0.590519,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26SEP012145-45",
+   "closeUtc": "2026-09-02T01:45:00.000Z",
+   "strike": 77124.72,
+   "official": 76882.4,
+   "marginUsd": -242.32,
+   "truth": "DOWN",
+   "basisMu": 7.447471257275026,
+   "firstLocked": {
+    "tau": 139.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.002995,
+    "gapUsd": -171.79,
+    "cushionSigma": 4.35,
+    "sigmaRawBps": 0.4974,
+    "regimeBucket": 4,
+    "momentum": -0.15,
+    "requiredMoveUsd": 171.79
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 140,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000003,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000038,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 3194,
+     "tau": 592.94,
+     "side": "DOWN",
+     "px": 0.74,
+     "won": true,
+     "pnlCentsPerContract": 26,
+     "engineAtEntry": {
+      "tau": 593.25,
+      "state": "LEANING",
+      "side": "DOWN",
+      "pWin": 0.848986,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26SEP022315-15",
+   "closeUtc": "2026-09-03T03:15:00.000Z",
+   "strike": 77780.2,
+   "official": 77819.77,
+   "marginUsd": 39.57,
+   "truth": "UP",
+   "basisMu": 5.137574515875461,
+   "firstLocked": {
+    "tau": 97.25,
+    "side": "DOWN",
+    "correct": false,
+    "pFlip": 0.004309,
+    "gapUsd": -80.6,
+    "cushionSigma": 5.8,
+    "sigmaRawBps": 0.2221,
+    "regimeBucket": 2,
+    "momentum": 1.45,
+    "requiredMoveUsd": 80.6
+   },
+   "reversalAfterLocked": {
+    "tau": 59.25,
+    "state": "REVERSAL WARNING",
+    "side": "DOWN",
+    "pFlip": 0.151316
+   },
+   "lockedSeconds": 24,
+   "wrongLockedSeconds": 24,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "REVERSAL WARNING",
+     "side": "DOWN",
+     "pFlip": 1,
+     "locked": false,
+     "correct": null
+    },
+    "5": {
+     "state": "REVERSAL WARNING",
+     "side": "DOWN",
+     "pFlip": 1,
+     "locked": false,
+     "correct": null
+    },
+    "10": {
+     "state": "REVERSAL WARNING",
+     "side": "DOWN",
+     "pFlip": 0.999999,
+     "locked": false,
+     "correct": null
+    },
+    "15": {
+     "state": "REVERSAL WARNING",
+     "side": "DOWN",
+     "pFlip": 0.999987,
+     "locked": false,
+     "correct": null
+    },
+    "20": {
+     "state": "REVERSAL WARNING",
+     "side": "DOWN",
+     "pFlip": 0.999953,
+     "locked": false,
+     "correct": null
+    },
+    "30": {
+     "state": "REVERSAL WARNING",
+     "side": "DOWN",
+     "pFlip": 0.999668,
+     "locked": false,
+     "correct": null
+    },
+    "45": {
+     "state": "REVERSAL WARNING",
+     "side": "DOWN",
+     "pFlip": 0.997658,
+     "locked": false,
+     "correct": null
+    },
+    "60": {
+     "state": "REVERSAL WARNING",
+     "side": "DOWN",
+     "pFlip": 0.151316,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 3294,
+     "tau": 598.02,
+     "side": "DOWN",
+     "px": 0.85,
+     "won": false,
+     "pnlCentsPerContract": -85,
+     "engineAtEntry": {
+      "tau": 598.25,
+      "state": "LEANING",
+      "side": "DOWN",
+      "pWin": 0.84203,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26SEP040215-15",
+   "closeUtc": "2026-09-04T06:15:00.000Z",
+   "strike": 80999.14,
+   "official": 81024.86,
+   "marginUsd": 25.72,
+   "truth": "UP",
+   "basisMu": 2.3628389442172053,
+   "firstLocked": {
+    "tau": 38.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004101,
+    "gapUsd": 27.32,
+    "cushionSigma": 3.92,
+    "sigmaRawBps": 0.3162,
+    "regimeBucket": 3,
+    "momentum": -0.04,
+    "requiredMoveUsd": 42.03
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 39,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000013,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000045,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000598,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "HIGH CONFIDENCE",
+     "side": "UP",
+     "pFlip": 0.011305,
+     "locked": false,
+     "correct": null
+    },
+    "60": {
+     "state": "LEANING",
+     "side": "UP",
+     "pFlip": 0.059328,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 3394,
+     "tau": 594.55,
+     "side": "DOWN",
+     "px": 0.75,
+     "won": false,
+     "pnlCentsPerContract": -75,
+     "engineAtEntry": {
+      "tau": 595.25,
+      "state": "LEANING",
+      "side": "DOWN",
+      "pWin": 0.782219,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26SEP051630-30",
+   "closeUtc": "2026-09-05T20:30:00.000Z",
+   "strike": 79741.54,
+   "official": 79727.38,
+   "marginUsd": -14.16,
+   "truth": "DOWN",
+   "basisMu": 6.629530136092351,
+   "firstLocked": {
+    "tau": 14.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.003907,
+    "gapUsd": -17.49,
+    "cushionSigma": 4.42,
+    "sigmaRawBps": 0.4889,
+    "regimeBucket": 4,
+    "momentum": -0.08,
+    "requiredMoveUsd": 69.98
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 15,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000015,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000539,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.003907,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "HIGH CONFIDENCE",
+     "side": "DOWN",
+     "pFlip": 0.012597,
+     "locked": false,
+     "correct": null
+    },
+    "30": {
+     "state": "LEANING",
+     "side": "DOWN",
+     "pFlip": 0.103732,
+     "locked": false,
+     "correct": null
+    },
+    "45": {
+     "state": "LEANING",
+     "side": "DOWN",
+     "pFlip": 0.244391,
+     "locked": false,
+     "correct": null
+    },
+    "60": {
+     "state": "LEANING",
+     "side": "DOWN",
+     "pFlip": 0.204526,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 3494,
+     "tau": 599.03,
+     "side": "DOWN",
+     "px": 0.6,
+     "won": true,
+     "pnlCentsPerContract": 40,
+     "engineAtEntry": {
+      "tau": 599.25,
+      "state": "TOSS-UP",
+      "side": "DOWN",
+      "pWin": 0.654536,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26SEP061730-30",
+   "closeUtc": "2026-09-06T21:30:00.000Z",
+   "strike": 79995.38,
+   "official": 79908.6,
+   "marginUsd": -86.78,
+   "truth": "DOWN",
+   "basisMu": 6.209614016305899,
+   "firstLocked": {
+    "tau": 78.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004833,
+    "gapUsd": -68.41,
+    "cushionSigma": 5.69,
+    "sigmaRawBps": 0.2256,
+    "regimeBucket": 2,
+    "momentum": 0.48,
+    "requiredMoveUsd": 68.41
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 79,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000003,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000064,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000858,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 3594,
+     "tau": 599.45,
+     "side": "DOWN",
+     "px": 0.4,
+     "won": true,
+     "pnlCentsPerContract": 60,
+     "engineAtEntry": {
+      "tau": 600.25,
+      "state": "TOSS-UP",
+      "side": "UP",
+      "pWin": 0.659158,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26SEP081345-45",
+   "closeUtc": "2026-09-08T17:45:00.000Z",
+   "strike": 78580.54,
+   "official": 78547.84,
+   "marginUsd": -32.7,
+   "truth": "DOWN",
+   "basisMu": 2.457145206957085,
+   "firstLocked": {
+    "tau": 35.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004578,
+    "gapUsd": -25.68,
+    "cushionSigma": 4.81,
+    "sigmaRawBps": 0.2519,
+    "regimeBucket": 2,
+    "momentum": -1.13,
+    "requiredMoveUsd": 42.79
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 36,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.00001,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000055,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.00086,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "HIGH CONFIDENCE",
+     "side": "DOWN",
+     "pFlip": 0.037761,
+     "locked": false,
+     "correct": null
+    },
+    "60": {
+     "state": "LEANING",
+     "side": "DOWN",
+     "pFlip": 0.107184,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 3694,
+     "tau": 598.41,
+     "side": "UP",
+     "px": 0.65,
+     "won": false,
+     "pnlCentsPerContract": -65,
+     "engineAtEntry": {
+      "tau": 599.25,
+      "state": "TOSS-UP",
+      "side": "UP",
+      "pWin": 0.680851,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26SEP091700-00",
+   "closeUtc": "2026-09-09T21:00:00.000Z",
+   "strike": 78262.66,
+   "official": 78303.85,
+   "marginUsd": 41.19,
+   "truth": "UP",
+   "basisMu": 1.1280826107748652,
+   "firstLocked": {
+    "tau": 48.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004441,
+    "gapUsd": 42.62,
+    "cushionSigma": 4.28,
+    "sigmaRawBps": 0.3552,
+    "regimeBucket": 3,
+    "momentum": 0.9,
+    "requiredMoveUsd": 52.19
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 49,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000005,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000136,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.002769,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "HIGH CONFIDENCE",
+     "side": "UP",
+     "pFlip": 0.036373,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 3794,
+     "tau": 595.46,
+     "side": "DOWN",
+     "px": 0.91,
+     "won": false,
+     "pnlCentsPerContract": -91,
+     "engineAtEntry": {
+      "tau": 596.25,
+      "state": "LEANING",
+      "side": "DOWN",
+      "pWin": 0.88737,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26SEP102015-15",
+   "closeUtc": "2026-09-11T00:15:00.000Z",
+   "strike": 76539.68,
+   "official": 76791.53,
+   "marginUsd": 251.85,
+   "truth": "UP",
+   "basisMu": 4.981687426337544,
+   "firstLocked": {
+    "tau": 285.25,
+    "side": "UP",
+    "correct": true,
+    "pFlip": 0.004968,
+    "gapUsd": 258.34,
+    "cushionSigma": 3.47,
+    "sigmaRawBps": 0.5996,
+    "regimeBucket": 5,
+    "momentum": 1.77,
+    "requiredMoveUsd": 258.34
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 285,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000002,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000012,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "UP",
+     "pFlip": 0.000035,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 3894,
+     "tau": 597.76,
+     "side": "DOWN",
+     "px": 0.26,
+     "won": false,
+     "pnlCentsPerContract": -26,
+     "engineAtEntry": {
+      "tau": 598.25,
+      "state": "LEANING",
+      "side": "UP",
+      "pWin": 0.795511,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26SEP190545-45",
+   "closeUtc": "2026-09-19T09:45:00.000Z",
+   "strike": 81398.78,
+   "official": 81246.67,
+   "marginUsd": -152.11,
+   "truth": "DOWN",
+   "basisMu": 2.8904919772534656,
+   "firstLocked": {
+    "tau": 166.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.004986,
+    "gapUsd": -159.9,
+    "cushionSigma": 4.85,
+    "sigmaRawBps": 0.348,
+    "regimeBucket": 3,
+    "momentum": -1.64,
+    "requiredMoveUsd": 159.9
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 152,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000007,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000043,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": [
+    {
+     "trade": 3994,
+     "tau": 550.95,
+     "side": "DOWN",
+     "px": 0.92,
+     "won": true,
+     "pnlCentsPerContract": 8,
+     "engineAtEntry": {
+      "tau": 551.25,
+      "state": "LEANING",
+      "side": "DOWN",
+      "pWin": 0.919179,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26SEP200645-45",
+   "closeUtc": "2026-09-20T10:45:00.000Z",
+   "strike": 80336.54,
+   "official": 80333.81,
+   "marginUsd": -2.73,
+   "truth": "DOWN",
+   "basisMu": 8.437925397616269,
+   "firstLocked": null,
+   "reversalAfterLocked": null,
+   "lockedSeconds": 0,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.388742,
+     "locked": false,
+     "correct": null
+    },
+    "5": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.387802,
+     "locked": false,
+     "correct": null
+    },
+    "10": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.297755,
+     "locked": false,
+     "correct": null
+    },
+    "15": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.48029,
+     "locked": false,
+     "correct": null
+    },
+    "20": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.432146,
+     "locked": false,
+     "correct": null
+    },
+    "30": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.486875,
+     "locked": false,
+     "correct": null
+    },
+    "45": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.489245,
+     "locked": false,
+     "correct": null
+    },
+    "60": {
+     "state": "TOSS-UP",
+     "side": "DOWN",
+     "pFlip": 0.498712,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": [
+    {
+     "trade": 4094,
+     "tau": 594.61,
+     "side": "UP",
+     "px": 0.62,
+     "won": false,
+     "pnlCentsPerContract": -62,
+     "engineAtEntry": {
+      "tau": 595.25,
+      "state": "TOSS-UP",
+      "side": "UP",
+      "pWin": 0.713279,
+      "exec": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "ticker": "KXBTC15M-26OCT122045-45",
+   "closeUtc": "2026-10-13T00:45:00.000Z",
+   "strike": 81355.61,
+   "official": 81353.06,
+   "marginUsd": -2.55,
+   "truth": "DOWN",
+   "basisMu": -0.8062328579668037,
+   "firstLocked": {
+    "tau": 17.25,
+    "side": "UP",
+    "correct": false,
+    "pFlip": 0.004586,
+    "gapUsd": 15.6,
+    "cushionSigma": 3.13,
+    "sigmaRawBps": 0.6172,
+    "regimeBucket": 5,
+    "momentum": -0.8,
+    "requiredMoveUsd": 52.01
+   },
+   "reversalAfterLocked": {
+    "tau": 12.25,
+    "state": "REVERSAL WARNING",
+    "side": "UP",
+    "pFlip": 0.120178
+   },
+   "lockedSeconds": 1,
+   "wrongLockedSeconds": 1,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "REVERSAL WARNING",
+     "side": "UP",
+     "pFlip": 0.761691,
+     "locked": false,
+     "correct": null
+    },
+    "5": {
+     "state": "REVERSAL WARNING",
+     "side": "UP",
+     "pFlip": 0.797652,
+     "locked": false,
+     "correct": null
+    },
+    "10": {
+     "state": "REVERSAL WARNING",
+     "side": "UP",
+     "pFlip": 0.713751,
+     "locked": false,
+     "correct": null
+    },
+    "15": {
+     "state": "HIGH CONFIDENCE",
+     "side": "UP",
+     "pFlip": 0.041051,
+     "locked": false,
+     "correct": null
+    },
+    "20": {
+     "state": "HIGH CONFIDENCE",
+     "side": "UP",
+     "pFlip": 0.006998,
+     "locked": false,
+     "correct": null
+    },
+    "30": {
+     "state": "HIGH CONFIDENCE",
+     "side": "UP",
+     "pFlip": 0.009118,
+     "locked": false,
+     "correct": null
+    },
+    "45": {
+     "state": "LEANING",
+     "side": "UP",
+     "pFlip": 0.05579,
+     "locked": false,
+     "correct": null
+    },
+    "60": {
+     "state": "TOSS-UP",
+     "side": "UP",
+     "pFlip": 0.278582,
+     "locked": false,
+     "correct": null
+    }
+   },
+   "entries": []
+  },
+  {
+   "ticker": "KXBTC15M-26OCT131100-00",
+   "closeUtc": "2026-10-13T15:00:00.000Z",
+   "strike": 83600.72,
+   "official": 83431.86,
+   "marginUsd": -168.86,
+   "truth": "DOWN",
+   "basisMu": 1.9190912931913005,
+   "firstLocked": {
+    "tau": 103.25,
+    "side": "DOWN",
+    "correct": true,
+    "pFlip": 0.003652,
+    "gapUsd": -129.38,
+    "cushionSigma": 3.99,
+    "sigmaRawBps": 0.4694,
+    "regimeBucket": 4,
+    "momentum": -0.27,
+    "requiredMoveUsd": 129.38
+   },
+   "reversalAfterLocked": null,
+   "lockedSeconds": 104,
+   "wrongLockedSeconds": 0,
+   "tradeNowSeconds": 0,
+   "fixed": {
+    "3": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "5": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "10": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "15": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "20": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0,
+     "locked": true,
+     "correct": true
+    },
+    "30": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000001,
+     "locked": true,
+     "correct": true
+    },
+    "45": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000014,
+     "locked": true,
+     "correct": true
+    },
+    "60": {
+     "state": "LOCKED",
+     "side": "DOWN",
+     "pFlip": 0.000189,
+     "locked": true,
+     "correct": true
+    }
+   },
+   "entries": []
+  }
+ ]
+}

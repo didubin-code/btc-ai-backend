@@ -1,20 +1,20 @@
-# Pin Radar 2.8.1 — test results (actually run, 2026-10-15T21:42Z)
+# Pin Radar 2.8.1 — test results (actually run, 2026-10-16T02:31Z)
 
 Command: `bash pinradar-research/2.8.1/test/run_all281.sh` (offline; no network, no orders). Output, verbatim:
 
 ```
 == build (sha-checked patches of the delivered 2.8 files) into a temp dir; the committed dist must be identical
-dist/pinradar_server.js is the build of these sources (9ebf5c7fbed59d90)
-dist/btc_pin_radar_281.html is the build of these sources (1e4efc018de993ac)
+dist/pinradar_server.js is the build of these sources (95367709cca2172c)
+dist/btc_pin_radar_281.html is the build of these sources (900509eb07de1d15)
 == 1. server self-test (default config, and with the new features off)
-selftest 148/148 OK (pin-radar-2.8.1)
-selftest 148/148 OK (pin-radar-2.8.1)
+selftest 149/149 OK (pin-radar-2.8.1)
+selftest 149/149 OK (pin-radar-2.8.1)
 == 2. late-LOCKED suite on 58 real windows: warm parity, restarts (Oct 14 mechanism), Oct 12 reversal, scenarios
 late281: 15/15 passed
 == 2b. DATA UNRELIABLE: sampler phase, real gaps, aligned sampler on real timers, one lagging venue, /dq diagnostics
 dq281: 6/6 passed
 == 3. page (jsdom, real 2.8.1 signal objects)
-page281: 16/16 passed
+page281: 17/17 passed
 == 4. forensic tool on a fixture of the Oct 14 mechanism (2.8 started 330 s before a real window's close)
 forensic281: restart found 330s before the close; model supported LOCKED at T-102.75, 2.8 showed it at T-30.75; 2.8.1 on the same inputs at T-56.75 -> PASS
 == 5. cold-start volatility band: calibration Jul-Aug, coverage on Sep-Oct
@@ -30,7 +30,7 @@ ALL 2.8.1 CHECKS PASSED
 exit 0
 ```
 
-Detail of the late-LOCKED suite (`test/late281_test.js` on the same build, server sha256 9ebf5c7fbed59d90…, run separately so its JSON could be kept). LAST = 3 s fill + 12 s default order time = 15 s:
+Detail of the late-LOCKED suite (`test/late281_test.js` on the same build, server sha256 95367709cca2172c…, run separately so its JSON could be kept). LAST = 3 s fill + 12 s default order time = 15 s:
 
 * **P1 warm parity**: 2.8.1 (EXEC_SEC=0) = 2.8 on every second
   `{"seconds": 17400, "differences": 0, "ex": []}`

@@ -974,9 +974,16 @@ function startSampler() {
   if (IDX.sampler) return;
   /* v2.8.1: aligned to the second (+SAMPLE_PHASE_MS), re-aligned on every tick: no setInterval drift through the x.5 s phase */
   const phase = clampEnv(process.env.SAMPLE_PHASE_MS, 100, 0, 400);
+  /* review round 2: a timer can fire ~1 ms before its target by Date.now(); recomputing "the next second" then returned the SAME target
+     and the second was sampled twice (a zero return that biased the volatility low). Each target is now strictly after the last one,
+     and a sample less than 500 ms after the previous one is skipped. */
+  let target = 0;
   const schedule = () => {
-    const now = Date.now(), next = (Math.floor((now - phase) / 1000) + 1) * 1000 + phase;
-    IDX.sampler = setTimeout(() => { try { sampleIndex(); } finally { schedule(); } }, Math.max(1, next - now));
+    const now = Date.now();
+    let next = (Math.floor((now - phase) / 1000) + 1) * 1000 + phase;
+    if (next <= target) next = target + 1000;
+    target = next;
+    IDX.sampler = setTimeout(() => { try { if (!(IDX.lastSampleTs && Date.now() - IDX.lastSampleTs < 500)) sampleIndex(); } finally { schedule(); } }, Math.max(1, next - now));
     if (IDX.sampler.unref) IDX.sampler.unref();
   };
   if (!DQ_FIXES281) { IDX.sampler = setInterval(sampleIndex, 1000); if (IDX.sampler.unref) IDX.sampler.unref(); sampleIndex(); return; }   // 2.8 behaviour
@@ -1507,6 +1514,7 @@ function m25Decide({ tau, pUp, pUpCons, pUpStress = null, gates, book, cfg, hist
       : kalshiFeeCents(a.avgCents, Math.max(1, a.fillable))) * 1000) / 1000;   // v2.8
     tr.evCents = Math.round((100 * out.pWin - a.avgCents - tr.feeCents) * 100) / 100;
     tr.evConsCents = Math.round((100 * (1 - out.pFlipCons) - a.avgCents - tr.feeCents) * 100) / 100;
+    tr.pCautiousPct = Math.round(1e6 * 100 * (1 - out.pFlipCons)) / 1e6;   // v2.8.1: the exact cautious win % the edge uses (for the qualifying price)
     if (pUpStress != null && Number.isFinite(pUpStress)) { tr.pWinStressCons = Math.round(1e6 * (out.side === 'UP' ? pUpStress : 1 - pUpStress)) / 1e6;   // v2.8.1
       tr.evStressCents = Math.round((100 * (out.side === 'UP' ? pUpStress : 1 - pUpStress) - a.avgCents - tr.feeCents) * 100) / 100; }
   }
@@ -3588,13 +3596,14 @@ function shadowDecide28(policyId, { snap, deps, cfg, lockedSide = null, hist = [
      means the market disagrees -> no TRADE NOW (otherwise candidates would paper-trade where A refuses) */
   const guard = d => (d && d.trade && d.trade.action === 'TRADE NOW' && Number.isFinite(cfg.minTradeAskCents) && d.trade.askCents != null && d.trade.askCents < cfg.minTradeAskCents)
     ? Object.assign({}, d, { trade: Object.assign({}, d.trade, { action: 'LOCKED — MARKET DISAGREES', why: 'ask below the market-disagreement guard' }) }) : d;
-  const dec = (pUp, pUpCons, c = cfg) => guard(deps.m25Decide({ tau, pUp, pUpCons, pUpStress: deps.stressPUp ? deps.stressPUp(geo, tau, c.execSec) : null, gates, book, cfg: c, hist, lockedSide, provenSide: geo.provenUp ? 'UP' : null }));
+  const dec = (pUp, pUpCons, c = cfg, st) => guard(deps.m25Decide({ tau, pUp, pUpCons, pUpStress: st !== undefined ? st : (deps.stressPUp ? deps.stressPUp(geo, tau, c.execSec) : null), gates, book, cfg: c, hist, lockedSide, provenSide: geo.provenUp ? 'UP' : null }));
   switch (policyId) {
     case 'A-2.6': return base;
     case 'C1-strict-0.2': return dec(geo.pUp, geo.pUpCons, Object.assign({}, cfg, { lockMaxFlip: 0.002 }));
     case 'C2-no-active-recal': {
       const r = geo.recal && geo.recal.group === 'active' ? 1.0 : (geo.recal ? geo.recal.ratio : 1);
-      return dec(deps.recalPUp26(geo.pUpModel, r), deps.recalPUp26(geo.pUpConsModel, r));
+      const rf = g => (g.recal && g.recal.group === 'active' ? 1.0 : (g.recal ? g.recal.ratio : 1));   // v2.8.1: C2's own stress
+      return dec(deps.recalPUp26(geo.pUpModel, r), deps.recalPUp26(geo.pUpConsModel, r), cfg, deps.stressPUp ? deps.stressPUp(geo, tau, cfg.execSec, undefined, rf) : null);
     }
     case 'D-impulse-veto': {
       const d = base; if (!d) return d;
@@ -3611,7 +3620,8 @@ function shadowDecide28(policyId, { snap, deps, cfg, lockedSide = null, hist = [
       const fProxy = up ? 1 - geo.pUp : geo.pUp, fOff = up ? 1 - p.officialPUp : p.officialPUp;
       const f = Math.max(fProxy, fOff);
       const fc = Math.max(up ? 1 - geo.pUpCons : geo.pUpCons, fOff);
-      return dec(up ? 1 - f : f, up ? 1 - fc : fc);
+      const sp = deps.stressPUp ? deps.stressPUp(geo, tau, cfg.execSec) : null;   // v2.8.1: E's own stress = the worse of the stressed proxy and the official flip
+      return dec(up ? 1 - f : f, up ? 1 - fc : fc, cfg, sp == null ? null : (up ? Math.min(sp, 1 - fOff) : Math.max(sp, fOff)));
     }
     case 'F-market-pooled-value': {
       const d = base; if (!d || !d.trade || d.trade.action !== 'TRADE NOW') return d;
@@ -4210,10 +4220,10 @@ function coldGeometry281(base, args, cv, bc) {
     }
   } else sigmas.push(null);                                                       // the base sigma
   const mus = bc.cold ? [BASIS_COLD_LO, base.basisMeanUsd, BASIS_COLD_HI] : [args.basisMu];
-  let minG = null, maxG = null, minCons = Infinity, maxCons = -Infinity, n = 0;
+  let minG = null, maxG = null, minCons = Infinity, maxCons = -Infinity, n = 0; const cands = [];
   for (const sv of sigmas) for (const mu of mus) {
     const g = lockGeometry25({ ...args, sigma: sv == null ? null : { value: sv, warm: true, parts: [] }, basisMu: mu });
-    if (!g || g.pUp == null) continue; n++;
+    if (!g || g.pUp == null) continue; n++; cands.push(g);
     if (!minG || g.pUp < minG.pUp) minG = g;
     if (!maxG || g.pUp > maxG.pUp) maxG = g;
     const pc = g.pUpCons == null ? g.pUp : g.pUpCons; minCons = Math.min(minCons, pc); maxCons = Math.max(maxCons, pc);
@@ -4232,18 +4242,30 @@ function coldGeometry281(base, args, cv, bc) {
       note: side ? 'restart: the call uses the worst probability over the volatility / basis values the server cannot yet pin down'
         : 'restart: the leader depends on volatility / basis values the server cannot yet pin down: no call' } });
   if (cv.cold && cv.usable) out.sigmaParts = [{ L: 120, bps: round(cv.sigma120, 4), n: null }, { L: COLD_FULL_SEC, bps: null, band: [round(cv.lo, 4), round(cv.hi, 4)] }];
+  /* review round 2: the stress test must also take the worst case over the envelope, not use one candidate's sigma */
+  Object.defineProperty(out, 'cands281', { value: cands, enumerable: false });
   return out;
 }
 /* execution stress: BTC has ALREADY moved against the call by a one-sided z quantile of the order-time move, and the whole remaining
    time is still random (the order-time diffusion is not removed). Returns the CAUTIOUS P(UP) in that state: the worse (for the leader)
    of the point and conservative models, both recalibrated, i.e. the same standard as the TRADE NOW edge (evConsCents). At z = 0 it is
    the live cautious probability; it is never more confident than that, and less confident the longer the order time. */
-function stressPUp281(geo, tau, execSec, z = EXEC_STRESS_Z) {
+function stressPUp281(geo, tau, execSec, z = EXEC_STRESS_Z, recalFor = null) {
   if (!geo || geo.pUp == null || !Number.isFinite(tau) || !(execSec > 0) || !(z >= 0) || !M25_MODEL) return null;
+  /* after a restart (cold envelope): the worst over every candidate geometry, on the side of the call */
+  if (geo.cands281 && geo.cands281.length) {
+    const up = geo.pUp >= 0.5; let w = null;
+    for (const g of geo.cands281) {
+      const p = stressPUp281({ ...g, pUp: up ? Math.max(0.5, g.pUp) : Math.min(0.4999999, g.pUp) }, tau, execSec, z, recalFor);
+      if (p == null) return null;
+      w = w == null ? p : (up ? Math.min(w, p) : Math.max(w, p));
+    }
+    return w;
+  }
   const sgn = geo.pUp >= 0.5 ? 1 : -1, d = Math.min(execSec, Math.max(0, tau));
   const shift = z * geo.sigmaBps * 1e-4 * geo.index * Math.sqrt(d), frac = Math.min(1, (geo.nRemaining == null ? 60 : geo.nRemaining) / 60);
   const b = geo.regime ? geo.regime.bucket : m25Bucket(M25_MODEL, 0);
-  const r = geo.recal && Number.isFinite(geo.recal.ratio) ? geo.recal.ratio : recalRatio26(b);
+  const r = recalFor ? recalFor(geo) : (geo.recal && Number.isFinite(geo.recal.ratio) ? geo.recal.ratio : recalRatio26(b));
   const q = { tau: Math.max(0, tau), gap: geo.gapUsd - sgn * shift * frac, sigBps: geo.sigmaBps, S: geo.index, mu: geo.basisMeanUsd, bucket: b };
   const p = recalPUp26(m25PUp(M25_MODEL, q), r), pc = recalPUp26(m25PUp(M25_MODEL, { ...q, volMult: CONS_VOL_MULT, basisMult: CONS_BASIS_MULT }), r);
   if (p == null || pc == null) return null;
@@ -4263,13 +4285,16 @@ function warmup281(now, cv, bc) {
         : `restarted ${Math.floor(cv.span)} s ago: volatility from partial history (2.8 behaviour, envelope off)`) : '')
         + (bc.cold ? `${cv.cold ? '; ' : ''}basis model cold (${bc.n}/${BASIS_WARM_N} settled windows): conservative basis range` : '')) };
 }
-/* the highest ask (0.1c steps, below the current ask) at which TRADE NOW's price conditions would hold: cautious edge after the fee AT
-   that price >= MIN_EDGE_CENTS and, when the stress test applies, a stressed cautious value >= 0. 0 = no price qualifies. */
+/* the highest ask (0.1c steps, below the current ask) at which TRADE NOW's price conditions would hold, computed exactly as m25Decide and
+   classify25 do: the fee AT that price (rounded as m25Decide rounds it), the cautious edge rounded to the cent >= MIN_EDGE_CENTS, a
+   stressed cautious value >= 0 when the stress test applies, and never below MIN_TRADE_ASK_CENTS (below it classify25 says MARKET
+   DISAGREES, never TRADE NOW). 0 = no price qualifies. */
 function maxAskFor281(pCautiousPct, pWinStressCons, contracts, askCents) {
-  const C = Math.max(1, Math.round(contracts || 1));
-  for (let t = Math.round(10 * Math.min(99.9, Number(askCents) || 99.9)) - 1; t >= 10; t--) {
-    const a = t / 10, fee = kalshiFeeCents(a, C);
-    if (pCautiousPct - a - fee >= MIN_EDGE_CENTS - 1e-9 && (pWinStressCons == null || 100 * pWinStressCons - a - fee >= 0)) return a;
+  const C = Math.max(1, Math.round(contracts || 1)), floorT = Math.ceil(10 * MIN_TRADE_ASK_CENTS - 1e-9);
+  for (let t = Math.round(10 * Math.min(99.9, Number(askCents) || 99.9)) - 1; t >= floorT; t--) {
+    const a = t / 10, fee = Math.round(kalshiFeeCents(a, C) * 1000) / 1000;
+    const edge = Math.round((pCautiousPct - a - fee) * 100) / 100;
+    if (edge >= MIN_EDGE_CENTS && (pWinStressCons == null || 100 * pWinStressCons - a - fee >= 0)) return a;
   }
   return 0;
 }
@@ -4288,7 +4313,7 @@ function exec281(sig, { tau, execSec, now, mutate = false }) {
     else if (/TOO LATE/.test(a)) { state = 'TOO LATE TO TRADE'; why = tr.why; }
     else if (a === 'LOCKED — DO NOT TRADE' && tr.askCents != null && sig.pWin != null && !/survive/.test(tr.why || '')) {
       /* no edge: say plainly that the market is already at least as sure as the model, and at what price the trade would qualify */
-      const pW = 100 * sig.pWin, pC = 100 * (1 - (sig.pFlipCons != null ? sig.pFlipCons : sig.pFlip)), fee = tr.feeCents || 0;
+      const pW = 100 * sig.pWin, pC = tr.pCautiousPct != null ? tr.pCautiousPct : 100 * (1 - (sig.pFlipCons != null ? sig.pFlipCons : sig.pFlip)), fee = tr.feeCents || 0;
       const maxAsk = maxAskFor281(pC, tr.pWinStressCons, tr.contracts || DEFAULT_CONTRACTS, tr.askCents);
       state = 'PREDICTED LOCKED';
       why = `NO EDGE — Kalshi already prices ${sig.side} at ${tr.askCents}¢ (≈${tr.askCents}% sure) vs the model's ${pW.toFixed(2)}%: buying at ${tr.avgCents}¢ + ${fee}¢ fee has expected value ${tr.evCents}¢ (cautious ${tr.evConsCents}¢) per contract. `
@@ -5276,6 +5301,8 @@ function runSelfTest() {
       mA > 0 && 98.83 - mA - feeAt(mA) >= MIN_EDGE_CENTS - 1e-9 && 98.83 - (mA + 0.1) - feeAt(mA + 0.1) < MIN_EDGE_CENTS, [mA, feeAt(mA), feeAt(mA + 0.1)]);
     const mS = maxAskFor281(98.83, 0.97, 10, 99.8);
     push('2.8.1 qualifying price: also requires the stressed cautious value >= 0', mS > 0 && mS <= 97 - feeAt(mS) + 1e-9 && mS < mA, [mS, mA]);
+    const mG = maxAskFor281(95, 0.80, 10, 99.8);
+    push('2.8.1 qualifying price: never below MIN_TRADE_ASK_CENTS (there the server says MARKET DISAGREES, never TRADE NOW)', mG === 0 && maxAskFor281(99.9, null, 10, 99.8) >= MIN_TRADE_ASK_CENTS, [mG]);
     /* action states */
     const a1 = exec281({ state: 'LOCKED', side: 'UP', trade: { action: 'LOCKED — DO NOT TRADE', why: 'x' }, ticker: null }, { tau: 40, execSec: 10, now: nowS });
     const a2 = exec281({ state: 'LOCKED', side: 'UP', trade: { action: 'LOCKED — TOO LATE', why: 'y' }, ticker: null }, { tau: 8, execSec: 10, now: nowS });

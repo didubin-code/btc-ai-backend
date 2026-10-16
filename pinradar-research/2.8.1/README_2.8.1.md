@@ -17,7 +17,7 @@ The full investigation is in `../research28/late_lock/REPORT_LATE_LOCKED.md`.
    * **The cause.** In 2.8 the 1 Hz index sampler drifts (`setInterval`). When its phase passes about half a second, two samples round to the same settlement second. The next second then looks unrecorded, and the "only k/n locked prints sampled" gate fires. That made up to 94 % of final-minute decisions DATA UNRELIABLE in the affected windows.
    * **The fix:**
      * every settlement print takes its nearest sample;
-     * the sampler is aligned to the second plus 100 ms and re-aligned on every tick.
+     * the sampler is aligned to the second plus 100 ms, re-aligned on every tick, and takes exactly one sample per second. A second review found that an earlier 2.8.1 build sometimes sampled the same second twice, which made volatility read low; that is fixed and tested on real timers under load.
    * **A real data gap still triggers the warning.**
    * **One lagging venue still triggers it, as in 2.8.** A change that rebuilt the index without that venue was withdrawn after review: it let a frozen venue keep feeding the settlement prints while the warning was suppressed.
    * **New endpoint `/dq`.** It counts every hard-gate reason with the venue state at that moment. `/health` shows the same counts.
@@ -29,6 +29,7 @@ The full investigation is in `../research28/late_lock/REPORT_LATE_LOCKED.md`.
    * The basis model (official settlement minus our index) restarts empty. Until 12 windows have settled, the call uses the worst probability over basis means of −$7 to +$9.
 3. **15 s execution buffer.** TRADE NOW requires at least 3 s fill time plus your order time (default 12 s) before the close. A LOCKED call that arrives later than that is **TOO LATE**, never TRADE NOW.
 4. **Execution stress test.** TRADE NOW also requires the cautious value after fees to stay ≥ 0 in this case: BTC has already moved against the call by 1.645σ of your order time, and the whole remaining time is still random.
+   * After a restart it takes the worst case over the whole volatility / basis envelope, like the call itself.
    * This is a conservative choice. It refused 3.3 % of TRADE NOW seconds on a synthetic book; its cost in real trades cannot be measured without historical books.
    * `EXEC_STRESS_Z=0` turns it off.
 5. **One action line at the top of the page:** **TRADE NOW — BUY YES/NO**, **SIT OUT** or **TOO LATE**, followed by the reversal risk (%) and one reason.
@@ -36,7 +37,7 @@ The full investigation is in `../research28/late_lock/REPORT_LATE_LOCKED.md`.
    | Situation | What the line says |
    |---|---|
    | All conditions hold | TRADE NOW — BUY YES (UP) at ≤ 97¢: +1.2¢ per contract after fees (cautious) |
-   | LOCKED, but the market is already at the model's confidence | SIT OUT — LOCKED UP, but no edge at 99.8¢ (worth it only at ≤ 97.1¢); the price includes the fee at that price and the stress test |
+   | LOCKED, but the market is already at the model's confidence | SIT OUT — LOCKED UP, but no edge at 99.8¢ (worth it only at ≤ 97.1¢); the price includes the fee at that price and the stress test, and is never below 90¢ (below that the server treats a cheap leader as the market disagreeing and never says TRADE NOW) |
    | LOCKED, but nobody is selling the called side | SIT OUT — LOCKED UP, but nobody is selling UP: the market treats it as decided |
    | LOCKED, but less than 15 s left | TOO LATE — LOCKED UP with 9 s left: an order needs 15 s |
    | Not LOCKED, data unreliable, or a reversal warning | SIT OUT with the reason |
@@ -45,7 +46,7 @@ The full investigation is in `../research28/late_lock/REPORT_LATE_LOCKED.md`.
    * A yellow **GET READY** note appears only when LOCKED is projected within about 20 s, no other gate blocks it, and there would still be time to trade.
    * A dashed amber banner says when the server restarted recently and what that limits.
    * If the backend goes stale or the window closes, the line drops to STALE or WINDOW CLOSED.
-   * TRADE NOW turns into TOO LATE at the last order moment by the browser's own clock, and into STALE after 1.5 s without a server reading.
+   * TRADE NOW turns into TOO LATE at the last order moment, and into STALE when the reading may be more than 1.5 s old. Both are judged conservatively: a reading's age counts from when the page requested it, so a slow connection never shows an old TRADE NOW as current. The trade box, the card and the alert sound follow the action line.
    * The page layout is otherwise the 2.8 layout.
 6. **New endpoint `/exec`.** For each window it records when LOCKED, TRADE NOW and TOO LATE first appeared. `/health` adds `warmup`, `execution` and `dataQuality`.
 
@@ -61,7 +62,7 @@ The full investigation is in `../research28/late_lock/REPORT_LATE_LOCKED.md`.
 
 * **Warm server, `EXEC_SEC=0`:** with at least 900 s of index history and a warm basis model, 2.8.1 makes 2.8's exact decisions on every second. This was tested on 17,400 decision-seconds.
 * **Default order time (12 s):** probabilities and states are identical. Actions differ only where a LOCKED call falls inside the last 15 s (it becomes TOO LATE) or fails the stress test.
-* **The sampler fix** changes only which sample is matched to which settlement print. A matched sample can come from a different (neighbouring) phase.
+* **The sampler fix** changes the sampling times (once per second at +100 ms instead of a drifting interval) and which sample is matched to which settlement print. A matched sample can come from a neighbouring phase.
 * **New features off (`COLD_START_ENVELOPE=0 EXEC_SEC=0 DQ_FIXES=0`):** 2.8.1 makes 2.8's exact decisions everywhere, and the 2.8 test suites pass against it.
 
 ## Install (only when you decide to)
@@ -90,7 +91,7 @@ Same procedure you used for 2.8.
 
 5. **Check after deploy:**
    * `/health` shows `pin-radar-2.8.1` and `warmup.lockedAvailable`.
-   * `/selftest` shows 148/148.
+   * `/selftest` shows 149/149.
    * `/dq` shows how often, and why, data was unreliable.
    * The page shows the action line.
 6. **Rollback:** re-upload `2.8/dist/pinradar_server.js` and `2.8/dist/btc_pin_radar_28.html` (2.8), or `versions/2.3/` (2.3).

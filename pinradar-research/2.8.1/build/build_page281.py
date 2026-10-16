@@ -70,7 +70,14 @@ s = rep(s, "  else if(/TOO LATE|TOO THIN|DO NOT TRADE|BOOK STALE|NO BOOK/.test(a
         "  if(!downgraded&&tr.noOffers&&/TOO LATE/.test(act)){act='LOCKED — NO OFFERS';tcls='tradeBox late';}   // v2.8.1: an empty book is not a timing problem")
 s = rep(s, "  $('tradeBox').className=tcls;$('tradeAct').textContent=act;$('tradeWhy').textContent=why;",
         "  $('tradeBox').className=tcls;$('tradeAct').textContent=act;$('tradeWhy').textContent=why;\n"
-        "  render281(sg,downgraded,!!(dv&&dv.bad));")
+        "  const head281=render281(sg,downgraded,!!(dv&&dv.bad));\n"
+        "  if(act==='TRADE NOW'&&head281&&head281!=='TRADE NOW'){act=head281==='TOO LATE'?'LOCKED — TOO LATE':head281;tcls='tradeBox '+(head281==='TOO LATE'?'late':'bad');$('tradeBox').className=tcls;$('tradeAct').textContent=act;}   // v2.8.1: one decision everywhere (card, beep)")
+# review round 3: a reading's age counts from when it was REQUESTED (the server made it after that moment); measuring from receipt hid
+# 2-5 s of age on slow links, and the skew estimate (rtt/2) can put the browser's tau seconds ahead on an asymmetric link
+s = rep(s, "    const t0=performance.now();\n    const d=await fetchJson(b+'/radar'",
+        "    const t0=performance.now(), sent281=Date.now();\n    const d=await fetchJson(b+'/radar'")
+s = rep(s, "    state.lastServer=d; state.lastServerAt=Date.now();\n",
+        "    state.lastServer=d; state.lastServerAt=Date.now(); state.sentAt281=sent281;   // v2.8.1\n")
 # a stale or dead backend, and the close, downgrade the action banner too (the page may downgrade a call, never upgrade it)
 s = rep(s, "function markCallStale(age){\n  $('call').className='call stale';",
         "function markCallStale(age){\n  act281Down('STALE — DO NOT TRADE','last server reading is '+(age/1000).toFixed(1)+' s old; the action shown may no longer hold');\n  $('call').className='call stale';")
@@ -82,10 +89,10 @@ s = rep(s, "  $('bigTau').style.color=t<=10?'var(--red)':t<=60?'var(--amber)':'v
 s = rep(s, "  if(d&&d.signal&&age>CALL_STALE_MS&&t>0&&t<120)markCallStale(age);\n}",
         "  if(d&&d.signal&&age>CALL_STALE_MS&&t>0&&t<120)markCallStale(age);\n"
         "  state.tau281=t;   // v2.8.1\n"
-        "  {const b=$('act281'),ex=d&&d.signal&&d.signal.exec;\n"
+        "  {const b=$('act281'),ex=d&&d.signal&&d.signal.exec,c=cons281(d&&d.signal),tc=Math.min(t,c.tau);\n"
         "   if(b&&/\\bgo\\b/.test(b.className)&&t>0){\n"
-        "     if(ex&&Number.isFinite(ex.lastOrderTau)&&t<ex.lastOrderTau){act281Down('TOO LATE','T−'+t.toFixed(1)+' s: past the last moment to place an order (T−'+ex.lastOrderTau+' s with your '+ex.execSec+' s order time)');b.className='act281 late';}\n"
-        "     else if(age>CALL_STALE_MS)act281Down('STALE — DO NOT TRADE','last server reading is '+(age/1000).toFixed(1)+' s old; TRADE NOW may no longer hold');}}\n"
+        "     if(ex&&Number.isFinite(ex.lastOrderTau)&&tc<ex.lastOrderTau){act281Down('TOO LATE','T−'+Math.max(0,tc).toFixed(1)+' s at most: past the last moment to place an order (T−'+ex.lastOrderTau+' s with your '+ex.execSec+' s order time)');b.className='act281 late';}\n"
+        "     else if(age>CALL_STALE_MS||c.ageMs>CALL_STALE_MS||!state.running)act281Down('STALE — DO NOT TRADE','the reading is up to '+(Math.max(age,c.ageMs)/1000).toFixed(1)+' s old (counted from when it was requested); TRADE NOW may no longer hold');}}\n"
         "}")
 s = rep(s, "function renderCall(d){",
         """/* v2.8.1: the one action to take now. TRADE NOW only when the server says so; a LOCKED call that cannot be traded
@@ -94,6 +101,12 @@ s = rep(s, "function renderCall(d){",
 function act281Down(title,why,fin){
   const b=$('act281');if(!b)return;
   b.className='act281 '+(fin?'fin':'bad');$('act281S').textContent=title;$('act281W').textContent=why;$('act281C').textContent='';$('act281P').textContent='';
+  if($('tradeAct')&&$('tradeAct').textContent==='TRADE NOW'){$('tradeAct').textContent=title;$('tradeWhy').textContent=why;$('tradeBox').className='tradeBox bad';if(/trade/.test($('call').className))$('call').className='call locked';}
+}
+/* the most conservative age of the shown reading (from the moment it was requested) and time left (server tau minus that age) */
+function cons281(sg){
+  const ageMs=Number.isFinite(state.sentAt281)?Date.now()-state.sentAt281:Infinity;
+  return {ageMs, tau:sg&&Number.isFinite(sg.tau)?sg.tau-ageMs/1000:Infinity};
 }
 function render281(sg,downgraded,divergent){
   const ex=sg&&sg.exec, wu=sg&&sg.warmup, box=$('act281');
@@ -104,7 +117,8 @@ function render281(sg,downgraded,divergent){
   /* the decision in three words, the reversal risk, one reason: TRADE NOW / SIT OUT / TOO LATE */
   let head=ex.headline||'SIT OUT', cls=head==='TRADE NOW'?'go':head==='TOO LATE'?'late':'sit', why=ex.reason||ex.why||'';
   if(downgraded){head='SIT OUT';why='DATA SUSPECT — '+downgraded;cls='bad';}
-  else if(head==='TRADE NOW'&&Number.isFinite(state.tau281)&&state.tau281>0&&state.tau281<ex.lastOrderTau){head='TOO LATE';cls='late';why='past the last moment to place an order (T−'+ex.lastOrderTau+' s with your '+ex.execSec+' s order time)';}   // the browser's clock is later than the server's
+  else if(head==='TRADE NOW'&&((Number.isFinite(state.tau281)&&state.tau281>0&&state.tau281<ex.lastOrderTau)||cons281(sg).tau<ex.lastOrderTau)){head='TOO LATE';cls='late';why='past the last moment to place an order (T−'+ex.lastOrderTau+' s with your '+ex.execSec+' s order time)';}   // the browser's clock, or the reading's age, says it is too late
+  else if(head==='TRADE NOW'&&cons281(sg).ageMs>CALL_STALE_MS){head='STALE — DO NOT TRADE';cls='bad';why='the reading is up to '+(cons281(sg).ageMs/1000).toFixed(1)+' s old (slow connection): TRADE NOW may no longer hold';}
   else if(sg.state==='REVERSAL WARNING'||sg.state==='DATA UNRELIABLE')cls='bad';
   else if(ex.state==='FINAL')cls='fin';
   box.className='act281 '+cls;
@@ -114,6 +128,7 @@ function render281(sg,downgraded,divergent){
   $('act281C').textContent=ex.state==='FINAL'?'':(left!=null?(left>0?('last moment to place an order: T−'+ex.lastOrderTau+' s (in '+Math.floor(left)+' s) · your order time '+ex.execSec+' s')
     :('past the last moment to place an order (T−'+ex.lastOrderTau+' s with your '+ex.execSec+' s order time)')):'');
   $('act281P').textContent=(!downgraded&&!divergent&&ex.prepare)?ex.prepare:'';   // never GET READY on data the browser disputes
+  return head;
 }
 function renderCall(d){""")
 s = rep(s, "    $('callProb').textContent='';$('tradeAct').textContent='—';$('tradeWhy').textContent='upload the 2.5 pinradar_server.js to enable LOCKED calls';\n    return;",
