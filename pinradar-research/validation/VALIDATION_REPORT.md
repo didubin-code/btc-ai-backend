@@ -7,7 +7,7 @@
 | Use | Verdict | Deciding evidence |
 |---|---|---|
 | **The intended trade: about $50,000 at about 99.9 ¢** | **NO** | The pre-registered NO rule triggered. Kalshi's real prints show 50,046 contracts at ≤ 99.9 ¢ in the 12 s after a T−20 entry in **1 of 15,772** unseen windows. Buying at the *first* LOCKED is worse: it is wrong 0.17 % of the time (28 of 16,773 unseen calls, 95 % CI 0.11–0.24 %), and break-even is 0.093 %. |
-| Small sizes (10–1,000 contracts), first LOCKED, 90 ¢ guard | **NOT YET VALIDATED** | On 6 unseen months it earned +0.41 ¢ per contract (95 % CI +0.35 to +0.47) at 100 contracts, against about 0 for a market-only rule. That is about $4,300 in 6 months. The fill model is an upper bound; the live index differs from the replay feed; and the edge was smaller in later months. A forward test with real small orders is the next step. |
+| Small sizes (10–1,000 contracts), first LOCKED, 90 ¢ guard | **NOT YET VALIDATED** | On 6 unseen months it earned +0.41 ¢ per contract (95 % CI +0.35 to +0.47) at 100 contracts, against about 0 for a market-only rule: about $4,300 in 6 months. But the edge **fell from +1.1–1.2 ¢ (Jan–Feb) to +0.2–0.3 ¢ (Apr–Aug) and +0.06 ¢ in the September data so far**. The fill model is an upper bound, and the live index differs from the replay feed. A forward test with real small orders is the next step. |
 | As a forecast display (directional certainty) | supported, with known limits | LOCKED means "flip risk ≤ 0.5 %". On unseen data it was wrong 0.17 % of the time. Its errors are concentrated in calls made in the last 15 s and in DOWN calls. |
 
 Evidence is a backtest. It bounds the risk; it does not guarantee future results.
@@ -224,10 +224,69 @@ All tables are generated from the result files by `pipeline/final_tables.py` int
 * **Capacity at $50,000.** 50,046 contracts at ≤ 99.9 ¢ within 12 s:
   * T−20, unseen: **1 of 15,772 entries (0.006 %)**;
   * all periods: T−20 4 / 17,703, T−30 0.06 %, first LOCKED 0.44 %.
-  * The trade does not exist at that size in this market. **Pre-registered NO.**
+  * The trade does not exist at that size in this market.
+* **The pre-registered rules on unseen U** (`RESULTS_TABLES.md`):
+
+  | Rule | Result | Detail |
+  |---|---|---|
+  | YES-1: E20 upper bound below 0.093 % | **pass** | 2 / 15,936 wrong, bound 0.040 % |
+  | YES-2: 50,046 contracts in at least half of E20 entries | **fail** | 1 of 15,772 |
+  | YES-3: no unavoidable E20 failure | **fail** | KXBTC15M-26JAN171615-15: LOCKED UP at T−20 while UP last traded at 93 ¢, so the guard passes; it settled $3.43 below the strike |
+  | NO-b: 50,046 contracts in under 10 % of E20 entries | **triggers** | — |
+
+  **Verdict: NO.**
 * **Unseen U2 (Jan 13 – Jul 21), complete tapes: P&L per contract after fees.** VWAP fill, 95 % day-block CI:
 
-{{TRADING_U2}}
+| Strategy | Contracts | Trades | Lost | ¢ / contract (95 % CI) | at worst fill | Total |
+|---|---|---|---|---|---|---|
+| model: first LOCKED (90 ¢ guard) | 10 | 11,518 | 12 | +0.33 (+0.27 to +0.40) | +0.17 | $383 |
+| model: first LOCKED (90 ¢ guard) | 100 | 10,586 | 9 | +0.41 (+0.35 to +0.47) | +0.25 | $4,341 |
+| model: first LOCKED (90 ¢ guard) | 1,000 | 7,138 | 7 | +0.37 (+0.31 to +0.44) | +0.18 | $26,633 |
+| model: first LOCKED (90 ¢ guard) | 10,000 | 873 | 1 | +0.46 (+0.24 to +0.64) | +0.08 | $40,188 |
+| model: first LOCKED (90 ¢ guard) | 50,046 | 7 | 0 | +0.65 (+0.18 to +1.26) | +0.09 | $2,278 |
+| model: first LOCKED + page edge rule | 10 | 404 | 4 | +2.06 (+1.31 to +2.70) | +1.50 | $83 |
+| model: first LOCKED + page edge rule | 100 | 392 | 4 | +1.97 (+1.21 to +2.58) | +1.15 | $772 |
+| model: first LOCKED + page edge rule | 1,000 | 249 | 4 | +1.74 (+0.48 to +2.70) | +0.10 | $4,342 |
+| model: first LOCKED + page edge rule | 10,000 | 60 | 1 | +2.33 (-0.80 to +4.48) | +2.61 | $14,004 |
+| model: first LOCKED + page edge rule | 50,046 | 1 | 0 | +2.22 (+2.22 to +2.22) | — | $1,109 |
+| model: still LOCKED at T−30 | 10 | 2,756 | 2 | +0.19 (+0.06 to +0.30) | +0.06 | $52 |
+| model: still LOCKED at T−30 | 100 | 2,459 | 2 | +0.25 (+0.11 to +0.37) | +0.12 | $608 |
+| model: still LOCKED at T−30 | 1,000 | 1,490 | 1 | +0.20 (+0.04 to +0.30) | +0.09 | $2,980 |
+| model: still LOCKED at T−30 | 10,000 | 151 | 0 | +0.32 (+0.22 to +0.45) | +0.14 | $4,896 |
+| model: still LOCKED at T−30 | 50,046 | 0 | — | no entry had the volume | — | — |
+| model: still LOCKED at T−20 | 10 | 2,582 | 1 | +0.24 (+0.13 to +0.35) | +0.13 | $62 |
+| model: still LOCKED at T−20 | 100 | 2,305 | 1 | +0.29 (+0.18 to +0.40) | +0.18 | $673 |
+| model: still LOCKED at T−20 | 1,000 | 1,380 | 0 | +0.27 (+0.24 to +0.30) | +0.14 | $3,677 |
+| model: still LOCKED at T−20 | 10,000 | 172 | 0 | +0.39 (+0.31 to +0.47) | +0.11 | $6,687 |
+| model: still LOCKED at T−20 | 50,046 | 1 | 0 | +0.09 (+0.09 to +0.09) | +0.09 | $47 |
+| model: still LOCKED at T−15 | 10 | 2,257 | 1 | +0.21 (+0.11 to +0.31) | +0.11 | $48 |
+| model: still LOCKED at T−15 | 100 | 2,006 | 1 | +0.25 (+0.13 to +0.33) | +0.14 | $503 |
+| model: still LOCKED at T−15 | 1,000 | 1,185 | 0 | +0.27 (+0.24 to +0.31) | +0.14 | $3,234 |
+| model: still LOCKED at T−15 | 10,000 | 174 | 0 | +0.38 (+0.29 to +0.49) | +0.11 | $6,684 |
+| model: still LOCKED at T−15 | 50,046 | 1 | 0 | +2.18 (+2.18 to +2.18) | +0.09 | $1,092 |
+| market only: side first trades ≥ 99 ¢ | 10 | 16,819 | 209 | -0.00 (-0.16 to +0.15) | -0.49 | $-6 |
+| market only: side first trades ≥ 99 ¢ | 100 | 16,025 | 195 | +0.05 (-0.10 to +0.20) | -0.44 | $756 |
+| market only: side first trades ≥ 99 ¢ | 1,000 | 12,357 | 152 | -0.02 (-0.21 to +0.16) | -0.54 | $-2,424 |
+| market only: side first trades ≥ 99 ¢ | 10,000 | 2,248 | 37 | -0.07 (-0.58 to +0.37) | -1.01 | $-16,661 |
+| market only: side first trades ≥ 99 ¢ | 50,046 | 17 | 1 | +2.27 (-7.49 to +8.11) | -5.23 | $19,326 |
+| market only: side first trades ≥ 99.5 ¢ | 10 | 10,968 | 59 | -0.04 (-0.16 to +0.09) | -0.32 | $-39 |
+| market only: side first trades ≥ 99.5 ¢ | 100 | 10,158 | 58 | -0.00 (-0.13 to +0.13) | -0.29 | $-3 |
+| market only: side first trades ≥ 99.5 ¢ | 1,000 | 7,227 | 47 | -0.05 (-0.21 to +0.11) | -0.40 | $-3,709 |
+| market only: side first trades ≥ 99.5 ¢ | 10,000 | 888 | 14 | -0.54 (-1.34 to +0.06) | -1.41 | $-47,893 |
+| market only: side first trades ≥ 99.5 ¢ | 50,046 | 5 | 2 | -6.02 (-16.85 to +3.32) | -39.72 | $-15,074 |
+
+Paired difference on the same days (model − market-only), ¢ per contract:
+
+| Comparison | C = 100 | C = 1,000 |
+|---|---|---|
+| model:first − market:99 | +0.36 (+0.21 to +0.53) | +0.39 (+0.21 to +0.59) |
+| model:first − market:99.5 | +0.41 (+0.28 to +0.54) | +0.42 (+0.27 to +0.60) |
+| model:first+edge − market:99 | +1.92 (+1.13 to +2.59) | +1.76 (+0.56 to +2.76) |
+| model:first+edge − market:99.5 | +1.97 (+1.21 to +2.59) | +1.80 (+0.54 to +2.80) |
+| model:T20 − market:99 | +0.24 (+0.05 to +0.45) | +0.29 (+0.11 to +0.47) |
+| model:T20 − market:99.5 | +0.29 (+0.12 to +0.46) | +0.32 (+0.17 to +0.49) |
+
+Markets in U2: 17,841, all with a Kalshi tape. Fill parity with `execution.py`: 62,882 rows, 0 mismatches.
 
 **4. Sensitivity** [RUN]:
 
@@ -235,17 +294,45 @@ All tables are generated from the result files by `pipeline/final_tables.py` int
 |---|---|
 | Fill at the worst print instead of VWAP | +0.25 ¢ (CI +0.18 to +0.31) |
 | + 0.1 ¢ slippage | +0.32 ¢ |
-| Entry latency 2 s | {{LAT2}} |
-| Entry latency 5 s | {{LAT5}} |
+| Entry latency 2 s | +0.37 ¢ (CI +0.31 to +0.43), 10,113 trades, 9 lost; market-only ≥ 99 ¢: +0.03 |
+| Entry latency 5 s | +0.28 ¢ (CI +0.21 to +0.35), 9,426 trades, 13 lost; the edge rule becomes +1.23 ¢ (CI -0.40 to +2.58), not significant |
 | Market-only rule at worst fill | −0.44 ¢ (CI −0.59 to −0.29) |
 
 **5. Over time and on the seen period** [RUN]:
 
-{{MONTHLY}}
+| Month | model: first LOCKED | model: T−20 | market only ≥ 99 ¢ |
+|---|---|---|---|
+| 2026-01 | +1.24 ¢ (372 trades, 0 lost) | +0.97 ¢ (81 trades, 1 lost) | +0.31 ¢ (909 trades, 17 lost) |
+| 2026-02 | +1.07 ¢ (970 trades, 1 lost) | +1.63 ¢ (91 trades, 0 lost) | -0.06 ¢ (2,219 trades, 35 lost) |
+| 2026-03 | +0.62 ¢ (1,084 trades, 0 lost) | +0.34 ¢ (194 trades, 0 lost) | +0.14 ¢ (2,638 trades, 29 lost) |
+| 2026-04 | +0.20 ¢ (1,910 trades, 4 lost) | +0.24 ¢ (491 trades, 0 lost) | -0.10 ¢ (2,655 trades, 33 lost) |
+| 2026-05 | +0.25 ¢ (2,178 trades, 2 lost) | +0.20 ¢ (635 trades, 0 lost) | -0.17 ¢ (2,832 trades, 36 lost) |
+| 2026-06 | +0.32 ¢ (2,433 trades, 2 lost) | +0.17 ¢ (573 trades, 0 lost) | +0.23 ¢ (2,789 trades, 25 lost) |
+| 2026-07 (to Jul 21 unseen, then seen) | +0.22 ¢ (2,297 trades, 1 lost) | +0.15 ¢ (307 trades, 0 lost) | +0.19 ¢ (2,910 trades, 30 lost) |
+| 2026-08 (seen, partial tapes) | +0.27 ¢ (1,192 trades, 1 lost) | +0.19 ¢ (162 trades, 0 lost) | -0.46 ¢ (1,766 trades, 30 lost) |
+| 2026-09 (seen, partial tapes) | +0.06 ¢ (439 trades, 2 lost) | +0.20 ¢ (82 trades, 0 lost) | +0.03 ¢ (494 trades, 4 lost) |
+| 2026-10 (seen to Oct 13, then U1; partial tapes) | — | — | +12.29 ¢ (1 trades, 0 lost) |
+
+All periods, C = 100: 25,994 markets, 21,057 with a Kalshi tape when this ran. Jul 22 – Oct 13 is the seen period, with partial tapes.
+
+**The edge is shrinking. This is the most important unfavourable finding for small sizes.**
+* At the first LOCKED, the edge was +1.1 to +1.2 ¢ per contract in January–February and +0.6 ¢ in March.
+* It was +0.2 to +0.3 ¢ in every month from April to August, and +0.06 ¢ in the September tapes downloaded so far (439 trades, 2 lost).
+* At +0.25 ¢ and about 2,000 fills a month at 100 contracts, that is roughly $500 a month, against a worst case of about −$100 per losing trade at that size.
+* The market-only rule stays near zero throughout.
+* On the seen period alone (Jul 22 – Oct 16, 3,275 of 8,153 markets with tapes), first LOCKED at 100 contracts made +0.17 ¢ (CI +0.02 to +0.31; 2,337 trades, 4 lost). The page's edge rule made −0.03 ¢ (51 trades, 2 lost).
 
 **6. Exit on REVERSAL WARNING** [RUN]:
 
-{{EXIT}}
+| Contracts | Entries that filled | Warned later | of which lost / won | Hold: ¢ / contract | Exit at the warning: ¢ / contract |
+|---|---|---|---|---|---|
+| 100 | 12,166 | 114 | 9 / 105 | +0.384 | +0.360 |
+| 1,000 | 8,604 | 73 | 7 / 66 | +0.345 | +0.333 |
+
+* These cover all periods with a tape at the time of the execution run.
+* Selling at the first REVERSAL WARNING (prints of the other side in the next 12 s, fees on both legs) recovered a mean 69.5 ¢ on the 9 losing calls.
+* It gave up a mean 8.9 ¢ on each of the 101 false alarms that could be exited.
+* Net, it is slightly worse than holding: −0.02 ¢ per contract over all entries. It is not adopted. It does not hurt much either, so it is a reasonable discretionary choice.
 
 **Answer.**
 * **At $50,000: no.** The size cannot be filled, and at the moment it could be (first LOCKED) the failure rate is above break-even.
@@ -254,6 +341,9 @@ All tables are generated from the result files by `pipeline/final_tables.py` int
   * At 1,000 contracts that was $26,600 in 6 months, with 7 losing trades of about $1,000 each.
   * The fill model assumes you got the prints other traders got. That is an **upper bound**.
 * **At 10,000 contracts** it filled only 873 times in 6 months. The VWAP result (+0.46 ¢) is not robust to worst-fill pricing (+0.09 ¢, CI −0.20 to +0.22).
+* **At 50,046 contracts** the first-LOCKED entry could fill 7 times in 6 unseen months, and the T−20 entry once.
+  * All 8 won; the 7 made $2,278 in total. They were the rare windows with cheap asks.
+  * About one opportunity a month cannot establish anything. Each one carries the first-LOCKED failure rate (0.17 %). One loss (about −$49,700) would erase about 150 such wins (mean +$325).
 
 ## Phase 6. Attempts to break the software
 
@@ -294,7 +384,7 @@ All tables are generated from the result files by `pipeline/final_tables.py` int
    | Coverage | 93.0 % | 91.7 % | 88.3 % |
 
    * Coverage drops by 1.4 points (USDC) or 5.5 points (USDT, all periods).
-   * Trading on U2: {{CAND_TRADING}}
+   * Trading on U2: first LOCKED at 100 contracts: +0.40 ¢ (CI +0.35 to +0.46), 10,374 trades, 7 lost, against 2.8.1's +0.41 ¢, 10,586 trades, 9 lost
    * It does nothing for failure class 2 (real reversals).
    * Status: **promising, not validated.** It needs a forward test on the live index before it can be switched on.
 2. **`MARKET_VETO_CENTS=90`.** It shows the 90 ¢ guard on the LOCKED headline itself, not only on TRADE NOW.
