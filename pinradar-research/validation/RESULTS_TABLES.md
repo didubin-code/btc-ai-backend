@@ -89,19 +89,19 @@ U = U1 + U2 is decisive (never used for fitting). "Seen" = Jul 22 – Oct 13 (S1
 | 99.8 ¢ | 100 | 0.186 % | 7.868 % | True | False | True | NO |
 | 99.8 ¢ | 1000 | 0.186 % | 3.937 % | True | False | True | NO |
 | 99.8 ¢ | 10000 | 0.186 % | 0.355 % | True | False | True | NO |
-| 99.8 ¢ | 50046 | 0.186 % | 0.000 % | True | False | True | NO |
+| 99.8 ¢ | 50093 | 0.186 % | 0.000 % | True | False | True | NO |
 | 99.0 ¢ | 10 | 0.930 % | 3.411 % | True | False | True | NO |
 | 99.0 ¢ | 100 | 0.930 % | 2.853 % | True | False | True | NO |
 | 99.0 ¢ | 1000 | 0.930 % | 1.236 % | True | False | True | NO |
 | 99.0 ¢ | 10000 | 0.930 % | 0.120 % | True | False | True | NO |
-| 99.0 ¢ | 50046 | 0.930 % | 0.000 % | True | False | True | NO |
+| 99.0 ¢ | 50469 | 0.930 % | 0.000 % | True | False | True | NO |
 
 ### Wrong first-LOCKED calls by what the replay feed showed
 
 | Split | Wrong | Feed also ended on the other side (real reversal) | Basis-decided | Real reversals passing buffer + guard with the market ≥ 90 ¢ |
 |---|---|---|---|---|
 | U | 28 | 19 (DOWN 16, UP 3) | 9 | 13 (0.077 % of calls) |
-| all | 47 | 34 (DOWN 27, UP 7) | 13 | 14 (0.058 % of calls) |
+| all | 47 | 34 (DOWN 27, UP 7) | 13 | 22 (0.092 % of calls) |
 
 ### Predictors at the first LOCKED second (U)
 
@@ -193,68 +193,68 @@ Paired difference (same days resampled), ¢ per contract:
 | 2026-05 | +0.249 ¢, 2178 trades, 2 lost | +0.199 ¢, 635 trades, 0 lost | -0.173 ¢, 2832 trades, 36 lost | -0.152 ¢, 2526 trades, 18 lost |
 | 2026-06 | +0.316 ¢, 2433 trades, 2 lost | +0.173 ¢, 573 trades, 0 lost | +0.228 ¢, 2789 trades, 25 lost | -0.013 ¢, 2649 trades, 14 lost |
 | 2026-07 | +0.221 ¢, 2297 trades, 1 lost | +0.151 ¢, 307 trades, 0 lost | +0.195 ¢, 2910 trades, 30 lost | +0.131 ¢, 2884 trades, 13 lost |
-| 2026-08 | +0.269 ¢, 1192 trades, 1 lost | +0.186 ¢, 162 trades, 0 lost | -0.459 ¢, 1766 trades, 30 lost | +0.152 ¢, 1749 trades, 7 lost |
-| 2026-09 | +0.057 ¢, 439 trades, 2 lost | +0.204 ¢, 82 trades, 0 lost | +0.026 ¢, 494 trades, 4 lost | +0.011 ¢, 489 trades, 2 lost |
+| 2026-08 | +0.168 ¢, 1819 trades, 4 lost | +0.161 ¢, 296 trades, 0 lost | -0.376 ¢, 2450 trades, 38 lost | +0.088 ¢, 2431 trades, 11 lost |
+| 2026-09 | +0.007 ¢, 736 trades, 4 lost | +0.190 ¢, 149 trades, 0 lost | -0.585 ¢, 818 trades, 12 lost | -0.405 ¢, 808 trades, 7 lost |
 | 2026-10 | — | — | +12.288 ¢, 1 trades, 0 lost | +0.681 ¢, 1 trades, 0 lost |
 
 ## Trading, Jul 22 – Oct 16 (seen period plus U1 dates; U1 has no tapes): reported, not decisive, PARTIAL tape coverage
 
-Fill rule: an order of C contracts fills only if other takers bought ≥ C contracts of that side at ≤ 99.9 ¢ in the 12 s after the entry (market baseline: strictly after the trigger print), plus 0 s latency; price = their VWAP (or the worst of them), plus Kalshi's taker fee. 95 % CI: day-level block bootstrap. Markets in period 8153, with a Kalshi tape 3275. The tape download for this period was incomplete when this table was built.
+Fill rule: an order of C contracts fills only if other takers bought ≥ C contracts of that side at ≤ 99.9 ¢ in the 12 s after the entry (market baseline: strictly after the trigger print), plus 0 s latency; price = their VWAP (or the worst of them), plus Kalshi's taker fee. 95 % CI: day-level block bootstrap. Markets in period 8153, with a Kalshi tape 4230. The tape download for this period was incomplete when this table was built.
 
 | Strategy | C | Trades | Lost | Mean ¢/contract (VWAP) | 95 % CI | Mean at worst fill | Total |
 |---|---|---|---|---|---|---|---|
-| market:99 | 10 | 3248 | 46 | -0.267 | -0.642 to +0.075 | -0.919 | $-87 |
-| market:99 | 100 | 3247 | 46 | -0.228 | -0.604 to +0.116 | -0.863 | $-740 |
-| market:99 | 1000 | 3222 | 46 | -0.231 | -0.610 to +0.114 | -0.871 | $-7,431 |
-| market:99 | 10000 | 2470 | 33 | -0.075 | -0.572 to +0.363 | -0.831 | $-18,622 |
-| market:99 | 50046 | 303 | 11 | -0.857 | -2.120 to +0.275 | -3.354 | $-129,875 |
-| market:99.5 | 10 | 3221 | 15 | +0.020 | -0.246 to +0.261 | -0.289 | $7 |
-| market:99.5 | 100 | 3219 | 15 | +0.085 | -0.181 to +0.326 | -0.214 | $272 |
-| market:99.5 | 1000 | 3148 | 15 | +0.079 | -0.191 to +0.325 | -0.225 | $2,472 |
-| market:99.5 | 10000 | 1899 | 9 | +0.101 | -0.203 to +0.374 | -0.289 | $19,104 |
-| market:99.5 | 50046 | 270 | 2 | +0.408 | -0.519 to +1.368 | -0.636 | $55,122 |
-| model:T15 | 10 | 284 | 0 | +0.055 | +0.034 to +0.077 | +0.001 | $2 |
-| model:T15 | 100 | 277 | 0 | +0.142 | +0.121 to +0.164 | +0.091 | $39 |
-| model:T15 | 1000 | 226 | 0 | +0.157 | +0.132 to +0.184 | +0.094 | $354 |
-| model:T15 | 10000 | 97 | 0 | +0.218 | +0.170 to +0.271 | +0.093 | $2,116 |
-| model:T15 | 50046 | 10 | 0 | +0.482 | +0.293 to +0.779 | +0.093 | $2,414 |
-| model:T20 | 10 | 333 | 0 | +0.090 | +0.060 to +0.125 | +0.013 | $3 |
-| model:T20 | 100 | 322 | 0 | +0.177 | +0.147 to +0.212 | +0.103 | $57 |
-| model:T20 | 1000 | 292 | 0 | +0.189 | +0.156 to +0.229 | +0.107 | $553 |
-| model:T20 | 10000 | 148 | 0 | +0.268 | +0.209 to +0.340 | +0.119 | $3,959 |
-| model:T20 | 50046 | 16 | 0 | +0.435 | +0.320 to +0.704 | +0.128 | $3,486 |
-| model:T30 | 10 | 388 | 0 | +0.232 | +0.068 to +0.541 | +0.024 | $9 |
-| model:T30 | 100 | 385 | 0 | +0.318 | +0.154 to +0.629 | +0.113 | $123 |
-| model:T30 | 1000 | 345 | 0 | +0.348 | +0.165 to +0.716 | +0.119 | $1,201 |
-| model:T30 | 10000 | 190 | 0 | +0.534 | +0.203 to +1.261 | +0.135 | $10,143 |
-| model:T30 | 50046 | 26 | 0 | +2.539 | +0.398 to +9.386 | +0.132 | $33,039 |
-| model:first | 10 | 2348 | 4 | +0.095 | -0.053 to +0.233 | -0.041 | $22 |
-| model:first | 100 | 2337 | 4 | +0.171 | +0.022 to +0.310 | +0.040 | $399 |
-| model:first | 1000 | 2199 | 4 | +0.172 | +0.013 to +0.320 | +0.035 | $3,791 |
-| model:first | 10000 | 1219 | 3 | +0.189 | -0.038 to +0.413 | -0.016 | $23,020 |
-| model:first | 50046 | 201 | 1 | +0.158 | -0.796 to +1.295 | -0.368 | $15,908 |
-| model:first+edge | 10 | 47 | 2 | -0.207 | -6.251 to +5.452 | -2.578 | $-1 |
-| model:first+edge | 100 | 51 | 2 | -0.025 | -5.463 to +5.163 | -2.317 | $-1 |
-| model:first+edge | 1000 | 51 | 2 | -0.021 | -5.460 to +5.167 | -2.312 | $-11 |
-| model:first+edge | 10000 | 43 | 2 | -0.366 | -6.493 to +5.860 | -3.071 | $-1,573 |
-| model:first+edge | 50046 | 10 | 1 | -2.214 | -27.753 to +14.737 | — | $-11,081 |
+| market:99 | 10 | 4197 | 60 | -0.324 | -0.641 to -0.021 | -0.940 | $-136 |
+| market:99 | 100 | 4196 | 60 | -0.284 | -0.600 to +0.019 | -0.884 | $-1,192 |
+| market:99 | 1000 | 4171 | 60 | -0.285 | -0.602 to +0.019 | -0.889 | $-11,904 |
+| market:99 | 10000 | 3327 | 44 | -0.130 | -0.499 to +0.226 | -0.821 | $-43,259 |
+| market:99 | 50046 | 508 | 17 | -1.376 | -2.410 to -0.314 | -3.110 | $-349,791 |
+| market:99.5 | 10 | 4163 | 23 | -0.074 | -0.315 to +0.145 | -0.373 | $-31 |
+| market:99.5 | 100 | 4161 | 23 | -0.010 | -0.251 to +0.209 | -0.298 | $-40 |
+| market:99.5 | 1000 | 4087 | 23 | -0.015 | -0.259 to +0.206 | -0.308 | $-627 |
+| market:99.5 | 10000 | 2691 | 15 | -0.003 | -0.267 to +0.237 | -0.359 | $-716 |
+| market:99.5 | 50046 | 493 | 4 | +0.073 | -0.587 to +0.736 | -0.700 | $18,110 |
+| model:T15 | 10 | 443 | 0 | +0.058 | +0.041 to +0.076 | +0.001 | $3 |
+| model:T15 | 100 | 435 | 0 | +0.144 | +0.128 to +0.162 | +0.091 | $63 |
+| model:T15 | 1000 | 362 | 0 | +0.159 | +0.140 to +0.179 | +0.094 | $575 |
+| model:T15 | 10000 | 172 | 0 | +0.210 | +0.175 to +0.247 | +0.094 | $3,617 |
+| model:T15 | 50046 | 26 | 0 | +0.357 | +0.271 to +0.475 | +0.093 | $4,650 |
+| model:T20 | 10 | 523 | 0 | +0.078 | +0.057 to +0.103 | +0.008 | $4 |
+| model:T20 | 100 | 512 | 0 | +0.164 | +0.143 to +0.188 | +0.098 | $84 |
+| model:T20 | 1000 | 448 | 0 | +0.178 | +0.153 to +0.205 | +0.102 | $796 |
+| model:T20 | 10000 | 240 | 0 | +0.239 | +0.199 to +0.291 | +0.109 | $5,734 |
+| model:T20 | 50046 | 31 | 0 | +0.386 | +0.286 to +0.563 | +0.111 | $5,990 |
+| model:T30 | 10 | 638 | 1 | +0.022 | -0.325 to +0.334 | -0.138 | $1 |
+| model:T30 | 100 | 631 | 1 | +0.107 | -0.243 to +0.423 | -0.051 | $68 |
+| model:T30 | 1000 | 563 | 1 | +0.113 | -0.282 to +0.471 | -0.065 | $633 |
+| model:T30 | 10000 | 318 | 1 | +0.110 | -0.655 to +0.752 | -0.191 | $3,483 |
+| model:T30 | 50046 | 59 | 0 | +1.238 | +0.247 to +4.047 | +0.120 | $36,561 |
+| model:first | 10 | 3225 | 9 | +0.031 | -0.142 to +0.190 | -0.120 | $10 |
+| model:first | 100 | 3213 | 9 | +0.105 | -0.070 to +0.264 | -0.041 | $337 |
+| model:first | 1000 | 3068 | 9 | +0.104 | -0.078 to +0.271 | -0.048 | $3,194 |
+| model:first | 10000 | 1896 | 7 | +0.092 | -0.117 to +0.310 | -0.117 | $17,417 |
+| model:first | 50046 | 395 | 1 | +0.261 | -0.281 to +0.810 | -0.125 | $51,640 |
+| model:first+edge | 10 | 90 | 3 | +0.140 | -3.709 to +3.465 | -0.181 | $1 |
+| model:first+edge | 100 | 96 | 3 | +0.272 | -3.384 to +3.465 | -0.085 | $26 |
+| model:first+edge | 1000 | 97 | 3 | +0.289 | -3.277 to +3.432 | -0.080 | $281 |
+| model:first+edge | 10000 | 80 | 3 | -0.068 | -4.663 to +3.630 | -0.607 | $-542 |
+| model:first+edge | 50046 | 14 | 1 | -0.081 | -18.467 to +14.084 | — | $-570 |
 
 Paired difference (same days resampled), ¢ per contract:
 
 | Comparison | Difference | 95 % CI |
 |---|---|---|
-| model:first - market:99 @C100 | +0.399 | +0.003 to +0.857 |
-| model:first - market:99.5 @C100 | +0.086 | -0.175 to +0.388 |
-| model:first+edge - market:99 @C100 | +0.203 | -5.446 to +5.366 |
-| model:first+edge - market:99.5 @C100 | -0.110 | -5.607 to +4.976 |
-| model:T20 - market:99 @C100 | +0.405 | +0.044 to +0.832 |
-| model:T20 - market:99.5 @C100 | +0.093 | -0.160 to +0.390 |
-| model:first - market:99 @C1000 | +0.403 | +0.001 to +0.868 |
-| model:first - market:99.5 @C1000 | +0.094 | -0.176 to +0.404 |
-| model:first+edge - market:99 @C1000 | +0.209 | -5.439 to +5.370 |
-| model:first+edge - market:99.5 @C1000 | -0.100 | -5.600 to +4.992 |
-| model:T20 - market:99 @C1000 | +0.420 | +0.056 to +0.853 |
-| model:T20 - market:99.5 @C1000 | +0.111 | -0.147 to +0.412 |
+| model:first - market:99 @C100 | +0.389 | +0.059 to +0.756 |
+| model:first - market:99.5 @C100 | +0.115 | -0.114 to +0.355 |
+| model:first+edge - market:99 @C100 | +0.556 | -3.108 to +3.693 |
+| model:first+edge - market:99.5 @C100 | +0.282 | -3.309 to +3.360 |
+| model:T20 - market:99 @C100 | +0.448 | +0.125 to +0.806 |
+| model:T20 - market:99.5 @C100 | +0.173 | -0.059 to +0.431 |
+| model:first - market:99 @C1000 | +0.390 | +0.053 to +0.763 |
+| model:first - market:99.5 @C1000 | +0.119 | -0.112 to +0.363 |
+| model:first+edge - market:99 @C1000 | +0.575 | -3.014 to +3.671 |
+| model:first+edge - market:99.5 @C1000 | +0.305 | -3.244 to +3.324 |
+| model:T20 - market:99 @C1000 | +0.463 | +0.138 to +0.823 |
+| model:T20 - market:99.5 @C1000 | +0.193 | -0.043 to +0.452 |
 
 ## Trading, candidate ADAPTIVE_BASIS=1, U2 (exploratory)
 
@@ -318,20 +318,20 @@ Paired difference (same days resampled), ¢ per contract:
 
 | C | Entries | Warned later | of which lost | of which won | Exited (enough prints) | Hold: mean ¢ | Exit rule: mean ¢ | Hold total | Exit total |
 |---|---|---|---|---|---|---|---|---|---|
-| 100 | 12166 | 114 | 9 | 105 | 110 | +0.384 | +0.360 | $4,666 | $4,380 |
-| 1000 | 8604 | 73 | 7 | 66 | 72 | +0.345 | +0.333 | $29,695 | $28,618 |
+| 100 | 13799 | 139 | 17 | 122 | 135 | +0.339 | +0.346 | $4,679 | $4,781 |
+| 1000 | 10206 | 98 | 15 | 83 | 97 | +0.292 | +0.320 | $29,828 | $32,631 |
 
 ## Executable volume (contracts of the called side bought by takers at ≤ 99.9 ¢ within 12 s of the entry)
 
-| Entry | Entries with Kalshi prints | Median | 90th pct | 99th pct | Entries with ≥ 50,050 contracts (your $50,000) |
+| Entry | Entries with Kalshi prints | Median | 90th pct | 99th pct | Entries with ≥ 50,046 contracts (your $50,000) |
 |---|---|---|---|---|---|
-| first | 18623 | 757.0 | 8807.54 | 33317.93 | 0.440 % |
-| T60 | 11451 | 0 | 2924.0 | 19311.82 | 0.183 % |
-| T45 | 14189 | 0 | 1643.11 | 15630.78 | 0.141 % |
-| T30 | 16484 | 0 | 1024.66 | 12759.44 | 0.055 % |
-| T20 | 17703 | 0 | 710.6 | 13055.98 | 0.023 % |
-| T15 | 18079 | 0 | 384.19 | 11743.1 | 0.022 % |
-| T10 | 18301 | 0 | 3.0 | 6357.93 | 0.011 % |
+| first | 20354 | 1023.1 | 13770.81 | 74818.88 | 2.029 % |
+| T60 | 12446 | 0 | 4537.75 | 47248.07 | 0.964 % |
+| T45 | 15429 | 0 | 2258.0 | 37418.95 | 0.713 % |
+| T30 | 17966 | 0 | 1398.26 | 23729.25 | 0.334 % |
+| T20 | 19316 | 0 | 883.75 | 19452.55 | 0.186 % |
+| T15 | 19737 | 0 | 483.71 | 16089.25 | 0.157 % |
+| T10 | 19985 | 0 | 4.0 | 8107.0 | 0.090 % |
 
 ## Long-horizon PROXY study (Binance BTCUSDT 1 s, Oct 2023 – Jan 2026; outcomes defined by the proxy, not Kalshi)
 

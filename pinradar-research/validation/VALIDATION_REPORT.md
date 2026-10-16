@@ -14,13 +14,13 @@
 **Why NO at $50,000.**
 1. **The pre-registered NO rule triggered.** On unseen data, 50,046 contracts at ≤ 99.9 ¢ were available in the 12 s after a T−20 entry in 1 of 15,772 entries with a Kalshi tape.
 2. **The failure rate is too high where the size can be filled.** At the first LOCKED, where the size can sometimes be filled, the call is wrong 0.17 % of the time (28 of 16,773 unseen calls, 95 % CI 0.11–0.24 %), against a 0.093 % break-even.
-3. **The recent large fills lost money at worst-fill prices.** Recent months have more volume: 201 first-LOCKED $50k fills in the partial Jul 22 – Oct 16 tapes. Those trades made +$15,900 at VWAP but **−$37,000 at worst-fill prices**, with 1 loss.
+3. **The recent large fills lost money at worst-fill prices.** Recent months have more volume: 395 first-LOCKED $50k fills in the partial Jul 22 – Oct 16 tapes. Those trades made +$51,600 at VWAP but **−$24,700 at worst-fill prices**, with 1 loss.
 4. **The live record has a loss.** The deployed page lost its 84th forward LOCKED call (Oct 15 20:30 ET).
 
 **Why small sizes are NOT YET VALIDATED.**
 * **It looked positive on unseen data.** On 6 unseen months (Jan 13 – Jul 21) this rule beat a market-only rule by about +0.4 ¢ per contract under an optimistic fill model.
 * **It fell with the page's own timing.** With the page's own 12 s order time and the 15 s buffer, the rule itself made **+0.24 ¢** per contract (CI +0.15 to +0.32): about $1,800 in 6 months at 100 contracts. Its margin over the market-only ≥ 99.5 ¢ rule fell to +0.22 ¢ (CI +0.08 to +0.35).
-* **The edge has decayed.** It fell from +1.1–1.2 ¢ in Jan–Feb to +0.2–0.3 ¢ in Apr–Aug, with +0.06 ¢ in the September tapes so far. On Jul 22 – Oct 16 it is not significantly better than the market-only ≥ 99.5 ¢ rule.
+* **The edge has decayed.** It fell from +1.1–1.2 ¢ in Jan–Feb to +0.2–0.3 ¢ in Apr–Aug, and +0.01 ¢ in the September tapes. On Jul 22 – Oct 16 it is **not significantly positive** (+0.10 ¢, CI -0.07 to +0.26), nor better than the market-only ≥ 99.5 ¢ rule.
 * **The rule was not pre-registered.** This strategy was defined after the pre-registration and is exploratory.
 * **What the pre-registered rules say.** Applied at these sizes, they give NOT YET VALIDATED at 10–100 contracts (at 99.9 ¢) and NO at 1,000 or more.
 * Only a forward test with real small orders can decide.
@@ -209,7 +209,7 @@ U2 lies *before* the period the probability tables were fitted on. It is out-of-
   | JUN070115 | DOWN | 97 | +$10.29 | 99.8 ¢ |
   | JUN181330 | DOWN | 150 | +$53.15 | 99.5 ¢ |
 
-* **All periods.** Of 47 wrong calls, 16 are blocked by the buffer or the guard and 16 are not. **15 are undetermined**: seen period, no tape yet.
+* **All periods** (tape snapshot of 22,071 markets): of 47 wrong calls, 16 are blocked by the buffer or the guard and **24 are not**. 7 are undetermined (seen period, no tape). The 9 seen-period wrong calls that pass were called 36–299 s before the close, with the called side at 90–99.7 ¢.
 * **Not prevented by any 2.8.1 change: the LOCKED display itself.** 2.8 and 2.8.1 show the same 47 wrong calls.
 * **The Oct 15 20:30 ET loss** (`INCIDENT_OCT15_2030ET.md`; not among the counts above, because it closes after the replay data end).
   * DOWN traded at 79 ¢ when LOCKED DOWN appeared, so the 90 ¢ guard would almost certainly have refused TRADE NOW. Only trades are available, not the ask.
@@ -229,8 +229,8 @@ U2 lies *before* the period the probability tables were fitted on. It is out-of-
   * This was checked by a separate per-window rerun with the gate reasons recorded: `gate_recheck.py`, `gate_recheck.json`. The rerun used a short 1 h warm-up; its states at T−30 … T−3 match the main replay.
   * 148 of the 291 are from February 2026.
   * **Value** [RUN, `missed_value.py`, `supplement.json` §11]: buy the side the engine leaned to at T−60, with the same fill rule.
-    * 262 of the 291 windows have a tape, and the leaned side won in 261.
-    * With the 90 ¢ guard, 47 could fill 100 contracts, worth **$43 over 9 months** at that size. Without the guard it was 56 fills and $106.
+    * 277 of the 291 windows have a tape, and the leaned side won in 276.
+    * With the 90 ¢ guard, 56 could fill 100 contracts, worth **$47 over 9 months** at that size. Without the guard it was 65 fills and $110.
     * Recovering them would mean extrapolating the tables beyond their tested range. It is not done: it would weaken a risk control for almost no value.
 * **Never LOCKED, margin $20–100: 30 windows.** At T−20, 23 of them were HIGH CONFIDENCE on the correct side.
 * **Never LOCKED, margin under $20: 1,658 windows.** Genuine toss-ups.
@@ -267,7 +267,10 @@ U2 lies *before* the period the probability tables were fitted on. It is out-of-
   * execution is scored from Kalshi's prints.
   * **Timing caveat.** Each second's price is that second's closing price, known only at the end of the second. It is used for the decision 0.75 s into the second, so inputs lead real time by up to 0.25 s. A test shifting the feed by 0.9 s changed T−20 failures from 2 to 4 (Phase 6) [EARLIER WORK].
   * The 5 s settlement delay is an assumption. Production's timing is not documented here.
-* **Tapes.** Complete for U2. For Jul 22 – Oct 16, 3,275 of 8,153 markets had a tape when the trading tables were built. Coverage was uneven: all of late July, roughly half of August, a small part of September, and none of October, so U1 has none. Seen-period trading results may therefore be biased by month. The download is still running.
+* **Tapes.** All execution figures use one snapshot: 22,071 of 25,994 markets, with the download stopped on 2026-10-16 at 14:12 UTC.
+  * U2 is complete.
+  * For Jul 22 – Oct 16 the snapshot holds 4,230 of 8,153 markets: all of late July, August 2,465 of 2,937, September 824 of 2,847, and of October only the Oct 15 20:30 ET incident window. That window is in U1 but was not replayed.
+  * Recent-period results may therefore be biased by month.
 * **Provenance.** Every HTTP response is logged with URL, status, size, SHA-256 and time (`PROVENANCE*.ndjson`).
 
 ## F. Would the strategy have been profitable at the intended amounts?
@@ -297,12 +300,12 @@ U2 lies *before* the period the probability tables were fitted on. It is out-of-
 | 99.8 ¢ | 100 | 0.186 % | 7.868 % | pass | fail | triggers | **NO** |
 | 99.8 ¢ | 1,000 | 0.186 % | 3.937 % | pass | fail | triggers | **NO** |
 | 99.8 ¢ | 10,000 | 0.186 % | 0.355 % | pass | fail | triggers | **NO** |
-| 99.8 ¢ | 50,046 | 0.186 % | 0.000 % | pass | fail | triggers | **NO** |
+| 99.8 ¢ | 50,093 | 0.186 % | 0.000 % | pass | fail | triggers | **NO** |
 | 99.0 ¢ | 10 | 0.930 % | 3.411 % | pass | fail | triggers | **NO** |
 | 99.0 ¢ | 100 | 0.930 % | 2.853 % | pass | fail | triggers | **NO** |
 | 99.0 ¢ | 1,000 | 0.930 % | 1.236 % | pass | fail | triggers | **NO** |
 | 99.0 ¢ | 10,000 | 0.930 % | 0.120 % | pass | fail | triggers | **NO** |
-| 99.0 ¢ | 50,046 | 0.930 % | 0.000 % | pass | fail | triggers | **NO** |
+| 99.0 ¢ | 50,469 | 0.930 % | 0.000 % | pass | fail | triggers | **NO** |
 
 E20 entries with a tape: 15,772 (U2; U1 has no tapes).
 
@@ -315,9 +318,9 @@ E20 entries with a tape: 15,772 (U2; U1 has no tapes).
 | Entry | Period | Entries that could fill 50,046 contracts | Lost | Result |
 |---|---|---|---|---|
 | LOCKED at T−20 | U2 | 1 of 15,710 | 0 | +$47 |
-| LOCKED at T−20 | Jul 22 – Oct 16 (partial tapes) | 16 of 2,703 | 0 | +$3,486 VWAP, +$1,024 at worst fill |
+| LOCKED at T−20 | Jul 22 – Oct 16 (partial tapes) | 31 of 3,540 | 0 | +$5,990 VWAP, +$1,722 at worst fill |
 | First LOCKED | U2 | 7 of 16,477 | 0 | +$2,278 VWAP |
-| First LOCKED | Jul 22 – Oct 16 (partial tapes) | **201 of 2,840** | **1** | +$15,908 VWAP; **−$37,011 at worst fill** |
+| First LOCKED | Jul 22 – Oct 16 (partial tapes) | **395 of 3,739** | **1** | +$51,640 VWAP; **−$24,721 at worst fill** |
 
 * Capacity has grown in recent months.
 * **Where the size could be filled (first LOCKED), it did not make money robustly, and it carries the 0.17 % failure rate.**
@@ -399,34 +402,39 @@ Markets in U2: 17,841, all with a Kalshi tape. Fill parity with `execution.py`: 
 | 2026-05 | +0.25 ¢ (2,178, 2 lost) | +0.20 ¢ (635, 0 lost) | -0.17 ¢ (2,832, 36 lost) | -0.15 ¢ (2,526, 18 lost) |
 | 2026-06 | +0.32 ¢ (2,433, 2 lost) | +0.17 ¢ (573, 0 lost) | +0.23 ¢ (2,789, 25 lost) | -0.01 ¢ (2,649, 14 lost) |
 | 2026-07 (to Jul 21 unseen, then seen) | +0.22 ¢ (2,297, 1 lost) | +0.15 ¢ (307, 0 lost) | +0.19 ¢ (2,910, 30 lost) | +0.13 ¢ (2,884, 13 lost) |
-| 2026-08 (seen, partial tapes) | +0.27 ¢ (1,192, 1 lost) | +0.19 ¢ (162, 0 lost) | -0.46 ¢ (1,766, 30 lost) | +0.15 ¢ (1,749, 7 lost) |
-| 2026-09 (seen, partial tapes) | +0.06 ¢ (439, 2 lost) | +0.20 ¢ (82, 0 lost) | +0.03 ¢ (494, 4 lost) | +0.01 ¢ (489, 2 lost) |
-| 2026-10 (seen, partial tapes) | — | — | +12.29 ¢ (1, 0 lost) | +0.68 ¢ (1, 0 lost) |
+| 2026-08 (seen, partial tapes) | +0.17 ¢ (1,819, 4 lost) | +0.16 ¢ (296, 0 lost) | -0.38 ¢ (2,450, 38 lost) | +0.09 ¢ (2,431, 11 lost) |
+| 2026-09 (seen, partial tapes) | +0.01 ¢ (736, 4 lost) | +0.19 ¢ (149, 0 lost) | -0.59 ¢ (818, 12 lost) | -0.40 ¢ (808, 7 lost) |
+| 2026-10 (U1: only the unreplayed Oct 15 20:30 ET incident window; market-only rules) | — | — | +12.29 ¢ (1, 0 lost) | +0.68 ¢ (1, 0 lost) |
 
-C = 100, VWAP, no buffer; all periods, 21,057 of 25,994 markets with a tape when this ran.
+C = 100, VWAP, no buffer; all periods, 22,071 of 25,994 markets with a tape (one snapshot).
 
 **The edge is shrinking — the most important unfavourable finding for small sizes.**
 * First LOCKED made +1.1 to +1.2 ¢ per contract in Jan–Feb and +0.6 ¢ in Mar.
-* From Apr to Aug it made +0.2 to +0.3 ¢ in every month, and +0.06 ¢ in the September tapes so far.
-* The market-only rules ranged from −0.46 to +0.31 ¢ (≥ 99 ¢) by month.
-* On Jul 22 – Oct 16 alone (3,275 of 8,153 markets with tapes), first LOCKED at 100 contracts made +0.17 ¢ (CI +0.02 to +0.31), 2,337 trades, 4 lost, $399. At worst fill it made +0.04 ¢, and at 10 contracts +0.09 ¢ (CI -0.05 to +0.23).
-* Its margin over the ≥ 99.5 ¢ market rule there was +0.09 ¢ (CI -0.18 to +0.39): **not significant**.
+* From Apr to Aug it made +0.17 to +0.32 ¢ a month. In the September tapes (736 trades, 4 lost) it made **+0.01 ¢**.
+* The ≥ 99 ¢ market-only rule ranged from −0.59 to +0.31 ¢ by month.
+* On Jul 22 – Oct 16 alone (4,230 of 8,153 markets with tapes), first LOCKED at 100 contracts made **+0.10 ¢ (CI -0.07 to +0.26): not significant**, with 3,213 trades, 9 lost and $337. At worst fill it made -0.04 ¢, and at 10 contracts +0.03 ¢.
+* Its margin over the ≥ 99.5 ¢ market rule there was +0.11 ¢ (CI -0.11 to +0.36): not significant.
 
 **8. Exit on REVERSAL WARNING** [RUN, `exit_full_C*.json`; all periods with a tape at the time of the execution run]:
 
-| Contracts | Entries that filled | Warned later | of which lost / won | Hold: ¢ / contract | Exit at the warning: ¢ / contract |
-|---|---|---|---|---|---|
-| 100 | 12,166 | 114 | 9 / 105 | +0.384 | +0.360 |
-| 1,000 | 8,604 | 73 | 7 / 66 | +0.345 | +0.333 |
+| Contracts | Entries that filled | Warned later | of which lost / won | Hold: ¢ / contract | Exit at the warning: ¢ / contract | Hold total | Exit total |
+|---|---|---|---|---|---|---|---|
+| 100 | 13,799 | 139 | 17 / 122 | +0.339 | +0.346 | $4,679 | $4,781 |
+| 1,000 | 10,206 | 98 | 15 / 83 | +0.292 | +0.320 | $29,828 | $32,631 |
 
-* Selling at the first warning recovered a mean 69.5 ¢ on the 9 losing calls (100 contracts) and gave up a mean 8.9 ¢ on each of the 101 false alarms that could be exited.
-* Net, it is slightly worse than holding (−0.02 ¢ per contract; no interval computed). It is not adopted.
+* Selling at the first warning recovered a mean 69.9 ¢ on the 17 losing calls (100 contracts) and gave up a mean 9.0 ¢ on each of the 118 false alarms that could be exited.
+* On this tape set it is slightly **better** than holding: +0.007 ¢ per contract at 100 contracts and +0.027 ¢ at 1,000. Most of the losing calls it rescues are in the recent months.
+* On the earlier, smaller tape set it was slightly worse (−0.02 ¢). No interval was computed, so the effect is within noise.
+* It is a reasonable discretionary rule (it cuts the size of a loss by about 70 %), but it is not validated as an edge.
 
 **Answer.**
-* **At $50,000: NO.** The pre-registered rules say NO. Where the size can be filled, the call is wrong too often and the realistic-fill result is negative.
+* **At $50,000: NO.** The pre-registered rules say NO.
+  * Where the size could be filled (mostly the partial Jul 22 – Oct 16 tapes: 395 fills, 1 loss), the result ranged from +$51,640 at VWAP to −$24,721 at worst-fill prices.
+  * The unseen first-LOCKED failure rate (0.17 %) is above break-even.
+  * On unseen U2 only 7 entries could fill (0 lost).
 * **At 100–1,000 contracts: NOT YET VALIDATED.** On Jan–Jul unseen data, the first-LOCKED rule beat the market-only rules by about +0.4 ¢ per contract under the optimistic fill model, and by +0.24 ¢ with the page's own 12 s order time.
   * About $1,800 at 100 contracts and $10,300 at 1,000 contracts in 6 months, with 12 and 8 losing trades.
-  * The edge has since shrunk to about +0.06–0.3 ¢ and is not significantly better than the ≥ 99.5 ¢ market rule on Jul 22 – Oct 16.
+  * The edge has since shrunk to about zero: +0.01 ¢ in September. On Jul 22 – Oct 16 it is not significantly positive (+0.10 ¢, CI -0.07 to +0.26) and not better than the ≥ 99.5 ¢ market rule.
   * The pre-registered rules give NO at 1,000 contracts.
 
 ## Phase 6. Attempts to break the software
@@ -506,13 +514,14 @@ They test the logic. They are not evidence of a failure rate.
    * It leaves 12 of the 13 real reversals that pass the guard.
 3. **`MARKET_VETO_CENTS=90`** shows the guard on the LOCKED headline itself.
    * It cannot be replayed, because there is no order-book history.
-   * Assessed from last prints over all periods (in-sample): the guard fired on 132 of 18,623 first-LOCKED calls, and 13 were wrong (9.8 %). Of the other 18,491, 17 were wrong (0.092 %).
+   * Assessed from last prints over all periods (in-sample, 20,354 first-LOCKED calls with a tape): the guard fired on 138, and 14 were wrong (10.1 %).
+   * Of the 20,216 calls it passed, 25 were wrong (**0.124 %, above break-even**).
    * At small sizes the blocked trades were profitable on average (+$524 at 100 contracts), so the veto costs money there. At $50,000 it is essential.
 4. **Volatility-jump filter.** It did not replicate out of sample (section A), so it is rejected.
 
 **Also not adopted:**
-* extrapolating the volatility tables to recover the 291 large-margin misses, which would weaken a risk control for $43;
-* exit on REVERSAL WARNING (neutral);
+* extrapolating the volatility tables to recover the 291 large-margin misses, which would weaken a risk control for $47;
+* exit on REVERSAL WARNING as an edge (within noise; it is a reasonable discretionary loss-cutting rule);
 * momentum filters (no detectable effect).
 
 **What fits your objective.** What the data show:
@@ -550,6 +559,11 @@ $50,000 at 99.9 ¢ is not reachable with this signal in this market. What the ev
 13. Untested scenarios are listed.
 14. Earlier-work and simulated items are tagged.
 15. The 0.2 % threshold, designed on seen data in earlier work, was replayed with the real engine and evaluated on U (section G).
+16. Every execution figure is now computed on one tape snapshot (22,071 markets). This changed four results:
+    * the calls that pass the guard fail 0.124 %, above break-even, instead of 0.092 %;
+    * first LOCKED on Jul 22 – Oct 16 is no longer significantly positive;
+    * there were 395 recent $50k fills rather than 201;
+    * exit on REVERSAL WARNING turns slightly positive.
 
 ## Deviations from the pre-registration
 
@@ -562,7 +576,7 @@ $50,000 at 99.9 ¢ is not reachable with this signal in this market. What the ev
 * **Trading strategies.** The small-size strategies (first LOCKED with the guard, the edge rule, the market-only baselines) were not pre-registered, and the baseline was corrected after U2 had been seen. They are labelled exploratory.
 * **Pre-registered reporting added late.** The rules at smaller sizes and other prices, and contract failure rates by month, were pre-registered but first reported in this revision.
 * **Candidate rules not followed.** ADAPTIVE_BASIS was designed after seeing U2 results, and MARKET_VETO was assessed in-sample, contrary to the improvement rule. Both are labelled exploratory.
-* **Seen-period tapes are partial** (3,275 of 8,153 markets).
+* **Seen-period tapes are partial** (4,230 of 8,153 markets for Jul 22 – Oct 16).
 
 ## What is still missing, and what you can provide
 

@@ -42,10 +42,10 @@ Last print before each moment. T−95.25 and T−82.25 are the Kraken replay's f
   * The guard reads the live ask. The tape shows trades, not asks: DOWN taker buys in the 12 s after T−89 were at 8–81 ¢.
   * The guard therefore would almost certainly have refused the trade. The page would still have *shown* LOCKED; the guard blocks only the trade.
 * **The guard was already in the deployed 2.8.** So 2.8.1 adds nothing for this window: it shows the same LOCKED DOWN. Whether the live page showed TRADE NOW cannot be known without the server's logs.
-* **What the guard does across all 18,623 first-LOCKED calls with a Kalshi tape** (in-sample, not a pre-registered test):
-  * It fired on 132 calls, and 13 of those were wrong (9.8 %).
-  * But it caught only 13 of the 30 wrong calls. Among the 18,491 calls it passed, 17 were wrong (0.092 %), still at the 0.093 % break-even.
-  * Most of the calls it catches were made in the last seconds or near the strike. In the backtest, the early reversals that passed it were calls the market agreed with (97.8–99.8 ¢).
+* **What the guard does across all 20,354 first-LOCKED calls with a Kalshi tape** (in-sample, not a pre-registered test; tape snapshot of 22,071 markets):
+  * It fired on 138 calls, and 14 of those were wrong (10.1 %).
+  * But it caught only 14 of the 39 wrong calls. Among the 20,216 calls it passed, 25 were wrong (**0.124 %, above the 0.093 % break-even**).
+  * Most of the calls it catches were made in the last seconds or near the strike. In the backtest, the early reversals that passed it were calls the market priced at 90–99.8 ¢.
   * This window is the opposite: the market disagreed when the call was made.
 
 ## Replays of the same window
