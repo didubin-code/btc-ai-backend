@@ -21,8 +21,9 @@ const outside = status.filter(l => /^\?\?/.test(l) && !/pinradar-observer\//.tes
 ok('no new file outside pinradar-observer/', outside.length === 0, outside.join(', '));
 /* every commit on the working branch since the baseline only adds files under pinradar-observer/ (never edits existing ones) */
 let changed = '';
-try { changed = String(g(B, 'diff', '--name-status', 'origin/claude/btc-pin-radar-research-xpe585', 'HEAD')); } catch (_) { }
-ok('the branch changes nothing outside pinradar-observer/', changed.split('\n').filter(Boolean).every(l => /\tpinradar-observer\//.test(l)), changed.split('\n').filter(l => l && !/pinradar-observer\//.test(l)).slice(0, 3).join(' | '));
+try { changed = String(g(B, 'diff', '--name-status', base.btcAiBackend.researchBranchBeforeObserver, 'HEAD')); } catch (_) { }
+const lines = changed.split('\n').filter(Boolean);
+ok('since the pre-observer commit ' + base.btcAiBackend.researchBranchBeforeObserver + ', the branch only ADDS files under pinradar-observer/', lines.length > 0 && lines.every(l => /^A\tpinradar-observer\//.test(l)), lines.filter(l => !/^A\tpinradar-observer\//.test(l)).slice(0, 3).join(' | '));
 if (fs.existsSync(SIG)) {
   try { g(SIG, 'fetch', '-q', 'origin', 'main'); } catch (_) { }
   ok('Btc-signal main is still the baseline commit', String(g(SIG, 'rev-parse', 'origin/main')).trim() === base.btcSignal.mainCommit);

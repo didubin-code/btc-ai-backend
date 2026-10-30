@@ -11,7 +11,9 @@
    "render.yaml": "2ccac38a306ef2132c2e91a35165d8a42bc69c8098003c7320a724691f3a23cb",
    "README.txt": "189e59f3714997ae12e7ca122f7f33abffafc6e1d70289fdd6e99e22697b2c35",
    "test_backend.js": "44eb3eb8548d323d19ac3ee97db36893d8f7d3697464121c2b8aaf1a1e735bd6"
-  }
+  },
+  "researchBranchBeforeObserver": "b97eed6",
+  "researchBranchNote": "claude/btc-pin-radar-research-xpe585 at b97eed6 is the last commit before the observer; every later commit may only add files under pinradar-observer/"
  },
  "btcSignal": {
   "repo": "didubin-code/Btc-signal",
