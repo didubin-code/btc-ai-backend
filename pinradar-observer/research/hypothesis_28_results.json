@@ -1,0 +1,768 @@
+{
+ "source": {
+  "records": "/home/user/data_val/replay/r28_usdc.ndjson",
+  "trace": "/home/user/data_val/replay/r28_usdc.trace.ndjson",
+  "build": "pin-radar-2.8 (sha 0efd86c9..., production main)",
+  "feed": "Binance BTCUSDC 1 Hz (substitute)",
+  "label": "RECONSTRUCTED (historical replay), not observed production signals"
+ },
+ "marketsWithOutcome": 25982,
+ "rates": {
+  "reachedLockedPct": 92.39,
+  "lockedAtT120Pct": 23.05,
+  "firstLockedWithinLast120Pct": 66.89,
+  "reachedQualifyingPct": 91.94,
+  "qualifyingAtT120Pct": 13.49,
+  "firstQualifyingWithinLast120Pct": 77.44,
+  "qualifyingAnywhereInLast120Pct": 91.93,
+  "continuousToCloseAfterQualifyingPct": 95.77,
+  "reversalWarningAfterQualifyingPct": 0.26,
+  "directionChangeAfterQualifyingPct": 0,
+  "unlockedThenRelockedOrEndedPct": 3.97
+ },
+ "accuracy": {
+  "firstQualifying": {
+   "n": 23889,
+   "wrong": 22,
+   "accuracyPct": 99.91,
+   "errorPct": 0.09,
+   "errorCI95pct": [
+    0.0577,
+    0.1394
+   ],
+   "errorUpper95OneSidedPct": 0.1315
+  },
+  "firstQualifyingAtOrAfterT120": {
+   "n": 23884,
+   "wrong": 21,
+   "accuracyPct": 99.91,
+   "errorPct": 0.09,
+   "errorCI95pct": [
+    0.0544,
+    0.1344
+   ],
+   "errorUpper95OneSidedPct": 0.1266
+  },
+  "qualifiedExactlyAtT120": {
+   "n": 3505,
+   "wrong": 0,
+   "accuracyPct": 100,
+   "errorPct": 0,
+   "errorCI95pct": [
+    0,
+    0.1052
+   ],
+   "errorUpper95OneSidedPct": 0.0854
+  },
+  "firstQualifyingPosteriors": {
+   "uniform": {
+    "prior": [
+     1,
+     1
+    ],
+    "mean": 0.0009627056213636935,
+    "lo95": 0.0006103931368126555,
+    "hi95": 0.001393904593388673,
+    "p99": 0.0014897683548405483
+   },
+   "jeffreys": {
+    "prior": [
+     0.5,
+     0.5
+    ],
+    "mean": 0.0009418166596902469,
+    "lo95": 0.0005937983572878961,
+    "hi95": 0.0013687223810217586,
+    "p99": 0.0014637928833085012
+   },
+   "modelClaim02pct": {
+    "prior": [
+     2,
+     998
+    ],
+    "mean": 0.0009642814094579935,
+    "lo95": 0.0006179527714276528,
+    "hi95": 0.0013863432674450782,
+    "p99": 0.0014798728046058751
+   },
+   "pessimistic1pct": {
+    "prior": [
+     10,
+     990
+    ],
+    "mean": 0.0012857085459439914,
+    "lo95": 0.0008796200966818828,
+    "hi95": 0.0017675397905259627,
+    "p99": 0.0018721397204778945
+   }
+  },
+  "atOrAfterT120Posteriors": {
+   "uniform": {
+    "prior": [
+     1,
+     1
+    ],
+    "mean": 0.0009210416143347567,
+    "lo95": 0.0005773232280585846,
+    "hi95": 0.0013436579787616254,
+    "p99": 0.0014379381170913086
+   },
+   "jeffreys": {
+    "prior": [
+     0.5,
+     0.5
+    ],
+    "mean": 0.0009001465354825204,
+    "lo95": 0.0005608223254789811,
+    "hi95": 0.001318369113056439,
+    "p99": 0.0014118377205837862
+   },
+   "modelClaim02pct": {
+    "prior": [
+     2,
+     998
+    ],
+    "mean": 0.0009242886995659862,
+    "lo95": 0.0005860306883773792,
+    "hi95": 0.0013382910165455342,
+    "p99": 0.0014303327745274763
+   },
+   "pessimistic1pct": {
+    "prior": [
+     10,
+     990
+    ],
+    "mean": 0.0012457804211541553,
+    "lo95": 0.0008466334510288582,
+    "hi95": 0.001720685841256564,
+    "p99": 0.0018240049421817672
+   }
+  },
+  "firstQualifyingErrorDayBootstrap": {
+   "B": 2000,
+   "lo": 0.054306959645751524,
+   "hi": 0.13316687473990846,
+   "median": 0.09127494502758993
+  }
+ },
+ "byFirstQualifyingInterval": {
+  "300-181": {
+   "n": 1183,
+   "wrong": 0,
+   "accuracyPct": 100,
+   "errorPct": 0,
+   "errorCI95pct": [
+    0,
+    0.3113
+   ],
+   "errorUpper95OneSidedPct": 0.2529
+  },
+  "180-121": {
+   "n": 2586,
+   "wrong": 2,
+   "accuracyPct": 99.92,
+   "errorPct": 0.08,
+   "errorCI95pct": [
+    0.0094,
+    0.2791
+   ],
+   "errorUpper95OneSidedPct": 0.2433
+  },
+  "120-91": {
+   "n": 3005,
+   "wrong": 0,
+   "accuracyPct": 100,
+   "errorPct": 0,
+   "errorCI95pct": [
+    0,
+    0.1227
+   ],
+   "errorUpper95OneSidedPct": 0.0996
+  },
+  "90-61": {
+   "n": 5500,
+   "wrong": 2,
+   "accuracyPct": 99.96,
+   "errorPct": 0.04,
+   "errorCI95pct": [
+    0.0044,
+    0.1313
+   ],
+   "errorUpper95OneSidedPct": 0.1144
+  },
+  "60-31": {
+   "n": 7868,
+   "wrong": 4,
+   "accuracyPct": 99.95,
+   "errorPct": 0.05,
+   "errorCI95pct": [
+    0.0139,
+    0.1301
+   ],
+   "errorUpper95OneSidedPct": 0.1163
+  },
+  "30-0": {
+   "n": 3747,
+   "wrong": 14,
+   "accuracyPct": 99.63,
+   "errorPct": 0.37,
+   "errorCI95pct": [
+    0.2044,
+    0.6261
+   ],
+   "errorUpper95OneSidedPct": 0.5835
+  }
+ },
+ "categories": {
+  "continuousWon": 22869,
+  "unlockedWon": 944,
+  "warnedWon": 54,
+  "directionChangedWon": 0,
+  "wrong": 22
+ },
+ "wrongCalls": [
+  {
+   "ticker": "KXBTC15M-26JAN170100-00",
+   "firstQualifyingTau": 5.25,
+   "side": "UP",
+   "pFlip": 0.001358,
+   "truth": "DOWN",
+   "marginUsd": -0.59,
+   "continuous": true,
+   "warnedAfter": false
+  },
+  {
+   "ticker": "KXBTC15M-26JAN171615-15",
+   "firstQualifyingTau": 25.25,
+   "side": "UP",
+   "pFlip": 0.00191,
+   "truth": "DOWN",
+   "marginUsd": -3.43,
+   "continuous": false,
+   "warnedAfter": true
+  },
+  {
+   "ticker": "KXBTC15M-26FEB131715-15",
+   "firstQualifyingTau": 145.25,
+   "side": "UP",
+   "pFlip": 0.001959,
+   "truth": "DOWN",
+   "marginUsd": -22.8,
+   "continuous": false,
+   "warnedAfter": true
+  },
+  {
+   "ticker": "KXBTC15M-26FEB272330-30",
+   "firstQualifyingTau": 47.25,
+   "side": "UP",
+   "pFlip": 0.001284,
+   "truth": "DOWN",
+   "marginUsd": -8.09,
+   "continuous": false,
+   "warnedAfter": true
+  },
+  {
+   "ticker": "KXBTC15M-26MAR041815-15",
+   "firstQualifyingTau": 12.25,
+   "side": "UP",
+   "pFlip": 0.001484,
+   "truth": "DOWN",
+   "marginUsd": -2.19,
+   "continuous": true,
+   "warnedAfter": false
+  },
+  {
+   "ticker": "KXBTC15M-26APR010300-00",
+   "firstQualifyingTau": 11.25,
+   "side": "DOWN",
+   "pFlip": 0.001562,
+   "truth": "UP",
+   "marginUsd": 0.24,
+   "continuous": true,
+   "warnedAfter": false
+  },
+  {
+   "ticker": "KXBTC15M-26APR031345-45",
+   "firstQualifyingTau": 5.25,
+   "side": "DOWN",
+   "pFlip": 0.001998,
+   "truth": "UP",
+   "marginUsd": 0.59,
+   "continuous": false,
+   "warnedAfter": false
+  },
+  {
+   "ticker": "KXBTC15M-26APR122130-30",
+   "firstQualifyingTau": 4.25,
+   "side": "DOWN",
+   "pFlip": 0.000213,
+   "truth": "UP",
+   "marginUsd": 1.54,
+   "continuous": false,
+   "warnedAfter": false
+  },
+  {
+   "ticker": "KXBTC15M-26APR171100-00",
+   "firstQualifyingTau": 8.25,
+   "side": "DOWN",
+   "pFlip": 0.001902,
+   "truth": "UP",
+   "marginUsd": 22.38,
+   "continuous": true,
+   "warnedAfter": false
+  },
+  {
+   "ticker": "KXBTC15M-26APR220845-45",
+   "firstQualifyingTau": 1.25,
+   "side": "DOWN",
+   "pFlip": 0.001645,
+   "truth": "UP",
+   "marginUsd": 2.32,
+   "continuous": true,
+   "warnedAfter": false
+  },
+  {
+   "ticker": "KXBTC15M-26APR241145-45",
+   "firstQualifyingTau": 37.25,
+   "side": "DOWN",
+   "pFlip": 0.001909,
+   "truth": "UP",
+   "marginUsd": 4.49,
+   "continuous": false,
+   "warnedAfter": true
+  },
+  {
+   "ticker": "KXBTC15M-26APR271700-00",
+   "firstQualifyingTau": 5.25,
+   "side": "DOWN",
+   "pFlip": 0.00011,
+   "truth": "UP",
+   "marginUsd": 0.18,
+   "continuous": true,
+   "warnedAfter": false
+  },
+  {
+   "ticker": "KXBTC15M-26MAY071430-30",
+   "firstQualifyingTau": 4.25,
+   "side": "DOWN",
+   "pFlip": 0.001662,
+   "truth": "UP",
+   "marginUsd": 3.9,
+   "continuous": true,
+   "warnedAfter": false
+  },
+  {
+   "ticker": "KXBTC15M-26MAY100000-00",
+   "firstQualifyingTau": 1.25,
+   "side": "DOWN",
+   "pFlip": 0.000762,
+   "truth": "UP",
+   "marginUsd": 0.44,
+   "continuous": true,
+   "warnedAfter": false
+  },
+  {
+   "ticker": "KXBTC15M-26MAY281015-15",
+   "firstQualifyingTau": 140.25,
+   "side": "DOWN",
+   "pFlip": 0.001985,
+   "truth": "UP",
+   "marginUsd": 219.77,
+   "continuous": false,
+   "warnedAfter": true
+  },
+  {
+   "ticker": "KXBTC15M-26AUG070115-15",
+   "firstQualifyingTau": 13.25,
+   "side": "UP",
+   "pFlip": 0.001869,
+   "truth": "DOWN",
+   "marginUsd": -0.03,
+   "continuous": false,
+   "warnedAfter": false
+  },
+  {
+   "ticker": "KXBTC15M-26AUG222115-15",
+   "firstQualifyingTau": 30.25,
+   "side": "DOWN",
+   "pFlip": 0.001634,
+   "truth": "UP",
+   "marginUsd": 6.75,
+   "continuous": false,
+   "warnedAfter": true
+  },
+  {
+   "ticker": "KXBTC15M-26AUG231830-30",
+   "firstQualifyingTau": 5.25,
+   "side": "DOWN",
+   "pFlip": 0.001838,
+   "truth": "UP",
+   "marginUsd": 5.28,
+   "continuous": true,
+   "warnedAfter": false
+  },
+  {
+   "ticker": "KXBTC15M-26SEP061745-45",
+   "firstQualifyingTau": 78.25,
+   "side": "UP",
+   "pFlip": 0.001879,
+   "truth": "DOWN",
+   "marginUsd": -7.4,
+   "continuous": false,
+   "warnedAfter": true
+  },
+  {
+   "ticker": "KXBTC15M-26SEP151430-30",
+   "firstQualifyingTau": 82.25,
+   "side": "DOWN",
+   "pFlip": 0.001969,
+   "truth": "UP",
+   "marginUsd": 80.83,
+   "continuous": false,
+   "warnedAfter": true
+  },
+  {
+   "ticker": "KXBTC15M-26OCT031115-15",
+   "firstQualifyingTau": 9.25,
+   "side": "UP",
+   "pFlip": 0.001559,
+   "truth": "DOWN",
+   "marginUsd": -2.85,
+   "continuous": false,
+   "warnedAfter": false
+  },
+  {
+   "ticker": "KXBTC15M-26OCT042115-15",
+   "firstQualifyingTau": 38.25,
+   "side": "DOWN",
+   "pFlip": 0.001924,
+   "truth": "UP",
+   "marginUsd": 5.04,
+   "continuous": false,
+   "warnedAfter": true
+  }
+ ],
+ "byMonth": {
+  "2026-01": {
+   "n": 1610,
+   "wrong": 2,
+   "accuracyPct": 99.88,
+   "errorPct": 0.12,
+   "errorCI95pct": [
+    0.015,
+    0.448
+   ],
+   "errorUpper95OneSidedPct": 0.3905
+  },
+  "2026-02": {
+   "n": 2392,
+   "wrong": 2,
+   "accuracyPct": 99.92,
+   "errorPct": 0.08,
+   "errorCI95pct": [
+    0.0101,
+    0.3017
+   ],
+   "errorUpper95OneSidedPct": 0.263
+  },
+  "2026-03": {
+   "n": 2732,
+   "wrong": 1,
+   "accuracyPct": 99.96,
+   "errorPct": 0.04,
+   "errorCI95pct": [
+    0.0009,
+    0.2038
+   ],
+   "errorUpper95OneSidedPct": 0.1735
+  },
+  "2026-04": {
+   "n": 2624,
+   "wrong": 7,
+   "accuracyPct": 99.73,
+   "errorPct": 0.27,
+   "errorCI95pct": [
+    0.1073,
+    0.5489
+   ],
+   "errorUpper95OneSidedPct": 0.5005
+  },
+  "2026-05": {
+   "n": 2720,
+   "wrong": 3,
+   "accuracyPct": 99.89,
+   "errorPct": 0.11,
+   "errorCI95pct": [
+    0.0228,
+    0.322
+   ],
+   "errorUpper95OneSidedPct": 0.2848
+  },
+  "2026-06": {
+   "n": 2609,
+   "wrong": 0,
+   "accuracyPct": 100,
+   "errorPct": 0,
+   "errorCI95pct": [
+    0,
+    0.1413
+   ],
+   "errorUpper95OneSidedPct": 0.1148
+  },
+  "2026-07": {
+   "n": 2685,
+   "wrong": 0,
+   "accuracyPct": 100,
+   "errorPct": 0,
+   "errorCI95pct": [
+    0,
+    0.1373
+   ],
+   "errorUpper95OneSidedPct": 0.1115
+  },
+  "2026-08": {
+   "n": 2561,
+   "wrong": 3,
+   "accuracyPct": 99.88,
+   "errorPct": 0.12,
+   "errorCI95pct": [
+    0.0242,
+    0.342
+   ],
+   "errorUpper95OneSidedPct": 0.3025
+  },
+  "2026-09": {
+   "n": 2655,
+   "wrong": 2,
+   "accuracyPct": 99.92,
+   "errorPct": 0.08,
+   "errorCI95pct": [
+    0.0091,
+    0.2718
+   ],
+   "errorUpper95OneSidedPct": 0.2369
+  },
+  "2026-10": {
+   "n": 1301,
+   "wrong": 2,
+   "accuracyPct": 99.85,
+   "errorPct": 0.15,
+   "errorCI95pct": [
+    0.0186,
+    0.5542
+   ],
+   "errorUpper95OneSidedPct": 0.4831
+  }
+ },
+ "byVolatilityBucket": {
+  "0": {
+   "n": 1306,
+   "wrong": 1,
+   "accuracyPct": 99.92,
+   "errorPct": 0.08,
+   "errorCI95pct": [
+    0.0019,
+    0.4259
+   ],
+   "errorUpper95OneSidedPct": 0.3627
+  },
+  "1": {
+   "n": 1844,
+   "wrong": 2,
+   "accuracyPct": 99.89,
+   "errorPct": 0.11,
+   "errorCI95pct": [
+    0.0131,
+    0.3912
+   ],
+   "errorUpper95OneSidedPct": 0.341
+  },
+  "2": {
+   "n": 3126,
+   "wrong": 2,
+   "accuracyPct": 99.94,
+   "errorPct": 0.06,
+   "errorCI95pct": [
+    0.0077,
+    0.2309
+   ],
+   "errorUpper95OneSidedPct": 0.2013
+  },
+  "3": {
+   "n": 3808,
+   "wrong": 4,
+   "accuracyPct": 99.89,
+   "errorPct": 0.11,
+   "errorCI95pct": [
+    0.0286,
+    0.2687
+   ],
+   "errorUpper95OneSidedPct": 0.2402
+  },
+  "4": {
+   "n": 5365,
+   "wrong": 6,
+   "accuracyPct": 99.89,
+   "errorPct": 0.11,
+   "errorCI95pct": [
+    0.0411,
+    0.2433
+   ],
+   "errorUpper95OneSidedPct": 0.2206
+  },
+  "5": {
+   "n": 4365,
+   "wrong": 2,
+   "accuracyPct": 99.95,
+   "errorPct": 0.05,
+   "errorCI95pct": [
+    0.0055,
+    0.1654
+   ],
+   "errorUpper95OneSidedPct": 0.1442
+  },
+  "6": {
+   "n": 4075,
+   "wrong": 5,
+   "accuracyPct": 99.88,
+   "errorPct": 0.12,
+   "errorCI95pct": [
+    0.0399,
+    0.2861
+   ],
+   "errorUpper95OneSidedPct": 0.2578
+  }
+ },
+ "pricesFromPrints": {
+  "firstQualifying": {
+   "signals": 23889,
+   "withPrints": 20256,
+   "withCalledSidePrintWithin10sBefore": 14275,
+   "calledSidePriceCents": {
+    "p10": 99,
+    "p25": 99.4,
+    "median": 99.8,
+    "p75": 99.9,
+    "p90": 99.9
+   },
+   "pnlPer1000": {
+    "n": 14275,
+    "totalUsd": 178851,
+    "meanUsd": 12.53,
+    "meanCI95DayBootstrap": {
+     "B": 2000,
+     "lo": 3.5354762956315278,
+     "hi": 30.222197350516026,
+     "median": 12.391551721727218
+    },
+    "losses": 16,
+    "byPrice": {
+     "0-90": {
+      "n": 48,
+      "meanNetUsdPer1000": 2533.52,
+      "losses": 10
+     },
+     "90-95": {
+      "n": 68,
+      "meanNetUsdPer1000": 45.5,
+      "losses": 2
+     },
+     "95-98": {
+      "n": 231,
+      "meanNetUsdPer1000": 32.73,
+      "losses": 0
+     },
+     "98-99": {
+      "n": 546,
+      "meanNetUsdPer1000": 13.26,
+      "losses": 1
+     },
+     "99-99.5": {
+      "n": 2758,
+      "meanNetUsdPer1000": 8.58,
+      "losses": 0
+     },
+     "99.5-100": {
+      "n": 10624,
+      "meanNetUsdPer1000": 1.48,
+      "losses": 3
+     }
+    }
+   },
+   "capacity": {
+    "medianCalledSideUsdPrintedAfterSignal": 1202,
+    "pctWithAtLeast75kPrintedAfterSignal": 3.26,
+    "pctWithAtLeast10kPrintedAfterSignal": 19.64,
+    "note": "dollars other traders actually bought on the called side between the signal and the close: an upper bound on what a taker could have bought, and only if that liquidity would also have been offered to us"
+   }
+  },
+  "atOrAfterT120": {
+   "signals": 23884,
+   "withPrints": 20251,
+   "withCalledSidePrintWithin10sBefore": 13839,
+   "calledSidePriceCents": {
+    "p10": 99,
+    "p25": 99.5,
+    "median": 99.8,
+    "p75": 99.9,
+    "p90": 99.9
+   },
+   "pnlPer1000": {
+    "n": 13839,
+    "totalUsd": 174617,
+    "meanUsd": 12.62,
+    "meanCI95DayBootstrap": {
+     "B": 2000,
+     "lo": 3.340979134466792,
+     "hi": 30.85383029452686,
+     "median": 12.478387732750411
+    },
+    "losses": 16,
+    "byPrice": {
+     "0-90": {
+      "n": 48,
+      "meanNetUsdPer1000": 2533.52,
+      "losses": 10
+     },
+     "90-95": {
+      "n": 67,
+      "meanNetUsdPer1000": 45.29,
+      "losses": 2
+     },
+     "95-98": {
+      "n": 224,
+      "meanNetUsdPer1000": 32.83,
+      "losses": 0
+     },
+     "98-99": {
+      "n": 515,
+      "meanNetUsdPer1000": 13.25,
+      "losses": 1
+     },
+     "99-99.5": {
+      "n": 2451,
+      "meanNetUsdPer1000": 8.68,
+      "losses": 0
+     },
+     "99.5-100": {
+      "n": 10534,
+      "meanNetUsdPer1000": 1.38,
+      "losses": 3
+     }
+    }
+   },
+   "capacity": {
+    "medianCalledSideUsdPrintedAfterSignal": 834,
+    "pctWithAtLeast75kPrintedAfterSignal": 2.58,
+    "pctWithAtLeast10kPrintedAfterSignal": 17.38,
+    "note": "dollars other traders actually bought on the called side between the signal and the close: an upper bound on what a taker could have bought, and only if that liquidity would also have been offered to us"
+   }
+  }
+ },
+ "limitations": [
+  "RECONSTRUCTED signals from a historical replay on a substitute feed: production may differ, especially in the last ~20 s where the feed matters",
+  "prices are trade prints, not order books: a print shows a price that traded, not that it was available to us or in size",
+  "the $1,000 P&L assumes a fill at the last called-side print within 10 s before the signal, with no slippage: optimistic",
+  "calls within a day are correlated (same market regime): day-block bootstrap intervals are given alongside the binomial ones"
+ ]
+}

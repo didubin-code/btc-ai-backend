@@ -1,0 +1,9 @@
+{
+  "name": "pinradar-observer",
+  "version": "1.0.0",
+  "description": "Independent, read-only, tamper-evident observer of production BTC Pin Radar 2.8 and Kalshi 15-minute BTC markets",
+  "main": "observer.js",
+  "scripts": { "test": "node test/run_all.js" },
+  "engines": { "node": ">=20" },
+  "dependencies": {}
+}

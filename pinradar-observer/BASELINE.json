@@ -1,0 +1,27 @@
+{
+ "recordedAt": "2026-10-30T19:42:47.156Z",
+ "note": "read-only baseline of the production Pin Radar source taken before the observer was built; Render itself could not be inspected from the build environment (no access)",
+ "btcAiBackend": {
+  "repo": "didubin-code/btc-ai-backend",
+  "mainCommit": "2b0d593336a6bc83d48712f4858ef428b445f33f",
+  "files": {
+   "pinradar_server.js": "0efd86c9050a3be6ce4c3f63c301b30db9bb16b765611df0fc2fc2f9fa39c12a",
+   "server.js": "c558a40fd85a700b2ba276d6f461f03278eb7c96b66157b6788c914cbf7eaa00",
+   "package.json": "1af2e22719ce04f3a6e4986365e1267d49e9d551393dafd94d5f0070221c79f8",
+   "render.yaml": "2ccac38a306ef2132c2e91a35165d8a42bc69c8098003c7320a724691f3a23cb",
+   "README.txt": "189e59f3714997ae12e7ca122f7f33abffafc6e1d70289fdd6e99e22697b2c35",
+   "test_backend.js": "44eb3eb8548d323d19ac3ee97db36893d8f7d3697464121c2b8aaf1a1e735bd6"
+  }
+ },
+ "btcSignal": {
+  "repo": "didubin-code/Btc-signal",
+  "mainCommit": "4426774b8531741b5b67813b95c17562e9f7f97b"
+ },
+ "productionBuild": {
+  "file": "pinradar_server.js",
+  "serverVersion": "pin-radar-2.8",
+  "modelVersion": "lockrisk-2.6.0",
+  "sameAs": "pinradar-research/2.8/dist/pinradar_server.js (validated 2.8 research build)",
+  "lockMaxFlipDefault": 0.005
+ }
+}
