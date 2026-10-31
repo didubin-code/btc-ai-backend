@@ -1,0 +1,19 @@
+{
+  "id": "pinradar-primary-v1",
+  "frozenAt": "2026-10-31T18:05:00Z",
+  "frozenBefore": "any evaluation of outcomes collected by the observer on Render (collection on a persistent disk starts after this rule is committed)",
+  "statement": "For each KXBTC15M market, the primary entry is the FIRST observed production prediction row with 0 < secondsRemaining <= 120 whose state is LOCKED (or PROVEN LOCKED) and whose reported reversal probability pFlip is <= 0.002 (0.2 % or lower, inclusive). At most one primary entry per market. The entry's side is the prediction; it is held to settlement and compared with Kalshi's official result. Later observations never replace the entry: losing LOCKED, pFlip rising above 0.002, a reversal warning or a direction flip after the entry stay in the primary result as separate events.",
+  "parameters": { "minTauSecExclusive": 0, "maxTauSecInclusive": 120, "states": ["LOCKED", "PROVEN LOCKED"], "pFlipField": "pFlip", "pFlipMaxInclusive": 0.002 },
+  "entryType": {
+    "existing-lock": "the last observed row before the final 120 s (within 10 s of it) already met the state and pFlip conditions on the same side",
+    "new-crossing": "that row was observed and did not meet them",
+    "unknown-prior": "no row was observed in the 10 s before the final 120 s"
+  },
+  "noEntry": {
+    "no-qualifying-signal": "every second of the final 120 s was observed and none qualified",
+    "not-determinable": "some second of the final 120 s was not observed: never counted as 'no signal' or as a success"
+  },
+  "timingCertain": "true only if every second between the start of the final 120 s and the entry was observed (otherwise an earlier qualifying second may have been missed)",
+  "outcome": "Kalshi's official result (status finalized); unresolved settlements are reported as unresolved, never as wins",
+  "exploratory": "Any other rule (other thresholds, times, exits) is exploratory, must be versioned as a new file, and validated only on data collected after its own freeze date."
+}

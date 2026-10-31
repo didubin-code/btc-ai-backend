@@ -33,6 +33,23 @@ const storage = () => {
 };
 setTimeout(storage, 60e3).unref(); setInterval(storage, 3600e3).unref();
 
+/* OBSERVER_HEARTBEAT_URL (optional, e.g. a free Healthchecks.io check): every 10 min a plain GET of the URL when all is
+   well, or of <URL>/fail when the disk is not mounted or more than 80 % full, or collection has stalled. The check's
+   service e-mails the owner when a /fail arrives or the pings stop. Only the ping is sent: no data, no headers of ours. */
+const hb = process.env.OBSERVER_HEARTBEAT_URL;
+if (hb) {
+  const https = require('https');
+  const beat = () => {
+    let problem = mounted ? null : 'no persistent disk';
+    try { const f = fs.statfsSync(dir); if (1 - f.bavail / f.blocks > 0.8) problem = 'disk over 80 % full'; } catch (_) { }
+    try { const st = JSON.parse(fs.readFileSync(path.join(dir, 'data', 'status.json'), 'utf8')); if (!st.ok || Date.now() - Date.parse(st.at) > 600e3) problem = problem || 'collection stalled or writes failing'; } catch (_) { problem = problem || 'no status yet'; }
+    const url = hb.replace(/\/+$/, '') + (problem ? '/fail' : '');
+    https.get(url, { timeout: 10e3 }, r => r.resume()).on('error', () => { }).on('timeout', function () { this.destroy(); });
+    if (problem) console.error('[host] heartbeat FAIL sent: ' + problem);
+  };
+  setTimeout(beat, 120e3).unref(); setInterval(beat, 600e3).unref();
+}
+
 const child = spawn(process.execPath, [path.join(__dirname, 'observer.js'), 'run', '--data', path.join(dir, 'data'), '--key', path.join(__dirname, 'keys', 'owner.public.pem'),
   '--sign-key', path.join(dir, 'host.sign.pem'), '--create-sign-key', '--pinradar', pinradar], { stdio: 'inherit', env: { ...process.env, OBSERVER_LOG_WINDOWS: process.env.OBSERVER_LOG_WINDOWS || '1' } });
 const server = http.createServer((req, res) => {

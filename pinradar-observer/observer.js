@@ -140,7 +140,7 @@ async function run() {
   let predTsFrom = 'state file';
   if (!(pState.predTs > 0)) {
     if (hasStore) { pState.predTs = Math.max(0, Math.round(lastStored - 15 * 60e3)); predTsFrom = 'newest stored record minus 15 min (state file ' + (stateProblem || 'had no cursor') + ')'; }
-    else predTsFrom = 'none (first run)';
+    else { pState.predTs = Math.max(0, now - 25 * 3600e3); predTsFrom = 'first run: back-filled from production memory (up to ~25 h, market by market)'; }
   }
   const kMarkets = {}; for (const [tk, m] of Object.entries((saved.kalshi && saved.kalshi.markets) || {})) if (/^KXBTC15M-[A-Z0-9-]+$/.test(tk) && m && Number.isFinite(m.closeMs)) kMarkets[tk] = m;
   const Q = {};
@@ -157,7 +157,7 @@ async function run() {
   const pr = pinradarSource({ base: pinradar, http: mkClient({ allow: PINRADAR_PATHS }), emit, state: pState, onTickers: tks => ks.track(tks), listTickers: (a, b) => ks.listTickers(a, b) });
   hemit({ kind: 'obs.start', version: VERSION, pid: process.pid, host: os.hostname(), pinradar, at: now, encryptionKid: key.kid || null, signer: signKey ? signerId(crypto.createPublicKey(signKey)) : null,
     recoveredTail: streams[0].recovered || null, healthRecoveredTail: streams[1].recovered || null, staleLock: streams[0].staleLock || streams[1].staleLock || null, waitedForLeaseMs,
-    newestStoredRecordAt: hasStore ? lastStored : null, stateFile: stateProblem || 'ok', predTsFrom,
+    newestStoredRecordAt: hasStore ? lastStored : null, stateFile: stateProblem || 'ok', predTsFrom, primaryRule: { id: D.PRIMARY.id, frozenAt: D.PRIMARY.frozenAt, sha256: D.PRIMARY_SHA256 },
     restoredCursors: { predTs: pState.predTs, ledgerSeq: pState.ledgerSeq, markets: Object.keys(kMarkets).length }, sanitised: clean.notes });
   /* the time not observed is measured from the newest STORED record (not from state.json, which can be lost or stale) */
   if (hasStore) {

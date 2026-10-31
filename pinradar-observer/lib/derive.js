@@ -17,6 +17,9 @@
      * Nothing missing is filled in: no second, price, fee schedule or result is invented. */
 'use strict';
 const { normaliseBook, theoretical } = require('./fills');
+/* the frozen primary evaluation rule (rules/primary_v1.json); its sha256 is recorded at every observer start */
+const PRIMARY = require('../rules/primary_v1.json');
+const PRIMARY_SHA256 = require('crypto').createHash('sha256').update(require('fs').readFileSync(require('path').join(__dirname, '..', 'rules', 'primary_v1.json'))).digest('hex');
 
 const SIZES = [100, 1000, 5000, 10000, 25000, 50000, 75000, 100000, 250000];
 const THRESHOLD = 0.002;                                   // the 0.2 % hypothesis threshold (fixed; production's own threshold is recorded separately)
@@ -152,7 +155,7 @@ function build(input, opts = {}) {
         settlementTs: fin.settlement_ts || null, status: fin.status, recordedAt: m.finalAt, source: 'kalshi public API (expiration_value = Kalshi\'s official BRTI 60 s average)' }
         : { result: null, outcome: null, status: m.last ? m.last.status : 'not recorded' },
       production: closeMs ? configAt(closeMs) : null,
-      coverage: null, signal: null, qualified: null, atT120: null, events: [], pricing: null,
+      coverage: null, signal: null, qualified: null, primary: null, atT120: null, events: [], pricing: null,
     };
     /* coverage of the final 300 s by Pin Radar's own per-second rows: seconds 0..299 by floor(tau) */
     let secs = new Set(), anomalies = [];
@@ -203,12 +206,30 @@ function build(input, opts = {}) {
         const timingCertain = closeMs != null && allSecs(sec + 1, 299);
         const category = won == null ? 'outcome-unknown' : won === false ? 'wrong' : !observedToClose ? 'won-partially-observed'
           : dirChange ? 'changed-direction-won' : warned ? 'warned-won' : unlock ? 'unlocked-won' : 'continuous-won';
-        return { ...pick(s0), won, observedToClose, timingCertain, flags: { unlockedLater: unlock, directionChangedLater: dirChange, reversalWarningLater: warned, riskRoseAboveThresholdLater: riskUp }, category };
+        const at = f => { const x = after.find(f); return x ? { ts: x.ts, utc: new Date(x.ts).toISOString(), tau: r1(x.tau), state: x.state, side: x.side, pFlip: x.pFlip } : null; };
+        return { ...pick(s0), won, observedToClose, timingCertain, flags: { unlockedLater: unlock, directionChangedLater: dirChange, reversalWarningLater: warned, riskRoseAboveThresholdLater: riskUp },
+          firstLater: { lostLocked: at(x => !isL(x.state)), riskAboveThreshold: at(x => isL(x.state) && x.pFlip > THRESHOLD), reversalWarning: at(x => x.state === 'REVERSAL WARNING'), directionFlip: at(x => isL(x.state) && x.side !== s0.side) },
+          category };
       };
       rec.signal = classify(first);
       rec.qualified = classify(firstQ);
       rec.lockedAnywhereInLast120 = rows.some(x => x.tau <= 120 && isL(x.state) && x.pFlip <= THRESHOLD);
+    /* PRIMARY rule v1 (frozen): the first observed row with 0 < tau <= 120, LOCKED / PROVEN LOCKED, pFlip <= 0.002 */
+    {
+      const P = PRIMARY.parameters, ok = x => P.states.includes(x.state) && x.pFlip != null && x.pFlip <= P.pFlipMaxInclusive;
+      const pe = rows.find(x => x.tau > P.minTauSecExclusive && x.tau <= P.maxTauSecInclusive && ok(x));
+      const final120 = closeMs != null && allSecs(0, P.maxTauSecInclusive - 1);
+      if (!rows.length) rec.primary = { rule: PRIMARY.id, ruleSha256: PRIMARY_SHA256, entry: null, status: 'not-determinable', reason: 'window unobserved' };
+      else if (!pe) rec.primary = { rule: PRIMARY.id, ruleSha256: PRIMARY_SHA256, entry: null, status: final120 ? 'no-qualifying-signal' : 'not-determinable', reason: final120 ? null : 'final 120 s not fully observed' };
+      else {
+        const before = rows.filter(x => x.tau > P.maxTauSecInclusive).pop();
+        const entryType = !before || before.tau > P.maxTauSecInclusive + 10 ? 'unknown-prior' : ok(before) && before.side === pe.side ? 'existing-lock' : 'new-crossing';
+        const c = classify(pe);
+        rec.primary = { rule: PRIMARY.id, ruleSha256: PRIMARY_SHA256, status: 'entry', entryType, ...c, timingCertain: closeMs != null && allSecs(Math.floor(pe.tau) + 1, P.maxTauSecInclusive - 1) };
+      }
     }
+    }
+    if (!rec.primary) rec.primary = { rule: PRIMARY.id, ruleSha256: PRIMARY_SHA256, entry: null, status: 'not-determinable', reason: 'window unobserved' };
     /* pricing at a signal: only a book received before the earliest possible observer-clock time of the signal */
     const priceAt = (sg) => {
       if (!sg) return null;
@@ -231,8 +252,8 @@ function build(input, opts = {}) {
         atSignal: !before ? { unavailable: 'no book received before the signal' } : stale ? { unavailable: 'newest book received before the signal is ' + Math.round((earliest - before.tRecv) / 1000) + ' s old' } : at(before, earliest),
         afterSignal: at(after, null, false) };
     };
-    rec.pricing = { qualified: priceAt(rec.qualified), firstLocked: priceAt(rec.signal) };
+    rec.pricing = { primary: rec.primary && rec.primary.status === 'entry' ? priceAt(rec.primary) : null, qualified: priceAt(rec.qualified), firstLocked: priceAt(rec.signal) };
     return rec;
   }
 }
-module.exports = { build, clockAt, clockSamples, feeFor, SIZES, THRESHOLD, isL };
+module.exports = { build, clockAt, clockSamples, feeFor, SIZES, THRESHOLD, isL, PRIMARY, PRIMARY_SHA256 };

@@ -24,7 +24,7 @@ const SCALE = Number(process.env.OBSERVER_INTERVAL_SCALE || 1);          // test
 const parse = t => { try { return JSON.parse(t); } catch (_) { return null; } };
 const ndjson = t => String(t || '').split('\n').filter(Boolean).map(l => parse(l)).filter(Boolean);
 const okInt = x => Number.isSafeInteger(x) && x >= 0;                   // values copied into later queries must be plain integers
-const OVERLAP_MS = 120e3;
+const OVERLAP_MS = 120e3, CATCHUP_PACE_MS = 250;              // catch-up pulls are spaced: at most 4 a second
 
 function pinradarSource({ base, http, emit, now = Date.now, state = {}, onTickers = null, listTickers = null }) {
   base = String(base).replace(/\/+$/, '');
@@ -87,7 +87,7 @@ function pinradarSource({ base, http, emit, now = Date.now, state = {}, onTicker
         const tks = listTickers ? await listTickers(since, newest + 900e3) : null;
         let complete = Array.isArray(tks);
         emit({ kind: 'pr.predictions.catchup', since, until: newest, tickers: tks || [], listOk: complete });
-        for (const tk of tks || []) { const q = await pullPred(`since=${since}&ticker=${encodeURIComponent(tk)}&n=${PAGE}`, { since, ticker: tk }); if (!q.ok) complete = false; }
+        for (const tk of tks || []) { await new Promise(r => setTimeout(r, CATCHUP_PACE_MS)); const q = await pullPred(`since=${since}&ticker=${encodeURIComponent(tk)}&n=${PAGE}`, { since, ticker: tk }); if (!q.ok) complete = false; }
         if (!complete) { S.catchupRetryAt = now() + 300e3; emit({ kind: 'pr.predictions.catchup.incomplete', since, retryAt: S.catchupRetryAt }); return; }
       }
       S.predTs = newest;
@@ -179,7 +179,8 @@ function kalshiSource({ base = 'https://api.elections.kalshi.com/trade-api/v2', 
     const r = await http.get(`${base}/markets/${encodeURIComponent(tk)}`);
     const j = r.ok ? parse(r.text) : null; const m = j && (j.market || j);
     emit({ kind: 'k.market', ticker: tk, ...meta(r), market: m || null });
-    if (m && m.status === 'finalized' && S.markets[tk]) S.markets[tk].final = true;
+    if (m && m.status === 'finalized' && S.markets[tk]) { if (S.markets[tk].final && S.markets[tk].result != null && (m.result !== S.markets[tk].result || String(m.expiration_value) !== S.markets[tk].value)) emit({ kind: 'k.result.changed', ticker: tk, from: { result: S.markets[tk].result, value: S.markets[tk].value }, to: { result: m.result, value: m.expiration_value } });
+      S.markets[tk].final = true; S.markets[tk].result = m.result; S.markets[tk].value = String(m.expiration_value); }
   }
   /* books run in their own lane (stepBooks), so a slow discovery or result request never delays the 1 Hz snapshots */
   async function stepBooks(t = now()) {
@@ -209,7 +210,9 @@ function kalshiSource({ base = 'https://api.elections.kalshi.com/trade-api/v2', 
         if (since > 6 * 3600e3 && !m.flagged) { m.flagged = true; emit({ kind: 'k.result.missing', ticker: m.ticker, closeMs: m.closeMs, note: 'not finalized 6 h after the close; still polling' }); }
       }
     }
-    for (const [tk, m] of Object.entries(S.markets)) if ((m.final && t - m.closeMs > 24 * 3600e3) || t - m.closeMs > 7 * 864e5) { delete S.markets[tk]; delete S.lastBook[tk]; delete S.due['b:' + tk]; delete S.due['r:' + tk]; }
+    /* a finalized result is fetched once more 24 h after the close (a later correction is recorded as k.result.changed) */
+    for (const m of Object.values(S.markets)) if (m.final && !m.rechecked && t - m.closeMs > 24 * 3600e3) { m.rechecked = true; try { await result(m.ticker); } catch (e) { emit({ kind: 'k.error', task: 'recheck', ticker: m.ticker, error: String(e.message || e) }); } }
+    for (const [tk, m] of Object.entries(S.markets)) if ((m.final && m.rechecked) || t - m.closeMs > 7 * 864e5) { delete S.markets[tk]; delete S.lastBook[tk]; delete S.due['b:' + tk]; delete S.due['r:' + tk]; }
   }
   async function step(t = now()) { await stepMeta(t); await stepBooks(t); }
   return { step, stepBooks, stepMeta, track, listTickers, state: S, tickers: () => Object.keys(S.markets) };

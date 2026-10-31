@@ -12,19 +12,21 @@ const D = require('./derive');
 const iso = t => new Date(t).toISOString();
 
 function line(m) {
-  const c = m.coverage, q = m.qualified, s = m.settlement;
+  const c = m.coverage, q = m.primary && m.primary.status === 'entry' ? m.primary : null, s = m.settlement;
   const cov = !c ? 'coverage=UNKNOWN (no market times)' : c.status === 'unobserved' ? 'coverage=UNOBSERVED (no Pin Radar rows: missing observation, not "no signal")'
     : `coverage=${c.status} ${c.secondsObserved}/300s missing=${c.missingSeconds}${c.pinradarRestartInFinal300s ? ' PRODUCTION-RESTART' : ''}${c.anomalies.length ? ' anomalies=' + c.anomalies.join('; ') : ''} books=${c.books.usableSnapshotsInFinal300s}`;
   let sig;
-  if (!q) sig = c && c.status === 'complete' ? 'qualifying=NONE (fully observed: no LOCKED second at <= 0.2 %)' : 'qualifying=none seen (not fully observed: cannot conclude there was none)';
+  if (!q) sig = m.primary && m.primary.status === 'no-qualifying-signal' ? 'primary=NONE (final 120 s fully observed: no LOCKED second at <= 0.2 %)' : 'primary=NOT DETERMINABLE (' + ((m.primary && m.primary.reason) || 'final 120 s not fully observed') + '; never counted as "no signal")';
   else {
-    const at = m.pricing && m.pricing.qualified && m.pricing.qualified.atSignal;
+    const at = m.pricing && m.pricing.primary && m.pricing.primary.atSignal;
     const k1 = at && at.theoretical ? at.theoretical.sizes.find(x => x.budgetUsd === 1000) : null;
     const px = !at ? 'price=n/a' : at.unavailable ? 'price=UNAVAILABLE (' + at.unavailable + ')'
       : at.bestAskCents == null ? `NO OFFER on the called side (book received ${at.ageMs} ms before the signal had no asks for ${q.side}; other side's best ask ${q.side === 'UP' ? at.downBestAsk : at.upBestAsk}c)`
       : `ask=${at.bestAskCents}c sizeAtAsk=${at.calledSideLevels && at.calledSideLevels[0] ? at.calledSideLevels[0][1] : 0} askDepthUsd=${at.theoretical.totalAskDepthUsd} bookAgeMs=${at.ageMs} $1000fillable=${k1 ? k1.fullyFillable : 'n/a'}`;
-    sig = `qualifying at ${q.utc} tau=${q.tau}s ${q.side} pFlip=${q.pFlip} ${px} timingCertain=${q.timingCertain}`
-      + ` | after: lostLocked=${q.flags.unlockedLater} reversalWarning=${q.flags.reversalWarningLater} directionReversed=${q.flags.directionChangedLater} observedToClose=${q.observedToClose}`;
+    const ev = k => q.firstLater && q.firstLater[k] ? q.firstLater[k].tau + 's' : 'no';
+    sig = `primary(${m.primary.rule}) ${q.entryType} at ${q.utc} tau=${q.tau}s ${q.side} pFlip=${q.pFlip} ${q.state} ${px} timingCertain=${q.timingCertain}`
+      + ` | later: lostLocked=${ev('lostLocked')} pFlip>0.2%=${ev('riskAboveThreshold')} warning=${ev('reversalWarning')} directionFlip=${ev('directionFlip')}`
+      + ` observedToClose=${q.observedToClose}`;
   }
   const out = !s || !s.outcome ? 'settlement=UNKNOWN' : `settlement=${s.result} (${s.outcome}) value=${s.expirationValue}` + (q ? ` => signal ${q.won ? 'CORRECT' : 'WRONG'} [${q.category}]` : '');
   const prod = m.production ? ` prod=${m.production.version || '?'}/lockMaxFlip=${m.production.lockMaxFlip}` : '';

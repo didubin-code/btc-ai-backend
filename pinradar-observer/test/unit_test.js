@@ -359,6 +359,19 @@ t('review: implausible saved cursors are reset and recorded; an unclean stop is 
   assert.strictEqual(fs.statSync(path.join(d, 'state.json')).mode & 0o077, 0);
 });
 
+t('primary rule v1 (frozen): first row with 0 < tau <= 120, LOCKED, pFlip <= 0.002 inclusive; existing lock vs new crossing; gaps are not-determinable, never "no signal"', () => {
+  const P = tk => one([health, mk(tk), { kind: 'pr.predictions', rows: rowsFor(tk, fnFor[tk]) }]).primary; const fnFor = {};
+  let tk = tkn(); fnFor[tk] = s => s > 200 ? H('UP') : L('UP', 0.002); let p = P(tk);
+  assert.strictEqual(p.status, 'entry'); assert.strictEqual(p.tau, 119.8); assert.strictEqual(p.entryType, 'existing-lock'); assert.strictEqual(p.pFlip, 0.002); assert.strictEqual(p.rule, 'pinradar-primary-v1'); assert.ok(/^[0-9a-f]{64}$/.test(p.ruleSha256));
+  tk = tkn(); fnFor[tk] = s => s > 100 ? L('UP', 0.0021) : L('UP', 0.0015); p = P(tk); assert.strictEqual(p.entryType, 'new-crossing'); assert.strictEqual(p.tau, 99.8);
+  tk = tkn(); fnFor[tk] = s => s > 60 ? H('UP') : L('DOWN', 0.001); p = P(tk); assert.strictEqual(p.side, 'DOWN'); assert.strictEqual(p.entryType, 'new-crossing'); assert.strictEqual(p.timingCertain, true);
+  tk = tkn(); fnFor[tk] = s => s > 200 ? L('UP') : H('UP'); p = P(tk); assert.strictEqual(p.status, 'no-qualifying-signal', 'a lock that ended before the final 120 s is not a primary entry');
+  tk = tkn(); fnFor[tk] = s => (s > 50 && s < 60) ? null : H('UP'); p = P(tk); assert.strictEqual(p.status, 'not-determinable');
+  const t2 = tkn(), rows = rowsFor(t2, s => s > 40 ? H('UP') : (s > 30 && s < 35) ? null : L('UP')); const p2 = one([health, mk(t2), { kind: 'pr.predictions', rows }]).primary;
+  assert.strictEqual(p2.status, 'entry'); assert.strictEqual(p2.timingCertain, true, 'the gap is after the entry');
+  const t3 = tkn(), r3 = rowsFor(t3, s => s > 80 ? H('UP') : (s > 85 && s < 90) ? null : L('UP')).filter(x => !(x.tau > 95 && x.tau < 100)); const p3 = one([health, mk(t3), { kind: 'pr.predictions', rows: r3 }]).primary;
+  assert.strictEqual(p3.timingCertain, false, 'a gap before the entry inside the final 120 s makes "first" uncertain');
+});
 t('a book reply empty on BOTH sides is a failed snapshot, never "no offers": the previous real book prices the signal', () => {
   const tk = tkn(), rows = rowsFor(tk, s => s > 100 ? H('UP') : L('UP')); const sigObs = C - 100e3 + 250;
   const empty = { kind: 'k.book', ticker: tk, tSent: sigObs - 330, tRecv: sigObs - 300, hash: 'e1', book: { orderbook_fp: { yes_dollars: null, no_dollars: null } } };
@@ -372,10 +385,11 @@ t('window log: one line per settled window keeps lost LOCKED, reversal warning, 
   const { windowLogger } = require('../lib/windowlog'); const out = []; const wl = windowLogger({ log: x => out.push(x), delayMs: 0 });
   const tk = tkn(), rows = rowsFor(tk, s => s > 150 ? H('UP') : (s > 80 && s < 90) ? { state: 'REVERSAL WARNING', side: 'UP', pFlip: 0.03 } : (s > 40 && s < 50) ? L('DOWN') : L('UP'));
   wl.tap(health); wl.tap({ kind: 'pr.predictions', rows }); wl.tap(book(tk, C - 150e3 + 100, 97)); wl.tap(mk(tk, 'no')); wl.summarize(tk);
-  const l1 = out.find(x => x.includes(tk)); assert.ok(/coverage=complete 300\/300s/.test(l1) && /tau=149\.8s UP/.test(l1) && /ask=97c/.test(l1), l1);
-  assert.ok(/lostLocked=true reversalWarning=true directionReversed=true/.test(l1) && /settlement=no \(DOWN\)/.test(l1) && /signal WRONG \[wrong\]/.test(l1), l1);
-  const t2 = tkn(); wl.tap(mk(t2, 'yes')); wl.summarize(t2); const l2 = out.find(x => x.includes(t2)); assert.ok(/UNOBSERVED/.test(l2) && /none seen \(not fully observed/.test(l2), l2);
-  const t3 = tkn(); wl.tap({ kind: 'pr.predictions', rows: rowsFor(t3, () => H('UP')) }); wl.tap(mk(t3, 'yes')); wl.summarize(t3); const l3 = out.find(x => x.includes(t3)); assert.ok(/qualifying=NONE \(fully observed/.test(l3), l3);
+  const l1 = out.find(x => x.includes(tk));
+  assert.ok(/coverage=complete 300\/300s/.test(l1) && /primary\(pinradar-primary-v1\) existing-lock .* tau=119\.8s UP pFlip=0\.001 LOCKED/.test(l1), l1);
+  assert.ok(/later: lostLocked=88\.8s pFlip>0\.2%=no warning=88\.8s directionFlip=48\.8s/.test(l1) && /settlement=no \(DOWN\)/.test(l1) && /signal WRONG \[wrong\]/.test(l1), l1);
+  const t2 = tkn(); wl.tap(mk(t2, 'yes')); wl.summarize(t2); const l2 = out.find(x => x.includes(t2)); assert.ok(/UNOBSERVED/.test(l2) && /primary=NOT DETERMINABLE/.test(l2), l2);
+  const t3 = tkn(); wl.tap({ kind: 'pr.predictions', rows: rowsFor(t3, () => H('UP')) }); wl.tap(mk(t3, 'yes')); wl.summarize(t3); const l3 = out.find(x => x.includes(t3)); assert.ok(/primary=NONE \(final 120 s fully observed/.test(l3), l3);
 });
 
 (async () => {

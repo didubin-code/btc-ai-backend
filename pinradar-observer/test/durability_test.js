@@ -208,7 +208,9 @@ t('F6: with state.json missing, damaged or stale, the gap starts at the newest s
     prep(); o = startObs(d, kf); await sleep(2000); o.p.kill('SIGTERM'); assert.strictEqual(await o.exit, 0, o.err());
     const h = healthRecs(d, key), st = h.filter(r => r.kind === 'obs.start').pop(), gap = h.filter(r => r.kind === 'obs.gap').pop();
     assert.ok(gap && want.test(gap.reason) && gap.from === newest, label + ': ' + JSON.stringify(gap) + ' newest ' + newest);
-    assert.ok(/newest stored record minus 15 min/.test(st.predTsFrom) && st.restoredCursors.predTs === Math.round(newest - 15 * 60e3), label + ': ' + JSON.stringify(st));
+    /* missing or damaged: restart 15 min before the newest record; stale: its older cursor is kept (re-reads more, never less) */
+    if (label === 'stale') assert.ok(/state file/.test(st.predTsFrom) && st.restoredCursors.predTs <= newest - 15 * 60e3, label + ': ' + JSON.stringify(st));
+    else assert.ok(/newest stored record minus 15 min/.test(st.predTsFrom) && st.restoredCursors.predTs === Math.round(newest - 15 * 60e3), label + ': ' + JSON.stringify(st));
   }
   const sj = fs.readFileSync(sf, 'utf8'); assert.ok(JSON.parse(sj).cleanStop === true && Number.isFinite(JSON.parse(sj).flushedAt)); assert.strictEqual(fs.statSync(sf).mode & 0o077, 0);
   assert.ok(!fs.existsSync(sf + '.tmp'));
