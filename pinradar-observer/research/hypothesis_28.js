@@ -20,6 +20,8 @@ const TH = 0.002;
 const BK = [['300-181', 180, 300], ['180-121', 120, 180], ['120-91', 90, 120], ['90-61', 60, 90], ['60-31', 30, 60], ['30-0', -1, 30]];
 const bucket = tau => (BK.find(([, lo, hi]) => tau > lo && tau <= hi) || ['?'])[0];
 const fee = (pC, C) => Math.ceil(0.07 * C * (pC / 100) * (1 - pC / 100) * 100 - 1e-9) / 100;
+/* Kalshi created_time: ISO with 0-6 fractional digits ("...:33Z", "...:33.1Z", "...:33.009864Z") -> microseconds */
+const tsUs = s => { const m = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d+))?Z$/.exec(String(s)); if (!m) return NaN; return Date.parse(m[1] + 'Z') * 1000 + Number(((m[2] || '') + '000000').slice(0, 6)); };
 
 (async () => {
   const recs = new Map();
@@ -88,7 +90,9 @@ const fee = (pC, C) => Math.ceil(0.07 * C * (pC / 100) * (1 - pC / 100) * 100 - 
     const rows = [];
     for (const m of list) {
       const f = path.join(TRADES, m.tk + '.json.gz'); if (!fs.existsSync(f)) continue;
-      const pr = (JSON.parse(zlib.gunzipSync(fs.readFileSync(f))).trades || []).map(x => ({ ms: Date.parse(String(x.created_time).slice(0, 23) + 'Z'), y: Number(x.yes_price_dollars) * 100, n: Number(x.count_fp), t: x.taker_side })).sort((a, b) => a.ms - b.ms);
+      /* files are newest-first; sort oldest-first by microsecond, and for equal times keep the file's first entry LAST (= the newest) */
+      const pr = (JSON.parse(zlib.gunzipSync(fs.readFileSync(f))).trades || []).map((x, i) => ({ us: tsUs(x.created_time), i, y: Number(x.yes_price_dollars) * 100, n: Number(x.count_fp), t: x.taker_side }))
+        .filter(x => Number.isFinite(x.us)).sort((a, b) => a.us - b.us || b.i - a.i).map(x => ({ ...x, ms: Math.floor(x.us / 1000) }));
       const up = m[sideKey] === 'UP', ts = m[tsKey];
       const called = pr.filter(x => (up ? x.t === 'yes' : x.t === 'no')).map(x => ({ ms: x.ms, p: Math.round((up ? x.y : 100 - x.y) * 100) / 100, n: x.n }));
       const before = called.filter(x => x.ms <= ts).pop();
