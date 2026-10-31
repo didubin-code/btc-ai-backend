@@ -74,6 +74,10 @@ const tsUs = s => { const m = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d+))
   out.byFirstQualifyingInterval = Object.fromEntries(BK.map(([b]) => [b, acc(Q.filter(m => bucket(m.qTau) === b))]));
   out.categories = { continuousWon: Q.filter(m => m.cont && m.won).length, unlockedWon: Q.filter(m => m.unlocked && m.won).length, warnedWon: Q.filter(m => m.warned && !m.dirChange && m.won).length,
     directionChangedWon: Q.filter(m => m.dirChange && m.won).length, wrong: Q.filter(m => !m.won).length };
+  const CB = [[0, 0.0002], [0.0002, 0.0005], [0.0005, 0.001], [0.001, 0.0015], [0.0015, 0.002 + 1e-12]];
+  out.calibrationOfModelledFlipRisk = CB.map(([lo, hi]) => { const l = Q.filter(m => m.qPf >= lo && m.qPf < hi), k = l.filter(m => !m.won).length; const cp = S.clopperPearson(k, l.length);
+    return { pFlipRange: [lo, Math.min(hi, 0.002)], n: l.length, wrong: k, meanModelledPct: l.length ? +(100 * l.reduce((a, m) => a + m.qPf, 0) / l.length).toFixed(4) : null,
+      observedPct: l.length ? +(100 * k / l.length).toFixed(4) : null, observedCI95pct: l.length ? [+(100 * cp.lo).toFixed(4), +(100 * cp.hi).toFixed(4)] : null }; });
   out.wrongCalls = Q.filter(m => !m.won).map(m => ({ ticker: m.tk, firstQualifyingTau: m.qTau, side: m.qSide, pFlip: m.qPf, truth: m.truth, marginUsd: m.margin, continuous: m.cont, warnedAfter: m.warned }));
   /* by month (regime over time; the model was developed on earlier data, so later months are the more honest test) */
   const byMonth = {}; for (const m of Q) { const k = new Date(m.closeTs * 1000).toISOString().slice(0, 7); (byMonth[k] = byMonth[k] || []).push(m); }
@@ -98,18 +102,27 @@ const tsUs = s => { const m = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d+))
       const before = called.filter(x => x.ms <= ts).pop();
       const after = called.filter(x => x.ms > ts);
       const usdAfter = after.reduce((a, x) => a + x.p / 100 * x.n, 0);
-      rows.push({ tk: m.tk, day: new Date(m.closeTs * 1000).toISOString().slice(0, 10), won: m[wonKey], tau: m[tauKey], lastBefore: before ? { p: before.p, ageSec: (ts - before.ms) / 1000 } : null,
+      rows.push({ tk: m.tk, day: new Date(m.closeTs * 1000).toISOString().slice(0, 10), won: m[wonKey], tau: m[tauKey], pf: label === 'firstQualifying' ? m.qPf : null, lastBefore: before ? { p: before.p, ageSec: (ts - before.ms) / 1000 } : null,
         calledSideUsdAfterSignal: Math.round(usdAfter), vwapAfter: after.length ? after.reduce((a, x) => a + x.p * x.n, 0) / after.reduce((a, x) => a + x.n, 0) : null });
     }
     const priced = rows.filter(r => r.lastBefore && r.lastBefore.ageSec <= 10);
     const ps = priced.map(r => r.lastBefore.p).sort((a, b) => a - b), q = p => ps.length ? ps[Math.min(ps.length - 1, Math.floor(p * ps.length))] : null;
     /* theoretical P&L of a $1,000 order filled at that print price (optimistic: assumes the price was still there for the size) */
-    const pnl = priced.map(r => { const p = r.lastBefore.p, C = Math.floor(1000 / (p / 100)), cost = C * p / 100 + fee(p, C); return { day: r.day, net: r.won ? C - cost : -cost, p }; });
+    const pnl = priced.map(r => { const p = r.lastBefore.p, C = Math.floor(1000 / (p / 100)), cost = C * p / 100 + fee(p, C); return { day: r.day, net: r.won ? C - cost : -cost, p, tau: r.tau, won: r.won }; });
+    /* a "defensible" expected value per $1,000: wins at their observed average, the loss rate at its exact one-sided 95 % upper bound */
+    const cell = l => { if (!l.length) return { n: 0 }; const k = l.filter(x => !x.won).length, wins = l.filter(x => x.won), pU = S.upperBound(k, l.length);
+      const mw = wins.length ? wins.reduce((a, x) => a + x.net, 0) / wins.length : 0, ml = k ? l.filter(x => !x.won).reduce((a, x) => a + x.net, 0) / k : -1000;
+      return { n: l.length, losses: k, meanNetUsdPer1000: Math.round(l.reduce((a, x) => a + x.net, 0) / l.length * 100) / 100, medianPriceCents: l.map(x => x.p).sort((a, b) => a - b)[Math.floor(l.length / 2)],
+        lossRateUpper95Pct: +(100 * pU).toFixed(4), conservativeEvUsdPer1000: Math.round(((1 - pU) * mw + pU * ml) * 100) / 100 }; };
+    const PB = [[0, 90], [90, 98], [98, 99], [99, 99.5], [99.5, 99.8], [99.8, 100]];
+    const byInterval = Object.fromEntries(BK.map(([b]) => [b, cell(pnl.filter(x => bucket(x.tau) === b))]));
+    const grid = {}; for (const [b] of BK) for (const [lo, hi] of PB) { const c = cell(pnl.filter(x => bucket(x.tau) === b && x.p >= lo && x.p < hi)); if (c.n) grid[b + ' | ' + lo + '-' + hi + ' c'] = c; }
     const byDay = {}; for (const x of pnl) (byDay[x.day] = byDay[x.day] || []).push(x.net);
     const priceBk = [[0, 90], [90, 95], [95, 98], [98, 99], [99, 99.5], [99.5, 100]].map(([lo, hi]) => { const l = pnl.filter(x => x.p >= lo && x.p < hi);
       return [lo + '-' + hi, { n: l.length, meanNetUsdPer1000: l.length ? Math.round(l.reduce((a, x) => a + x.net, 0) / l.length * 100) / 100 : null, losses: l.filter(x => x.net < 0).length }]; });
     P.push([label, { signals: list.length, withPrints: rows.length, withCalledSidePrintWithin10sBefore: priced.length,
       calledSidePriceCents: { p10: q(0.1), p25: q(0.25), median: q(0.5), p75: q(0.75), p90: q(0.9) },
+      byEntryInterval: byInterval, gridIntervalByPrice: grid,
       pnlPer1000: { n: pnl.length, totalUsd: Math.round(pnl.reduce((a, x) => a + x.net, 0)), meanUsd: pnl.length ? Math.round(pnl.reduce((a, x) => a + x.net, 0) / pnl.length * 100) / 100 : null,
         meanCI95DayBootstrap: S.blockBootstrap(Object.values(byDay), v => v.reduce((a, b) => a + b, 0) / v.length, 2000, 99), losses: pnl.filter(x => x.net < 0).length, byPrice: Object.fromEntries(priceBk) },
       capacity: { medianCalledSideUsdPrintedAfterSignal: (() => { const v = rows.map(r => r.calledSideUsdAfterSignal).sort((a, b) => a - b); return v[Math.floor(v.length / 2)]; })(),

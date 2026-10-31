@@ -637,7 +637,7 @@
   "firstQualifying": {
    "signals": 23889,
    "withPrints": 20256,
-   "withCalledSidePrintWithin10sBefore": 14275,
+   "withCalledSidePrintWithin10sBefore": 14403,
    "calledSidePriceCents": {
     "p10": 99,
     "p25": 99.4,
@@ -646,45 +646,45 @@
     "p90": 99.9
    },
    "pnlPer1000": {
-    "n": 14275,
-    "totalUsd": 178851,
-    "meanUsd": 12.53,
+    "n": 14403,
+    "totalUsd": 180778,
+    "meanUsd": 12.55,
     "meanCI95DayBootstrap": {
      "B": 2000,
-     "lo": 3.5354762956315278,
-     "hi": 30.222197350516026,
-     "median": 12.391551721727218
+     "lo": 3.5635718264742278,
+     "hi": 30.105341019152974,
+     "median": 12.425382822587892
     },
     "losses": 16,
     "byPrice": {
      "0-90": {
-      "n": 48,
-      "meanNetUsdPer1000": 2533.52,
+      "n": 49,
+      "meanNetUsdPer1000": 2517.16,
       "losses": 10
      },
      "90-95": {
-      "n": 68,
-      "meanNetUsdPer1000": 45.5,
+      "n": 66,
+      "meanNetUsdPer1000": 44.95,
       "losses": 2
      },
      "95-98": {
-      "n": 231,
-      "meanNetUsdPer1000": 32.73,
-      "losses": 0
-     },
-     "98-99": {
-      "n": 546,
-      "meanNetUsdPer1000": 13.26,
+      "n": 226,
+      "meanNetUsdPer1000": 27.91,
       "losses": 1
      },
+     "98-99": {
+      "n": 567,
+      "meanNetUsdPer1000": 15.18,
+      "losses": 0
+     },
      "99-99.5": {
-      "n": 2758,
+      "n": 2770,
       "meanNetUsdPer1000": 8.58,
       "losses": 0
      },
      "99.5-100": {
-      "n": 10624,
-      "meanNetUsdPer1000": 1.48,
+      "n": 10725,
+      "meanNetUsdPer1000": 1.47,
       "losses": 3
      }
     }
@@ -699,7 +699,7 @@
   "atOrAfterT120": {
    "signals": 23884,
    "withPrints": 20251,
-   "withCalledSidePrintWithin10sBefore": 13839,
+   "withCalledSidePrintWithin10sBefore": 13972,
    "calledSidePriceCents": {
     "p10": 99,
     "p25": 99.5,
@@ -708,51 +708,51 @@
     "p90": 99.9
    },
    "pnlPer1000": {
-    "n": 13839,
-    "totalUsd": 174617,
-    "meanUsd": 12.62,
+    "n": 13972,
+    "totalUsd": 176525,
+    "meanUsd": 12.63,
     "meanCI95DayBootstrap": {
      "B": 2000,
-     "lo": 3.340979134466792,
-     "hi": 30.85383029452686,
-     "median": 12.478387732750411
+     "lo": 3.363311924625952,
+     "hi": 30.711464384070318,
+     "median": 12.501453655770357
     },
     "losses": 16,
     "byPrice": {
      "0-90": {
-      "n": 48,
-      "meanNetUsdPer1000": 2533.52,
+      "n": 49,
+      "meanNetUsdPer1000": 2517.16,
       "losses": 10
      },
      "90-95": {
-      "n": 67,
-      "meanNetUsdPer1000": 45.29,
+      "n": 65,
+      "meanNetUsdPer1000": 44.72,
       "losses": 2
      },
      "95-98": {
-      "n": 224,
-      "meanNetUsdPer1000": 32.83,
-      "losses": 0
-     },
-     "98-99": {
-      "n": 515,
-      "meanNetUsdPer1000": 13.25,
+      "n": 219,
+      "meanNetUsdPer1000": 27.87,
       "losses": 1
      },
+     "98-99": {
+      "n": 532,
+      "meanNetUsdPer1000": 15.31,
+      "losses": 0
+     },
      "99-99.5": {
-      "n": 2451,
-      "meanNetUsdPer1000": 8.68,
+      "n": 2464,
+      "meanNetUsdPer1000": 8.67,
       "losses": 0
      },
      "99.5-100": {
-      "n": 10534,
+      "n": 10643,
       "meanNetUsdPer1000": 1.38,
       "losses": 3
      }
     }
    },
    "capacity": {
-    "medianCalledSideUsdPrintedAfterSignal": 834,
+    "medianCalledSideUsdPrintedAfterSignal": 835,
     "pctWithAtLeast75kPrintedAfterSignal": 2.58,
     "pctWithAtLeast10kPrintedAfterSignal": 17.38,
     "note": "dollars other traders actually bought on the called side between the signal and the close: an upper bound on what a taker could have bought, and only if that liquidity would also have been offered to us"
