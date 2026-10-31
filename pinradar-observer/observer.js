@@ -142,6 +142,14 @@ async function run() {
     if (hasStore) { pState.predTs = Math.max(0, Math.round(lastStored - 15 * 60e3)); predTsFrom = 'newest stored record minus 15 min (state file ' + (stateProblem || 'had no cursor') + ')'; }
     else { pState.predTs = Math.max(0, now - 25 * 3600e3); predTsFrom = 'first run: back-filled from production memory (up to ~25 h, market by market)'; }
   }
+  /* one-time back-fill of production's memory (~25 h of rows) on the first start of this version on a data directory:
+     the cursor is moved back, so the catch-up fetches every market since then, market by market (paced) */
+  const backfillMark = path.join(dataDir, 'backfill-25h.done');
+  if (!fs.existsSync(backfillMark)) {
+    const from = Math.max(0, now - 25 * 3600e3);
+    if (!(pState.predTs > 0) || pState.predTs > from) { pState.predTs = from; predTsFrom += '; one-time back-fill of production memory from ' + new Date(from).toISOString(); }
+    fs.writeFileSync(backfillMark, new Date(now).toISOString() + '\n', { mode: 0o600 });
+  }
   const kMarkets = {}; for (const [tk, m] of Object.entries((saved.kalshi && saved.kalshi.markets) || {})) if (/^KXBTC15M-[A-Z0-9-]+$/.test(tk) && m && Number.isFinite(m.closeMs)) kMarkets[tk] = m;
   const Q = {};
   /* OBSERVER_LOG_WINDOWS=1: one plain-text line per settled window in the host's (private) log, for operations */
