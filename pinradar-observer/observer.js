@@ -91,7 +91,16 @@ async function run() {
   fs.mkdirSync(dataDir, { recursive: true, mode: 0o700 });
   const realData = fs.realpathSync(dataDir), realKey = fs.realpathSync(A.key);
   if (realKey === realData || realKey.startsWith(realData + path.sep)) die('keep the key file outside the data directory (a backup of the data must not contain the key)');
+  /* --create-sign-key: on a fresh host (e.g. a new Render worker) the host creates its own signing key on its persistent
+     disk on the first start; the private half never leaves the host, the public half is printed to the log for the owner */
+  if (A['sign-key'] && A['create-sign-key'] && !fs.existsSync(A['sign-key'])) {
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519');
+    fs.mkdirSync(path.dirname(path.resolve(A['sign-key'])), { recursive: true, mode: 0o700 });
+    fs.writeFileSync(A['sign-key'], privateKey.export({ type: 'pkcs8', format: 'pem' }), { flag: 'wx', mode: 0o600 });
+    console.log('created the host signing key ' + A['sign-key'] + ' (signer id ' + signerId(publicKey) + '); its public half, for the owner:\n' + publicKey.export({ type: 'spki', format: 'pem' }));
+  }
   const signKey = A['sign-key'] ? loadSignKey(A['sign-key']) : null;
+  if (signKey) console.log('checkpoints signed by ' + signerId(crypto.createPublicKey(signKey)) + '; public half:\n' + crypto.createPublicKey(signKey).export({ type: 'spki', format: 'pem' }));
   if (signKey && fs.realpathSync(A['sign-key']).startsWith(realData + path.sep)) die('keep the signing key outside the data directory');
   /* up to when is this data directory complete? The OLDER of the two streams' newest records (read before opening:
      opening may append a recovery record). If one stream stopped being written, its loss is not hidden by the other. */
