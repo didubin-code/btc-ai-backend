@@ -1,44 +1,34 @@
-# Starting the observer on Render
+# The observer on Render
 
-This takes about 10 minutes. It creates a **new, separate** Render service. The existing Pin Radar service is not opened, changed, restarted or redeployed.
+**Deployed 31 Oct 2026** in the workspace "BTC AI" as the web service **`pinradar-observer`** (`srv-dbj1i87f3r2c73en4ukg`, Oregon, Starter).
+* **Code:** branch `claude/btc-pin-radar-research-xpe585` of `didubin-code/btc-ai-backend`.
+* **Deploys:** Auto-Deploy is **off**, so collection is never restarted by a push.
+* **Start command:** `node pinradar-observer/render_host.js`.
+* **Environment variables:**
+  * `OBSERVER_PINRADAR=https://btc-pin-radar.onrender.com` (the production service `btc-pin-radar`, read only);
+  * `OBSERVER_DIR=/var/observer`;
+  * `NODE_VERSION=22`.
 
-**Cost.** Render's free plan has no background workers or disks. This setup uses a Starter background worker (about $7 a month) plus a 10 GB disk (about $2.50 a month). Check Render's pricing page for current prices.
+`render_host.js` opens the port Render requires for a web service. It serves no data: `GET /healthz` returns `ok`, and everything else returns 404. It runs `observer.js` and restarts with it. The data is encrypted to `keys/owner.public.pem`; only your `owner.private.pem` can read it.
 
-## Steps
+## Remaining dashboard step: attach a persistent disk
 
-1. Log in to Render at https://dashboard.render.com. Your existing account is fine, and so is a new one.
-2. Click **New +**, then **Background Worker**.
-3. Connect GitHub if Render asks, then choose the repository **didubin-code/btc-ai-backend**.
-4. Fill in the form exactly as follows:
+Without a disk, the recorded data is lost at every restart or deploy. The service logs a warning every hour until a disk is attached.
 
-| Field | Value |
-|---|---|
-| Name | `pinradar-observer` |
-| Branch | `claude/btc-pin-radar-research-xpe585` |
-| Root Directory | `pinradar-observer` |
-| Runtime / Language | `Node` |
-| Build Command | `node --version` |
-| Start Command | `node observer.js run --data /var/observer/data --key keys/owner.public.pem --sign-key /var/observer/host.sign.pem --create-sign-key --pinradar https://btc-pin-radar-28.onrender.com` |
-| Instance Type | `Starter` |
-
-5. Open **Advanced** and click **Add Disk**:
-   * Name: `observer-data`;
-   * Mount Path: `/var/observer`;
+1. In Render, open **pinradar-observer**, then **Disks**, then **Add disk**.
+2. Fill in:
+   * Mount path: `/var/observer`;
    * Size: `10` GB.
-6. In **Advanced**, set **Auto-Deploy** to **No**. Collection then runs without interruption, and is never restarted by a code change.
-7. Click **Create Background Worker**.
+3. Save. Render redeploys this service only. The production `btc-pin-radar` is not touched.
+4. In the logs, check for `[host] data directory /var/observer (persistent disk)`.
 
-## Checking that it works
+## Logs
 
-After a minute or two, open the new service's **Logs**. You should see:
-* `[pinradar-observer-1.2] observing https://btc-pin-radar-28.onrender.com (read-only)`;
-* a block starting `-----BEGIN PUBLIC KEY-----` under "checkpoints signed by …".
+Each settled window produces one `[window]` line, showing:
+* coverage, or `UNOBSERVED`;
+* the first qualifying LOCKED second at ≤ 0.2 %, or `NONE`;
+* the ask and the size at the ask;
+* lost LOCKED, reversal warning and direction reversal, each separately;
+* Kalshi's result, and whether the signal was CORRECT or WRONG.
 
-Copy that block into a note and keep it. It proves later that the records were written by this service.
-
-## Keep safe
-
-* **`owner.private.pem`** (sent to you separately) is the only key that can read the recorded data.
-* Keep it in at least two private places, for example your computer and a USB stick or password manager.
-* Never upload it to Render or GitHub.
-* If it is lost, the recorded data cannot be read by anyone.
+There are also hourly `[prod] /health` lines. To stop the plain-text window lines, set `OBSERVER_LOG_WINDOWS=0`.
