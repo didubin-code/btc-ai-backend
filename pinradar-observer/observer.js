@@ -230,6 +230,7 @@ async function run() {
   };
   process.on('SIGTERM', stop); process.on('SIGINT', stop);
   console.log(`[${VERSION}] observing ${pinradar} (read-only); data in ${dataDir}`);
+  console.log(`[store] resumed: raw ${streams[0].head().s} records, health ${streams[1].head().s} records; newest stored record ${hasStore ? new Date(lastStored).toISOString() : 'none (new store)'}; state file ${stateProblem || 'ok'}; cursor: ${predTsFrom}; primary rule ${D.PRIMARY.id} sha256 ${D.PRIMARY_SHA256.slice(0, 16)}`);
 }
 
 /* ------------------------------------------------------ verification helpers ------------------------------------------------------ */
