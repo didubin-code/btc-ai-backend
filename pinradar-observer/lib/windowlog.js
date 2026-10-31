@@ -21,6 +21,7 @@ function line(m) {
     const at = m.pricing && m.pricing.qualified && m.pricing.qualified.atSignal;
     const k1 = at && at.theoretical ? at.theoretical.sizes.find(x => x.budgetUsd === 1000) : null;
     const px = !at ? 'price=n/a' : at.unavailable ? 'price=UNAVAILABLE (' + at.unavailable + ')'
+      : at.bestAskCents == null ? `NO OFFER on the called side (book received ${at.ageMs} ms before the signal had no asks for ${q.side})`
       : `ask=${at.bestAskCents}c sizeAtAsk=${at.calledSideLevels && at.calledSideLevels[0] ? at.calledSideLevels[0][1] : 0} askDepthUsd=${at.theoretical.totalAskDepthUsd} bookAgeMs=${at.ageMs} $1000fillable=${k1 ? k1.fullyFillable : 'n/a'}`;
     sig = `qualifying at ${q.utc} tau=${q.tau}s ${q.side} pFlip=${q.pFlip} ${px} timingCertain=${q.timingCertain}`
       + ` | after: lostLocked=${q.flags.unlockedLater} reversalWarning=${q.flags.reversalWarningLater} directionReversed=${q.flags.directionChangedLater} observedToClose=${q.observedToClose}`;
