@@ -11,16 +11,26 @@
 
 `render_host.js` opens the port Render requires for a web service. It serves no data: `GET /healthz` returns `ok`, and everything else returns 404. It runs `observer.js` and restarts with it. The data is encrypted to `keys/owner.public.pem`; only your `owner.private.pem` can read it.
 
-## Remaining dashboard step: attach a persistent disk
+## Persistent disk (verified 31 Oct 2026)
 
-Without a disk, the recorded data is lost at every restart or deploy. The service logs a warning every hour until a disk is attached.
+* **Attached:** disk `dsk-dbj3bd49v7es7390tucg`, 10 GB, mounted at `/var/observer`, at 18:38 UTC.
+* **Restart test, 18:45 UTC:**
+  * the host signing key was reused (signer `bf68a97ec3178ab8`), not recreated;
+  * the store resumed at raw 436 / health 16 records, with the newest stored record at 18:45:43 UTC from before the restart;
+  * `[storage]` reported 5.3 MB of data and 9.72 GB free.
+* **Collection on the disk** started at 18:40 UTC. On the first start of the current code, production's memory was back-filled from 30 Oct 17:46 UTC.
 
-1. In Render, open **pinradar-observer**, then **Disks**, then **Add disk**.
-2. Fill in:
-   * Mount path: `/var/observer`;
-   * Size: `10` GB.
-3. Save. Render redeploys this service only. The production `btc-pin-radar` is not touched.
-4. In the logs, check for `[host] data directory /var/observer (persistent disk)`.
+## Notifications and backups (owner action)
+
+* **Alerts:**
+  * Create a free check at healthchecks.io: period 10 minutes, grace 30 minutes.
+  * Set its ping URL as `OBSERVER_HEARTBEAT_URL` on this service.
+  * The host then pings `<url>/fail` when the disk is missing or over 80 % full, or collection stalls. Silence also alerts.
+* **Backups:**
+  * Check the Disks tab for Render's automatic snapshots.
+  * For an off-Render copy, add your Mac's SSH key in Render (Account Settings → SSH Public Keys), then run:
+    `rsync -av srv-dbj1i87f3r2c73en4ukg@ssh.oregon.render.com:/var/observer/data/ /Volumes/<Drive>/pinradar-observer/`
+  * Never copy `host.sign.pem` off the host.
 
 ## Logs
 
