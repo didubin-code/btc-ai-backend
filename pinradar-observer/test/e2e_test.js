@@ -23,8 +23,10 @@ const LIVE_AFTER = 75;
   const m = fxOut.match(/READY (\d+) (\d+) (\d+)/); if (!m) { console.log('fixture failed: ' + fxOut.slice(-800)); process.exit(1); }
   const [, p1, p2, t0] = m; const T0 = Number(t0) * 1000;
   spawnSync(process.execPath, [path.join(ROOT, 'observer.js'), 'keypair', '--out', path.join(W, 'owner')]);
-  const runObs = () => { const c = spawn(process.execPath, [path.join(ROOT, 'observer.js'), 'run', '--data', DD, '--key', PUB, '--pinradar', 'http://127.0.0.1:' + p1, '--kalshi', 'http://127.0.0.1:' + p2 + '/trade-api/v2'],
-    { env: { ...process.env, OBSERVER_INTERVAL_SCALE: '0.1' } }); c.out = ''; c.stdout.on('data', d => c.out += d); c.stderr.on('data', d => c.out += d); return c; };
+  spawnSync(process.execPath, [path.join(ROOT, 'observer.js'), 'signkey', '--out', path.join(W, 'host')]);
+  const SIGN = path.join(W, 'host.sign.pem'), SIGNPUB = path.join(W, 'host.sign.pub.pem');
+  const runObs = () => { const c = spawn(process.execPath, [path.join(ROOT, 'observer.js'), 'run', '--data', DD, '--key', PUB, '--sign-key', SIGN, '--pinradar', 'http://127.0.0.1:' + p1, '--kalshi', 'http://127.0.0.1:' + p2 + '/trade-api/v2'],
+    { env: { ...process.env, OBSERVER_INTERVAL_SCALE: '0.1', OBSERVER_BEAT_MS: '5000' } }); c.out = ''; c.stdout.on('data', d => c.out += d); c.stderr.on('data', d => c.out += d); return c; };
   let ob = runObs();
   /* durability: kill -9 in the middle of the live window, restart 4 s later */
   while (Date.now() < T0 + (LIVE_AFTER - 45) * 1000) await sleep(200);
@@ -40,8 +42,12 @@ const LIVE_AFTER = 75;
   ok('fixture ran production main:pinradar_server.js byte for byte', truth.prodSha === mainSha, truth.prodSha.slice(0, 16));
 
   /* store integrity after a kill -9 */
-  const v = JSON.parse(spawnSync(process.execPath, [path.join(ROOT, 'observer.js'), 'verify', '--data', DD, '--key', KEY], { encoding: 'utf8' }).stdout);
-  ok('Test 7: every stream verifies (chain + decryption) after a kill -9 and restart', Object.values(v).every(x => x.ok), v);
+  const AN = path.join(W, 'anchors.ndjson');
+  spawnSync(process.execPath, [path.join(ROOT, 'observer.js'), 'anchor', '--data', DD, '--out', AN]);
+  const vr = spawnSync(process.execPath, [path.join(ROOT, 'observer.js'), 'verify', '--data', DD, '--key', KEY, '--sign-pub', SIGNPUB, '--anchors', AN], { encoding: 'utf8' });
+  const v = JSON.parse(vr.stdout);
+  ok('Test 7: every stream verifies (chain + decryption + host-signed checkpoints + anchors) after a kill -9 and restart',
+    vr.status === 0 && Object.values(v.streams).every(x => x.ok) && v.checkpoints.checkpoints > 0 && !v.checkpoints.bad.length && !v.anchorFailures.length, { streams: v.streams, checkpoints: v.checkpoints && { n: v.checkpoints.checkpoints, bad: v.checkpoints.bad, unsigned: v.checkpoints.unsignedTail } });
   const exp = path.join(W, 'export'); spawnSync(process.execPath, [path.join(ROOT, 'observer.js'), 'export', '--data', DD, '--key', KEY, '--out', exp]);
   const health = fs.readFileSync(path.join(exp, 'health.ndjson'), 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l));
   const gap = health.find(h => h.kind === 'obs.gap' && /not running/.test(h.reason));
@@ -50,7 +56,8 @@ const LIVE_AFTER = 75;
 
   /* derive and compare */
   const dj = path.join(W, 'derived.json');
-  spawnSync(process.execPath, [path.join(ROOT, 'observer.js'), 'derive', '--data', DD, '--key', KEY, '--out', dj], { encoding: 'utf8' });
+  const dr = spawnSync(process.execPath, [path.join(ROOT, 'observer.js'), 'derive', '--data', DD, '--key', KEY, '--sign-pub', SIGNPUB, '--out', dj], { encoding: 'utf8' });
+  if (dr.status !== 0) { console.log('derive failed: ' + dr.stderr); process.exit(1); }
   const d = JSON.parse(fs.readFileSync(dj, 'utf8'));
   const byT = Object.fromEntries(d.markets.map(x => [x.ticker, x]));
   const isL = s => s === 'LOCKED' || s === 'PROVEN LOCKED';
@@ -95,7 +102,7 @@ const LIVE_AFTER = 75;
   const raw = fs.readFileSync(path.join(exp, 'raw.ndjson'), 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l));
   const bk = raw.filter(r => (r.kind === 'k.book' || r.kind === 'k.book.same') && r.ticker === live.ticker);
   ok('Test 10: order books recorded about once a second in the live window (outside the outage)', bk.length >= (LIVE_AFTER - 10) * 0.7, bk.length + ' snapshots');
-  ok('Test 10: report builds with coverage, accuracy, timing, prices and theoretical sizes', (() => { const R = require('../lib/report'); const s = R.summarize(d.markets); return s.coverage.discovered === truth.markets.length && s.theoretical != null; })(), null);
+  ok('Test 10: report builds with coverage, accuracy, timing, prices and theoretical sizes', (() => { const R = require('../lib/report'); const s = R.summarize(d.markets); return s.coverage.recorded === truth.markets.length && s.coverage.windowsWithNoRecord === 0 && s.qualified.n >= 0 && s.theoretical != null; })(), null);
 
   fs.rmSync(W, { recursive: true, force: true });
   let n = 0; for (const [p, s] of results) { console.log((p ? 'ok   ' : 'FAIL ') + s); if (p) n++; }

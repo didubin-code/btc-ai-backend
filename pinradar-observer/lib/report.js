@@ -1,47 +1,65 @@
-/* Daily / weekly / monthly summaries from derived market records. Every figure carries its sample size; accuracy is
-   computed only over markets whose final 300 s were completely observed AND whose official result was recorded.
-   Theoretical P&L uses the book the observer had received BEFORE the signal (never a later one). */
+/* Daily / weekly / monthly summaries from derived market records. Every figure carries its sample size.
+   * Accuracy is over every observed qualifying signal whose market has an official result: a WRONG call always counts,
+     whatever the coverage of its window. The subset whose windows were observed second by second is shown alongside.
+   * Timing tables (by seconds remaining at the first qualifying signal) use only signals whose earlier seconds were all
+     observed ("timing certain"); the others are counted separately.
+   * Every 15-minute window in the period with no record at all is counted as unobserved.
+   * Theoretical P&L uses only books received BEFORE the signal (never a later one).
+   * Results are split by production build and LOCKED threshold in force, so a redeploy is never pooled silently. */
 'use strict';
 const S = require('./stats');
 const BUCKETS = [['>180', 180, 1e9], ['180-121', 120, 180], ['120-91', 90, 120], ['90-61', 60, 90], ['60-31', 30, 60], ['30-0', -1, 30]];
 const bucketOf = tau => (BUCKETS.find(([, lo, hi]) => tau > lo && tau <= hi) || ['?'])[0];
 const pct = (a, b) => b ? Math.round(10000 * a / b) / 100 : null;
 const q = (arr, p) => { if (!arr.length) return null; const s = arr.slice().sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor(p * s.length))]; };
+const closeOf = m => m.market && Date.parse(m.market.closeTime);
 
-function inPeriod(m, from, to) { const c = m.market && Date.parse(m.market.closeTime); return c >= from && c < to; }
-
+function acc(list, key) {
+  const k = list.filter(m => m[key].won === false).length;
+  return { n: list.length, wrong: k, accuracyPct: pct(list.length - k, list.length), errorCI95: S.clopperPearson(k, list.length), errorUpper95: S.upperBound(k, list.length),
+    posteriors: list.length ? S.posteriors(k, list.length) : null };
+}
 function summarize(markets, { from = 0, to = 8.64e15, label = 'all' } = {}) {
-  const M = markets.filter(m => inPeriod(m, from, to));
-  const cov = { discovered: M.length, complete: 0, partial: 0, unobserved: 0, settled: 0, settlementMissing: 0 };
+  const M = markets.filter(m => { const c = closeOf(m); return c >= from && c < to; });
+  /* every quarter-hour close in the period that has no record at all is unobserved */
+  const closes = new Set(M.map(closeOf).filter(Number.isFinite));
+  let expected = 0, missingWindows = 0;
+  if (closes.size) { const lo = Math.min(...closes), hi = Math.max(...closes);      // windows are 15 min apart: walk that grid
+    for (let t = lo; t <= hi; t += 900e3) { expected++; if (!closes.has(t)) missingWindows++; } }
+  const cov = { windowsExpected: expected, recorded: M.length, windowsWithNoRecord: missingWindows, complete: 0, partial: 0, unobserved: missingWindows, settled: 0, settlementMissing: 0 };
   for (const m of M) { cov[m.coverage ? m.coverage.status : 'unobserved']++; if (m.settlement && m.settlement.outcome) cov.settled++; else cov.settlementMissing++; }
-  const scored = M.filter(m => m.coverage && m.coverage.status === 'complete' && m.settlement && m.settlement.outcome);
-  const sig = key => scored.filter(m => m[key]);
-  const acc = (list, key) => { const k = list.filter(m => m[key].won === false).length; return { n: list.length, wrong: k, accuracyPct: pct(list.length - k, list.length),
-    errorCI95: S.clopperPearson(k, list.length), errorUpper95: S.upperBound(k, list.length), posteriors: list.length ? S.posteriors(k, list.length) : null }; };
+  const settled = M.filter(m => m.settlement && m.settlement.outcome);
+  const L = settled.filter(m => m.signal), Q = settled.filter(m => m.qualified);
+  const Qc = Q.filter(m => m.coverage && m.coverage.status === 'complete');
   const out = { label, period: { from: new Date(from).toISOString(), to: to > 8e15 ? null : new Date(to).toISOString() }, coverage: cov,
-    basis: 'accuracy over completely observed and settled markets only (' + scored.length + ')' };
-  const L = sig('signal'), Q = sig('qualified');
+    basis: 'accuracy over every observed signal with an official result (' + Q.length + ' qualifying); wrong calls always count' };
+  const base = settled.filter(m => m.coverage && m.coverage.status !== 'unobserved');
   out.rates = {
-    lockedPct: pct(L.length, scored.length), qualifiedPct: pct(Q.length, scored.length),
-    lockedByT120Pct: pct(scored.filter(m => m.atT120 && !m.atT120.unobserved && (m.atT120.state === 'LOCKED' || m.atT120.state === 'PROVEN LOCKED')).length, scored.length),
-    qualifiedAtT120Pct: pct(scored.filter(m => m.atT120 && m.atT120.qualifies).length, scored.length),
-    firstQualifiedInLast120Pct: pct(Q.filter(m => m.qualified.tau <= 120).length, scored.length),
-    qualifiedAnywhereInLast120Pct: pct(scored.filter(m => m.lockedAnywhereInLast120).length, scored.length),
+    denominator: base.length + ' settled windows with Pin Radar records',
+    lockedPct: pct(base.filter(m => m.signal).length, base.length), qualifiedPct: pct(base.filter(m => m.qualified).length, base.length),
+    lockedAtT120Pct: pct(base.filter(m => m.atT120 && !m.atT120.unobserved && (m.atT120.state === 'LOCKED' || m.atT120.state === 'PROVEN LOCKED')).length, base.length),
+    qualifiedAtT120Pct: pct(base.filter(m => m.atT120 && m.atT120.qualifies).length, base.length),
+    firstQualifiedInLast120Pct: pct(base.filter(m => m.qualified && m.qualified.timingCertain && m.qualified.tau <= 120).length, base.length),
+    qualifiedAnywhereInLast120Pct: pct(base.filter(m => m.lockedAnywhereInLast120).length, base.length),
     continuousToClosePct: pct(Q.filter(m => m.qualified.category === 'continuous-won').length, Q.length),
     warnedAfterQualifiedPct: pct(Q.filter(m => m.qualified.flags.reversalWarningLater).length, Q.length),
   };
   out.firstLocked = acc(L, 'signal');
   out.qualified = acc(Q, 'qualified');
-  out.categories = Object.fromEntries(['continuous-won', 'unlocked-won', 'warned-won', 'changed-direction-won', 'wrong'].map(c => [c, Q.filter(m => m.qualified.category === c).length]));
-  out.byFirstQualifiedTime = Object.fromEntries(BUCKETS.map(([b]) => { const l = Q.filter(m => bucketOf(m.qualified.tau) === b); return [b, acc(l, 'qualified')]; }));
-  out.firstQualifiedTauSec = { p10: q(Q.map(m => m.qualified.tau), 0.1), median: q(Q.map(m => m.qualified.tau), 0.5), p90: q(Q.map(m => m.qualified.tau), 0.9) };
+  out.qualifiedCompleteWindows = acc(Qc, 'qualified');
+  out.wrongCalls = Q.filter(m => m.qualified.won === false).map(m => ({ ticker: m.ticker, tau: m.qualified.tau, side: m.qualified.side, pFlip: m.qualified.pFlip, coverage: m.coverage && m.coverage.status, result: m.settlement.result }));
+  out.categories = Object.fromEntries(['continuous-won', 'unlocked-won', 'warned-won', 'changed-direction-won', 'won-partially-observed', 'wrong'].map(c => [c, Q.filter(m => m.qualified.category === c).length]));
+  const Qt = Q.filter(m => m.qualified.timingCertain);
+  out.byFirstQualifiedTime = { timingCertain: Qt.length, timingUncertain: Q.length - Qt.length, ...Object.fromEntries(BUCKETS.map(([b]) => [b, acc(Qt.filter(m => bucketOf(m.qualified.tau) === b), 'qualified')])) };
+  out.firstQualifiedTauSec = { p10: q(Qt.map(m => m.qualified.tau), 0.1), median: q(Qt.map(m => m.qualified.tau), 0.5), p90: q(Qt.map(m => m.qualified.tau), 0.9) };
+  const byBuild = {}; for (const m of Q) { const k = (m.production && m.production.build || '?') + ' / LOCK_MAX_FLIP ' + (m.production && m.production.lockMaxFlip); (byBuild[k] = byBuild[k] || []).push(m); }
+  out.byProductionBuild = Object.fromEntries(Object.entries(byBuild).map(([k, l]) => [k, acc(l, 'qualified')]));
   /* prices and theoretical results at the qualifying signal */
   const priced = Q.filter(m => m.pricing && m.pricing.qualified && m.pricing.qualified.atSignal && m.pricing.qualified.atSignal.theoretical);
+  const asks = priced.map(m => m.pricing.qualified.atSignal.bestAskCents).filter(x => x != null);
   out.pricing = { withContemporaneousBook: priced.length, withoutBook: Q.length - priced.length,
-    calledSideBestAskCents: { p10: q(priced.map(m => m.pricing.qualified.atSignal.bestAskCents).filter(x => x != null), 0.1),
-      median: q(priced.map(m => m.pricing.qualified.atSignal.bestAskCents).filter(x => x != null), 0.5),
-      p90: q(priced.map(m => m.pricing.qualified.atSignal.bestAskCents).filter(x => x != null), 0.9) },
-    noOffersAtSignal: priced.filter(m => m.pricing.qualified.atSignal.bestAskCents == null).length };
+    unavailableReasons: Q.filter(m => !priced.includes(m)).reduce((a, m) => { const w = m.pricing && m.pricing.qualified && m.pricing.qualified.atSignal ? String(m.pricing.qualified.atSignal.unavailable || '?').replace(/[0-9]+/g, '#') : 'no pricing'; a[w] = (a[w] || 0) + 1; return a; }, {}),
+    calledSideBestAskCents: { p10: q(asks, 0.1), median: q(asks, 0.5), p90: q(asks, 0.9) }, noOffersAtSignal: priced.length - asks.length };
   const sizes = priced.length ? priced[0].pricing.qualified.atSignal.theoretical.sizes.map(s => s.budgetUsd) : [];
   out.theoretical = {};
   for (const sz of sizes) {
@@ -54,14 +72,14 @@ function summarize(markets, { from = 0, to = 8.64e15, label = 'all' } = {}) {
       totalNetUsd: Math.round(net * 100) / 100, meanNetPerTradeUsd: rows.length ? Math.round(net / rows.length * 100) / 100 : null,
       meanNetCI95ByDayBootstrap: bb, totalCapitalUsd: Math.round(rows.reduce((a, x) => a + x.s.capitalUsd, 0)), losses: rows.filter(x => x.s.netUsd < 0).length };
   }
-  out.limitations = ['theoretical fills assume the recorded book stayed untouched for the order (no queue, latency or competition): an upper bound',
-    'accuracy is over completely observed markets only; partial and unobserved markets are listed in coverage and never counted as wins',
-    'production\'s own threshold for LOCKED is recorded separately (configs); the 0.2 % criterion here is applied to Pin Radar\'s displayed flip risk'];
+  out.limitations = ['theoretical fills assume the recorded book stayed untouched for the order (no queue, latency or competition): an upper bound, never a realised result',
+    'a wrong call always counts; a win in a window not observed second by second from the signal to the close is "won-partially-observed", not a clean win',
+    'production\'s own LOCKED threshold is shown per build; the 0.2 % criterion is applied to Pin Radar\'s displayed flip risk'];
   return out;
 }
 function periods(markets, kind, now = Date.now()) {
   const day = 864e5, out = [];
-  const closes = markets.map(m => m.market && Date.parse(m.market.closeTime)).filter(Number.isFinite);
+  const closes = markets.map(closeOf).filter(Number.isFinite);
   if (!closes.length) return out;
   const start = Math.min(...closes), end = Math.min(now, Math.max(...closes) + 1);
   const floorDay = t => Math.floor(t / day) * day;

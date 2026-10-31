@@ -202,29 +202,40 @@ _ISO_RE = re.compile(
     r"^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|[+-]\d{2}:\d{2})?$")
 
 
-def iso_to_ms(s):
-    """Parse ISO time to integer unix ms, truncating sub-millisecond digits."""
+_SECS_CACHE = {}
+
+
+def parse_created_time(s):
+    """Parse ISO time -> (unix ms, unix us).
+
+    ms truncates (does not round) the fraction to 3 digits, short fractions
+    are right-padded. us (6 digits) is used only to break same-ms ties.
+    """
     m = _ISO_RE.match(s)
     if not m:
         raise ValueError("unparseable created_time %r" % s)
     y, mo, d, hh, mi, ss, frac, tz = m.groups()
-    secs = calendar.timegm((int(y), int(mo), int(d), int(hh), int(mi), int(ss), 0, 0, 0))
-    if tz and tz != "Z":
-        sign = 1 if tz[0] == "+" else -1
-        secs -= sign * (int(tz[1:3]) * 3600 + int(tz[4:6]) * 60)
-    ms = int((frac or "")[:3].ljust(3, "0"))
-    return secs * 1000 + ms
+    key = (y, mo, d, hh, mi, ss, tz)
+    secs = _SECS_CACHE.get(key)
+    if secs is None:
+        secs = calendar.timegm((int(y), int(mo), int(d), int(hh), int(mi), int(ss), 0, 0, 0))
+        if tz and tz != "Z":
+            sign = 1 if tz[0] == "+" else -1
+            secs -= sign * (int(tz[1:3]) * 3600 + int(tz[4:6]) * 60)
+        if len(_SECS_CACHE) > 200000:
+            _SECS_CACHE.clear()
+        _SECS_CACHE[key] = secs
+    frac = (frac or "")
+    return (secs * 1000 + int(frac[:3].ljust(3, "0")),
+            secs * 1_000_000 + int(frac[:6].ljust(6, "0")))
 
 
-def iso_to_us(s):
-    """Full-precision (microsecond) key, used only to break same-ms ties."""
-    m = _ISO_RE.match(s)
-    y, mo, d, hh, mi, ss, frac, tz = m.groups()
-    secs = calendar.timegm((int(y), int(mo), int(d), int(hh), int(mi), int(ss), 0, 0, 0))
-    if tz and tz != "Z":
-        sign = 1 if tz[0] == "+" else -1
-        secs -= sign * (int(tz[1:3]) * 3600 + int(tz[4:6]) * 60)
-    return secs * 1_000_000 + int((frac or "")[:6].ljust(6, "0"))
+def _self_test_time():
+    assert parse_created_time("1970-01-01T00:00:01.2Z") == (1200, 1_200_000)
+    assert parse_created_time("2026-04-01T03:55:00.11547Z")[0] == 1775015700115
+    assert parse_created_time("2026-04-01T03:55:00.999999Z")[0] == 1775015700999
+    assert parse_created_time("2026-04-01T03:55:00Z")[0] == 1775015700000
+    assert parse_created_time("2026-04-01T05:55:00.5+02:00")[0] == 1775015700500
 
 
 HUNDRED = Decimal(100)
@@ -243,15 +254,19 @@ def load_called_side_prints(ticker, side):
         data = json.load(fh)
     want = "yes" if side == "UP" else "no"
     out = []
-    meta = {"n_all": 0, "n_side": 0, "block_side": 0}
+    meta = {"n_all": 0, "n_side": 0, "block_side": 0, "newest_first": True}
+    prev_us = None
     for i, t in enumerate(data.get("trades") or []):
         meta["n_all"] += 1
         if t.get("taker_side") != want:
             continue
         yes = Decimal(t["yes_price_dollars"])
         price = HUNDRED * yes if side == "UP" else HUNDRED - HUNDRED * yes
-        ct = t["created_time"]
-        out.append((iso_to_ms(ct), iso_to_us(ct), i, price, Decimal(t["count_fp"])))
+        ms, us = parse_created_time(t["created_time"])
+        if prev_us is not None and us > prev_us:
+            meta["newest_first"] = False
+        prev_us = us
+        out.append((ms, us, i, price, Decimal(t["count_fp"])))
         meta["n_side"] += 1
         if t.get("is_block_trade"):
             meta["block_side"] += 1
@@ -276,6 +291,7 @@ def dec_out(x):
 
 def main():
     _self_test_beta()
+    _self_test_time()
 
     # ---- markets -----------------------------------------------------------
     markets = {}
@@ -496,6 +512,12 @@ def main():
     prices_any_prior = []
     tie_ambiguous = 0       # last print shares its ms with another called-side
                             # print at a different price
+    tie_ambiguous_us = 0    # ... and even its microsecond
+    # tie-break sensitivity: alternative choices of "the last print" inside the
+    # latest-ms group (all have the same ms, so the 10 s test is unaffected)
+    alt_prices = {"largestFileIndexInMsGroup": [], "minPriceInMsGroup": [],
+                  "maxPriceInMsGroup": []}
+    files_not_newest_first = 0
     caps = []
     caps_by_tk = {}
     block_side_total = 0
@@ -510,6 +532,7 @@ def main():
         if meta["n_all"] == 0:
             empty_files += 1
         block_side_total += meta["block_side"]
+        files_not_newest_first += not meta["newest_first"]
         side_prints_total += meta["n_side"]
         ts = q["ts"]
         prior = [p for p in prints if p[0] <= ts]
@@ -521,11 +544,17 @@ def main():
             same_ms = [p for p in prior if p[0] == last[0]]
             if len({p[3] for p in same_ms}) > 1:
                 tie_ambiguous += 1
+                if len({p[3] for p in same_ms if p[1] == last[1]}) > 1:
+                    tie_ambiguous_us += 1
             prices_any_prior.append(last[3])
             gap = ts - last[0]
             if gap <= WINDOW_MS:
                 within_le += 1
                 prices_within.append(last[3])
+                alt_prices["largestFileIndexInMsGroup"].append(
+                    max(same_ms, key=lambda p: p[2])[3])
+                alt_prices["minPriceInMsGroup"].append(min(p[3] for p in same_ms))
+                alt_prices["maxPriceInMsGroup"].append(max(p[3] for p in same_ms))
             if gap < WINDOW_MS:
                 within_lt += 1
         dollars = sum((p[3] / HUNDRED * p[4] for p in prints if p[0] > ts), Decimal(0))
@@ -549,6 +578,11 @@ def main():
         "sensitivity_percentilesCents_anyPriorPrint": {
             "p%d" % p: dec_out(pick_percentile(prices_any_prior, p)) for p in PERCENTILES},
         "signalsWhereLastPrintMsTiesAtDifferentPrices": tie_ambiguous,
+        "signalsWhereLastPrintMicrosecondTiesAtDifferentPrices": tie_ambiguous_us,
+        "sensitivity_tieBreak_percentilesCents_within10s": {
+            name: {"p%d" % p: dec_out(pick_percentile(sorted(v), p)) for p in PERCENTILES}
+            for name, v in alt_prices.items()},
+        "tradesFilesNotNewestFirstOnCalledSide": files_not_newest_first,
         "calledSidePrintsInFiles": side_prints_total,
         "calledSideBlockTradesInFiles": block_side_total,
     }
@@ -630,8 +664,9 @@ def main():
             "signals that have such a print; percentiles over any prior print are "
             "given as a sensitivity.",
             "Last print ties on the same ms are broken by the microsecond time, "
-            "then by file order; the number of signals where a same-ms tie had "
-            "different prices is reported.",
+            "then by the smaller file index (files are newest-first); the number "
+            "of signals where a same-ms tie had different prices is reported, "
+            "with percentiles under alternative tie-breaks.",
             "All prints with the called taker_side are used, including block trades.",
             "Capacity uses prints with parsed ms > signal ts; signals with a "
             "trades file but no later called-side print count as $0. Denominator "
