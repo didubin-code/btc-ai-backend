@@ -372,6 +372,21 @@ t('primary rule v1 (frozen): first row with 0 < tau <= 120, LOCKED, pFlip <= 0.0
   const t3 = tkn(), r3 = rowsFor(t3, s => s > 80 ? H('UP') : (s > 85 && s < 90) ? null : L('UP')).filter(x => !(x.tau > 95 && x.tau < 100)); const p3 = one([health, mk(t3), { kind: 'pr.predictions', rows: r3 }]).primary;
   assert.strictEqual(p3.timingCertain, false, 'a gap before the entry inside the final 120 s makes "first" uncertain');
 });
+t('provenance and honesty: a gap after the entry makes later events indeterminate (never "stable"); live vs back-fill datasets are separated; duplicates keep the first ingestion; unpriced entries are excluded from profit', () => {
+  const tk = tkn(), rows = rowsFor(tk, s => s > 150 ? H('UP') : (s > 20 && s < 30) ? null : L('UP'));
+  const start = { kind: 'obs.start', at: C - 400e3 };
+  const recs = [health, start, mk(tk), { kind: 'pr.predictions', tRecv: C - 200e3, rows }, { kind: 'pr.predictions', tRecv: C + 50e3, ticker: tk, rows: rows.slice(0, 50) }];
+  const d = D.build(recs), m = d.markets[0];
+  assert.strictEqual(m.primary.status, 'entry'); assert.strictEqual(m.primary.observedToClose, false);
+  assert.strictEqual(m.primary.firstLater.reversalWarning, 'indeterminate'); assert.strictEqual(m.primary.flags.reversalWarningLater, null);
+  assert.strictEqual(m.provenance.dataset, 'prospective-live'); assert.strictEqual(d.duplicateRowsRemoved, 50); assert.strictEqual(m.provenance.firstIngestedAt, new Date(C - 200e3).toISOString());
+  const back = D.build([health, { kind: 'obs.start', at: C + 3600e3 }, mk(tk), { kind: 'pr.predictions', tRecv: C + 3700e3, ticker: tk, rows }]).markets[0];
+  assert.strictEqual(back.provenance.dataset, 'retrospective-backfill'); assert.strictEqual(back.provenance.rowsVia.catchUp, back.provenance.rows);
+  const rep = R.summarize([m, back].map(R.slim));
+  assert.strictEqual(rep.primary.prospectiveLive.windows.entry, 1); assert.strictEqual(rep.primary.retrospectiveBackfill.windows.entry, 1);
+  assert.strictEqual(rep.primary.prospectiveLive.pricing.priced, 0); assert.strictEqual(rep.primary.prospectiveLive.pricing.excludedUnpriced, 1);
+  assert.strictEqual(rep.primary.prospectiveLive.laterEvents.reversalWarning.indeterminate, 1);
+});
 t('a book reply empty on BOTH sides is a failed snapshot, never "no offers": the previous real book prices the signal', () => {
   const tk = tkn(), rows = rowsFor(tk, s => s > 100 ? H('UP') : L('UP')); const sigObs = C - 100e3 + 250;
   const empty = { kind: 'k.book', ticker: tk, tSent: sigObs - 330, tRecv: sigObs - 300, hash: 'e1', book: { orderbook_fp: { yes_dollars: null, no_dollars: null } } };

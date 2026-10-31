@@ -44,16 +44,43 @@ function summarize(markets, { from = 0, to = 8.64e15, label = 'all' } = {}) {
     continuousToClosePct: pct(Q.filter(m => m.qualified.category === 'continuous-won').length, Q.length),
     warnedAfterQualifiedPct: pct(Q.filter(m => m.qualified.flags.reversalWarningLater).length, Q.length),
   };
-  /* the frozen primary rule (rules/primary_v1.json): one entry per market at most, held to settlement */
-  const PM = M.filter(m => m.primary), PE = settled.filter(m => m.primary && m.primary.status === 'entry');
-  out.primary = { rule: PM[0] ? PM[0].primary.rule : null, ruleSha256: PM[0] ? PM[0].primary.ruleSha256 : null,
-    windows: { recorded: M.length, entry: PM.filter(m => m.primary.status === 'entry').length, noQualifyingSignal: PM.filter(m => m.primary.status === 'no-qualifying-signal').length,
-      notDeterminable: PM.filter(m => m.primary.status === 'not-determinable').length + missingWindows, entryUnsettled: PM.filter(m => m.primary.status === 'entry' && !(m.settlement && m.settlement.outcome)).length },
-    accuracy: acc(PE, 'primary'), timingCertainOnly: acc(PE.filter(m => m.primary.timingCertain), 'primary'),
-    entryType: PE.reduce((a, m) => { a[m.primary.entryType] = (a[m.primary.entryType] || 0) + 1; return a; }, {}),
-    after: { lostLocked: PE.filter(m => m.primary.firstLater && m.primary.firstLater.lostLocked).length, riskAboveThreshold: PE.filter(m => m.primary.firstLater && m.primary.firstLater.riskAboveThreshold).length,
-      reversalWarning: PE.filter(m => m.primary.firstLater && m.primary.firstLater.reversalWarning).length, directionFlip: PE.filter(m => m.primary.firstLater && m.primary.firstLater.directionFlip).length },
-    wrong: PE.filter(m => m.primary.won === false).map(m => ({ ticker: m.ticker, tau: m.primary.tau, side: m.primary.side, pFlip: m.primary.pFlip, entryType: m.primary.entryType, result: m.settlement.result })) };
+  /* the frozen primary rule (rules/primary_v1.json): one entry per market at most, held to settlement. The PROSPECTIVE
+     live dataset (whole final 300 s observed live, books recorded) is the validation set; the retrospective back-fill is
+     reported separately and never pooled with it. Unpriced entries are excluded from profit and capacity, and counted. */
+  const dsOf = m => m.provenance ? m.provenance.dataset : 'retrospective-backfill';
+  const block = ML => {
+    const S = ML.filter(m => m.settlement && m.settlement.outcome), PE = S.filter(m => m.primary && m.primary.status === 'entry');
+    const cnt = (k) => ({ observed: PE.filter(m => m.primary.firstLater && m.primary.firstLater[k] && m.primary.firstLater[k] !== 'indeterminate').length,
+      indeterminate: PE.filter(m => m.primary.firstLater && m.primary.firstLater[k] === 'indeterminate').length });
+    const priced = PE.filter(m => m.pricing && m.pricing.primary && m.pricing.primary.atSignal && m.pricing.primary.atSignal.theoretical);
+    const pricedSet = new Set(priced);
+    const sizes = priced.length ? priced[0].pricing.primary.atSignal.theoretical.sizes.map(x => x.budgetUsd) : [];
+    const theo = {};
+    for (const sz of sizes) {
+      const rows = priced.map(m => ({ m, s: m.pricing.primary.atSignal.theoretical.sizes.find(x => x.budgetUsd === sz) })).filter(x => x.s && x.s.contracts > 0);
+      const byDay = {}; for (const x of rows) { const d = x.m.market.closeTime.slice(0, 10); (byDay[d] = byDay[d] || []).push(x.s.netUsd || 0); }
+      const seq = rows.map(x => x.s.netUsd || 0);
+      theo[sz] = { withAnyFill: rows.length, fullyFillable: rows.filter(x => x.s.fullyFillable).length, totalNetUsd: Math.round(seq.reduce((a, b) => a + b, 0) * 100) / 100,
+        worstTradeUsd: seq.length ? seq.reduce((a, b) => Math.min(a, b), Infinity) : null,
+        meanNetCI95ByDayBootstrap: Object.keys(byDay).length ? require('./stats').blockBootstrap(Object.values(byDay), v => v.reduce((a, b) => a + b, 0) / v.length, 1000, 4242) : null };
+      theo[sz].maxDrawdownUsd = require('./stats').maxDrawdown(seq);
+    }
+    return { windows: { recorded: ML.length, settled: S.length, entry: ML.filter(m => m.primary && m.primary.status === 'entry').length,
+        noQualifyingSignal: ML.filter(m => m.primary && m.primary.status === 'no-qualifying-signal').length, notDeterminable: ML.filter(m => !m.primary || m.primary.status === 'not-determinable').length,
+        entryUnsettled: ML.filter(m => m.primary && m.primary.status === 'entry' && !(m.settlement && m.settlement.outcome)).length },
+      accuracy: acc(PE, 'primary'), timingCertainOnly: acc(PE.filter(m => m.primary.timingCertain), 'primary'),
+      entryType: PE.reduce((a, m) => { a[m.primary.entryType] = (a[m.primary.entryType] || 0) + 1; return a; }, {}),
+      laterEvents: { lostLocked: cnt('lostLocked'), riskAboveThreshold: cnt('riskAboveThreshold'), reversalWarning: cnt('reversalWarning'), directionFlip: cnt('directionFlip') },
+      wrong: PE.filter(m => m.primary.won === false).map(m => ({ ticker: m.ticker, tau: m.primary.tau, side: m.primary.side, pFlip: m.primary.pFlip, entryType: m.primary.entryType, result: m.settlement.result })),
+      pricing: { priced: priced.length, excludedUnpriced: PE.length - priced.length,
+        excludedReasons: PE.filter(m => !pricedSet.has(m)).reduce((a, m) => { const at = m.pricing && m.pricing.primary && m.pricing.primary.atSignal; const w = at ? String(at.unavailable || 'no offer on the called side').replace(/[0-9]+/g, '#') : 'no pricing'; a[w] = (a[w] || 0) + 1; return a; }, {}),
+        theoreticalHoldToSettlement: theo, note: 'hypothetical taker fills against the recorded book, hold to settlement; not executions' } };
+  };
+  const PM = M.find(m => m.primary);
+  out.primary = { rule: PM ? PM.primary.rule : null, ruleSha256: PM ? PM.primary.ruleSha256 : null,
+    prospectiveLive: block(M.filter(m => dsOf(m) === 'prospective-live')),
+    retrospectiveBackfill: block(M.filter(m => dsOf(m) === 'retrospective-backfill')),
+    missingWindowsInPeriod: missingWindows };
   out.firstLocked = acc(L, 'signal');
   out.qualified = acc(Q, 'qualified');
   out.qualifiedCompleteWindows = acc(Qc, 'qualified');
@@ -88,6 +115,7 @@ function summarize(markets, { from = 0, to = 8.64e15, label = 'all' } = {}) {
   return out;
 }
 /* the fields of a market record that summarize() and periods() use: a report over a long history keeps these only */
+const slimPrice = at => ({ atSignal: !at ? at : at.theoretical ? { bestAskCents: at.bestAskCents, theoretical: { sizes: at.theoretical.sizes.map(x => ({ budgetUsd: x.budgetUsd, contracts: x.contracts, fullyFillable: x.fullyFillable, netUsd: x.netUsd, capitalUsd: x.capitalUsd })) } } : { unavailable: at.unavailable } });
 function slim(m) {
   const q = m.qualified, at = m.pricing && m.pricing.qualified && m.pricing.qualified.atSignal;
   return { ticker: m.ticker, market: m.market && { closeTime: m.market.closeTime }, coverage: m.coverage && { status: m.coverage.status },
@@ -95,8 +123,9 @@ function slim(m) {
     qualified: q && { won: q.won, tau: q.tau, timingCertain: q.timingCertain, category: q.category, side: q.side, pFlip: q.pFlip, flags: { reversalWarningLater: q.flags.reversalWarningLater } },
     atT120: m.atT120 && { unobserved: m.atT120.unobserved, state: m.atT120.state, qualifies: m.atT120.qualifies }, lockedAnywhereInLast120: m.lockedAnywhereInLast120,
     production: m.production && { build: m.production.build, lockMaxFlip: m.production.lockMaxFlip },
+    provenance: m.provenance && { dataset: m.provenance.dataset },
     primary: m.primary && { rule: m.primary.rule, ruleSha256: m.primary.ruleSha256, status: m.primary.status, entryType: m.primary.entryType, won: m.primary.won, tau: m.primary.tau, side: m.primary.side, pFlip: m.primary.pFlip, timingCertain: m.primary.timingCertain, firstLater: m.primary.firstLater },
-    pricing: { qualified: { atSignal: !at ? at : at.theoretical ? { bestAskCents: at.bestAskCents, theoretical: { sizes: at.theoretical.sizes.map(x => ({ budgetUsd: x.budgetUsd, contracts: x.contracts, fullyFillable: x.fullyFillable, netUsd: x.netUsd, capitalUsd: x.capitalUsd })) } } : { unavailable: at.unavailable } } } };
+    pricing: { primary: slimPrice(m.pricing && m.pricing.primary && m.pricing.primary.atSignal), qualified: { atSignal: !at ? at : at.theoretical ? { bestAskCents: at.bestAskCents, theoretical: { sizes: at.theoretical.sizes.map(x => ({ budgetUsd: x.budgetUsd, contracts: x.contracts, fullyFillable: x.fullyFillable, netUsd: x.netUsd, capitalUsd: x.capitalUsd })) } } : { unavailable: at.unavailable } } } };
 }
 function periods(markets, kind, now = Date.now()) {
   const day = 864e5, out = [];

@@ -11,7 +11,7 @@
 const D = require('./derive');
 const iso = t => new Date(t).toISOString();
 
-function line(m) {
+function line(m, startedAt = null) {
   const c = m.coverage, q = m.primary && m.primary.status === 'entry' ? m.primary : null, s = m.settlement;
   const cov = !c ? 'coverage=UNKNOWN (no market times)' : c.status === 'unobserved' ? 'coverage=UNOBSERVED (no Pin Radar rows: missing observation, not "no signal")'
     : `coverage=${c.status} ${c.secondsObserved}/300s missing=${c.missingSeconds}${c.pinradarRestartInFinal300s ? ' PRODUCTION-RESTART' : ''}${c.anomalies.length ? ' anomalies=' + c.anomalies.join('; ') : ''} books=${c.books.usableSnapshotsInFinal300s}`;
@@ -30,10 +30,13 @@ function line(m) {
   }
   const out = !s || !s.outcome ? 'settlement=UNKNOWN' : `settlement=${s.result} (${s.outcome}) value=${s.expirationValue}` + (q ? ` => signal ${q.won ? 'CORRECT' : 'WRONG'} [${q.category}]` : '');
   const prod = m.production ? ` prod=${m.production.version || '?'}/lockMaxFlip=${m.production.lockMaxFlip}` : '';
-  return `[window] ${m.ticker} close=${m.market ? m.market.closeTime : '?'}${prod} | ${cov} | ${sig} | ${out}`;
+  const ds = m.provenance ? ` dataset=${m.provenance.dataset}` : '';
+  const note = startedAt != null && m.market && Date.parse(m.market.closeTime) - 300e3 < startedAt ? ` | NOTE: this line uses only records seen since this process started (${new Date(startedAt).toISOString()}); the stored record is authoritative` : '';
+  return `[window] ${m.ticker} close=${m.market ? m.market.closeTime : '?'}${prod}${ds} | ${cov} | ${sig} | ${out}${note}`;
 }
 
 function windowLogger({ log = console.log, delayMs = 90e3, now = Date.now } = {}) {
+  const startedAt = now();
   const per = new Map(), health = [], misc = []; let series = null, lastHealthLog = 0, healthFails = 0, rows = 0, rowsSince = now();
   const get = tk => { let w = per.get(tk); if (!w) per.set(tk, w = { recs: [], first: now() }); return w; };
   function summarize(tk) {
@@ -41,7 +44,7 @@ function windowLogger({ log = console.log, delayMs = 90e3, now = Date.now } = {}
     try {
       const d = D.build([...health, ...(series ? [series] : []), ...misc, ...w.recs]);
       const m = d.markets.find(x => x.ticker === tk);
-      if (m) log(line(m));
+      if (m) log(line(m, startedAt));
     } catch (e) { log('[window] ' + tk + ' summary failed: ' + e.message); }
     per.delete(tk);
   }

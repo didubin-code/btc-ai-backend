@@ -80,7 +80,7 @@ function build(input, opts = {}) {
   const sinceMs = opts.sinceMs || 0, untilMs = opts.untilMs || Infinity;
   /* ---- pass 1: small indices ---- */
   const mk = new Map(), health = [], gaps = [], restarts = [], series = [], bookFail = new Map(), clockSteps = [], cfgs = new Map();
-  let nRaw = 0;
+  let nRaw = 0, firstStart = Infinity;
   for (const r of iter()) {
     nRaw++;
     switch (r.kind) {
@@ -98,6 +98,7 @@ function build(input, opts = {}) {
       case 'pr.restart': restarts.push(r); break;
       case 'pr.clockstep': clockSteps.push({ from: r.at, to: r.at + r.deltaMs }); break;
       case 'obs.gap': gaps.push({ from: r.from, to: r.to }); break;
+      case 'obs.start': if (Number.isFinite(r.at) && !(firstStart <= r.at)) firstStart = r.at; break;
       case 'k.series': if (r.series) series.push({ tRecv: r.tRecv, series: { fee_type: r.series.fee_type, fee_multiplier: r.series.fee_multiplier } }); break;
       case 'k.markets': for (const m of r.markets || []) { if (!m || !m.ticker) continue; const o = mk.get(m.ticker) || {}; mk.set(m.ticker, { ...o, open: o.open || slim(m), rules: o.rules || m.rules_primary || null, seenAt: o.seenAt || r.tRecv }); } break;
       case 'k.market': if (r.market) { const o = mk.get(r.ticker) || {}, fin = r.market.status === 'finalized';
@@ -116,14 +117,16 @@ function build(input, opts = {}) {
   /* ---- pass 2: rows and books market by market; a market is finished 26 h (stream time) after its close ---- */
   const preds = new Map(), books = new Map(), lastBook = new Map(), done = new Set(), markets = [];
   const put = opts.onMarket || (rec => markets.push(rec));
-  let lateRows = 0, n2 = 0, emitted = 0;
+  let lateRows = 0, n2 = 0, emitted = 0, dupRows = 0;
   const finalize = tk => { if (done.has(tk)) return; done.add(tk); const c = closeOf(tk); if (c == null || (c >= sinceMs && c < untilMs)) { put(market(tk)); emitted++; } preds.delete(tk); books.delete(tk); lastBook.delete(tk); };
   for (const r of iter()) {
     n2++;
     if (r.kind === 'pr.predictions') for (const x of r.rows || []) {
       if (!x || typeof x.ticker !== 'string' || !Number.isFinite(x.ts)) continue;
       if (done.has(x.ticker)) { lateRows++; continue; }
-      const k = x.ticker + '|' + x.ts + '|' + x.state + '|' + x.side; let m = preds.get(x.ticker); if (!m) preds.set(x.ticker, m = new Map()); m.set(k, x);
+      const k = x.ticker + '|' + x.ts + '|' + x.state + '|' + x.side; let m = preds.get(x.ticker); if (!m) preds.set(x.ticker, m = new Map());
+      /* the FIRST ingestion of a row is kept (later copies from overlapping pulls are counted, not stored twice) */
+      if (m.has(k)) { dupRows++; continue; } m.set(k, { ...x, _rcv: r.tRecv, _via: r.ticker ? 'catch-up' : 'poll' });
     }
     else if (r.kind === 'k.book' || r.kind === 'k.book.same') {
       const tk = r.ticker, c = closeOf(tk); if (done.has(tk)) continue;
@@ -136,7 +139,7 @@ function build(input, opts = {}) {
   }
   for (const tk of new Set([...preds.keys(), ...books.keys(), ...mk.keys()])) finalize(tk);
   markets.sort((a, b) => a.ticker < b.ticker ? -1 : a.ticker > b.ticker ? 1 : 0);
-  return { generatedFrom: nRaw, lateRowsIgnored: lateRows, clock: summaryClock(samples), threshold: THRESHOLD, restarts: restarts.length, marketCount: emitted, markets };
+  return { generatedFrom: nRaw, lateRowsIgnored: lateRows, duplicateRowsRemoved: dupRows, observerFirstStart: Number.isFinite(firstStart) ? new Date(firstStart).toISOString() : null, clock: summaryClock(samples), threshold: THRESHOLD, restarts: restarts.length, marketCount: emitted, markets };
 
   function market(tk) {
     const m = mk.get(tk) || {};
@@ -206,8 +209,11 @@ function build(input, opts = {}) {
         const timingCertain = closeMs != null && allSecs(sec + 1, 299);
         const category = won == null ? 'outcome-unknown' : won === false ? 'wrong' : !observedToClose ? 'won-partially-observed'
           : dirChange ? 'changed-direction-won' : warned ? 'warned-won' : unlock ? 'unlocked-won' : 'continuous-won';
-        const at = f => { const x = after.find(f); return x ? { ts: x.ts, utc: new Date(x.ts).toISOString(), tau: r1(x.tau), state: x.state, side: x.side, pFlip: x.pFlip } : null; };
-        return { ...pick(s0), won, observedToClose, timingCertain, flags: { unlockedLater: unlock, directionChangedLater: dirChange, reversalWarningLater: warned, riskRoseAboveThresholdLater: riskUp },
+        /* an event that was seen is reported; an event NOT seen counts as "did not happen" only if every second from the
+           entry to the close was observed; otherwise it is null (indeterminate), never inferred stable */
+        const seen = (yes) => yes ? true : observedToClose ? false : null;
+        const at = f => { const x = after.find(f); return x ? { ts: x.ts, utc: new Date(x.ts).toISOString(), tau: r1(x.tau), state: x.state, side: x.side, pFlip: x.pFlip } : observedToClose ? null : 'indeterminate'; };
+        return { ...pick(s0), won, observedToClose, timingCertain, flags: { unlockedLater: seen(unlock), directionChangedLater: seen(dirChange), reversalWarningLater: seen(warned), riskRoseAboveThresholdLater: seen(riskUp) },
           firstLater: { lostLocked: at(x => !isL(x.state)), riskAboveThreshold: at(x => isL(x.state) && x.pFlip > THRESHOLD), reversalWarning: at(x => x.state === 'REVERSAL WARNING'), directionFlip: at(x => isL(x.state) && x.side !== s0.side) },
           category };
       };
@@ -252,6 +258,18 @@ function build(input, opts = {}) {
         atSignal: !before ? { unavailable: 'no book received before the signal' } : stale ? { unavailable: 'newest book received before the signal is ' + Math.round((earliest - before.tRecv) / 1000) + ' s old' } : at(before, earliest),
         afterSignal: at(after, null, false) };
     };
+    /* provenance: production's observation times, the observer's ingestion times, and the dataset the market belongs to.
+       prospective-live = the whole final 300 s came after the observer's first start on this data directory (rows polled
+       live and order books recorded); everything else (back-fill from production's memory) is retrospective-backfill */
+    if (rows.length || closeMs) {
+      const rc = rows.map(x => x._rcv).filter(Number.isFinite);
+      const live = closeMs != null && Number.isFinite(firstStart) && closeMs - 300e3 >= firstStart;
+      rec.provenance = { dataset: live ? 'prospective-live' : 'retrospective-backfill', observerFirstStart: Number.isFinite(firstStart) ? new Date(firstStart).toISOString() : null,
+        rows: rows.length, rowsVia: { poll: rows.filter(x => x._via === 'poll').length, catchUp: rows.filter(x => x._via === 'catch-up').length },
+        firstObservedAt: rows.length ? new Date(rows[0].ts).toISOString() : null, lastObservedAt: rows.length ? new Date(rows[rows.length - 1].ts).toISOString() : null,
+        firstIngestedAt: rc.length ? new Date(Math.min(...rc)).toISOString() : null, lastIngestedAt: rc.length ? new Date(Math.max(...rc)).toISOString() : null,
+        source: 'Pin Radar /predictions (production clock ts), Kalshi public API (observer clock tRecv)' };
+    }
     rec.pricing = { primary: rec.primary && rec.primary.status === 'entry' ? priceAt(rec.primary) : null, qualified: priceAt(rec.qualified), firstLocked: priceAt(rec.signal) };
     return rec;
   }
