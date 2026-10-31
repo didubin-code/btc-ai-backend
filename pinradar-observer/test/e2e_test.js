@@ -104,6 +104,10 @@ const LIVE_AFTER = 75;
   ok('Test 10: order books recorded about once a second in the live window (outside the outage)', bk.length >= (LIVE_AFTER - 10) * 0.7, bk.length + ' snapshots');
   ok('Test 10: report builds with coverage, accuracy, timing, prices and theoretical sizes', (() => { const R = require('../lib/report'); const s = R.summarize(d.markets); return s.coverage.recorded === truth.markets.length && s.coverage.windowsWithNoRecord === 0 && s.qualified.n >= 0 && s.theoretical != null; })(), null);
 
+  const rp = path.join(W, 'report.json');
+  const rr = spawnSync(process.execPath, [path.join(ROOT, 'observer.js'), 'report', '--data', DD, '--key', KEY, '--sign-pub', SIGNPUB, '--period', 'daily', '--out', rp], { encoding: 'utf8' });
+  const rep = rr.status === 0 ? JSON.parse(fs.readFileSync(rp, 'utf8')) : null;
+  ok('Test 10: observer.js report (daily) runs on the encrypted store and counts every market', rep && rep.all.coverage.recorded === truth.markets.length && rep.periods.length >= 1 && rep.evidence.checkpoints.count > 0, rr.stderr.slice(-300) || (rep && rep.all.coverage));
   fs.rmSync(W, { recursive: true, force: true });
   let n = 0; for (const [p, s] of results) { console.log((p ? 'ok   ' : 'FAIL ') + s); if (p) n++; }
   console.log(`e2e: ${n}/${results.length} passed`);

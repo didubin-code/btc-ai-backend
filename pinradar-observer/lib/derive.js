@@ -30,12 +30,14 @@ function clockSamples(healthRecs) {
     .filter(Boolean).sort((a, b) => a.at - b.at);
 }
 function clockAt(samples, prodTs) {
-  /* samples are on the observer clock; the signal is near prodTs on production's clock (offsets are small vs 15 min) */
-  const near = samples.filter(s => Math.abs(s.at - prodTs) <= CLOCK_WINDOW_MS);
-  if (!near.length) return { verified: false, why: 'no clock sample within 15 min of the signal' };
-  const lo = Math.max(...near.map(s => s.lo)), hi = Math.min(...near.map(s => s.hi));
-  if (lo > hi) return { verified: false, why: 'clock samples within 15 min disagree (production clock step?)', samples: near.length };
-  return { verified: true, offsetLoMs: lo, offsetHiMs: hi, samples: near.length };
+  /* samples (sorted by observer time) within 15 min of prodTs, production's clock (offsets are small vs 15 min); binary search */
+  let a = 0, b = samples.length;
+  while (a < b) { const m = (a + b) >> 1; if (samples[m].at < prodTs - CLOCK_WINDOW_MS) a = m + 1; else b = m; }
+  let lo = -Infinity, hi = Infinity, n = 0;
+  for (let i = a; i < samples.length && samples[i].at <= prodTs + CLOCK_WINDOW_MS; i++) { if (samples[i].lo > lo) lo = samples[i].lo; if (samples[i].hi < hi) hi = samples[i].hi; n++; }
+  if (!n) return { verified: false, why: 'no clock sample within 15 min of the signal' };
+  if (lo > hi) return { verified: false, why: 'clock samples within 15 min disagree (production clock step?)', samples: n };
+  return { verified: true, offsetLoMs: lo, offsetHiMs: hi, samples: n };
 }
 function summaryClock(samples) {
   if (!samples.length) return { samples: 0 };
@@ -51,56 +53,96 @@ function feeFor(seriesRecs, atObs) {
   return { rate: 0.07 * Number(any.series.fee_multiplier), source: 'kalshi /series ' + any.series.fee_type + ' x ' + any.series.fee_multiplier + (before ? '' : ' (recorded after the signal: assumed unchanged)') };
 }
 
-function build(raw, opts = {}) {
-  const preds = new Map(), books = new Map(), mk = new Map(), health = [], gaps = [], restarts = [], series = [], bookFail = new Map(), clockSteps = [];
-  const bookByHash = new Map();
-  for (const r of raw) {
+/* Books are kept compactly (typed arrays of [price, size] for the asks of each side, plus the best YES bid); an unchanged
+   book shares the previous one's arrays */
+const pack = lv => { const a = new Float64Array(lv.length * 2); lv.forEach(([p, z], i) => { a[2 * i] = p; a[2 * i + 1] = z; }); return a; };
+const unpack = a => { const out = []; for (let i = 0; i < a.length; i += 2) out.push([a[i], a[i + 1]]); return out; };
+function compactBook(body) { const nb = normaliseBook(body); return { ya: pack(nb.yesAsks), na: pack(nb.noAsks), yb: nb.yesBids.length ? nb.yesBids[0][0] : null }; }
+const FINALIZE_AFTER_MS = 26 * 3600e3;     // production keeps ~25 h of prediction rows: a market can still receive rows (catch-up) until then
+/* the market fields a record uses (the rules text is kept once per market) */
+const slim = m => ({ ticker: m.ticker, open_time: m.open_time, close_time: m.close_time, expiration_time: m.expiration_time, floor_strike: m.floor_strike,
+  price_level_structure: m.price_level_structure, status: m.status, result: m.result, expiration_value: m.expiration_value, settlement_ts: m.settlement_ts });
+
+/* build(input, { sinceMs, untilMs, onMarket }): input is an array of records, or a function returning a fresh iterator
+   over them (the store is read twice, record by record). With onMarket, each market record is handed over as soon as it
+   is final and not kept: memory is then bounded by about a day of rows and books, not by the length of the history.
+   Without it, the records are returned in `markets`, sorted by ticker. */
+function build(input, opts = {}) {
+  const iter = () => typeof input === 'function' ? input() : input;
+  const sinceMs = opts.sinceMs || 0, untilMs = opts.untilMs || Infinity;
+  /* ---- pass 1: small indices ---- */
+  const mk = new Map(), health = [], gaps = [], restarts = [], series = [], bookFail = new Map(), clockSteps = [], cfgs = new Map();
+  let nRaw = 0;
+  for (const r of iter()) {
+    nRaw++;
     switch (r.kind) {
       case 'pr.predictions': {
-        /* production returns its rows in the order it wrote them: a timestamp going backwards inside one reply is a
-           production clock step (its ts and seconds-remaining shift together, so the rows alone would look normal) */
+        for (const b of r.orderBreaks || []) clockSteps.push(b);       // found by the collector on production's full reply
         let prevTs = null;
-        for (const x of r.rows || []) {
-          if (!x || typeof x.ticker !== 'string' || !Number.isFinite(x.ts)) continue;
-          if (prevTs != null && x.ts < prevTs - 1000) clockSteps.push({ from: prevTs, to: x.ts });
-          prevTs = x.ts;
-          const k = x.ticker + '|' + x.ts + '|' + x.state + '|' + x.side; const m = preds.get(x.ticker) || new Map(); m.set(k, x); preds.set(x.ticker, m);
-        }
+        for (const x of r.rows || []) { if (!x || !Number.isFinite(x.ts)) continue; if (prevTs != null && x.ts < prevTs - 1000) clockSteps.push({ from: prevTs, to: x.ts }); prevTs = x.ts; }
         break;
       }
-      case 'pr.health': health.push(r); break;
+      case 'pr.health': if (r.body) {
+        const c = { build: r.body.build || null, version: r.body.version || null, lockMaxFlip: r.body.tiers ? r.body.tiers.lockMaxFlip ?? null : null }, ck = JSON.stringify(c);
+        if (!cfgs.has(ck)) cfgs.set(ck, c);                            // one shared object per distinct configuration
+        health.push({ tSent: r.tSent, tRecv: r.tRecv, body: { ts: r.body.ts }, cfg: cfgs.get(ck) });
+      } break;
       case 'pr.restart': restarts.push(r); break;
-      case 'obs.gap': gaps.push(r); break;
-      case 'k.series': if (r.series) series.push(r); break;
-      case 'k.markets': for (const m of r.markets || []) { const o = mk.get(m.ticker) || {}; mk.set(m.ticker, { ...o, open: o.open || m, seenAt: o.seenAt || r.tRecv }); } break;
-      case 'k.market': if (r.market) { const o = mk.get(r.ticker) || {}; mk.set(r.ticker, { ...o, final: r.market.status === 'finalized' ? r.market : o.final, last: r.market, finalAt: r.market.status === 'finalized' ? (o.finalAt || r.tRecv) : o.finalAt }); } break;
-      case 'k.book':
-        if (r.book) { bookByHash.set(r.hash, r.book); const l = books.get(r.ticker) || []; l.push({ tSent: r.tSent, tRecv: r.tRecv, hash: r.hash, body: r.book }); books.set(r.ticker, l); }
-        else bookFail.set(r.ticker, (bookFail.get(r.ticker) || 0) + 1);
-        break;
-      case 'k.book.same': { const l = books.get(r.ticker) || []; l.push({ tSent: r.tSent, tRecv: r.tRecv, hash: r.ref, body: null, same: true }); books.set(r.ticker, l); } break;
+      case 'pr.clockstep': clockSteps.push({ from: r.at, to: r.at + r.deltaMs }); break;
+      case 'obs.gap': gaps.push({ from: r.from, to: r.to }); break;
+      case 'k.series': if (r.series) series.push({ tRecv: r.tRecv, series: { fee_type: r.series.fee_type, fee_multiplier: r.series.fee_multiplier } }); break;
+      case 'k.markets': for (const m of r.markets || []) { if (!m || !m.ticker) continue; const o = mk.get(m.ticker) || {}; mk.set(m.ticker, { ...o, open: o.open || slim(m), rules: o.rules || m.rules_primary || null, seenAt: o.seenAt || r.tRecv }); } break;
+      case 'k.market': if (r.market) { const o = mk.get(r.ticker) || {}, fin = r.market.status === 'finalized';
+        mk.set(r.ticker, { ...o, final: fin ? (o.final || slim(r.market)) : o.final, last: slim(r.market), rules: o.rules || r.market.rules_primary || null, finalAt: fin ? (o.finalAt || r.tRecv) : o.finalAt }); } break;
+      case 'k.book': if (!r.book) bookFail.set(r.ticker, (bookFail.get(r.ticker) || 0) + 1); break;
     }
   }
-  for (const l of books.values()) { l.sort((a, b) => a.tRecv - b.tRecv); for (const b of l) if (!b.body) b.body = bookByHash.get(b.hash) || null; }
   series.sort((a, b) => a.tRecv - b.tRecv); health.sort((a, b) => a.tRecv - b.tRecv);
   const samples = clockSamples(health);
-  /* production configuration in force: the newest /health reply before a time */
-  const configAt = t => { const h = health.filter(x => x.body && x.tRecv <= t + CLOCK_WINDOW_MS).pop(); return h ? { build: h.body.build || null, version: h.body.version || null, lockMaxFlip: h.body.tiers ? h.body.tiers.lockMaxFlip : null } : null; };
+  /* the configuration in force: the last /health reply received up to 15 min after t (binary search) */
+  const configAt = t => { let a = 0, b = health.length; while (a < b) { const m = (a + b) >> 1; if (health[m].tRecv <= t + CLOCK_WINDOW_MS) a = m + 1; else b = m; }
+    return a ? { ...health[a - 1].cfg } : null; };
+  for (const m of mk.values()) { const d = m.final || m.last || m.open; const c = d ? Date.parse(d.close_time) : NaN; m.closeMs = Number.isFinite(c) ? c : null; }
+  const closeOf = tk => { const m = mk.get(tk); return m ? m.closeMs : null; };
 
-  const tickers = new Set([...preds.keys(), ...mk.keys()]);
-  const markets = [];
-  for (const tk of [...tickers].sort()) {
+  /* ---- pass 2: rows and books market by market; a market is finished 26 h (stream time) after its close ---- */
+  const preds = new Map(), books = new Map(), lastBook = new Map(), done = new Set(), markets = [];
+  const put = opts.onMarket || (rec => markets.push(rec));
+  let lateRows = 0, n2 = 0, emitted = 0;
+  const finalize = tk => { if (done.has(tk)) return; done.add(tk); const c = closeOf(tk); if (c == null || (c >= sinceMs && c < untilMs)) { put(market(tk)); emitted++; } preds.delete(tk); books.delete(tk); lastBook.delete(tk); };
+  for (const r of iter()) {
+    n2++;
+    if (r.kind === 'pr.predictions') for (const x of r.rows || []) {
+      if (!x || typeof x.ticker !== 'string' || !Number.isFinite(x.ts)) continue;
+      if (done.has(x.ticker)) { lateRows++; continue; }
+      const k = x.ticker + '|' + x.ts + '|' + x.state + '|' + x.side; let m = preds.get(x.ticker); if (!m) preds.set(x.ticker, m = new Map()); m.set(k, x);
+    }
+    else if (r.kind === 'k.book' || r.kind === 'k.book.same') {
+      const tk = r.ticker, c = closeOf(tk); if (done.has(tk)) continue;
+      let cb = null;
+      if (r.kind === 'k.book' && r.book) { cb = compactBook(r.book); lastBook.set(tk, { hash: r.hash, cb }); }
+      else if (r.kind === 'k.book.same') { const lb = lastBook.get(tk); cb = lb && lb.hash === r.ref ? lb.cb : null; }
+      if (cb && (c == null || (r.tRecv >= c - 305e3 && r.tRecv <= c + 5e3))) { let l = books.get(tk); if (!l) books.set(tk, l = []); l.push({ tSent: r.tSent, tRecv: r.tRecv, cb }); }
+    }
+    if (Number.isFinite(r.t) && n2 % 5000 === 0) for (const tk of new Set([...preds.keys(), ...books.keys()])) { const c = closeOf(tk); if (c != null && r.t - c > FINALIZE_AFTER_MS) finalize(tk); }
+  }
+  for (const tk of new Set([...preds.keys(), ...books.keys(), ...mk.keys()])) finalize(tk);
+  markets.sort((a, b) => a.ticker < b.ticker ? -1 : a.ticker > b.ticker ? 1 : 0);
+  return { generatedFrom: nRaw, lateRowsIgnored: lateRows, clock: summaryClock(samples), threshold: THRESHOLD, restarts: restarts.length, marketCount: emitted, markets };
+
+  function market(tk) {
     const m = mk.get(tk) || {};
     const def = m.final || m.last || m.open || null;
-    const closeMs = def ? Date.parse(def.close_time) : null;
+    const closeMs = m.closeMs ?? null;
     const rows = [...(preds.get(tk) || new Map()).values()].sort((a, b) => a.ts - b.ts);
+    const bl0 = (books.get(tk) || []).sort((a, b) => a.tRecv - b.tRecv);
     const fin = m.final || null;
     const result = fin ? String(fin.result || '') : null;
     const outcomeSide = result === 'yes' ? 'UP' : result === 'no' ? 'DOWN' : null;
     const rec = {
       ticker: tk,
       market: def ? { openTime: def.open_time, closeTime: def.close_time, expirationTime: def.expiration_time, strike: def.floor_strike ?? null,
-        rules: def.rules_primary || null, priceLevelStructure: def.price_level_structure || null, source: 'kalshi public API' } : null,
+        rules: m.rules || null, priceLevelStructure: def.price_level_structure || null, source: 'kalshi public API' } : null,
       settlement: fin ? { result, outcome: outcomeSide, expirationValue: fin.expiration_value === '' || fin.expiration_value == null ? null : Number(fin.expiration_value),
         settlementTs: fin.settlement_ts || null, status: fin.status, recordedAt: m.finalAt, source: 'kalshi public API (expiration_value = Kalshi\'s official BRTI 60 s average)' }
         : { result: null, outcome: null, status: m.last ? m.last.status : 'not recorded' },
@@ -113,12 +155,12 @@ function build(raw, opts = {}) {
       const bySec = new Map();
       for (const x of rows) { const s = Math.floor(x.tau); if (s < 0 || s >= 300) continue; secs.add(s); const p = bySec.get(s); if (p && Math.abs(p - x.ts) > 1500) anomalies.push('two rows for second ' + s + ' are ' + Math.abs(p - x.ts) + ' ms apart'); if (!p) bySec.set(s, x.ts); }
       for (let i = 1; i < rows.length; i++) if (rows[i].tau > rows[i - 1].tau + 0.5) anomalies.push('seconds remaining went up at ' + rows[i].ts + ' (clock step?)');
-      for (const c of clockSteps) if ((c.from > closeMs - 330e3 && c.from < closeMs + 5e3) || (c.to > closeMs - 330e3 && c.to < closeMs + 5e3)) anomalies.push('production clock stepped back ' + Math.round((c.from - c.to) / 1000) + ' s near ' + new Date(c.to).toISOString());
+      for (const c of clockSteps) if ((c.from > closeMs - 330e3 && c.from < closeMs + 5e3) || (c.to > closeMs - 330e3 && c.to < closeMs + 5e3)) anomalies.push('production clock stepped ' + Math.round((c.to - c.from) / 1000) + ' s near ' + new Date(c.to).toISOString());
       const missing = []; for (let s = 0; s < 300; s++) if (!secs.has(s)) missing.push(s);
       let maxGap = 0, run = 0; for (let s = 0; s < 300; s++) { if (!secs.has(s)) { run++; maxGap = Math.max(maxGap, run); } else run = 0; }
       const obsGap = gaps.some(g => g.from < closeMs && g.to > closeMs - 300e3);
       const restartIn = restarts.filter(x => (x.approxRestartAt || x.at) > closeMs - 300e3 && (x.approxRestartAt || x.at) < closeMs);
-      const bl = (books.get(tk) || []).filter(b => b.body && b.tRecv > closeMs - 300e3 && b.tRecv <= closeMs);
+      const bl = bl0.filter(b => b.tRecv > closeMs - 300e3 && b.tRecv <= closeMs);
       let bGap = bl.length ? (bl[0].tRecv - (closeMs - 300e3)) / 1000 : 300;
       for (let i = 1; i < bl.length; i++) bGap = Math.max(bGap, (bl[i].tRecv - bl[i - 1].tRecv) / 1000);
       if (bl.length) bGap = Math.max(bGap, (closeMs - bl[bl.length - 1].tRecv) / 1000);
@@ -167,25 +209,25 @@ function build(raw, opts = {}) {
       if (!sg) return null;
       const ck = clockAt(samples, sg.ts);
       const fee = feeFor(series, ck.verified ? sg.ts - ck.offsetHiMs : sg.ts);
-      const side = sg.side === 'UP' ? 'yesAsks' : 'noAsks';
-      const l = books.get(tk) || [];
-      const at = (b, tRef) => { if (!b) return null; const nb = normaliseBook(b.body); const asks = nb[side];
-        return { receivedAt: new Date(b.tRecv).toISOString(), ageMs: tRef != null ? Math.round(tRef - b.tRecv) : null, bestAskCents: asks.length ? asks[0][0] : null,
-          upBestAsk: nb.yesAsks[0] ? nb.yesAsks[0][0] : null, downBestAsk: nb.noAsks[0] ? nb.noAsks[0][0] : null,
-          spreadCents: nb.yesAsks[0] && nb.yesBids[0] ? Math.round((nb.yesAsks[0][0] - nb.yesBids[0][0]) * 1e4) / 1e4 : null,
-          calledSideLevels: asks.slice(0, 20), theoretical: theoretical(asks, SIZES, fee.rate, sg.won) }; };
+      const sideKey = sg.side === 'UP' ? 'ya' : 'na';
+      /* the theoretical purchases are computed only at the signal; the book after it is shown for its prices only */
+      const at = (b, tRef, fills = true) => { if (!b) return null; const asks = unpack(b.cb[sideKey]), ya = unpack(b.cb.ya), na = unpack(b.cb.na);
+        const o = { receivedAt: new Date(b.tRecv).toISOString(), ageMs: tRef != null ? Math.round(tRef - b.tRecv) : null, bestAskCents: asks.length ? asks[0][0] : null,
+          upBestAsk: ya[0] ? ya[0][0] : null, downBestAsk: na[0] ? na[0][0] : null,
+          spreadCents: ya[0] && b.cb.yb != null ? Math.round((ya[0][0] - b.cb.yb) * 1e4) / 1e4 : null };
+        if (fills) { o.calledSideLevels = asks.slice(0, 20); o.theoretical = theoretical(asks, SIZES, fee.rate, sg.won); }
+        return o; };
       if (!ck.verified) return { clock: ck, fee, displayedAskCents: sg.displayedAskCents, atSignal: { unavailable: 'clock unverified: ' + ck.why }, afterSignal: null };
       const earliest = sg.ts - ck.offsetHiMs, latest = sg.ts - ck.offsetLoMs;          // the signal's time on the observer clock lies in [earliest, latest]
-      const before = l.filter(b => b.body && b.tRecv < earliest).pop() || null;
-      const after = l.find(b => b.body && b.tSent > latest) || null;
+      let before = null; for (const b of bl0) { if (b.tRecv < earliest) before = b; else break; }
+      const after = bl0.find(b => b.tSent > latest) || null;
       const stale = before && earliest - before.tRecv > MAX_BOOK_AGE_MS;
       return { clock: ck, fee, displayedAskCents: sg.displayedAskCents,
         atSignal: !before ? { unavailable: 'no book received before the signal' } : stale ? { unavailable: 'newest book received before the signal is ' + Math.round((earliest - before.tRecv) / 1000) + ' s old' } : at(before, earliest),
-        afterSignal: at(after, null) };
+        afterSignal: at(after, null, false) };
     };
     rec.pricing = { qualified: priceAt(rec.qualified), firstLocked: priceAt(rec.signal) };
-    markets.push(rec);
+    return rec;
   }
-  return { generatedFrom: raw.length, clock: summaryClock(samples), threshold: THRESHOLD, restarts: restarts.length, markets };
 }
 module.exports = { build, clockAt, clockSamples, feeFor, SIZES, THRESHOLD, isL };

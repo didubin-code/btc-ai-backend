@@ -220,6 +220,78 @@
   "directionChangedWon": 0,
   "wrong": 22
  },
+ "calibrationOfModelledFlipRisk": [
+  {
+   "pFlipRange": [
+    0,
+    0.0002
+   ],
+   "n": 102,
+   "wrong": 1,
+   "meanModelledPct": 0.0063,
+   "observedPct": 0.9804,
+   "observedCI95pct": [
+    0.0248,
+    5.3415
+   ]
+  },
+  {
+   "pFlipRange": [
+    0.0002,
+    0.0005
+   ],
+   "n": 104,
+   "wrong": 1,
+   "meanModelledPct": 0.0363,
+   "observedPct": 0.9615,
+   "observedCI95pct": [
+    0.0243,
+    5.2411
+   ]
+  },
+  {
+   "pFlipRange": [
+    0.0005,
+    0.001
+   ],
+   "n": 415,
+   "wrong": 1,
+   "meanModelledPct": 0.0791,
+   "observedPct": 0.241,
+   "observedCI95pct": [
+    0.0061,
+    1.3352
+   ]
+  },
+  {
+   "pFlipRange": [
+    0.001,
+    0.0015
+   ],
+   "n": 1702,
+   "wrong": 3,
+   "meanModelledPct": 0.131,
+   "observedPct": 0.1763,
+   "observedCI95pct": [
+    0.0364,
+    0.5142
+   ]
+  },
+  {
+   "pFlipRange": [
+    0.0015,
+    0.002
+   ],
+   "n": 21566,
+   "wrong": 16,
+   "meanModelledPct": 0.186,
+   "observedPct": 0.0742,
+   "observedCI95pct": [
+    0.0424,
+    0.1205
+   ]
+  }
+ ],
  "wrongCalls": [
   {
    "ticker": "KXBTC15M-26JAN170100-00",
@@ -645,6 +717,314 @@
     "p75": 99.9,
     "p90": 99.9
    },
+   "byEntryInterval": {
+    "300-181": {
+     "n": 603,
+     "losses": 0,
+     "meanNetUsdPer1000": 4.78,
+     "medianPriceCents": 99.6,
+     "lossRateUpper95Pct": 0.4956,
+     "conservativeEvUsdPer1000": -0.2
+    },
+    "180-121": {
+     "n": 1359,
+     "losses": 0,
+     "meanNetUsdPer1000": 3.44,
+     "medianPriceCents": 99.8,
+     "lossRateUpper95Pct": 0.2202,
+     "conservativeEvUsdPer1000": 1.23
+    },
+    "120-91": {
+     "n": 1553,
+     "losses": 0,
+     "meanNetUsdPer1000": 2.68,
+     "medianPriceCents": 99.8,
+     "lossRateUpper95Pct": 0.1927,
+     "conservativeEvUsdPer1000": 0.75
+    },
+    "90-61": {
+     "n": 3022,
+     "losses": 0,
+     "meanNetUsdPer1000": 3.03,
+     "medianPriceCents": 99.8,
+     "lossRateUpper95Pct": 0.0991,
+     "conservativeEvUsdPer1000": 2.03
+    },
+    "60-31": {
+     "n": 5235,
+     "losses": 3,
+     "meanNetUsdPer1000": 4.04,
+     "medianPriceCents": 99.8,
+     "lossRateUpper95Pct": 0.148,
+     "conservativeEvUsdPer1000": 3.13
+    },
+    "30-0": {
+     "n": 2631,
+     "losses": 13,
+     "meanNetUsdPer1000": 52.75,
+     "medianPriceCents": 99.7,
+     "lossRateUpper95Pct": 0.7844,
+     "conservativeEvUsdPer1000": 49.54
+    }
+   },
+   "gridIntervalByPrice": {
+    "300-181 | 90-98 c": {
+     "n": 5,
+     "losses": 0,
+     "meanNetUsdPer1000": 32.45,
+     "medianPriceCents": 97.7,
+     "lossRateUpper95Pct": 45.072,
+     "conservativeEvUsdPer1000": -432.9
+    },
+    "300-181 | 98-99 c": {
+     "n": 29,
+     "losses": 0,
+     "meanNetUsdPer1000": 13.55,
+     "medianPriceCents": 98.6,
+     "lossRateUpper95Pct": 9.8145,
+     "conservativeEvUsdPer1000": -85.92
+    },
+    "300-181 | 99-99.5 c": {
+     "n": 164,
+     "losses": 0,
+     "meanNetUsdPer1000": 7.83,
+     "medianPriceCents": 99.1,
+     "lossRateUpper95Pct": 1.8101,
+     "conservativeEvUsdPer1000": -10.41
+    },
+    "300-181 | 99.5-99.8 c": {
+     "n": 217,
+     "losses": 0,
+     "meanNetUsdPer1000": 3.6,
+     "medianPriceCents": 99.6,
+     "lossRateUpper95Pct": 1.371,
+     "conservativeEvUsdPer1000": -10.16
+    },
+    "300-181 | 99.8-100 c": {
+     "n": 188,
+     "losses": 0,
+     "meanNetUsdPer1000": 1.38,
+     "medianPriceCents": 99.9,
+     "lossRateUpper95Pct": 1.5808,
+     "conservativeEvUsdPer1000": -14.45
+    },
+    "180-121 | 90-98 c": {
+     "n": 5,
+     "losses": 0,
+     "meanNetUsdPer1000": 31.02,
+     "medianPriceCents": 97,
+     "lossRateUpper95Pct": 45.072,
+     "conservativeEvUsdPer1000": -433.68
+    },
+    "180-121 | 98-99 c": {
+     "n": 20,
+     "losses": 0,
+     "meanNetUsdPer1000": 13.47,
+     "medianPriceCents": 98.7,
+     "lossRateUpper95Pct": 13.9108,
+     "conservativeEvUsdPer1000": -127.52
+    },
+    "180-121 | 99-99.5 c": {
+     "n": 264,
+     "losses": 0,
+     "meanNetUsdPer1000": 7.99,
+     "medianPriceCents": 99,
+     "lossRateUpper95Pct": 1.1283,
+     "conservativeEvUsdPer1000": -3.39
+    },
+    "180-121 | 99.5-99.8 c": {
+     "n": 346,
+     "losses": 0,
+     "meanNetUsdPer1000": 3.45,
+     "medianPriceCents": 99.7,
+     "lossRateUpper95Pct": 0.8621,
+     "conservativeEvUsdPer1000": -5.2
+    },
+    "180-121 | 99.8-100 c": {
+     "n": 724,
+     "losses": 0,
+     "meanNetUsdPer1000": 1.31,
+     "medianPriceCents": 99.9,
+     "lossRateUpper95Pct": 0.4129,
+     "conservativeEvUsdPer1000": -2.83
+    },
+    "120-91 | 90-98 c": {
+     "n": 2,
+     "losses": 0,
+     "meanNetUsdPer1000": 30.81,
+     "medianPriceCents": 97,
+     "lossRateUpper95Pct": 77.6393,
+     "conservativeEvUsdPer1000": -769.5
+    },
+    "120-91 | 98-99 c": {
+     "n": 17,
+     "losses": 0,
+     "meanNetUsdPer1000": 12.89,
+     "medianPriceCents": 98.8,
+     "lossRateUpper95Pct": 16.1566,
+     "conservativeEvUsdPer1000": -150.76
+    },
+    "120-91 | 99-99.5 c": {
+     "n": 186,
+     "losses": 0,
+     "meanNetUsdPer1000": 8.28,
+     "medianPriceCents": 99,
+     "lossRateUpper95Pct": 1.5977,
+     "conservativeEvUsdPer1000": -7.83
+    },
+    "120-91 | 99.5-99.8 c": {
+     "n": 318,
+     "losses": 0,
+     "meanNetUsdPer1000": 3.47,
+     "medianPriceCents": 99.7,
+     "lossRateUpper95Pct": 0.9376,
+     "conservativeEvUsdPer1000": -5.94
+    },
+    "120-91 | 99.8-100 c": {
+     "n": 1030,
+     "losses": 0,
+     "meanNetUsdPer1000": 1.21,
+     "medianPriceCents": 99.9,
+     "lossRateUpper95Pct": 0.2904,
+     "conservativeEvUsdPer1000": -1.7
+    },
+    "90-61 | 90-98 c": {
+     "n": 9,
+     "losses": 0,
+     "meanNetUsdPer1000": 31.98,
+     "medianPriceCents": 97,
+     "lossRateUpper95Pct": 28.3129,
+     "conservativeEvUsdPer1000": -260.2
+    },
+    "90-61 | 98-99 c": {
+     "n": 42,
+     "losses": 0,
+     "meanNetUsdPer1000": 14.19,
+     "medianPriceCents": 98.6,
+     "lossRateUpper95Pct": 6.8843,
+     "conservativeEvUsdPer1000": -55.63
+    },
+    "90-61 | 99-99.5 c": {
+     "n": 473,
+     "losses": 0,
+     "meanNetUsdPer1000": 8.68,
+     "medianPriceCents": 99,
+     "lossRateUpper95Pct": 0.6313,
+     "conservativeEvUsdPer1000": 2.31
+    },
+    "90-61 | 99.5-99.8 c": {
+     "n": 526,
+     "losses": 0,
+     "meanNetUsdPer1000": 3.49,
+     "medianPriceCents": 99.7,
+     "lossRateUpper95Pct": 0.5679,
+     "conservativeEvUsdPer1000": -2.2
+    },
+    "90-61 | 99.8-100 c": {
+     "n": 1972,
+     "losses": 0,
+     "meanNetUsdPer1000": 1.18,
+     "medianPriceCents": 99.9,
+     "lossRateUpper95Pct": 0.1518,
+     "conservativeEvUsdPer1000": -0.34
+    },
+    "60-31 | 0-90 c": {
+     "n": 8,
+     "losses": 0,
+     "meanNetUsdPer1000": 194.78,
+     "medianPriceCents": 85,
+     "lossRateUpper95Pct": 31.2344,
+     "conservativeEvUsdPer1000": -178.4
+    },
+    "60-31 | 90-98 c": {
+     "n": 91,
+     "losses": 1,
+     "meanNetUsdPer1000": 29.01,
+     "medianPriceCents": 96.3,
+     "lossRateUpper95Pct": 5.107,
+     "conservativeEvUsdPer1000": -12.74
+    },
+    "60-31 | 98-99 c": {
+     "n": 214,
+     "losses": 0,
+     "meanNetUsdPer1000": 15.47,
+     "medianPriceCents": 98.2,
+     "lossRateUpper95Pct": 1.3901,
+     "conservativeEvUsdPer1000": 1.35
+    },
+    "60-31 | 99-99.5 c": {
+     "n": 1051,
+     "losses": 0,
+     "meanNetUsdPer1000": 8.72,
+     "medianPriceCents": 99,
+     "lossRateUpper95Pct": 0.2846,
+     "conservativeEvUsdPer1000": 5.85
+    },
+    "60-31 | 99.5-99.8 c": {
+     "n": 818,
+     "losses": 0,
+     "meanNetUsdPer1000": 3.51,
+     "medianPriceCents": 99.7,
+     "lossRateUpper95Pct": 0.3656,
+     "conservativeEvUsdPer1000": -0.16
+    },
+    "60-31 | 99.8-100 c": {
+     "n": 3053,
+     "losses": 2,
+     "meanNetUsdPer1000": 0.52,
+     "medianPriceCents": 99.9,
+     "lossRateUpper95Pct": 0.2061,
+     "conservativeEvUsdPer1000": -0.89
+    },
+    "30-0 | 0-90 c": {
+     "n": 41,
+     "losses": 10,
+     "meanNetUsdPer1000": 2970.31,
+     "medianPriceCents": 63,
+     "lossRateUpper95Pct": 37.8506,
+     "conservativeEvUsdPer1000": 2253.1
+    },
+    "30-0 | 90-98 c": {
+     "n": 180,
+     "losses": 2,
+     "meanNetUsdPer1000": 33.15,
+     "medianPriceCents": 96.4,
+     "lossRateUpper95Pct": 3.4562,
+     "conservativeEvUsdPer1000": 8.53
+    },
+    "30-0 | 98-99 c": {
+     "n": 245,
+     "losses": 0,
+     "meanNetUsdPer1000": 15.58,
+     "medianPriceCents": 98.2,
+     "lossRateUpper95Pct": 1.2153,
+     "conservativeEvUsdPer1000": 3.24
+    },
+    "30-0 | 99-99.5 c": {
+     "n": 632,
+     "losses": 0,
+     "meanNetUsdPer1000": 8.79,
+     "medianPriceCents": 99,
+     "lossRateUpper95Pct": 0.4729,
+     "conservativeEvUsdPer1000": 4.02
+    },
+    "30-0 | 99.5-99.8 c": {
+     "n": 363,
+     "losses": 0,
+     "meanNetUsdPer1000": 3.47,
+     "medianPriceCents": 99.7,
+     "lossRateUpper95Pct": 0.8219,
+     "conservativeEvUsdPer1000": -4.77
+    },
+    "30-0 | 99.8-100 c": {
+     "n": 1170,
+     "losses": 1,
+     "meanNetUsdPer1000": 0.34,
+     "medianPriceCents": 99.9,
+     "lossRateUpper95Pct": 0.4048,
+     "conservativeEvUsdPer1000": -2.86
+    }
+   },
    "pnlPer1000": {
     "n": 14403,
     "totalUsd": 180778,
@@ -706,6 +1086,224 @@
     "median": 99.8,
     "p75": 99.9,
     "p90": 99.9
+   },
+   "byEntryInterval": {
+    "300-181": {
+     "n": 0
+    },
+    "180-121": {
+     "n": 0
+    },
+    "120-91": {
+     "n": 3056,
+     "losses": 0,
+     "meanNetUsdPer1000": 2.41,
+     "medianPriceCents": 99.9,
+     "lossRateUpper95Pct": 0.098,
+     "conservativeEvUsdPer1000": 1.42
+    },
+    "90-61": {
+     "n": 3044,
+     "losses": 0,
+     "meanNetUsdPer1000": 3.04,
+     "medianPriceCents": 99.8,
+     "lossRateUpper95Pct": 0.0984,
+     "conservativeEvUsdPer1000": 2.05
+    },
+    "60-31": {
+     "n": 5240,
+     "losses": 3,
+     "meanNetUsdPer1000": 4.04,
+     "medianPriceCents": 99.8,
+     "lossRateUpper95Pct": 0.1479,
+     "conservativeEvUsdPer1000": 3.12
+    },
+    "30-0": {
+     "n": 2632,
+     "losses": 13,
+     "meanNetUsdPer1000": 52.73,
+     "medianPriceCents": 99.7,
+     "lossRateUpper95Pct": 0.7841,
+     "conservativeEvUsdPer1000": 49.52
+    }
+   },
+   "gridIntervalByPrice": {
+    "120-91 | 90-98 c": {
+     "n": 4,
+     "losses": 0,
+     "meanNetUsdPer1000": 28.57,
+     "medianPriceCents": 97,
+     "lossRateUpper95Pct": 52.7129,
+     "conservativeEvUsdPer1000": -513.62
+    },
+    "120-91 | 98-99 c": {
+     "n": 29,
+     "losses": 0,
+     "meanNetUsdPer1000": 13.36,
+     "medianPriceCents": 98.7,
+     "lossRateUpper95Pct": 9.8145,
+     "conservativeEvUsdPer1000": -86.1
+    },
+    "120-91 | 99-99.5 c": {
+     "n": 303,
+     "losses": 0,
+     "meanNetUsdPer1000": 8.22,
+     "medianPriceCents": 99,
+     "lossRateUpper95Pct": 0.9838,
+     "conservativeEvUsdPer1000": -1.7
+    },
+    "120-91 | 99.5-99.8 c": {
+     "n": 531,
+     "losses": 0,
+     "meanNetUsdPer1000": 3.41,
+     "medianPriceCents": 99.7,
+     "lossRateUpper95Pct": 0.5626,
+     "conservativeEvUsdPer1000": -2.24
+    },
+    "120-91 | 99.8-100 c": {
+     "n": 2189,
+     "losses": 0,
+     "meanNetUsdPer1000": 1.17,
+     "medianPriceCents": 99.9,
+     "lossRateUpper95Pct": 0.1368,
+     "conservativeEvUsdPer1000": -0.2
+    },
+    "90-61 | 90-98 c": {
+     "n": 9,
+     "losses": 0,
+     "meanNetUsdPer1000": 31.98,
+     "medianPriceCents": 97,
+     "lossRateUpper95Pct": 28.3129,
+     "conservativeEvUsdPer1000": -260.2
+    },
+    "90-61 | 98-99 c": {
+     "n": 44,
+     "losses": 0,
+     "meanNetUsdPer1000": 14.25,
+     "medianPriceCents": 98.6,
+     "lossRateUpper95Pct": 6.5819,
+     "conservativeEvUsdPer1000": -52.5
+    },
+    "90-61 | 99-99.5 c": {
+     "n": 478,
+     "losses": 0,
+     "meanNetUsdPer1000": 8.68,
+     "medianPriceCents": 99,
+     "lossRateUpper95Pct": 0.6248,
+     "conservativeEvUsdPer1000": 2.38
+    },
+    "90-61 | 99.5-99.8 c": {
+     "n": 532,
+     "losses": 0,
+     "meanNetUsdPer1000": 3.49,
+     "medianPriceCents": 99.7,
+     "lossRateUpper95Pct": 0.5615,
+     "conservativeEvUsdPer1000": -2.14
+    },
+    "90-61 | 99.8-100 c": {
+     "n": 1981,
+     "losses": 0,
+     "meanNetUsdPer1000": 1.17,
+     "medianPriceCents": 99.9,
+     "lossRateUpper95Pct": 0.1511,
+     "conservativeEvUsdPer1000": -0.34
+    },
+    "60-31 | 0-90 c": {
+     "n": 8,
+     "losses": 0,
+     "meanNetUsdPer1000": 194.78,
+     "medianPriceCents": 85,
+     "lossRateUpper95Pct": 31.2344,
+     "conservativeEvUsdPer1000": -178.4
+    },
+    "60-31 | 90-98 c": {
+     "n": 91,
+     "losses": 1,
+     "meanNetUsdPer1000": 29.01,
+     "medianPriceCents": 96.3,
+     "lossRateUpper95Pct": 5.107,
+     "conservativeEvUsdPer1000": -12.74
+    },
+    "60-31 | 98-99 c": {
+     "n": 214,
+     "losses": 0,
+     "meanNetUsdPer1000": 15.47,
+     "medianPriceCents": 98.2,
+     "lossRateUpper95Pct": 1.3901,
+     "conservativeEvUsdPer1000": 1.35
+    },
+    "60-31 | 99-99.5 c": {
+     "n": 1051,
+     "losses": 0,
+     "meanNetUsdPer1000": 8.72,
+     "medianPriceCents": 99,
+     "lossRateUpper95Pct": 0.2846,
+     "conservativeEvUsdPer1000": 5.85
+    },
+    "60-31 | 99.5-99.8 c": {
+     "n": 819,
+     "losses": 0,
+     "meanNetUsdPer1000": 3.51,
+     "medianPriceCents": 99.7,
+     "lossRateUpper95Pct": 0.3651,
+     "conservativeEvUsdPer1000": -0.16
+    },
+    "60-31 | 99.8-100 c": {
+     "n": 3057,
+     "losses": 2,
+     "meanNetUsdPer1000": 0.52,
+     "medianPriceCents": 99.9,
+     "lossRateUpper95Pct": 0.2058,
+     "conservativeEvUsdPer1000": -0.88
+    },
+    "30-0 | 0-90 c": {
+     "n": 41,
+     "losses": 10,
+     "meanNetUsdPer1000": 2970.31,
+     "medianPriceCents": 63,
+     "lossRateUpper95Pct": 37.8506,
+     "conservativeEvUsdPer1000": 2253.1
+    },
+    "30-0 | 90-98 c": {
+     "n": 180,
+     "losses": 2,
+     "meanNetUsdPer1000": 33.15,
+     "medianPriceCents": 96.4,
+     "lossRateUpper95Pct": 3.4562,
+     "conservativeEvUsdPer1000": 8.53
+    },
+    "30-0 | 98-99 c": {
+     "n": 245,
+     "losses": 0,
+     "meanNetUsdPer1000": 15.58,
+     "medianPriceCents": 98.2,
+     "lossRateUpper95Pct": 1.2153,
+     "conservativeEvUsdPer1000": 3.24
+    },
+    "30-0 | 99-99.5 c": {
+     "n": 632,
+     "losses": 0,
+     "meanNetUsdPer1000": 8.79,
+     "medianPriceCents": 99,
+     "lossRateUpper95Pct": 0.4729,
+     "conservativeEvUsdPer1000": 4.02
+    },
+    "30-0 | 99.5-99.8 c": {
+     "n": 363,
+     "losses": 0,
+     "meanNetUsdPer1000": 3.47,
+     "medianPriceCents": 99.7,
+     "lossRateUpper95Pct": 0.8219,
+     "conservativeEvUsdPer1000": -4.77
+    },
+    "30-0 | 99.8-100 c": {
+     "n": 1171,
+     "losses": 1,
+     "meanNetUsdPer1000": 0.34,
+     "medianPriceCents": 99.9,
+     "lossRateUpper95Pct": 0.4045,
+     "conservativeEvUsdPer1000": -2.86
+    }
    },
    "pnlPer1000": {
     "n": 13972,

@@ -36,7 +36,7 @@ This was established from the production source: btc-ai-backend `main` `2b0d593`
 | **A. Separate observer pulling production's own read-only exports, plus Kalshi public data** | Direct: production's own per-second record | About 5 GETs a minute against small, paged handlers; no writes | **Chosen** |
 | B. Passive recorder of the web page's `/radar` calls | Same data, but `/radar` is a POST that runs the engine and may call OpenAI | Adds engine work and possibly cost on every call | Rejected |
 | C. Existing log exports (Render logs, files on disk) | Production writes no signal history to its log; files need a disk or shell access | Needs Render access or configuration changes | Not available without changes |
-| D. Independent replica of the algorithm on independent feeds | Reconstructed, not observed; differs in feeds and timing | None | Kept only as research (§8), always labelled "reconstructed" |
+| D. Independent replica of the algorithm on independent feeds | Reconstructed, not observed; differs in feeds and timing | None | Kept only as research (`research/RESULTS.md`), always labelled "reconstructed" |
 
 Option A records what production actually showed, at second resolution, through endpoints production already serves to anyone with its URL.
 * The order books are the observer's own: 1 Hz in each market's final 300 s, every 15 s before that.
@@ -53,8 +53,9 @@ lib/derive.js        per-market evidence, rebuilt from the raw records at any ti
 lib/fills.js         book normalisation, theoretical purchases with Kalshi's fee
 lib/stats.js         Clopper-Pearson, Wilson, Bayesian posteriors, day-block bootstrap, Monte Carlo, drawdown
 lib/report.js        daily, weekly and monthly summaries
-research/            reconstructed historical analysis of the 0.2 % / two-minute hypothesis (§8)
-test/                isolation, unit, independent math, end-to-end against production's own code
+research/            reconstructed historical analysis of the 0.2 % / two-minute hypothesis (research/RESULTS.md)
+test/                isolation, unit, durability (one test per durability-review finding), independent math, end-to-end
+                     against production's own code (run them all with node test/run_all.js)
 BASELINE.json        read-only baseline of the production source and repositories
 ```
 
@@ -77,8 +78,14 @@ BASELINE.json        read-only baseline of the production source and repositorie
 Every raw record also carries `tSent`, `tRecv` (observer UTC ms), HTTP `status`, the server `date` header and any `error`.
 
 **Other streams** (same record format):
-* `health`: `obs.start`, `obs.stop`, `obs.heartbeat`, `obs.gap` (observer down or a lane stalled, with from/to), `obs.error`, `store.recovered`.
-* `derived`: derived market sets and reports, with the raw record count they were built from.
+* `health`:
+  * `obs.start`: cursors, where they came from, state-file status, the newest stored record;
+  * `obs.stop`, `obs.heartbeat`;
+  * `obs.gap`, with from/to and the reason: the observer was down, or records could not be written;
+  * `obs.writefail`: writes failed and were retried, nothing lost;
+  * `obs.stall`: a polling lane was busy;
+  * `obs.checkpoint`, `obs.error`, `store.recovered`.
+* `derived`: one entry per derive (the SHA-256 of its output and the evidence it was built from) and per report (the full report).
 * `audit`: who ran which command, and when.
 
 **Record format.** Each record is stored as:
@@ -90,7 +97,7 @@ A key record (public-key mode) is stored as:
 { s, t, p, wk: wrapped data key, kid, h }
 ```
 
-**Derived market record** (`derive`; the output also carries `evidence`: each stream's records, sequence and head hash, plus the checkpoint check):
+**Derived market record.** `derive` writes one record per market, as soon as the market is final. The output also carries `evidence`: each stream's records, sequence and head hash, the checkpoint check, and the `--since` / `--until` window by close time. Each record has:
 * `market`: open, close and expiration times, strike, rules, source.
 * `settlement`: `result`, `outcome` (UP/DOWN), `expirationValue` (Kalshi's official 60 s BRTI average), `settlementTs`, `status`, `recordedAt`, `source`.
 * `production`: build, version and `lockMaxFlip` in force (from the nearest `/health`).
@@ -114,9 +121,11 @@ A key record (public-key mode) is stored as:
   * production's displayed ask;
   * `atSignal`: the newest book **received before the earliest possible time of the signal**. It gives the UP ask, DOWN ask, spread, called-side levels and age, and theoretical purchases at $100, $1k, $5k, $10k, $25k, $50k, $75k, $100k and $250k. Each purchase shows contracts, average and worst price, fees, capital, net if won or lost, net for the actual outcome, return, fully fillable, and unfilled dollars.
   * `atSignal` is instead `unavailable` with the reason: no book, stale book, or clock unverified.
-  * `afterSignal`: the next book after the latest possible signal time, labelled as such and never used as the signal's price.
+  * `afterSignal`: the next book after the latest possible signal time, with prices only (no theoretical purchases). It is labelled as such and never used as the signal's price.
 
-**Retention.** Nothing is deleted. One-second books are compressed before encryption, and unchanged books are stored as references. Expect roughly 1–2 GB a month; measure it in the first week.
+**Retention.** Nothing is deleted. One-second books are compressed before encryption, and unchanged books are stored as references.
+* Estimate: about 300 book snapshots a market at roughly 1–1.5 KB each, 96 markets a day, plus prediction rows. That is roughly 1–1.5 GB a month.
+* Measure it in the first week; the `status.json` record count helps.
 
 ## 5. Confidentiality, security and what verification proves
 
@@ -146,17 +155,36 @@ Run `observer.js anchor` regularly and keep the anchor file **off the host**, fo
 
 ## 6. Durability
 
-* **Writes.** Each batch is one write plus `fsync`, and one writer per stream (a lock file). A second observer on the same directory is refused, and a dead writer's lock is taken over and recorded. Segment names never go backwards, even if the clock does.
-* **Damage.** A torn final line is quarantined byte-for-byte and recorded. Any other damage **stops the store from opening**; it is never repaired automatically.
-* **Restarts.** On restart the observer resumes from `state.json`. Implausible saved values are reset, and the reset is recorded. The outage itself is recorded as an `obs.gap`.
-  * Production's memory (about 25 h of prediction rows) is pulled again with a 120 s overlap. After a long outage, every market that closed in the gap is listed from Kalshi and fetched one by one.
+Every item here has a test in `test/durability_test.js`, one or more per finding of the durability review.
+* **Writes.**
+  * Each batch is one `write` plus `fsync`.
+  * A failed or short write (disk full, I/O error) is cut back to where it started, so the files never hold part of a batch and the head never moves past what is on disk.
+  * The records stay **queued in memory** and are written when the disk works again. The interval is recorded as `obs.writefail`, or as `obs.gap` if records had to be dropped (beyond 50,000 queued) or the observer stopped first.
+  * If even the cut-back fails, the stream is reopened, which re-reads its real tail.
+* **One writer per stream.** A lease (`.writer.lock`: pid, host, time, random token) is renewed every 15 s.
+  * A second observer on the same directory waits out the lease once, then refuses to start.
+  * An expired lease (2 min), or one naming a dead process on this host, is taken over; the takeover is recorded and the old lease kept.
+  * A container restarted under the same PID waits for its old lease to expire (at most 2 min, recorded) rather than guess.
+  * A writer that finds its lease taken over stops at once (exit 3), so a chain can never fork.
+* **Damage.** A torn final line is quarantined byte-for-byte and recorded. Any other damage **stops the store from opening**; it is never repaired automatically. A final fragment still being written is skipped by readers and reported by `verify` (`unterminatedTailBytes`).
+* **Restarts.** The time not observed is measured from the **newest stored record**: the older of the two streams' newest records, so a stream that stopped being written cannot hide behind the other. It is recorded as an `obs.gap` and does not depend on `state.json`.
+  * `state.json` (cursors) is replaced atomically with `fsync`, and only when nothing is queued, so it never points past data that is not on disk.
+  * If it is missing, damaged or older than the store, that is recorded. Collection restarts 15 min before the newest stored record, and the catch-up fetches every market since. Implausible saved values are reset, and the reset is recorded.
+  * Production's memory (about 25 h of prediction rows) is pulled again with a 120 s overlap. After a long outage, every market that closed in the gap is listed from Kalshi and fetched one by one. A catch-up that fails is retried every 5 min, and the cursor does not move until it succeeds.
   * Order books missed during an outage are gone. Those signals are priced "unavailable".
+* **Polling lanes.** Kalshi books (1 Hz in the final 300 s), Kalshi metadata and results, and Pin Radar run in separate lanes, so a slow request in one never delays the others.
 * **Production restarts.** These are detected from uptime and build. A new production ledger chain, or entries already dropped from production's memory, are detected and recorded.
-* **Backups.** `backup --to <dir>` is **append-only**: a destination copy must be a byte-prefix of the source. If the source got shorter or differs, the backup is refused and the last good backup is left untouched. Every backup keeps a manifest with each stream's head.
-* **Restore test.** `restore-test --from <dir>` restores into a temporary directory and does three checks:
-  * verifies every file against the manifest, and refuses paths outside the expected layout;
-  * verifies the chain and decryption;
-  * checks that **every head recorded by every earlier backup** is still present, so a rollback or rewrite of the backup fails.
+* **Backups.** `backup --data <dir> --key owner.public.pem --to <dir>` is **append-only**: a destination copy must be a byte-prefix of the source. If the source got shorter or differs, the backup is refused and the last good backup is left untouched.
+  * It is safe while the observer runs. Only whole lines are copied, so a write in progress is left for the next backup.
+  * The manifest's heads are read from the copy itself.
+  * Every backup keeps a manifest history.
+* **Restore test.** `restore-test --from <dir>` restores into a temporary directory and checks:
+  * every file against the manifest, refusing paths outside the expected layout;
+  * the chain and decryption;
+  * that **every head recorded by every earlier backup** is still present, so a rollback or rewrite of the backup fails.
+
+  Do not run it while a backup into the same directory is running.
+* **Large histories.** `derive` and `report` read the store record by record, in two passes that stop at the verified heads, so their memory stays at about one day of rows and books. In the test, 4,000 markets fitted in a 96 MB heap. `derive` writes each market as soon as it is final; `report` keeps one small summary per market. `--since` / `--until` select markets by close time.
 * **Schedule.** Run backup daily to a second disk or a private cloud folder, then run restore-test.
 
 ## 7. Deployment
@@ -183,7 +211,7 @@ Deployment needs your approval because it needs a host.
 
 ## 8. Limitations (precise)
 
-* **No live observation yet.** The build environment could not reach the production URL or Render, so the observer has not observed production. Live checks — Test 2 on live data and the live part of Test 10 — are pending the first deployment. Everything else was tested against production's own code (§9).
+* **No live observation yet.** The build environment could not reach the production URL or Render, so the observer has not observed production. Live checks — Test 2 on live data and the live part of Test 10 — are pending the first deployment. Everything else was tested against production's own code (`VALIDATION.md`).
 * **Production identity.** The production URL could not be confirmed. Documents name `btc-pin-radar-28.onrender.com`. The first `/health` record shows the build.
 * **Timing resolution.** Production evaluates every 500 ms, but its prediction log keeps one row per second plus every state change. First-LOCKED timing is therefore exact to the logged second, and state changes are exact to the millisecond.
 * **Prices.** Order-book prices are the observer's own 1 Hz snapshots. A theoretical fill assumes the recorded book was there for the order: no queue, latency or competition. It is an upper bound.

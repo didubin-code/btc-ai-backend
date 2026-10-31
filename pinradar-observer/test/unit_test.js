@@ -196,7 +196,7 @@ t('review: reading enforces the chain: one deleted record stops readStream, and 
 });
 t('review: a single writer per stream (a second writer is refused); a dead writer\'s lock is taken over and recorded', () => {
   const d = tmp(), { key } = symKey(); const s = ST.openStream(d, 'raw', key);
-  assert.throws(() => ST.openStream(d, 'raw', key), /locked by another writer/); s.close();
+  assert.throws(() => ST.openStream(d, 'raw', key), /locked by another writer|already open for writing/); s.close();
   fs.writeFileSync(path.join(d, 'raw', '.writer.lock'), '999999@' + os.hostname());
   const s2 = ST.openStream(d, 'raw', key); assert.strictEqual(s2.staleLockTakenOver, true); s2.close();
   assert.ok([...ST.readStream(d, 'raw', key)].some(r => r.kind === 'store.recovered' && r.staleLockTakenOver));

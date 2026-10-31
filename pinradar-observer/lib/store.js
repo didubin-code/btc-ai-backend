@@ -12,8 +12,11 @@
      (observer.js anchor / verify --anchors). See README "What verification proves".
    * Crash safety: one write of whole lines + fsync per batch. A final fragment without a newline (torn write) is moved
      byte for byte to <stream>/quarantine/ and recorded; any other damage stops the store from opening (never repaired).
-   * Single writer: <stream>/.writer.lock (pid@host); a second writer is refused; a lock left by a dead process is
-     taken over and recorded. Segment names never go backwards (a clock stepping back cannot split the chain). */
+   * Single writer: <stream>/.writer.lock, a lease renewed by its holder; a second writer is refused; a lease that expired
+     or names a dead process is taken over and recorded. Segment names never go backwards (a clock stepping back cannot
+     split the chain).
+   * A final fragment without a newline in the NEWEST segment is a write in progress (or torn by a crash): readers skip it
+     (it is not a record yet; verify reports its size) and the next open quarantines it. Backups copy whole lines only. */
 'use strict';
 const fs = require('fs'), path = require('path'), crypto = require('crypto'), zlib = require('zlib'), os = require('os');
 
@@ -75,19 +78,47 @@ function segments(dir) {
   return fs.readdirSync(dir).filter(f => /^\d{4}-\d{2}-\d{2}\.jsonl$/.test(f)).sort().map(f => path.join(dir, f));
 }
 
-/* exclusive writer lock for a stream directory */
+/* Exclusive writer lock for a stream directory, as a LEASE: { pid, host, at, token }. The holder renews it (refresh(), and
+   append() renews it every 30 s); renewing first checks the token, so a writer whose lease was taken over (after a stall
+   longer than the lease) stops instead of forking the chain. A running observer renews every LEASE_MS / 8. A lease is STALE, and is taken over (the old file is kept),
+   only if it expired (LEASE_MS) or names a process on this host that no longer exists. Everything else is held, including
+   a fresh lease naming this process's own pid: after a container restart the previous PID 1 is dead, but a container
+   elsewhere sharing the volume under the same host name could be alive, so that lease is left to expire by itself. */
+const LEASE_MS = Number(process.env.OBSERVER_LEASE_MS) > 0 ? Number(process.env.OBSERVER_LEASE_MS) : 120e3, HELD = new Set();   // (the variable exists for tests)
+function readLease(f) {
+  const txt = fs.readFileSync(f, 'utf8'), mt = fs.statSync(f).mtimeMs;
+  try { const j = JSON.parse(txt); return { pid: Number(j.pid), host: String(j.host), at: Number(j.at) || mt, token: j.token || null }; }
+  catch (_) { const [pid, host] = txt.split('@'); return { pid: Number(pid), host: String(host || '').trim(), at: mt, token: null }; }   // legacy pid@host
+}
 function lock(dir) {
-  const f = path.join(dir, '.writer.lock'), me = process.pid + '@' + os.hostname();
+  const f = path.join(dir, '.writer.lock');
+  if (HELD.has(f)) throw new Error('stream ' + dir + ' is already open for writing in this process; refusing to fork the chain');
+  const token = crypto.randomBytes(12).toString('hex');
+  const mine = () => JSON.stringify({ pid: process.pid, host: os.hostname(), at: Date.now(), token });
+  let stale = null;
   for (let attempt = 0; attempt < 2; attempt++) {
-    try { fs.writeFileSync(f, me, { flag: 'wx', mode: 0o600 }); return { file: f, stale: attempt > 0 }; }
+    try { fs.writeFileSync(f, mine(), { flag: 'wx', mode: 0o600 }); }
     catch (e) {
       if (e.code !== 'EEXIST') throw e;
-      const [pid, host] = String(fs.readFileSync(f, 'utf8')).split('@');
-      let alive = host !== os.hostname();                         // a lock from another host cannot be checked: treat as held
-      if (!alive) { try { process.kill(Number(pid), 0); alive = true; } catch (er) { alive = er.code === 'EPERM'; } }
-      if (alive) throw new Error('stream ' + dir + ' is locked by another writer (' + pid + '@' + host + '); refusing to fork the chain');
-      fs.renameSync(f, f + '.stale.' + Date.now());               // dead writer: keep its lock file as evidence, take over
+      let L; try { L = readLease(f); } catch (_) { L = { pid: NaN, host: '', at: 0 }; }
+      const age = Date.now() - L.at;
+      let held = age <= LEASE_MS;
+      if (held && L.host === os.hostname() && L.pid !== process.pid && Number.isSafeInteger(L.pid) && L.pid > 0) { try { process.kill(L.pid, 0); } catch (er) { if (er.code === 'ESRCH') held = false; } }
+      if (held) throw Object.assign(new Error('stream ' + dir + ' is locked by another writer (pid ' + L.pid + '@' + L.host + ', lease ' + Math.round(age / 1000) + ' s old; it expires after ' + LEASE_MS / 1000 + ' s unless renewed); refusing to fork the chain'),
+        { code: 'ELOCKED', expiresInMs: Math.max(0, LEASE_MS - age), lease: L });
+      stale = { pid: L.pid, host: L.host, leaseAgeSec: Math.round(age / 1000) };
+      fs.renameSync(f, f + '.stale.' + Date.now());               // stale: keep the old lock file as evidence, take over
+      continue;
     }
+    HELD.add(f);
+    let at = Date.now(), lost = false;
+    const ours = () => { try { return readLease(f).token === token; } catch (_) { return false; } };
+    return { file: f, stale, ours, lost: () => lost, age: () => Date.now() - at,
+      refresh() {
+        if (!ours()) { lost = true; let cur = null; try { cur = readLease(f); } catch (_) { }
+          throw Object.assign(new Error('the writer lease of ' + dir + ' is no longer ours (' + (cur ? 'now held by pid ' + cur.pid + '@' + cur.host : 'lock file missing') + '): writes stopped so the chain cannot fork'), { code: 'ELEASELOST' }); }
+        const tmp = f + '.' + token + '.tmp'; fs.writeFileSync(tmp, mine(), { mode: 0o600 }); fs.renameSync(tmp, f); at = Date.now();
+      } };
   }
   throw new Error('could not take the writer lock for ' + dir);
 }
@@ -126,46 +157,63 @@ function openStream(root, name, keyIn, { now = Date.now } = {}) {
       }
       headDay = path.basename(last).slice(0, 10);
     }
-  } catch (e) { try { fs.unlinkSync(lk.file); } catch (_) { } throw e; }
+  } catch (e) { HELD.delete(lk.file); try { fs.unlinkSync(lk.file); } catch (_) { } throw e; }
   let closed = false;
-  const onExit = () => { try { fs.unlinkSync(lk.file); } catch (_) { } };
-  const close = () => { if (!closed) { closed = true; process.removeListener('exit', onExit); onExit(); } };
+  const onExit = () => { if (lk.ours()) { try { fs.unlinkSync(lk.file); } catch (_) { } } };     // never remove a lease that is not ours
+  let broken = false;
+  const close = () => { if (!closed) { closed = true; HELD.delete(lk.file); process.removeListener('exit', onExit); onExit(); } };
   process.on('exit', onExit);
+  /* all or nothing: the batch is written in full (short writes are continued) and fsynced, and only then does the head move.
+     On any error the file is cut back to its size before the batch; if even that fails, the stream refuses further
+     appends until it is reopened (reopening re-reads the real tail). */
   function append(objs) {
     if (closed) throw new Error('stream closed');
+    if (broken) throw new Error('stream ' + name + ' could not be rolled back after a failed write: reopen it');
+    if (lk.lost() || lk.age() > LEASE_MS / 4) lk.refresh();                // renews the lease; throws ELEASELOST if it was taken over
     const list = Array.isArray(objs) ? objs : [objs];
     if (!list.length) return head;
     const t = now();
     const day = headDay && headDay > dayOf(t) ? headDay : dayOf(t);   // never write to a segment that sorts before the head
-    let out = '';
+    let out = '', h = head, nDek = dek, nDekDay = dekDay;
     if (K.type === 'pub' && dekDay !== day) {
-      dek = crypto.randomBytes(32); dekDay = day;
-      const s = head.s + 1, p = head.h, r = { s, t, p, wk: wrap(K.pub, dek), kid: K.kid };
-      r.h = lineHash(r); out += JSON.stringify(r) + '\n'; head = { s, h: r.h };
+      nDek = crypto.randomBytes(32); nDekDay = day;
+      const s = h.s + 1, p = h.h, r = { s, t, p, wk: wrap(K.pub, nDek), kid: K.kid };
+      r.h = lineHash(r); out += JSON.stringify(r) + '\n'; h = { s, h: r.h };
     }
     for (const o of list) {
-      const s = head.s + 1, p = head.h;
-      const r = { s, t, p, ...encrypt(dek, s, t, p, o) };
+      const s = h.s + 1, p = h.h;
+      const r = { s, t, p, ...encrypt(nDek, s, t, p, o) };
       r.h = lineHash(r);
       out += JSON.stringify(r) + '\n';
-      head = { s, h: r.h };
+      h = { s, h: r.h };
     }
     const f = path.join(dir, day + '.jsonl');
     const fd = fs.openSync(f, 'a', 0o600);
-    try { fs.writeSync(fd, out); fs.fsyncSync(fd); } finally { fs.closeSync(fd); }
-    headDay = day;
+    let before = 0;
+    try { before = fs.fstatSync(fd).size; fs.writeFileSync(fd, out); fs.fsyncSync(fd); }
+    catch (e) {
+      try { fs.ftruncateSync(fd, before); fs.fsyncSync(fd); } catch (_) { broken = true; }
+      try { fs.closeSync(fd); } catch (_) { }
+      throw e;
+    }
+    fs.closeSync(fd);
+    head = h; headDay = day; dek = nDek; dekDay = nDekDay;
     return head;
   }
-  const api = { dir, append, close, head: () => ({ ...head }), recovered, staleLockTakenOver: lk.stale, kid: K.kid || null };
-  if (recovered || lk.stale) append({ kind: 'store.recovered', ...(recovered || {}), staleLockTakenOver: lk.stale });
+  const api = { dir, append, close, refresh: () => lk.refresh(), isBroken: () => broken, head: () => ({ ...head }), recovered, staleLockTakenOver: !!lk.stale, staleLock: lk.stale, kid: K.kid || null };
+  if (recovered || lk.stale) append({ kind: 'store.recovered', ...(recovered || {}), staleLockTakenOver: !!lk.stale, staleLock: lk.stale });
   return api;
 }
 
 /* walk a stream checking the chain; yields raw records in order; throws at the first defect */
 function* chain(root, name) {
   let prev = GENESIS, s = 0;
-  for (const f of segments(path.join(root, name))) {
-    const lines = fs.readFileSync(f, 'utf8').split('\n');
+  const segs = segments(path.join(root, name));
+  for (let k = 0; k < segs.length; k++) {
+    const f = segs[k];
+    let txt = fs.readFileSync(f, 'utf8');
+    if (k === segs.length - 1 && txt.length && !txt.endsWith('\n')) txt = txt.slice(0, txt.lastIndexOf('\n') + 1);   // a write in progress: not a record yet
+    const lines = txt.split('\n');
     for (let i = 0; i < lines.length; i++) {
       const l = lines[i]; if (!l) continue;
       const at = path.basename(f) + ':' + (i + 1);
@@ -203,9 +251,23 @@ function verify(root, name, keyIn = null) {
       head = r.h; s = r.s; n++;
     }
   } catch (e) { return { ok: false, at: e.at, why: e.why || e.message }; }
-  return { ok: true, records: n, seq: s, head, segments: segments(path.join(root, name)).length, payloadsAuthenticated: !!auth, kids: [...kids] };
+  const segs = segments(path.join(root, name));
+  return { ok: true, records: n, seq: s, head, segments: segs.length, payloadsAuthenticated: !!auth, kids: [...kids], unterminatedTailBytes: segs.length ? tailFragment(segs[segs.length - 1]) : 0 };
 }
-/* the hash of the record with sequence number s (for anchors and checkpoints) */
-function hashAt(root, name, seq) { for (const r of chain(root, name)) if (r.s === seq) return r.h; return null; }
+function tailFragment(f) { const b = fs.readFileSync(f); return b.length - (b.lastIndexOf(0x0a) + 1); }
+/* the hashes of the records with the given sequence numbers, in ONE walk of the chain (for anchors, checkpoints, manifests) */
+function hashesAt(root, name, seqs) {
+  const want = new Set(seqs), out = new Map(); if (!want.size) return out;
+  let max = -Infinity; for (const x of want) if (x > max) max = x;          // (no spread: the set can be very large)
+  try { for (const r of chain(root, name)) { if (want.has(r.s)) out.set(r.s, r.h); if (r.s >= max) break; } } catch (_) { }
+  return out;
+}
+function hashAt(root, name, seq) { return hashesAt(root, name, [seq]).get(seq) || null; }
+/* the time of the last record of a stream, read from the plaintext 't' field (no key needed) */
+function lastTime(root, name) {
+  const segs = segments(path.join(root, name));
+  for (let k = segs.length - 1; k >= 0; k--) { const ls = fs.readFileSync(segs[k], 'utf8').split('\n').filter(Boolean); for (let i = ls.length - 1; i >= 0; i--) { try { const r = JSON.parse(ls[i]); if (Number.isFinite(r.t)) return r.t; } catch (_) { } } }
+  return null;
+}
 
-module.exports = { openStream, readStream, verify, chain, hashAt, loadKey, newKey, newKeyPair, encrypt, decrypt, lineHash, GENESIS, segments, kidOf };
+module.exports = { openStream, readStream, verify, chain, hashAt, hashesAt, lastTime, LEASE_MS, loadKey, newKey, newKeyPair, encrypt, decrypt, lineHash, GENESIS, segments, kidOf };

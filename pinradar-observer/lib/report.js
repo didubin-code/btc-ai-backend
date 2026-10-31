@@ -24,7 +24,7 @@ function summarize(markets, { from = 0, to = 8.64e15, label = 'all' } = {}) {
   /* every quarter-hour close in the period that has no record at all is unobserved */
   const closes = new Set(M.map(closeOf).filter(Number.isFinite));
   let expected = 0, missingWindows = 0;
-  if (closes.size) { const lo = Math.min(...closes), hi = Math.max(...closes);      // windows are 15 min apart: walk that grid
+  if (closes.size) { let lo = Infinity, hi = -Infinity; for (const c of closes) { if (c < lo) lo = c; if (c > hi) hi = c; }      // windows are 15 min apart: walk that grid
     for (let t = lo; t <= hi; t += 900e3) { expected++; if (!closes.has(t)) missingWindows++; } }
   const cov = { windowsExpected: expected, recorded: M.length, windowsWithNoRecord: missingWindows, complete: 0, partial: 0, unobserved: missingWindows, settled: 0, settlementMissing: 0 };
   for (const m of M) { cov[m.coverage ? m.coverage.status : 'unobserved']++; if (m.settlement && m.settlement.outcome) cov.settled++; else cov.settlementMissing++; }
@@ -56,9 +56,9 @@ function summarize(markets, { from = 0, to = 8.64e15, label = 'all' } = {}) {
   out.byProductionBuild = Object.fromEntries(Object.entries(byBuild).map(([k, l]) => [k, acc(l, 'qualified')]));
   /* prices and theoretical results at the qualifying signal */
   const priced = Q.filter(m => m.pricing && m.pricing.qualified && m.pricing.qualified.atSignal && m.pricing.qualified.atSignal.theoretical);
-  const asks = priced.map(m => m.pricing.qualified.atSignal.bestAskCents).filter(x => x != null);
+  const asks = priced.map(m => m.pricing.qualified.atSignal.bestAskCents).filter(x => x != null), pricedSet = new Set(priced);
   out.pricing = { withContemporaneousBook: priced.length, withoutBook: Q.length - priced.length,
-    unavailableReasons: Q.filter(m => !priced.includes(m)).reduce((a, m) => { const w = m.pricing && m.pricing.qualified && m.pricing.qualified.atSignal ? String(m.pricing.qualified.atSignal.unavailable || '?').replace(/[0-9]+/g, '#') : 'no pricing'; a[w] = (a[w] || 0) + 1; return a; }, {}),
+    unavailableReasons: Q.filter(m => !pricedSet.has(m)).reduce((a, m) => { const w = m.pricing && m.pricing.qualified && m.pricing.qualified.atSignal ? String(m.pricing.qualified.atSignal.unavailable || '?').replace(/[0-9]+/g, '#') : 'no pricing'; a[w] = (a[w] || 0) + 1; return a; }, {}),
     calledSideBestAskCents: { p10: q(asks, 0.1), median: q(asks, 0.5), p90: q(asks, 0.9) }, noOffersAtSignal: priced.length - asks.length };
   const sizes = priced.length ? priced[0].pricing.qualified.atSignal.theoretical.sizes.map(s => s.budgetUsd) : [];
   out.theoretical = {};
@@ -77,11 +77,22 @@ function summarize(markets, { from = 0, to = 8.64e15, label = 'all' } = {}) {
     'production\'s own LOCKED threshold is shown per build; the 0.2 % criterion is applied to Pin Radar\'s displayed flip risk'];
   return out;
 }
+/* the fields of a market record that summarize() and periods() use: a report over a long history keeps these only */
+function slim(m) {
+  const q = m.qualified, at = m.pricing && m.pricing.qualified && m.pricing.qualified.atSignal;
+  return { ticker: m.ticker, market: m.market && { closeTime: m.market.closeTime }, coverage: m.coverage && { status: m.coverage.status },
+    settlement: m.settlement && { outcome: m.settlement.outcome, result: m.settlement.result }, signal: m.signal && { won: m.signal.won },
+    qualified: q && { won: q.won, tau: q.tau, timingCertain: q.timingCertain, category: q.category, side: q.side, pFlip: q.pFlip, flags: { reversalWarningLater: q.flags.reversalWarningLater } },
+    atT120: m.atT120 && { unobserved: m.atT120.unobserved, state: m.atT120.state, qualifies: m.atT120.qualifies }, lockedAnywhereInLast120: m.lockedAnywhereInLast120,
+    production: m.production && { build: m.production.build, lockMaxFlip: m.production.lockMaxFlip },
+    pricing: { qualified: { atSignal: !at ? at : at.theoretical ? { bestAskCents: at.bestAskCents, theoretical: { sizes: at.theoretical.sizes.map(x => ({ budgetUsd: x.budgetUsd, contracts: x.contracts, fullyFillable: x.fullyFillable, netUsd: x.netUsd, capitalUsd: x.capitalUsd })) } } : { unavailable: at.unavailable } } } };
+}
 function periods(markets, kind, now = Date.now()) {
   const day = 864e5, out = [];
   const closes = markets.map(closeOf).filter(Number.isFinite);
   if (!closes.length) return out;
-  const start = Math.min(...closes), end = Math.min(now, Math.max(...closes) + 1);
+  let start = Infinity, last = -Infinity; for (const c of closes) { if (c < start) start = c; if (c > last) last = c; }
+  const end = Math.min(now, last + 1);
   const floorDay = t => Math.floor(t / day) * day;
   if (kind === 'daily') for (let t = floorDay(start); t < end; t += day) out.push(summarize(markets, { from: t, to: t + day, label: new Date(t).toISOString().slice(0, 10) }));
   if (kind === 'weekly') { let t = floorDay(start); t -= ((new Date(t).getUTCDay() + 6) % 7) * day; for (; t < end; t += 7 * day) out.push(summarize(markets, { from: t, to: t + 7 * day, label: 'week of ' + new Date(t).toISOString().slice(0, 10) })); }
@@ -89,4 +100,4 @@ function periods(markets, kind, now = Date.now()) {
     while (t < end) { const n = new Date(t); const t2 = Date.UTC(n.getUTCFullYear(), n.getUTCMonth() + 1, 1); out.push(summarize(markets, { from: t, to: t2, label: new Date(t).toISOString().slice(0, 7) })); t = t2; } }
   return out;
 }
-module.exports = { summarize, periods, bucketOf, BUCKETS };
+module.exports = { summarize, periods, slim, bucketOf, BUCKETS };
