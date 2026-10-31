@@ -35,7 +35,7 @@ It found one difference: 14,403 against 14,275 signals priced within 10 s. The c
   * Test 2 against live data, and the live part of Test 10, are the first things to run after deployment.
   * Run `observer.js run` for one hour, then compare `report` with what the Pin Radar page showed for the same windows.
 * **Production's settings.** It is unknown whether production sets `PRED_LOG_FILE`, `LEDGER_FILE` or `LOCK_MAX_FLIP`. The first `/health` record shows them.
-* **The production URL.** The repository names `btc-pin-radar-28.onrender.com`. This is unconfirmed.
+* **The production URL.** The repository names `btc-pin-radar.onrender.com`. This is unconfirmed.
 
 ## 4. Adversarial reviews and their fixes
 

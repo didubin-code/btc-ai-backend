@@ -38,7 +38,7 @@ Details are in `README.md` (design, schema, operation), `VALIDATION.md` (tests a
 | Deployment and 24/7 collection | **Not started.** Needs a host and your approval of any cost |
 | Live validation against production | **Not run.** Production unreachable from the build environment |
 | Continuous history | **None yet.** It begins at deployment; earlier history cannot be recovered beyond the ~25 h still in production's memory |
-| Production URL and settings | **Unconfirmed** (`btc-pin-radar-28.onrender.com` per the repository). The first `/health` record will show them |
+| Production URL and settings | **Unconfirmed** (`btc-pin-radar.onrender.com` per the repository). The first `/health` record will show them |
 
 ## 4. Data schema
 

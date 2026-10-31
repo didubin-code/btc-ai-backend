@@ -212,7 +212,7 @@ Deployment needs your approval because it needs a host.
 ## 8. Limitations (precise)
 
 * **No live observation yet.** The build environment could not reach the production URL or Render, so the observer has not observed production. Live checks — Test 2 on live data and the live part of Test 10 — are pending the first deployment. Everything else was tested against production's own code (`VALIDATION.md`).
-* **Production identity.** The production URL could not be confirmed. Documents name `btc-pin-radar-28.onrender.com`. The first `/health` record shows the build.
+* **Production identity.** The production URL could not be confirmed. Documents name `btc-pin-radar.onrender.com`. The first `/health` record shows the build.
 * **Timing resolution.** Production evaluates every 500 ms, but its prediction log keeps one row per second plus every state change. First-LOCKED timing is therefore exact to the logged second, and state changes are exact to the millisecond.
 * **Prices.** Order-book prices are the observer's own 1 Hz snapshots. A theoretical fill assumes the recorded book was there for the order: no queue, latency or competition. It is an upper bound.
 * **Settlement source.** CF Benchmarks BRTI ticks are not independently available without a CF Benchmarks licence. The official value is Kalshi's `expiration_value`. Production's `/brti-status`, recorded when available, compares its own accumulator with it.
