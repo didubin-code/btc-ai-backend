@@ -87,9 +87,9 @@ A third reviewer tried to break durability: crashes, full disks, stale locks, lo
 | F8 A slow Kalshi request delayed the 1 Hz book snapshots (low) | One lane served books, discovery and results. | Separate lanes: books, Kalshi metadata, Pin Radar. | Books continue while every metadata request hangs |
 | F9 The backup usage text omitted `--key` (low) | The documented command failed. | Usage and README corrected. | Static check, and the error message |
 
-**One more defect, found while testing.** The new F3 test found that the `report` command always failed: a local variable shadowed the key, so writing the encrypted report record threw.
-* No earlier test had run `report` from the command line successfully. One test checks only that `report` refuses to overwrite a file, and it passed for the wrong reason.
-* The defect is fixed. The end-to-end test now runs `report --period daily` on the encrypted store, and `report` now refuses an existing output file before doing any work.
+**One more defect, caught before commit.** While making `report` stream its input (the F3 fix), I briefly shadowed the encryption key with a local variable, which made `report` fail. The new F3 test caught it before the change was committed.
+* It also showed a gap in the tests: none had run `report` from the command line through to success. The one existing test checks only that `report` refuses to overwrite a file.
+* The end-to-end test now runs `report --period daily` on the encrypted store, and `report` refuses an existing output file before doing any work.
 
 ## 6. Test output (verbatim, final code)
 
