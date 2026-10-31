@@ -100,9 +100,12 @@ function build(input, opts = {}) {
       case 'obs.gap': gaps.push({ from: r.from, to: r.to }); break;
       case 'obs.start': if (Number.isFinite(r.at) && !(firstStart <= r.at)) firstStart = r.at; break;
       case 'k.series': if (r.series) series.push({ tRecv: r.tRecv, series: { fee_type: r.series.fee_type, fee_multiplier: r.series.fee_multiplier } }); break;
-      case 'k.markets': for (const m of r.markets || []) { if (!m || !m.ticker) continue; const o = mk.get(m.ticker) || {}; mk.set(m.ticker, { ...o, open: o.open || slim(m), rules: o.rules || m.rules_primary || null, seenAt: o.seenAt || r.tRecv }); } break;
+      case 'k.markets': for (const m of r.markets || []) { if (!m || !m.ticker) continue; const o = mk.get(m.ticker) || {}, fin = m.status === 'finalized';
+        /* a finalized market in Kalshi's list carries its official result too (back-filled markets are often only seen this way) */
+        mk.set(m.ticker, { ...o, open: o.open || slim(m), rules: o.rules || m.rules_primary || null, seenAt: o.seenAt || r.tRecv,
+          final: o.final || (fin ? slim(m) : undefined), finalAt: o.finalAt || (fin ? r.tRecv : undefined), finalVia: o.finalVia || (fin ? 'kalshi /markets list' : undefined) }); } break;
       case 'k.market': if (r.market) { const o = mk.get(r.ticker) || {}, fin = r.market.status === 'finalized';
-        mk.set(r.ticker, { ...o, final: fin ? (o.final || slim(r.market)) : o.final, last: slim(r.market), rules: o.rules || r.market.rules_primary || null, finalAt: fin ? (o.finalAt || r.tRecv) : o.finalAt }); } break;
+        mk.set(r.ticker, { ...o, final: fin ? (o.final || slim(r.market)) : o.final, last: slim(r.market), rules: o.rules || r.market.rules_primary || null, finalAt: fin ? (o.finalAt || r.tRecv) : o.finalAt, finalVia: o.finalVia || (fin ? 'kalshi /markets/<ticker>' : undefined) }); } break;
       case 'k.book': if (!r.book || emptyBook(r.book)) bookFail.set(r.ticker, (bookFail.get(r.ticker) || 0) + 1); break;
     }
   }
@@ -155,7 +158,7 @@ function build(input, opts = {}) {
       market: def ? { openTime: def.open_time, closeTime: def.close_time, expirationTime: def.expiration_time, strike: def.floor_strike ?? null,
         rules: m.rules || null, priceLevelStructure: def.price_level_structure || null, source: 'kalshi public API' } : null,
       settlement: fin ? { result, outcome: outcomeSide, expirationValue: fin.expiration_value === '' || fin.expiration_value == null ? null : Number(fin.expiration_value),
-        settlementTs: fin.settlement_ts || null, status: fin.status, recordedAt: m.finalAt, source: 'kalshi public API (expiration_value = Kalshi\'s official BRTI 60 s average)' }
+        settlementTs: fin.settlement_ts || null, status: fin.status, recordedAt: m.finalAt ? new Date(m.finalAt).toISOString() : null, retrievedVia: m.finalVia || null, source: 'kalshi public API (expiration_value = Kalshi\'s official BRTI 60 s average)' }
         : { result: null, outcome: null, status: m.last ? m.last.status : 'not recorded' },
       production: closeMs ? configAt(closeMs) : null,
       coverage: null, signal: null, qualified: null, primary: null, atT120: null, events: [], pricing: null,

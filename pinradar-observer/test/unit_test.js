@@ -387,6 +387,13 @@ t('provenance and honesty: a gap after the entry makes later events indeterminat
   assert.strictEqual(rep.primary.prospectiveLive.pricing.priced, 0); assert.strictEqual(rep.primary.prospectiveLive.pricing.excludedUnpriced, 1);
   assert.strictEqual(rep.primary.prospectiveLive.laterEvents.reversalWarning.indeterminate, 1);
 });
+t('a back-filled market whose official result is only in Kalshi\'s list is settled from that list (with its source), not left "unknown"', () => {
+  const tk = tkn(), mm = mk(tk, 'no').market; const rows = rowsFor(tk, s => s > 150 ? H('UP') : L('DOWN'));
+  const m = one([health, { kind: 'k.markets', tRecv: C + 3600e3, markets: [mm] }, { kind: 'pr.predictions', rows }]);
+  assert.strictEqual(m.settlement.outcome, 'DOWN'); assert.strictEqual(m.settlement.retrievedVia, 'kalshi /markets list'); assert.strictEqual(m.primary.won, true);
+  const open = one([health, { kind: 'k.markets', tRecv: C - 600e3, markets: [{ ...mm, status: 'active', result: '' }] }, { kind: 'pr.predictions', rows }]);
+  assert.strictEqual(open.settlement.outcome, null, 'an unfinalized listing never settles a market');
+});
 t('a book reply empty on BOTH sides is a failed snapshot, never "no offers": the previous real book prices the signal', () => {
   const tk = tkn(), rows = rowsFor(tk, s => s > 100 ? H('UP') : L('UP')); const sigObs = C - 100e3 + 250;
   const empty = { kind: 'k.book', ticker: tk, tSent: sigObs - 330, tRecv: sigObs - 300, hash: 'e1', book: { orderbook_fp: { yes_dollars: null, no_dollars: null } } };

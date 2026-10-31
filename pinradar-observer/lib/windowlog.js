@@ -58,7 +58,9 @@ function windowLogger({ log = console.log, delayMs = 90e3, now = Date.now } = {}
         break;
       }
       case 'k.book': case 'k.book.same': if (r.ticker) get(r.ticker).recs.push(r); break;
-      case 'k.markets': for (const m of r.markets || []) if (m && /^KXBTC15M-/.test(m.ticker || '')) { const w = get(m.ticker); if (!w.meta) { w.meta = true; w.recs.push({ kind: 'k.markets', tRecv: r.tRecv, markets: [m] }); } } break;
+      case 'k.markets': for (const m of r.markets || []) if (m && /^KXBTC15M-/.test(m.ticker || '')) { const w = get(m.ticker);
+        if (!w.meta || (m.status === 'finalized' && !w.done)) { w.meta = true; w.recs.push({ kind: 'k.markets', tRecv: r.tRecv, markets: [m] }); }
+        if (m.status === 'finalized' && !w.done) { w.done = true; setTimeout(() => summarize(m.ticker), delayMs).unref?.(); } } break;
       case 'k.market':
         if (r.ticker) { const w = get(r.ticker); w.recs.push(r); if (r.market && r.market.status === 'finalized' && !w.done) { w.done = true; setTimeout(() => summarize(r.ticker), delayMs).unref?.(); } }
         break;
