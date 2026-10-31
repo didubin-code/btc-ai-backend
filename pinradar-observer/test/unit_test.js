@@ -359,6 +359,16 @@ t('review: implausible saved cursors are reset and recorded; an unclean stop is 
   assert.strictEqual(fs.statSync(path.join(d, 'state.json')).mode & 0o077, 0);
 });
 
+t('window log: one line per settled window keeps lost LOCKED, reversal warning, direction reversal and a WRONG outcome apart, and never calls an unobserved window "no signal"', () => {
+  const { windowLogger } = require('../lib/windowlog'); const out = []; const wl = windowLogger({ log: x => out.push(x), delayMs: 0 });
+  const tk = tkn(), rows = rowsFor(tk, s => s > 150 ? H('UP') : (s > 80 && s < 90) ? { state: 'REVERSAL WARNING', side: 'UP', pFlip: 0.03 } : (s > 40 && s < 50) ? L('DOWN') : L('UP'));
+  wl.tap(health); wl.tap({ kind: 'pr.predictions', rows }); wl.tap(book(tk, C - 150e3 + 100, 97)); wl.tap(mk(tk, 'no')); wl.summarize(tk);
+  const l1 = out.find(x => x.includes(tk)); assert.ok(/coverage=complete 300\/300s/.test(l1) && /tau=149\.8s UP/.test(l1) && /ask=97c/.test(l1), l1);
+  assert.ok(/lostLocked=true reversalWarning=true directionReversed=true/.test(l1) && /settlement=no \(DOWN\)/.test(l1) && /signal WRONG \[wrong\]/.test(l1), l1);
+  const t2 = tkn(); wl.tap(mk(t2, 'yes')); wl.summarize(t2); const l2 = out.find(x => x.includes(t2)); assert.ok(/UNOBSERVED/.test(l2) && /none seen \(not fully observed/.test(l2), l2);
+  const t3 = tkn(); wl.tap({ kind: 'pr.predictions', rows: rowsFor(t3, () => H('UP')) }); wl.tap(mk(t3, 'yes')); wl.summarize(t3); const l3 = out.find(x => x.includes(t3)); assert.ok(/qualifying=NONE \(fully observed/.test(l3), l3);
+});
+
 (async () => {
   await Promise.all(pending);
   let n = 0; for (const [p, s] of results) { console.log((p ? 'ok   ' : 'FAIL ') + s); if (p) n++; }

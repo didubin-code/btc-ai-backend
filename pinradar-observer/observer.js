@@ -144,7 +144,10 @@ async function run() {
   }
   const kMarkets = {}; for (const [tk, m] of Object.entries((saved.kalshi && saved.kalshi.markets) || {})) if (/^KXBTC15M-[A-Z0-9-]+$/.test(tk) && m && Number.isFinite(m.closeMs)) kMarkets[tk] = m;
   const Q = {};
-  const emit = o => Q.raw.push(o), hemit = o => Q.health.push(o);
+  /* OBSERVER_LOG_WINDOWS=1: one plain-text line per settled window in the host's (private) log, for operations */
+  const wl = process.env.OBSERVER_LOG_WINDOWS === '1' ? require('./lib/windowlog').windowLogger() : null;
+  const tap = o => { if (wl) { try { wl.tap(o); } catch (_) { } } };
+  const emit = o => { Q.raw.push(o); tap(o); }, hemit = o => { Q.health.push(o); tap(o); };
   const resumed = name => info => hemit(info.droppedRecords > 0
     ? { kind: 'obs.gap', stream: name, from: info.from, to: info.to, reason: 'writes failed (' + info.error + '); ' + info.droppedRecords + ' queued records could not be kept', droppedRecords: info.droppedRecords }
     : { kind: 'obs.writefail', stream: name, from: info.from, to: info.to, error: info.error, note: 'writes failed and were retried: no record was lost (they were stored late)' });
