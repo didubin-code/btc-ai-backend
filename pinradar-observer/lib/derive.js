@@ -57,7 +57,12 @@ function feeFor(seriesRecs, atObs) {
    book shares the previous one's arrays */
 const pack = lv => { const a = new Float64Array(lv.length * 2); lv.forEach(([p, z], i) => { a[2 * i] = p; a[2 * i + 1] = z; }); return a; };
 const unpack = a => { const out = []; for (let i = 0; i < a.length; i += 2) out.push([a[i], a[i + 1]]); return out; };
-function compactBook(body) { const nb = normaliseBook(body); return { ya: pack(nb.yesAsks), na: pack(nb.noAsks), yb: nb.yesBids.length ? nb.yesBids[0][0] : null }; }
+/* a reply with no bids on EITHER side is not a real book (Kalshi returns such replies now and then, observed live on
+   31 Oct 2026, seconds apart from full books): it is counted as a failed snapshot, never as "no offers". A book with
+   one empty side is real: near the close the sellers of the winning side often withdraw. */
+function compactBook(body) { const nb = normaliseBook(body); if (!nb || (!nb.yesBids.length && !nb.noBids.length)) return null;
+  return { ya: pack(nb.yesAsks), na: pack(nb.noAsks), yb: nb.yesBids.length ? nb.yesBids[0][0] : null }; }
+const emptyBook = body => compactBook(body) === null;
 const FINALIZE_AFTER_MS = 26 * 3600e3;     // production keeps ~25 h of prediction rows: a market can still receive rows (catch-up) until then
 /* the market fields a record uses (the rules text is kept once per market) */
 const slim = m => ({ ticker: m.ticker, open_time: m.open_time, close_time: m.close_time, expiration_time: m.expiration_time, floor_strike: m.floor_strike,
@@ -94,7 +99,7 @@ function build(input, opts = {}) {
       case 'k.markets': for (const m of r.markets || []) { if (!m || !m.ticker) continue; const o = mk.get(m.ticker) || {}; mk.set(m.ticker, { ...o, open: o.open || slim(m), rules: o.rules || m.rules_primary || null, seenAt: o.seenAt || r.tRecv }); } break;
       case 'k.market': if (r.market) { const o = mk.get(r.ticker) || {}, fin = r.market.status === 'finalized';
         mk.set(r.ticker, { ...o, final: fin ? (o.final || slim(r.market)) : o.final, last: slim(r.market), rules: o.rules || r.market.rules_primary || null, finalAt: fin ? (o.finalAt || r.tRecv) : o.finalAt }); } break;
-      case 'k.book': if (!r.book) bookFail.set(r.ticker, (bookFail.get(r.ticker) || 0) + 1); break;
+      case 'k.book': if (!r.book || emptyBook(r.book)) bookFail.set(r.ticker, (bookFail.get(r.ticker) || 0) + 1); break;
     }
   }
   series.sort((a, b) => a.tRecv - b.tRecv); health.sort((a, b) => a.tRecv - b.tRecv);

@@ -359,6 +359,15 @@ t('review: implausible saved cursors are reset and recorded; an unclean stop is 
   assert.strictEqual(fs.statSync(path.join(d, 'state.json')).mode & 0o077, 0);
 });
 
+t('a book reply empty on BOTH sides is a failed snapshot, never "no offers": the previous real book prices the signal', () => {
+  const tk = tkn(), rows = rowsFor(tk, s => s > 100 ? H('UP') : L('UP')); const sigObs = C - 100e3 + 250;
+  const empty = { kind: 'k.book', ticker: tk, tSent: sigObs - 330, tRecv: sigObs - 300, hash: 'e1', book: { orderbook_fp: { yes_dollars: null, no_dollars: null } } };
+  const m = one([health, mk(tk), { kind: 'pr.predictions', rows }, book(tk, sigObs - 1500, 97), empty]);
+  assert.strictEqual(m.pricing.qualified.atSignal.bestAskCents, 97, JSON.stringify(m.pricing.qualified.atSignal)); assert.strictEqual(m.coverage.books.failedRequests, 1);
+  const oneSided = { kind: 'k.book', ticker: tk, tSent: sigObs - 330, tRecv: sigObs - 300, hash: 'o1', book: { orderbook_fp: { yes_dollars: [['0.9900', '50']], no_dollars: null } } };
+  const m2 = one([health, mk(tk), { kind: 'pr.predictions', rows }, book(tk, sigObs - 1500, 97), oneSided]);
+  assert.strictEqual(m2.pricing.qualified.atSignal.bestAskCents, null, 'a real one-sided book means no offer on the called side');
+});
 t('window log: one line per settled window keeps lost LOCKED, reversal warning, direction reversal and a WRONG outcome apart, and never calls an unobserved window "no signal"', () => {
   const { windowLogger } = require('../lib/windowlog'); const out = []; const wl = windowLogger({ log: x => out.push(x), delayMs: 0 });
   const tk = tkn(), rows = rowsFor(tk, s => s > 150 ? H('UP') : (s > 80 && s < 90) ? { state: 'REVERSAL WARNING', side: 'UP', pFlip: 0.03 } : (s > 40 && s < 50) ? L('DOWN') : L('UP'));
