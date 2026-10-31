@@ -20,6 +20,19 @@ const warn = () => { if (!mounted) console.error(`[host] WARNING: ${dir} is NOT 
 console.log(`[host] data directory ${dir} (${mounted ? 'persistent disk' : 'EPHEMERAL'})`); warn();
 setInterval(warn, 3600e3).unref();
 
+/* hourly storage line: bytes per stream, free space, and a warning before the disk fills (nothing is ever deleted) */
+const sizeOf = d => { let n = 0; try { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const f = path.join(d, e.name); n += e.isDirectory() ? sizeOf(f) : e.isFile() ? fs.statSync(f).size : 0; } } catch (_) { } return n; };
+const MB = b => (b / 1048576).toFixed(1) + ' MB';
+const storage = () => {
+  const data = path.join(dir, 'data'), per = {}; let tot = 0;
+  for (const s of ['raw', 'health', 'derived', 'audit']) { per[s] = sizeOf(path.join(data, s)); tot += per[s]; }
+  let free = null, size = null; try { const f = fs.statfsSync(dir); free = f.bavail * f.bsize; size = f.blocks * f.bsize; } catch (_) { }
+  const used = size ? 1 - free / size : null;
+  console.log(`[storage] data ${MB(tot)} (raw ${MB(per.raw)}, health ${MB(per.health)}, derived ${MB(per.derived)}, audit ${MB(per.audit)})` + (size ? `; filesystem ${(used * 100).toFixed(1)} % used, ${(free / 1073741824).toFixed(2)} GB free` : ''));
+  if (used != null && used > 0.8) console.error(`[storage] WARNING: the data filesystem is ${(used * 100).toFixed(0)} % full; enlarge the disk before it fills (writes would then fail and be recorded as gaps)`);
+};
+setTimeout(storage, 60e3).unref(); setInterval(storage, 3600e3).unref();
+
 const child = spawn(process.execPath, [path.join(__dirname, 'observer.js'), 'run', '--data', path.join(dir, 'data'), '--key', path.join(__dirname, 'keys', 'owner.public.pem'),
   '--sign-key', path.join(dir, 'host.sign.pem'), '--create-sign-key', '--pinradar', pinradar], { stdio: 'inherit', env: { ...process.env, OBSERVER_LOG_WINDOWS: process.env.OBSERVER_LOG_WINDOWS || '1' } });
 const server = http.createServer((req, res) => {
