@@ -12,7 +12,7 @@ Sources: `hypothesis_28.js` → `hypothesis_28_results.json`; `montecarlo_28.js`
 
 | Claim | Verdict | Evidence |
 |---|---|---|
-| A 0.2 % LOCKED signal with ≤ 2 min left is **100 % accurate** | **Not supported** | **21 wrong of 23,884** first qualifying signals at or after T−120: 99.91 %. Exact 95 % interval for the error rate: 0.054 %–0.134 %, so 100 % lies outside it. |
+| LOCKED with ≤ 2 min left **and** reversal probability ≤ 0.2 % is **nearly 100 % accurate** | **Supported: 99.91 %** (not literally 100 %) | **21 wrong of 23,884** first qualifying signals at or after T−120: 99.91 %. Exact 95 % interval for the error rate: 0.054 %–0.134 %, so 100 % lies outside it. |
 | About **98 %** of markets qualify | **Not supported** | **91.93 %** of markets qualify at some point in the last 120 s (23,884 of 25,982). 91.94 % ever qualify. |
 | What the data do support | An error rate near **0.09 % (about 1 in 1,100)** | 22 wrong of 23,889 first qualifying signals. 14 of the 22 came with ≤ 30 s left. |
 

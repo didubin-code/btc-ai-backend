@@ -103,7 +103,7 @@ Covered in `README.md` §4:
 ## 8. Research conclusions (RECONSTRUCTED, not observed)
 
 These come from replaying production's own 2.8 code on 25,982 real Kalshi contracts, with a substitute price feed (`research/RESULTS.md`).
-* **"0.2 % LOCKED with ≤ 2 min left is 100 % accurate": not supported.** 21 of 23,884 were wrong: 99.91 %, with an error rate of 0.054 %–0.134 % at 95 %.
+* **"LOCKED with ≤ 2 min left and reversal probability ≤ 0.2 % is nearly 100 % accurate": supported.** 21 of 23,884 were wrong: 99.91 %, with an error rate of 0.054 %–0.134 % at 95 %. It is not literally 100 %. The earlier replays agree: 5 wrong of 3,471 on development data (`pinradar-research/RESEARCH_REGISTER.md`, P5).
 * **"About 98 % of markets qualify": not supported.** The figure is 91.93 %.
 * **Error rate.** About 0.09 % overall. Signals first qualifying with ≤ 30 s left are worst, at 0.37 %.
 * **Prices.** The median called-side price is 99.8 ¢. At 99.5 ¢ or more, which covers 74 % of priced signals, a $1,000 purchase averages about +$1.47 with 3 losses in 10,725. At the 95 % worst-case loss rate, that edge disappears.
