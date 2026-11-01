@@ -70,6 +70,7 @@ function windowLogger({ log = console.log, delayMs = 90e3, now = Date.now } = {}
         else if (++healthFails === 1 || healthFails % 30 === 0) log(`[prod] /health FAILED (${r.status} ${r.error || ''}) x${healthFails}`);
         break;
       case 'k.series': series = r; break;
+      case 'obs.start': misc.push(r); break;   // the data directory's first start decides live vs back-fill
       case 'pr.restart': case 'pr.clockstep': case 'obs.gap': misc.push(r); if (misc.length > 500) misc.shift(); if (r.kind !== 'pr.clockstep') log(`[${r.kind}] ${JSON.stringify({ from: r.from && iso(r.from), to: r.to && iso(r.to), reason: r.reason, at: r.at && iso(r.at) })}`); break;
     }
     for (const [tk, w] of per) if (now() - w.first > 26 * 3600e3) per.delete(tk);   // bounded memory

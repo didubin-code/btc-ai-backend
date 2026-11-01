@@ -155,6 +155,14 @@ async function run() {
   /* OBSERVER_LOG_WINDOWS=1: one plain-text line per settled window in the host's (private) log, for operations */
   const wl = process.env.OBSERVER_LOG_WINDOWS === '1' ? require('./lib/windowlog').windowLogger() : null;
   const tap = o => { if (wl) { try { wl.tap(o); } catch (_) { } } };
+  /* the first start on this data directory (plain time, no data), so the window log labels live vs back-filled windows
+     like derive does from the stored start records */
+  const firstStartFile = path.join(dataDir, 'first-start');
+  let firstStart = null; try { firstStart = Date.parse(fs.readFileSync(firstStartFile, 'utf8').trim()); } catch (_) { }
+  if (!Number.isFinite(firstStart)) { try { firstStart = Date.parse(fs.readFileSync(path.join(dataDir, 'backfill-25h.done'), 'utf8').trim()); } catch (_) { } }
+  if (!Number.isFinite(firstStart)) firstStart = now;
+  try { if (!fs.existsSync(firstStartFile)) fs.writeFileSync(firstStartFile, new Date(firstStart).toISOString() + '\n', { mode: 0o600 }); } catch (_) { }
+  tap({ kind: 'obs.start', at: firstStart });
   const emit = o => { Q.raw.push(o); tap(o); }, hemit = o => { Q.health.push(o); tap(o); };
   const resumed = name => info => hemit(info.droppedRecords > 0
     ? { kind: 'obs.gap', stream: name, from: info.from, to: info.to, reason: 'writes failed (' + info.error + '); ' + info.droppedRecords + ' queued records could not be kept', droppedRecords: info.droppedRecords }
