@@ -82,7 +82,13 @@ const BUILD_FIXES = ['settlement-tail-law', 'impulse-onset-gate', 'index-resolut
   'D1-live-index-quorum-gate', 'D2-brti-source-age', 'D3-zero-size-ask-level', 'fee-schedule-from-series-record',
   'ev-ladder-by-order-size', 'probability-uncertainty-band', 'settlement-designations', 'hash-chained-ledger',
   'anytime-valid-monitors', 'shadow-policies', 'record-replay-tape', 'latency-percentiles',
-  'D4-proven-needs-official-agreement', 'D5-official-reversal-numbers', 'D6-final-needs-60-of-60'];
+  'D4-proven-needs-official-agreement', 'D5-official-reversal-numbers', 'D6-final-needs-60-of-60',
+  'I2-kalshi-single-market-read', 'I2-kalshi-refusals-recorded', 'I2-kalshi-stated-wait-obeyed'];
+/* I2 (2026-11-13): ingestion revision. BUILD_ID above is deliberately unchanged: it is an input of the decision
+   configuration hash (CONFIG28), and I2 changes no decision setting. A deployed I2 is identified from /health by
+   `ingest` and by `codeSha256` (the running file's own SHA-256). */
+const INGEST_REV = 'I2-2026-11-13';
+const CODE_SHA256_32 = (() => { try { return require('crypto').createHash('sha256').update(require('fs').readFileSync(__filename)).digest('hex'); } catch (_) { return null; } })();
 const KALSHI_BASE = (process.env.KALSHI_BASE || 'https://api.elections.kalshi.com/trade-api/v2').replace(/\/+$/, '');
 const KALSHI_SERIES = String(process.env.KALSHI_SERIES || 'KXBTC15M');
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
@@ -609,8 +615,19 @@ async function fetchJson(url, opts = {}, timeoutMs = 4000) {
   const ac = new AbortController(); const t = setTimeout(() => { try { ac.abort(); } catch (_) { } }, timeoutMs);
   try {
     const r = await fetch(url, { signal: ac.signal, headers: { accept: 'application/json' }, ...opts });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return await r.json();
+    if (!r.ok) {
+      const e = new Error('HTTP ' + r.status); e.status = r.status;   // I2: the status and a parsed Retry-After travel with the error; the message is unchanged
+      const hdr = r.headers && typeof r.headers.get === 'function' ? r.headers : null;
+      const pa = parseRetryAfter32(hdr ? hdr.get('retry-after') : null, hdr ? hdr.get('date') : null, Date.now());
+      if (pa) { e.retryAfterMs = pa.ms; e.retryAfterSource = pa.source; }
+      throw e;
+    }
+    const j = await r.json();
+    /* I2: Kalshi serves some records from an edge cache; its Age header (seconds) says how old the copy is. Carried on the
+       parsed object as a non-enumerable property, so no caller and no JSON output sees a new field. */
+    try { const ag = r.headers && typeof r.headers.get === 'function' ? r.headers.get('age') : null;
+      if (j && typeof j === 'object' && ag != null && /^\d{1,6}$/.test(String(ag).trim())) Object.defineProperty(j, '__age32', { value: Number(ag), enumerable: false }); } catch (_) { }
+    return j;
   } finally { clearTimeout(t); }
 }
 
@@ -1782,7 +1799,13 @@ const KAL = {
   ob: null, obTs: 0, lastLatencyMs: null, rateLimited: false, rateLimitedUntil: 0,
   inFlight: false, seq: 0, overlapSkips: 0, stopped: false,
   wsState: KALSHI_HAVE_CREDS ? 'init' : 'no-credentials', wsMsgs: 0,
-  wsSubscribedTicker: null, wsResubscribes: 0, wsLastError: null
+  wsSubscribedTicker: null, wsResubscribes: 0, wsLastError: null,
+  /* I2: what Kalshi refused, a wait it stated (deadline on the monotonic clock), where the market record came from */
+  rl: { statedUntilMono: 0, statedMs: null, statedSource: null, statedWhere: null, statedCount: 0, events: 0, lastWhere: null, lastAt: 0 },
+  bookErr: null, bookFails: 0, bookLastFailAt: 0, marketVia: null, marketEdgeAgeSec: null,
+  rejected: { identity: 0, age: 0, settlement: 0 },
+  stale: { refused: { episodes: 0, totalMs: 0, maxMs: 0 }, other: { episodes: 0, totalMs: 0, maxMs: 0 }, lastAt: 0, lastMs: 0, lastCause: null },
+  req: { list: 0, single: 0, orderbook: 0, settlement: 0, series: 0 }, refused: { list: 0, single: 0, orderbook: 0, settlement: 0, series: 0 }
 };
 function pickNum(m, ...keys) { for (const k of keys) { const n = Number(m && m[k]); if (Number.isFinite(n)) return n; } return NaN; }
 function parseKalshiMarket(m) {
@@ -1825,6 +1848,7 @@ function chooseMarket(markets, now) {
 async function kalshiPollOnce() {
   const now = Date.now();
   if (KAL.rateLimited && now < KAL.rateLimitedUntil) return;
+  if (kalshiStatedWait32()) return;   // I2-c: inside a wait that Kalshi stated (Retry-After) no Kalshi read is made
   /* v2.2 RACE FIX. This was driven by setInterval(fn, 1000) while the
      body can block up to 3.5 s on a fetch timeout. Two invocations could
      therefore overlap, and the slower one's older response could land
@@ -1835,6 +1859,7 @@ async function kalshiPollOnce() {
   KAL.inFlight = true;
   const seq = ++KAL.seq;
   const t0 = Date.now();
+  let stage32 = 'list';   // I2-b: which market-record request is in flight (for the refusal counters)
   try {
     /* `status=open` returns ONLY the single currently-active window, so at
        every 15-minute rollover it briefly returns nothing and the radar
@@ -1849,16 +1874,26 @@ async function kalshiPollOnce() {
        the wide query near the rollover so the next window is discovered. */
     const cur = KAL.market;
     const tauNow = cur && Number.isFinite(cur.closeMs) ? (cur.closeMs - Date.now()) / 1000 : Infinity;
-    const useSingle = !!(cur && Number.isFinite(cur.strike) && tauNow > 3 && tauNow <= KALSHI_FAST_TAU_SEC);
-    let mk;
+    /* I2-a: the known market is read by its own record for the whole window (KALSHI_SINGLE_TAU_SEC, default 900 s), not
+       only in the last KALSHI_FAST_TAU_SEC. The list query's address changes every second (min_close_ts), so every one of
+       those requests reaches Kalshi's servers; it is kept for discovery (start, rollover, a record without a strike). */
+    const useSingle = !!(cur && Number.isFinite(cur.strike) && tauNow > 3 && tauNow <= Math.max(KALSHI_FAST_TAU_SEC, KALSHI_SINGLE_TAU_SEC));
+    let mk, via = null, edgeAge = null;
     if (useSingle) {
+      stage32 = 'single'; KAL.req.single++; via = 'single';
       const sj = await fetchJson(`${KALSHI_BASE}/markets/${encodeURIComponent(cur.ticker)}`, {}, 2500);
-      mk = parseKalshiMarket(sj && (sj.market || sj));
+      mk = parseKalshiMarket(sj && (sj.market || sj)); edgeAge = sj && Number.isFinite(sj.__age32) ? sj.__age32 : null;
       if (!mk || !Number.isFinite(mk.closeMs) || mk.closeMs <= Date.now()) mk = null;
+      /* I2-a: this record can be a copy from Kalshi's edge cache. It may refresh the record we hold. It may never change
+         WHICH market, strike, strike type or close time we hold: only the list query does that, as before. And a copy the
+         edge reports as older than KALSHI_SINGLE_MAX_EDGE_AGE_SEC is not used. In both cases the list query answers. */
+      if (mk && !(mk.ticker === cur.ticker && mk.strike === cur.strike && mk.strikeType === cur.strikeType && mk.closeMs === cur.closeMs)) { mk = null; KAL.rejected.identity++; }
+      else if (mk && edgeAge != null && edgeAge > KALSHI_SINGLE_MAX_EDGE_AGE_SEC) { mk = null; KAL.rejected.age++; }
     }
     if (!mk) {
+      stage32 = 'list'; KAL.req.list++; via = 'list';
       const mj = await fetchJson(`${KALSHI_BASE}/markets?series_ticker=${encodeURIComponent(KALSHI_SERIES)}&min_close_ts=${nowSec}&max_close_ts=${nowSec + 1800}&limit=20`, {}, 3500);
-      mk = chooseMarket(Array.isArray(mj.markets) ? mj.markets : [], Date.now());
+      mk = chooseMarket(Array.isArray(mj.markets) ? mj.markets : [], Date.now()); edgeAge = mj && Number.isFinite(mj.__age32) ? mj.__age32 : null;
     }
     if (!mk) throw new Error('no open ' + KALSHI_SERIES + ' market');
     if (seq !== KAL.seq) return;                 // a newer poll already won
@@ -1868,7 +1903,15 @@ async function kalshiPollOnce() {
     const bookMaxAge = (Number.isFinite(mk.closeMs) && (mk.closeMs - Date.now()) / 1000 <= BOOK_FAST_TAU) ? BOOK_FAST_MS : 1500;
     let needBook = !KAL.ob || KAL.ob.ticker !== mk.ticker || (Date.now() - KAL.obTs) > bookMaxAge;
     if (needBook) {
-      const ob = await fetchJson(`${KALSHI_BASE}/markets/${encodeURIComponent(mk.ticker)}/orderbook?depth=20`, {}, 3000).catch(() => null);
+      /* I2-b: a failed book read was discarded without a trace. It is now recorded and counted. Nothing else changes: the
+         book is asked again on the next poll, as before, unless Kalshi stated a wait. The held book keeps its own time and
+         ticker, so the unchanged book-age gate (MAX_BOOK_AGE_MS) reads its true age. */
+      let ob = null; KAL.req.orderbook++;
+      try { ob = await fetchJson(`${KALSHI_BASE}/markets/${encodeURIComponent(mk.ticker)}/orderbook?depth=20`, {}, 3000); KAL.bookErr = null; KAL.bookFails = 0; }
+      catch (e) {
+        KAL.bookErr = String(e && e.message || e); KAL.bookFails = (KAL.bookFails || 0) + 1; KAL.bookLastFailAt = Date.now();
+        if (e && e.status === 429) { KAL.refused.orderbook++; kalshiRefused32(e, 'orderbook'); }
+      }
       if (ob && seq === KAL.seq) { KAL.ob = normaliseOrderbook(ob, mk.ticker); KAL.obTs = Date.now(); }
     }
     if (seq !== KAL.seq) return;
@@ -1877,13 +1920,16 @@ async function kalshiPollOnce() {
        estimate of its 60 s average for the basis tracker. */
     if (KAL.market && KAL.market.ticker !== mk.ticker && Number.isFinite(KAL.market.closeMs)
       && KAL.market.closeMs <= Date.now() + 1500) noteWindowClosed(KAL.market);
+    kalshiStaleNote32(Date.now());   // I2-b: measurement only, before the record's time is renewed
     KAL.market = mk; KAL.ts = Date.now(); KAL.err = null; KAL.consecutiveFails = 0;
     kalshiWsSync();
     KAL.rateLimited = false; KAL.lastLatencyMs = Date.now() - t0;
+    KAL.marketVia = via; KAL.marketEdgeAgeSec = edgeAge;   // I2-b
   } catch (e) {
     const msg = String(e.message || e);
     KAL.err = msg; KAL.consecutiveFails++;
     if (/429/.test(msg)) { KAL.rateLimited = true; KAL.rateLimitedUntil = Date.now() + 5000; }
+    if (e && e.status === 429) { KAL.refused[stage32]++; kalshiRefused32(e, stage32); }   // I2-b/c: counted; a stated wait is noted. Production's 5 s stop above is unchanged
     KAL.lastLatencyMs = Date.now() - t0;
   } finally { KAL.inFlight = false; }
 }
@@ -1897,6 +1943,74 @@ function kalshiScheduleNext() {
   const delay = tau <= KALSHI_FAST_TAU_SEC ? KALSHI_POLL_FAST_MS : KALSHI_POLL_MS;
   KAL.timer = setTimeout(async () => { await kalshiPollOnce(); kalshiScheduleNext(); }, delay);
   if (KAL.timer.unref) KAL.timer.unref();
+}
+/* =====================================================================
+   I2 (2026-11-13) — KALSHI READS: REFUSALS RECORDED, A STATED WAIT OBEYED
+   What production did and still does here: after one HTTP 429 on the market record it stops every Kalshi read of the
+   poll loop for a fixed 5,000 ms and tries again on the first poll after that. A refused order-book read is asked
+   again on the next poll. None of that is changed by I2.
+   What I2 adds:
+     (1) every refusal is counted per request type, and a failed order-book read is recorded instead of discarded;
+     (2) a Retry-After, when a refusal carries one (RFC 9110 10.2.3: delay-seconds or HTTP-date), is a wait the SERVER
+         states: no Kalshi read of any kind is made before it, whichever request drew it. The deadline is kept on the
+         monotonic clock and is never shortened. A zero, past or unparsable value states no wait;
+     (3) the time the market record spent past KALSHI_STALE_MS is accumulated when the record is next renewed, split by
+         whether the last error was a refusal. Measurement only: no gate reads it.
+   Unchanged: KALSHI_STALE_MS, MAX_BOOK_AGE_MS, every gate, every cadence, the context's error text
+   ("stale <n>ms: HTTP 429"), and what counts as a usable record. No value is manufactured while a limit is in force.
+   ===================================================================== */
+const KALSHI_SINGLE_TAU_SEC = clampEnv(process.env.KALSHI_SINGLE_TAU_SEC, 900, 0, 900);   // I2-a; 0 restores production's endpoint choice
+const KALSHI_SINGLE_MAX_EDGE_AGE_SEC = clampEnv(process.env.KALSHI_SINGLE_MAX_EDGE_AGE_SEC, 5, 0, 600);   // I2-a: the edge's own max-age for this record
+const monoNow32 = () => globalThis.performance.now();
+const MONTHS32 = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
+/* RFC 9110 5.6.7: IMF-fixdate, the obsolete RFC 850 form (two-digit year: more than 50 years ahead means the previous
+   century) and asctime; HTTP-date is UTC. Returns epoch ms or NaN. */
+function parseHttpDate32(v) {
+  if (v == null) return NaN; const t = String(v).trim();
+  let m = /^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun), (\d{2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$/.exec(t);
+  if (m) return Date.UTC(+m[3], MONTHS32[m[2]], +m[1], +m[4], +m[5], +m[6]);
+  m = /^(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), (\d{2})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-(\d{2}) (\d{2}):(\d{2}):(\d{2}) GMT$/.exec(t);
+  if (m) { let y = 2000 + Number(m[3]); if (y > new Date().getUTCFullYear() + 50) y -= 100; return Date.UTC(y, MONTHS32[m[2]], +m[1], +m[4], +m[5], +m[6]); }
+  m = /^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) ( ?\d{1,2}) (\d{2}):(\d{2}):(\d{2}) (\d{4})$/.exec(t);
+  if (m) return Date.UTC(+m[6], MONTHS32[m[1]], Number(m[2].trim()), +m[3], +m[4], +m[5]);
+  return NaN;
+}
+/* RFC 9110 10.2.3: Retry-After = HTTP-date / delay-seconds (1*DIGIT). An HTTP-date is measured against the response's own
+   Date header when it carries one (the server's clock), else against the local clock; a date in the past is a zero delay;
+   anything unparsable is "no usable value". Returns { ms, source } or null. */
+function parseRetryAfter32(value, dateHeader, nowMs = Date.now()) {
+  if (value == null) return null;
+  const raw = String(value).trim(); if (!raw) return null;
+  if (/^\d{1,9}$/.test(raw)) return { ms: Number(raw) * 1000, source: 'delay-seconds' };
+  const when = parseHttpDate32(raw); if (!Number.isFinite(when)) return null;
+  const ref = parseHttpDate32(dateHeader); const base = Number.isFinite(ref) ? ref : nowMs;
+  return { ms: Math.max(0, when - base), source: Number.isFinite(ref) ? 'http-date vs Date header' : 'http-date vs local clock' };
+}
+/* where: 'list' | 'single' (the current market's record), 'orderbook', 'settlement' (a closed market's record), 'series' */
+function kalshiRefused32(e, where) {
+  const R = KAL.rl; R.events++; R.lastWhere = where; R.lastAt = Date.now();
+  const ra = e && Number.isFinite(e.retryAfterMs) && e.retryAfterMs > 0 ? e.retryAfterMs : null;   // zero, past or unparsable: no stated wait
+  if (ra == null) return 0;
+  R.statedUntilMono = Math.max(R.statedUntilMono || 0, monoNow32() + ra);   // never shortened
+  R.statedMs = ra; R.statedSource = (e && e.retryAfterSource) || null; R.statedWhere = where; R.statedCount++;
+  return ra;
+}
+function kalshiStatedWaitRemaining32() { const u = KAL.rl.statedUntilMono; return u > 0 ? Math.max(0, u - monoNow32()) : 0; }
+function kalshiStatedWait32() { return kalshiStatedWaitRemaining32() > 0; }
+function kalshiStaleNote32(now) {
+  const g = KAL.ts ? now - KAL.ts - KALSHI_STALE_MS : 0; if (!(g > 0)) return;
+  const cause = /429/.test(String(KAL.err || '')) ? 'refused' : 'other', b = KAL.stale[cause];
+  b.episodes++; b.totalMs += g; if (g > b.maxMs) b.maxMs = g; KAL.stale.lastAt = now; KAL.stale.lastMs = g; KAL.stale.lastCause = cause;
+}
+function kalshiIngestHealth32(now = Date.now()) {
+  const R = KAL.rl, rem = kalshiStatedWaitRemaining32();
+  return { refusals: { total: R.events, lastWhere: R.lastWhere, lastAt: R.lastAt || null,
+      stop: { active: !!(KAL.rateLimited && now < KAL.rateLimitedUntil), remainingMs: KAL.rateLimited ? Math.max(0, KAL.rateLimitedUntil - now) : 0, fixedMs: 5000 },
+      statedWait: { active: rem > 0, remainingMs: Math.round(rem), lastMs: R.statedMs, source: R.statedSource, where: R.statedWhere, count: R.statedCount } },
+    book: { ageMs: KAL.obTs ? now - KAL.obTs : null, err: KAL.bookErr, fails: KAL.bookFails },
+    marketRecord: { via: KAL.marketVia, edgeAgeSec: KAL.marketEdgeAgeSec, singleTauSec: KALSHI_SINGLE_TAU_SEC, maxEdgeAgeSec: KALSHI_SINGLE_MAX_EDGE_AGE_SEC, rejected: { ...KAL.rejected } },
+    stale: { gateMs: KALSHI_STALE_MS, refused: { ...KAL.stale.refused }, other: { ...KAL.stale.other }, lastAt: KAL.stale.lastAt || null, lastMs: KAL.stale.lastMs, lastCause: KAL.stale.lastCause },
+    requests: { ...KAL.req }, refused: { ...KAL.refused } };
 }
 function normaliseOrderbook(ob, ticker) {
   const fp = ob && ob.orderbook_fp;
@@ -2655,14 +2769,16 @@ async function settlePollOnce(now = Date.now()) {
     }
     if (now < p.closeMs + 2500) continue;
     if (now - p.closeMs > 30 * 60000) { p.status = 'UNRESOLVED'; SETTLE.pending.delete(p.ticker); SETTLE.done.unshift(p); continue; }
-    p.polls++;
+    if (kalshiStatedWait32()) continue;   // I2-c: no settlement read inside a wait that Kalshi stated
+    p.polls++; KAL.req.settlement++;
     try {
       const j = await fetchJson(`${KALSHI_BASE}/markets/${encodeURIComponent(p.ticker)}`, {}, 2500);
       const m = j && (j.market || j);
+      if (m && m.ticker !== p.ticker) { KAL.rejected.settlement++; continue; }   // I2-d: a record that names another market never settles this one
       const res = m && String(m.result || '').toLowerCase();
       const ev = Number(m && m.expiration_value);
       if ((res === 'yes' || res === 'no') && Number.isFinite(ev)) finalizeWindow(p, res, ev, 'kalshi-result');
-    } catch (_) { /* retried next tick */ }
+    } catch (e) { if (e && e.status === 429) { KAL.refused.settlement++; kalshiRefused32(e, 'settlement'); } /* retried next tick */ }
   }
 }
 
@@ -3743,6 +3859,8 @@ function fee28Recompute() {
 }
 fee28Recompute();
 async function fee28Refresh() {
+  if (kalshiStatedWait32()) return;   // I2-c: not inside a wait that Kalshi stated; the fee settings held stay in force
+  KAL.req.series++;
   try {
     const j = await fetchJson(`${KALSHI_BASE}/series/${encodeURIComponent(KALSHI_SERIES)}`, {}, 4000);
     const s = j && (j.series || j);
@@ -3769,7 +3887,7 @@ async function fee28Refresh() {
     FEE28.series = { fee_type: type, fee_multiplier: multOk ? mult : null, fee_multiplier_raw: raw === undefined ? null : raw, ticker: s.ticker || KALSHI_SERIES };
     fee28Recompute();
     if (JSON.stringify(FEE28.cfg) !== before) { FEE28.history.push({ ts: Date.now(), cfg: { ...FEE28.cfg } }); if (typeof L28 !== 'undefined') ledgerAppend28(L28, 'fees', { cfg: { ...FEE28.cfg }, isDefault: FEE28.isDefault }); }
-  } catch (e) { FEE28.error = String(e && e.message || e); FEE28.fetchedAt = Date.now(); }
+  } catch (e) { FEE28.error = String(e && e.message || e); FEE28.fetchedAt = Date.now(); if (e && e.status === 429) { KAL.refused.series++; kalshiRefused32(e, 'series'); } }
 }
 
 /* ---------------------------------------------------------------- evidence shown with every call
@@ -4072,11 +4190,15 @@ function shadowExpire28(now = Date.now()) {
 async function settleRestored28(now = Date.now()) {
   for (const w of [...SHADOW28.windows.values()]) {
     if (!w.restored || now < w.closeMs + 2500 || (typeof SETTLE !== 'undefined' && SETTLE.pending.has(w.ticker))) continue;
+    if (kalshiStatedWait32()) continue;   // I2-c
+    KAL.req.settlement++;
     try {
       const j = await fetchJson(`${KALSHI_BASE}/markets/${encodeURIComponent(w.ticker)}`, {}, 2500);
-      const m = j && (j.market || j); const res = m && String(m.result || '').toLowerCase(), ev = Number(m && m.expiration_value);
+      const m = j && (j.market || j);
+      if (m && m.ticker !== w.ticker) { KAL.rejected.settlement++; continue; }   // I2-d
+      const res = m && String(m.result || '').toLowerCase(), ev = Number(m && m.expiration_value);
       if ((res === 'yes' || res === 'no') && Number.isFinite(ev) && SHADOW28.windows.has(w.ticker)) shadowFinalize28(w.ticker, res, ev);
-    } catch (_) { /* next minute */ }
+    } catch (e) { if (e && e.status === 429) { KAL.refused.settlement++; kalshiRefused32(e, 'settlement'); } /* next minute */ }
   }
 }
 function v28Summary(now = Date.now()) {
@@ -4948,7 +5070,7 @@ const server = http.createServer(async (req, res) => {
       const now = Date.now();
       return send(res, 200, {
         ok: true, version: SERVER_VERSION, service: 'btc-pin-radar',
-        build: BUILD_ID, fixes: BUILD_FIXES,
+        build: BUILD_ID, fixes: BUILD_FIXES, ingest: INGEST_REV, codeSha256: CODE_SHA256_32,
         openaiEnabled: ENABLE_OPENAI, model: OPENAI_MODEL,
         uptimeSec: Math.round((now - bootTs) / 1000),
         streaming: WS_AVAILABLE && ENABLE_WS, wsImpl: WS_AVAILABLE ? (globalThis.WebSocket ? 'node-global' : 'ws-package') : 'none',
@@ -4958,7 +5080,7 @@ const server = http.createServer(async (req, res) => {
           lastError: v.lastError, bookResets: v.bookResets || 0, trades60s: v.trades.filter(t => t[0] > now - 60000).length
         }])),
         index: { value: round(IDX.value, 2), ageMs: IDX.ts ? now - IDX.ts : null, venuesUsed: IDX.venuesUsed, dispersionBps: IDX.dispersionBps, ringSamples: IDX.ring.length, publishFails: IDX.publishFails, lastReason: IDX.lastReason },
-        kalshi: { ticker: KAL.market && KAL.market.ticker, ageMs: KAL.ts ? now - KAL.ts : null, err: KAL.err, fails: KAL.consecutiveFails, latencyMs: KAL.lastLatencyMs, rateLimited: KAL.rateLimited, wsState: KAL.wsState, wsMsgs: KAL.wsMsgs, overlapSkips: KAL.overlapSkips, pollSeq: KAL.seq },
+        kalshi: { ticker: KAL.market && KAL.market.ticker, ageMs: KAL.ts ? now - KAL.ts : null, err: KAL.err, fails: KAL.consecutiveFails, latencyMs: KAL.lastLatencyMs, rateLimited: KAL.rateLimited, wsState: KAL.wsState, wsMsgs: KAL.wsMsgs, overlapSkips: KAL.overlapSkips, pollSeq: KAL.seq, ...kalshiIngestHealth32(now) },
         restFallbackActive: RESTF.active,
         modelVersion: MODEL_VERSION, settleAlign: SETTLE_ALIGN,
         basis: (() => { const b = basisModel(); return { mean: round(b.mean, 3), sd: round(b.sd, 3), sdUpper: round(b.sdUpper, 3), n: b.n, source: b.source }; })(),
@@ -5164,5 +5286,8 @@ module.exports = {
   // v2.8
   ...CORE28, FEE28, fee28Refresh, fee28Recompute, L28, SHADOW28, LAT28, TAPE28, CONFIG28, CONFIG28_HASH, PREREG28_ID, enrich28,
   tapePre28, tapeRecord28, tapeSample28, bg28, shadowFinalize28, shadowExpire28, settleRestored28, heartbeat28, v28Summary, lastWindowDesignation28, settledFor28, calib28,
-  clientLat28, ledgerVerify28, tapeWrite28, TAPE28_FILE_MAX
+  clientLat28, ledgerVerify28, tapeWrite28, TAPE28_FILE_MAX,
+  // I2
+  INGEST_REV, CODE_SHA256_32, parseHttpDate32, parseRetryAfter32, kalshiRefused32, kalshiStatedWait32, kalshiStatedWaitRemaining32, kalshiStaleNote32,
+  kalshiIngestHealth32, kalshiScheduleNext, BG32: BG, KALSHI_SINGLE_TAU_SEC, KALSHI_SINGLE_MAX_EDGE_AGE_SEC
 };
