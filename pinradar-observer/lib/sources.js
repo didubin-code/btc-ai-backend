@@ -140,6 +140,8 @@ function pinradarSource({ base, http, emit, now = Date.now, state = {}, onTicker
       }
       const gap = since > 0 && firstTs != null && firstTs - since > TAPE_GAP_MS ? { from: since, to: firstTs, ms: firstTs - since } : null;
       emit({ kind: 'pr.tape', ...meta(r), since, received: all.length, decisions, samples, boots, newestTs: newest, gap, rows: r.ok ? all : [] });
+      /* one plain log line per pull so the capture can be checked from the host's log without the owner's key */
+      console.log('[tape] ' + (r.ok ? 'ok' : 'FAILED status ' + r.status) + ' since=' + since + ' decisions=' + decisions + ' samples=' + samples + ' boots=' + boots + ' newest=' + newest + (gap ? ' GAP ' + gap.ms + ' ms before the first new row' : ''));
       if (r.ok) S.tapeTs = newest;
     },
   };
