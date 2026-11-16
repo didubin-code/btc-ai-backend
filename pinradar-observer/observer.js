@@ -135,6 +135,8 @@ async function run() {
   if (!(Number.isSafeInteger(pState.predTs) && pState.predTs >= 0 && pState.predTs <= now + 864e5)) { if (pst.predTs != null) clean.notes.push('predTs reset'); pState.predTs = 0; }
   if (!(Number.isSafeInteger(pState.ledgerSeq) && pState.ledgerSeq >= 0)) { if (pst.ledgerSeq != null) clean.notes.push('ledgerSeq reset'); pState.ledgerSeq = 0; }
   if (!(Number.isSafeInteger(pState.sigTs) && pState.sigTs >= 0 && pState.sigTs <= now + 864e5)) { if (pst.sigTs != null) clean.notes.push('sigTs reset'); pState.sigTs = 0; }
+  if (!(Number.isSafeInteger(pState.tapeTs) && pState.tapeTs >= 0 && pState.tapeTs <= now + 864e5)) { if (pst.tapeTs != null) clean.notes.push('tapeTs reset'); pState.tapeTs = 0; }
+  if (pState.tapeLast != null && (typeof pState.tapeLast !== 'object' || Array.isArray(pState.tapeLast))) { clean.notes.push('tapeLast reset'); pState.tapeLast = null; }
   /* no usable cursor but data on disk: start 15 min before the newest stored record, so the catch-up (a full page) fetches
      every market since then by ticker instead of only the newest rows. Duplicates are removed in derive. */
   let predTsFrom = 'state file';
@@ -170,7 +172,7 @@ async function run() {
   Q.raw = writeQueue(streams[0], () => ST.openStream(dataDir, 'raw', key), resumed('raw'));
   Q.health = writeQueue(streams[1], () => ST.openStream(dataDir, 'health', key), resumed('health'));
   const ks = kalshiSource({ base: A.kalshi, http: mkClient({ allow: KALSHI_PATHS }), emit, state: { markets: kMarkets } });
-  const pr = pinradarSource({ base: pinradar, http: mkClient({ allow: PINRADAR_PATHS }), emit, state: pState, onTickers: tks => ks.track(tks), listTickers: (a, b) => ks.listTickers(a, b) });
+  const pr = pinradarSource({ base: pinradar, http: mkClient({ allow: PINRADAR_PATHS }), httpTape: mkClient({ allow: PINRADAR_PATHS, timeoutMs: 30000, maxBytes: 64 << 20 }), emit, state: pState, onTickers: tks => ks.track(tks), listTickers: (a, b) => ks.listTickers(a, b) });
   hemit({ kind: 'obs.start', version: VERSION, pid: process.pid, host: os.hostname(), pinradar, at: now, encryptionKid: key.kid || null, signer: signKey ? signerId(crypto.createPublicKey(signKey)) : null,
     recoveredTail: streams[0].recovered || null, healthRecoveredTail: streams[1].recovered || null, staleLock: streams[0].staleLock || streams[1].staleLock || null, waitedForLeaseMs,
     newestStoredRecordAt: hasStore ? lastStored : null, stateFile: stateProblem || 'ok', predTsFrom, primaryRule: { id: D.PRIMARY.id, frozenAt: D.PRIMARY.frozenAt, sha256: D.PRIMARY_SHA256 },
@@ -185,7 +187,7 @@ async function run() {
   let stopping = false, errors = 0, lastBeat = now, flushOk = true, lastRefresh = Date.now(), lastState = 0, lastStatus = 0, lastErrPrint = 0;
   const writeState = () => writeDurable(stateFile, JSON.stringify({ pinradar: { ...pr.state }, kalshi: { markets: ks.state.markets }, lastBeat, flushedAt: Date.now(), cleanStop: stopping, version: VERSION }));
   const writeStatus = () => writeDurable(path.join(dataDir, 'status.json'), JSON.stringify({ ok: flushOk, version: VERSION, at: new Date().toISOString(), lastBeat: new Date(lastBeat).toISOString(),
-    rawRecords: Q.raw.stream().head().s, queued: { raw: Q.raw.size(), health: Q.health.size() }, errorsSinceStart: errors }));
+    rawRecords: Q.raw.stream().head().s, queued: { raw: Q.raw.size(), health: Q.health.size() }, errorsSinceStart: errors, tape: { cursor: pr.state.tapeTs || 0, last: pr.state.tapeLast || null } }));
   /* every second: renew the leases (every 15 s), append what is queued, and save the cursors ONLY when nothing is queued
      (so state.json never points past records that are not on disk) */
   const flush = () => {
@@ -211,7 +213,7 @@ async function run() {
   const beat = setInterval(() => {
     lastBeat = Date.now();
     const healthy = flushOk && Object.values(lanes).every(L => lastBeat - L.last < 120e3);
-    hemit({ kind: 'obs.heartbeat', at: lastBeat, healthy, rawHead: Q.raw.stream().head().s, queued: { raw: Q.raw.size(), health: Q.health.size() }, markets: Object.keys(ks.state.markets).length, predCursor: pr.state.predTs, ledgerSeq: pr.state.ledgerSeq, errors });
+    hemit({ kind: 'obs.heartbeat', at: lastBeat, healthy, rawHead: Q.raw.stream().head().s, queued: { raw: Q.raw.size(), health: Q.health.size() }, markets: Object.keys(ks.state.markets).length, predCursor: pr.state.predTs, ledgerSeq: pr.state.ledgerSeq, tapeCursor: pr.state.tapeTs || 0, tapeLast: pr.state.tapeLast || null, errors });
     if (signKey) {   /* a checkpoint signed with the host's key: the heads of raw and health as they stand on disk */
       try { flush(); } catch (_) { }
       const body = { kind: 'obs.checkpoint', at: lastBeat, version: VERSION, heads: { raw: Q.raw.stream().head(), health: Q.health.stream().head() } };

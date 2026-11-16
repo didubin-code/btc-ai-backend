@@ -25,11 +25,12 @@ const parse = t => { try { return JSON.parse(t); } catch (_) { return null; } };
 const ndjson = t => String(t || '').split('\n').filter(Boolean).map(l => parse(l)).filter(Boolean);
 const okInt = x => Number.isSafeInteger(x) && x >= 0;                   // values copied into later queries must be plain integers
 const OVERLAP_MS = 120e3, CATCHUP_PACE_MS = 250;              // catch-up pulls are spaced: at most 4 a second
-const TAPE_EVERY_MS = 3600e3, TAPE_GAP_MS = 1500;             // production's /tape keeps about 2.5 h of 1 Hz decision rows with books; hourly pulls leave margin
+const TAPE_EVERY_MS = 3600e3, TAPE_RETRY_MS = 300e3, TAPE_GAP_MS = 2000;   // production's /tape keeps about 2.5 h; hourly pulls leave margin; a failed pull retries in 5 min
 
-function pinradarSource({ base, http, emit, now = Date.now, state = {}, onTickers = null, listTickers = null }) {
+function pinradarSource({ base, http, emit, now = Date.now, state = {}, onTickers = null, listTickers = null, httpTape = null }) {
+  httpTape = httpTape || http;                           // the tape reply is ~10 MB: a client with a longer timeout and a larger cap may be passed
   base = String(base).replace(/\/+$/, '');
-  const S = Object.assign({ predTs: 0, ledgerSeq: 0, chainId: null, uptimeSec: null, buildId: null, healthAt: null, sigTs: 0, catchupRetryAt: 0, tapeTs: 0, due: {} }, state);
+  const S = Object.assign({ predTs: 0, ledgerSeq: 0, chainId: null, uptimeSec: null, buildId: null, healthAt: null, sigTs: 0, catchupRetryAt: 0, tapeTs: 0, tapeLast: null, due: {} }, state);
   /* rows already stored (bounded to the overlap window): the 120 s overlap re-reads them, they are not stored twice */
   const seen = new Map();
   const rowKey = x => x.ticker + '|' + x.ts + '|' + x.state + '|' + x.side;
@@ -61,7 +62,7 @@ function pinradarSource({ base, http, emit, now = Date.now, state = {}, onTicker
         if (S.clockIv && (iv[1] < S.clockIv[0] - 250 || iv[0] > S.clockIv[1] + 250)) {
           const delta = ((iv[0] + iv[1]) - (S.clockIv[0] + S.clockIv[1])) / 2;
           emit({ kind: 'pr.clockstep', at: r.tRecv, deltaMs: Math.round(delta), prev: S.clockIv, now: iv });
-          if (delta < 0) S.predTs = Math.max(0, Math.round(S.predTs + delta));
+          if (delta < 0) { S.predTs = Math.max(0, Math.round(S.predTs + delta)); S.tapeTs = Math.max(0, Math.round((S.tapeTs || 0) + delta)); }
         }
         S.clockIv = iv;
       }
@@ -124,28 +125,46 @@ function pinradarSource({ base, http, emit, now = Date.now, state = {}, onTicker
     async calibration() { const r = await http.get(base + '/calibration'); const j = r.ok ? parse(r.text) : null; emit({ kind: 'pr.calibration', ...meta(r), tiers: j && j.tiers || null, live: j && j.live || null }); },
     async shadow() { const r = await http.get(base + '/shadow'); emit({ kind: 'pr.shadow', ...meta(r), body: r.ok ? parse(r.text) : null }); },
     async brti() { const r = await http.get(base + '/brti-status'); emit({ kind: 'pr.brti', ...meta(r), body: r.ok ? parse(r.text) : null }); },
-    /* 2026-11-16: production's record/replay tape (GET /tape?since=<last decision ts>&format=ndjson): one 'd' row per second with the
-       inputs each decision saw (order book, BRTI print identity and latency, venue input age, clock skew) and the 1 Hz index samples
-       ('s'). Stored as published. The cursor is the newest decision ts; a first new row more than TAPE_GAP_MS after the cursor means
-       rows were lost before this pull (collector late, or production restarted: its ring is memory only) and is recorded, never
-       filled in. A failed pull leaves the cursor where it was, so the next hour asks again. */
+    /* 2026-11-16: production's record/replay tape (GET /tape?since=<cursor>&format=ndjson): inside each window's final 300 s one 'd'
+       row per second with the inputs the decision saw (order book, BRTI print identity and latency, venue input age, clock skew)
+       and, continuously, the 1 Hz index samples ('s'). Stored as published, in the published order. Production filters rows by
+       ts > since and samples by t > since with ONE since, so the cursor is the newest of (newest decision ts, newest sample t):
+       nothing is sent twice and nothing published later can carry an earlier stamp. The windows are 15 min apart and rows exist
+       only in their final 300 s, so a 600 s hole between the last row of one window and the first of the next is normal; gaps are
+       detected from the samples (1 Hz whenever production runs): a hole of more than TAPE_GAP_MS between consecutive samples, or
+       between the cursor and the first sample of a pull, and from decision rows of the SAME window more than TAPE_GAP_MS apart.
+       /tape carries no boot marker; a production restart shows as a sample hole here and as pr.restart from /health. A failed
+       pull keeps the cursor and retries after TAPE_RETRY_MS (production keeps about 2.5 h, so two quick retries cost nothing). */
     async tape() {
-      const since = okInt(S.tapeTs) ? S.tapeTs : 0;
-      const r = await http.get(`${base}/tape?since=${since}&format=ndjson`);
+      const since = okInt(S.tapeTs) ? S.tapeTs : 0, t0 = now();
+      const r = await httpTape.get(`${base}/tape?since=${since}&format=ndjson`);
       const all = r.ok ? ndjson(r.text) : [];
-      let decisions = 0, samples = 0, boots = 0, newest = since, firstTs = null;
+      let decisions = 0, samples = 0, newest = since, prevS = null, prevD = null; const gaps = [];
+      const gap = (kind, from, to, extra) => { if (gaps.length < 50) gaps.push({ kind, from, to, ms: to - from, ...extra }); };
       for (const x of all) {
-        if (x.k === 'd' && okInt(x.ts)) { decisions++; if (x.ts > newest) newest = x.ts; if (firstTs == null || x.ts < firstTs) firstTs = x.ts; }
-        else if (x.k === 's') samples++; else if (x.k === 'boot') boots++;
+        if (x.k === 's' && okInt(x.t)) {
+          samples++; if (x.t > newest) newest = x.t;
+          const ref = prevS != null ? prevS : (since > 0 ? since : null);
+          if (ref != null && x.t - ref > TAPE_GAP_MS) gap(prevS != null ? 'samples' : 'boundary', ref, x.t, {});
+          prevS = x.t;
+        } else if (x.k === 'd' && okInt(x.ts)) {
+          decisions++; if (x.ts > newest) newest = x.ts;
+          const tk = x.kal && x.kal.ticker;
+          if (prevD && prevD.tk === tk && x.ts - prevD.ts > TAPE_GAP_MS) gap('rows', prevD.ts, x.ts, { ticker: tk });
+          prevD = { tk, ts: x.ts };
+        }
       }
-      const gap = since > 0 && firstTs != null && firstTs - since > TAPE_GAP_MS ? { from: since, to: firstTs, ms: firstTs - since } : null;
-      emit({ kind: 'pr.tape', ...meta(r), since, received: all.length, decisions, samples, boots, newestTs: newest, gap, rows: r.ok ? all : [] });
+      const summary = { at: t0, ok: !!r.ok, status: r.status, since, received: all.length, decisions, samples, newestTs: newest, gaps: gaps.length, durationMs: r.tRecv && r.tSent ? r.tRecv - r.tSent : null };
+      emit({ kind: 'pr.tape', ...meta(r), since, received: all.length, decisions, samples, newestTs: newest, gaps, rows: r.ok ? all : [] });
       /* one plain log line per pull so the capture can be checked from the host's log without the owner's key */
-      console.log('[tape] ' + (r.ok ? 'ok' : 'FAILED status ' + r.status) + ' since=' + since + ' decisions=' + decisions + ' samples=' + samples + ' boots=' + boots + ' newest=' + newest + (gap ? ' GAP ' + gap.ms + ' ms before the first new row' : ''));
-      if (r.ok) S.tapeTs = newest;
+      console.log('[tape] ' + (r.ok ? 'ok' : 'FAILED status ' + r.status + (r.error ? ' ' + r.error : '')) + ' since=' + since + ' decisions=' + decisions + ' samples=' + samples + ' newest=' + newest + (gaps.length ? ' GAPS ' + gaps.length + ' (first ' + gaps[0].kind + ' ' + gaps[0].ms + ' ms)' : ''));
+      S.tapeLast = summary;
+      if (r.ok) S.tapeTs = newest; else S.due.tape = stepT + TAPE_RETRY_MS;   // retry sooner than the hourly cadence (the step's clock)
     },
   };
+  let stepT = now();
   async function step(t = now()) {
+    stepT = t;
     for (const [name, every] of tasks) {
       if (t < (S.due[name] || 0)) continue;
       S.due[name] = t + every;

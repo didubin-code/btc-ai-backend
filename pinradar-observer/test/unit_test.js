@@ -351,11 +351,11 @@ t('review: plaintext outputs never overwrite: export needs a new or empty direct
 });
 t('review: implausible saved cursors are reset and recorded; an unclean stop is recorded as a gap; state.json is private', async () => {
   const d = tmp(), { file: kf, key: k } = symKey();
-  fs.writeFileSync(path.join(d, 'state.json'), JSON.stringify({ pinradar: { predTs: Date.now() + 1e10, ledgerSeq: '9#', due: { health: Date.now() + 1e10 } }, lastBeat: Date.now() - 10000, cleanStop: false }));
+  fs.writeFileSync(path.join(d, 'state.json'), JSON.stringify({ pinradar: { predTs: Date.now() + 1e10, ledgerSeq: '9#', tapeTs: Date.now() + 1e10, tapeLast: 'junk', due: { health: Date.now() + 1e10 } }, lastBeat: Date.now() - 10000, cleanStop: false }));
   const p = spawn(process.execPath, [OBS, 'run', '--data', d, '--key', kf, '--pinradar', 'http://127.0.0.1:9', '--kalshi', 'http://127.0.0.1:9/trade-api/v2']);
   await new Promise(r => setTimeout(r, 3000)); p.kill('SIGTERM'); await new Promise(r => p.on('exit', r));
   const h = [...ST.readStream(d, 'health', k)];
-  const st = h.find(x => x.kind === 'obs.start'); assert.ok(st && st.sanitised.includes('predTs reset') && st.sanitised.includes('ledgerSeq reset') && st.sanitised.some(n => /due\.health/.test(n)), JSON.stringify(st && st.sanitised));
+  const st = h.find(x => x.kind === 'obs.start'); assert.ok(st && st.sanitised.includes('predTs reset') && st.sanitised.includes('ledgerSeq reset') && st.sanitised.includes('tapeTs reset') && st.sanitised.includes('tapeLast reset') && st.sanitised.some(n => /due\.health/.test(n)), JSON.stringify(st && st.sanitised));
   assert.ok(h.some(x => x.kind === 'obs.gap' && /not running/.test(x.reason)));
   assert.strictEqual(fs.statSync(path.join(d, 'state.json')).mode & 0o077, 0);
 });
@@ -415,23 +415,45 @@ t('window log: one line per settled window keeps lost LOCKED, reversal warning, 
   const t3 = tkn(); wl.tap({ kind: 'pr.predictions', rows: rowsFor(t3, () => H('UP')) }); wl.tap(mk(t3, 'yes')); wl.summarize(t3); const l3 = out.find(x => x.includes(t3)); assert.ok(/primary=NONE \(final 120 s fully observed/.test(l3), l3);
 });
 
-t('tape (2026-11-16): /tape is pulled hourly from the stored cursor; rows stored as published; a gap before the first new row is recorded; a failed pull keeps the cursor', async () => {
-  const T0 = 1.7e12; let calls = 0;
-  const body = since => [{ k: 's', t: since + 500, v: 65000.5 }, { k: 'd', ts: since + 1000, kal: { ticker: 'KXBTC15M-A' }, out: { state: 'LOCKED' } }, { k: 'd', ts: since + 2000, kal: { ticker: 'KXBTC15M-A' }, out: { state: 'LOCKED' } }].map(x => JSON.stringify(x)).join('\n') + '\n';
-  const http = fakeHttp(u => { if (u.pathname !== '/tape') return null; calls++; const since = Number(u.searchParams.get('since')); return calls === 3 ? { ok: false, status: 503, text: '' } : { ok: true, status: 200, text: body(calls === 2 ? since + 10000 : since) }; });
+t('tape (2026-11-16): cursor = newest of rows and samples (nothing sent twice); the 600 s between windows is not a gap; sample holes, boundary holes and in-window row holes are; a failed pull keeps the cursor and retries in 5 min', async () => {
+  const T0 = 1.7e12, W = 900e3; let calls = 0; const urls = [];
+  const mkD = (ts, tk) => ({ k: 'd', ts, kal: { ticker: tk }, out: { state: 'LOCKED' } }), mkS = t => ({ k: 's', t, v: 65000.5 });
+  /* the server: samples every second, decision rows only in each window's final 300 s; one `since` filters both */
+  const server = (since, end, hole) => { const out = []; for (let t = since + 1000; t <= end; t += 1000) { if (hole && t > hole[0] && t < hole[1]) continue; out.push(mkS(t)); const off = t % W; if (off >= W - 300e3) out.push(mkD(t + 400, 'KXBTC15M-' + Math.floor(t / W))); }
+    return out.filter(x => (x.k === 's' ? x.t : x.ts) > since).sort((a, b) => (a.k === 's' ? a.t : a.ts) - (b.k === 's' ? b.t : b.ts)).map(x => JSON.stringify(x)).join('\n') + '\n'; };
+  const END1 = T0 + 2 * W + 200e3;                                         // first pull: two full windows and part of a third
+  const http = fakeHttp(u => { if (u.pathname !== '/tape') return null; calls++; urls.push(u.toString()); const since = Number(u.searchParams.get('since'));
+    if (calls === 1) return { ok: true, status: 200, text: server(since, END1) };
+    if (calls === 2) return { ok: false, status: 503, text: '' };
+    if (calls === 3) return { ok: true, status: 200, text: server(since, END1 + 3600e3, [END1 + 1000e3, END1 + 1005e3]) };   // a 5 s sample hole inside the hour
+    return { ok: true, status: 200, text: server(since, END1 + 7200e3) }; });
   const em = []; const P = pinradarSource({ base: 'https://pr', http, emit: o => em.push(o), state: { tapeTs: T0 } });
-  await P.step(1e12);                                                            // first step runs every task once, including tape
-  let rec = em.filter(o => o.kind === 'pr.tape');
-  assert.strictEqual(rec.length, 1); assert.strictEqual(rec[0].since, T0); assert.strictEqual(rec[0].decisions, 2); assert.strictEqual(rec[0].samples, 1); assert.strictEqual(rec[0].gap, null);
-  assert.strictEqual(rec[0].rows.length, 3); assert.strictEqual(P.state.tapeTs, T0 + 2000);
-  assert.ok(http.calls.some(c => c === 'https://pr/tape?since=' + T0 + '&format=ndjson'), http.calls.join(' '));
-  await P.step(1e12 + 3600e3 + 1);                                               // an hour later: the server's first row is 10 s after the cursor -> gap recorded
-  rec = em.filter(o => o.kind === 'pr.tape'); assert.strictEqual(rec.length, 2);
-  assert.deepStrictEqual(rec[1].gap, { from: T0 + 2000, to: T0 + 2000 + 10000 + 1000, ms: 11000 }); assert.strictEqual(P.state.tapeTs, T0 + 2000 + 10000 + 2000);
-  await P.step(1e12 + 2 * 3600e3 + 2);                                           // the third pull fails: recorded, cursor unchanged
-  rec = em.filter(o => o.kind === 'pr.tape'); assert.strictEqual(rec.length, 3); assert.strictEqual(rec[2].status, 503); assert.strictEqual(rec[2].rows.length, 0); assert.strictEqual(P.state.tapeTs, T0 + 14000);
-  await P.step(1e12 + 2 * 3600e3 + 1000);                                        // not due again within the hour
-  assert.strictEqual(em.filter(o => o.kind === 'pr.tape').length, 3);
+  let t = 1e12; await P.step(t);
+  let rec = em.filter(o => o.kind === 'pr.tape'); assert.strictEqual(rec.length, 1);
+  assert.strictEqual(rec[0].since, T0); assert.ok(rec[0].decisions > 500 && rec[0].samples >= 2000, JSON.stringify([rec[0].decisions, rec[0].samples]));
+  assert.deepStrictEqual(rec[0].gaps, [], 'the 600 s between windows must not be a gap: ' + JSON.stringify(rec[0].gaps));
+  assert.strictEqual(P.state.tapeTs, END1, 'cursor = newest sample t (later than the newest row)'); assert.strictEqual(P.state.tapeLast.ok, true);
+  assert.ok(rec[0].rows.length === rec[0].received && rec[0].rows[0].k === 's', 'rows stored as published');
+  t += 3600e3 + 1; await P.step(t);                                        // hour 2: the pull fails -> cursor kept, retry due in 5 min
+  rec = em.filter(o => o.kind === 'pr.tape'); assert.strictEqual(rec.length, 2); assert.strictEqual(rec[1].status, 503); assert.strictEqual(P.state.tapeTs, END1); assert.strictEqual(P.state.tapeLast.ok, false);
+  await P.step(t + 60e3); assert.strictEqual(em.filter(o => o.kind === 'pr.tape').length, 2, 'not retried after 1 min');
+  await P.step(t + 300e3 + 1); rec = em.filter(o => o.kind === 'pr.tape'); assert.strictEqual(rec.length, 3, 'retried after 5 min');
+  assert.ok(urls[2].includes('since=' + END1), urls[2]);                     // the retry asks from the kept cursor: nothing sent twice
+  assert.strictEqual(rec[2].gaps.length, 1); assert.strictEqual(rec[2].gaps[0].kind, 'samples'); assert.ok(rec[2].gaps[0].ms >= 5000 && rec[2].gaps[0].ms <= 7000, JSON.stringify(rec[2].gaps));
+  const dec = rec[2].rows.filter(x => x.k === 'd'); assert.ok(dec.every(x => x.ts > END1), 'no row before the cursor');
+  t += 3600e3 + 1; await P.step(t);                                        // hour 3: normal
+  rec = em.filter(o => o.kind === 'pr.tape'); assert.strictEqual(rec.length, 4); assert.deepStrictEqual(rec[3].gaps, []); assert.strictEqual(P.state.tapeTs, END1 + 7200e3);
+  const seen = new Set(); for (const r of rec) for (const x of r.rows) { const k = x.k + (x.k === 's' ? x.t : x.ts); assert.ok(!seen.has(k), 'duplicate ' + k); seen.add(k); }
+  /* boundary gap: a cursor 10 s older than the first sample (a late pull after a production restart) */
+  const em2 = []; const P2 = pinradarSource({ base: 'https://pr', http: fakeHttp(u => u.pathname === '/tape' ? { ok: true, status: 200, text: [mkS(T0 + 10000), mkS(T0 + 11000)].map(x => JSON.stringify(x)).join('\n') + '\n' } : null), emit: o => em2.push(o), state: { tapeTs: T0 } });
+  await P2.step(1e12); const g = em2.find(o => o.kind === 'pr.tape').gaps; assert.strictEqual(g.length, 1); assert.strictEqual(g[0].kind, 'boundary'); assert.strictEqual(g[0].ms, 10000);
+  /* in-window row hole: two rows of the same window 4 s apart */
+  const em3 = []; const P3 = pinradarSource({ base: 'https://pr', http: fakeHttp(u => u.pathname === '/tape' ? { ok: true, status: 200, text: [mkD(T0 + 1000, 'X'), mkD(T0 + 5000, 'X'), mkD(T0 + 6000, 'X')].map(x => JSON.stringify(x)).join('\n') + '\n' } : null), emit: o => em3.push(o), state: {} });
+  await P3.step(1e12); const g3 = em3.find(o => o.kind === 'pr.tape').gaps; assert.strictEqual(g3.length, 1); assert.strictEqual(g3[0].kind, 'rows'); assert.strictEqual(g3[0].ms, 4000); assert.strictEqual(g3[0].ticker, 'X');
+  /* a production clock step backwards moves the tape cursor back with the predictions cursor */
+  const em4 = []; let hc = 0; const P4 = pinradarSource({ base: 'https://pr', http: fakeHttp(u => u.pathname === '/health' ? { ok: true, status: 200, text: JSON.stringify({ ts: (++hc === 1 ? 1e12 + 1000 : 1e12 + 1000 + 1000 - 60000), uptimeSec: 100 + hc }) } : null), emit: o => em4.push(o), state: { predTs: 5e11, tapeTs: 5e11 + 7 } });
+  await P4.step(1e12); await P4.step(1e12 + 61e3);
+  assert.ok(em4.some(o => o.kind === 'pr.clockstep'), 'clock step detected'); assert.ok(P4.state.tapeTs < 5e11 + 7 && P4.state.predTs < 5e11, 'both cursors moved back: ' + P4.state.tapeTs + ' ' + P4.state.predTs);
 });
 
 (async () => {
