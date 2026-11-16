@@ -441,7 +441,7 @@ t('tape (2026-11-16): cursor = newest of rows and samples (nothing sent twice); 
   assert.ok(urls[2].includes('since=' + END1), urls[2]);                     // the retry asks from the kept cursor: nothing sent twice
   assert.strictEqual(rec[2].gaps.length, 1); assert.strictEqual(rec[2].gaps[0].kind, 'samples'); assert.ok(rec[2].gaps[0].ms >= 5000 && rec[2].gaps[0].ms <= 7000, JSON.stringify(rec[2].gaps));
   const dec = rec[2].rows.filter(x => x.k === 'd'); assert.ok(dec.every(x => x.ts > END1), 'no row before the cursor');
-  t += 3600e3 + 1; await P.step(t);                                        // hour 3: normal
+  t += 300e3 + 1 + 3600e3 + 1; await P.step(t);                            // an hour after the successful retry: normal
   rec = em.filter(o => o.kind === 'pr.tape'); assert.strictEqual(rec.length, 4); assert.deepStrictEqual(rec[3].gaps, []); assert.strictEqual(P.state.tapeTs, END1 + 7200e3);
   const seen = new Set(); for (const r of rec) for (const x of r.rows) { const k = x.k + (x.k === 's' ? x.t : x.ts); assert.ok(!seen.has(k), 'duplicate ' + k); seen.add(k); }
   /* boundary gap: a cursor 10 s older than the first sample (a late pull after a production restart) */
