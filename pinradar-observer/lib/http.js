@@ -8,7 +8,8 @@
    way to see any account, order or position. Each response is returned with its timing for the evidence record. */
 'use strict';
 
-const PINRADAR_PATHS = [/^\/health$/, /^\/calibration$/, /^\/predictions$/, /^\/signals$/, /^\/ledger$/, /^\/shadow$/, /^\/brti-status$/];
+const PINRADAR_PATHS = [/^\/health$/, /^\/calibration$/, /^\/predictions$/, /^\/signals$/, /^\/ledger$/, /^\/shadow$/, /^\/brti-status$/,
+  /^\/tape$/];   // 2026-11-16: production's decision tape (read-only GET; same host, same no-credential client)
 const KALSHI_PATHS = [/^\/trade-api\/v2\/markets$/, /^\/trade-api\/v2\/markets\/KXBTC15M-[A-Z0-9-]+$/, /^\/trade-api\/v2\/markets\/KXBTC15M-[A-Z0-9-]+\/orderbook$/,
   /^\/trade-api\/v2\/series\/KXBTC15M$/];
 const LOOPBACK = /^(127\.\d+\.\d+\.\d+|localhost|\[::1\])$/;

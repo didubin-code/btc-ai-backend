@@ -219,7 +219,8 @@ t('review: a truncated GCM tag is rejected (128-bit tags only)', () => {
 t('Test 8: GET only, allowlisted read-only paths only, HTTPS only (loopback excepted)', async () => {
   const c = mkClient({ allow: PINRADAR_PATHS, fetchImpl: async () => { throw new Error('must not be called'); } });
   assert.strictEqual(typeof c.post, 'undefined');
-  for (const p of ['/radar', '/pin', '/ledger/verify', '/selftest', '/kalshi-auth', '/health/../radar', '/tape']) await assert.rejects(c.get('https://x' + p), /allowlist/);
+  for (const p of ['/radar', '/pin', '/ledger/verify', '/selftest', '/kalshi-auth', '/health/../radar', '/tape/x', '/tapes']) await assert.rejects(c.get('https://x' + p), /allowlist/);
+  assert.ok(PINRADAR_PATHS.some(re => re.test('/tape')), '/tape is allowlisted since 2026-11-16 (read-only decision tape)');
   await assert.rejects(c.get('http://pinradar.example/health'), /https required/);
   await assert.rejects(c.get('https://u:p@x/health'), /credentials/);
 });
@@ -412,6 +413,25 @@ t('window log: one line per settled window keeps lost LOCKED, reversal warning, 
   assert.ok(/later: lostLocked=88\.8s pFlip>0\.2%=no warning=88\.8s directionFlip=48\.8s/.test(l1) && /settlement=no \(DOWN\)/.test(l1) && /signal WRONG \[wrong\]/.test(l1), l1);
   const t2 = tkn(); wl.tap(mk(t2, 'yes')); wl.summarize(t2); const l2 = out.find(x => x.includes(t2)); assert.ok(/UNOBSERVED/.test(l2) && /primary=NOT DETERMINABLE/.test(l2), l2);
   const t3 = tkn(); wl.tap({ kind: 'pr.predictions', rows: rowsFor(t3, () => H('UP')) }); wl.tap(mk(t3, 'yes')); wl.summarize(t3); const l3 = out.find(x => x.includes(t3)); assert.ok(/primary=NONE \(final 120 s fully observed/.test(l3), l3);
+});
+
+t('tape (2026-11-16): /tape is pulled hourly from the stored cursor; rows stored as published; a gap before the first new row is recorded; a failed pull keeps the cursor', async () => {
+  const T0 = 1.7e12; let calls = 0;
+  const body = since => [{ k: 's', t: since + 500, v: 65000.5 }, { k: 'd', ts: since + 1000, kal: { ticker: 'KXBTC15M-A' }, out: { state: 'LOCKED' } }, { k: 'd', ts: since + 2000, kal: { ticker: 'KXBTC15M-A' }, out: { state: 'LOCKED' } }].map(x => JSON.stringify(x)).join('\n') + '\n';
+  const http = fakeHttp(u => { if (u.pathname !== '/tape') return null; calls++; const since = Number(u.searchParams.get('since')); return calls === 3 ? { ok: false, status: 503, text: '' } : { ok: true, status: 200, text: body(calls === 2 ? since + 10000 : since) }; });
+  const em = []; const P = pinradarSource({ base: 'https://pr', http, emit: o => em.push(o), state: { tapeTs: T0 } });
+  await P.step(1e12);                                                            // first step runs every task once, including tape
+  let rec = em.filter(o => o.kind === 'pr.tape');
+  assert.strictEqual(rec.length, 1); assert.strictEqual(rec[0].since, T0); assert.strictEqual(rec[0].decisions, 2); assert.strictEqual(rec[0].samples, 1); assert.strictEqual(rec[0].gap, null);
+  assert.strictEqual(rec[0].rows.length, 3); assert.strictEqual(P.state.tapeTs, T0 + 2000);
+  assert.ok(http.calls.some(c => c === 'https://pr/tape?since=' + T0 + '&format=ndjson'), http.calls.join(' '));
+  await P.step(1e12 + 3600e3 + 1);                                               // an hour later: the server's first row is 10 s after the cursor -> gap recorded
+  rec = em.filter(o => o.kind === 'pr.tape'); assert.strictEqual(rec.length, 2);
+  assert.deepStrictEqual(rec[1].gap, { from: T0 + 2000, to: T0 + 2000 + 10000 + 1000, ms: 11000 }); assert.strictEqual(P.state.tapeTs, T0 + 2000 + 10000 + 2000);
+  await P.step(1e12 + 2 * 3600e3 + 2);                                           // the third pull fails: recorded, cursor unchanged
+  rec = em.filter(o => o.kind === 'pr.tape'); assert.strictEqual(rec.length, 3); assert.strictEqual(rec[2].status, 503); assert.strictEqual(rec[2].rows.length, 0); assert.strictEqual(P.state.tapeTs, T0 + 14000);
+  await P.step(1e12 + 2 * 3600e3 + 1000);                                        // not due again within the hour
+  assert.strictEqual(em.filter(o => o.kind === 'pr.tape').length, 3);
 });
 
 (async () => {

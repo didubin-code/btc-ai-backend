@@ -25,16 +25,17 @@ const parse = t => { try { return JSON.parse(t); } catch (_) { return null; } };
 const ndjson = t => String(t || '').split('\n').filter(Boolean).map(l => parse(l)).filter(Boolean);
 const okInt = x => Number.isSafeInteger(x) && x >= 0;                   // values copied into later queries must be plain integers
 const OVERLAP_MS = 120e3, CATCHUP_PACE_MS = 250;              // catch-up pulls are spaced: at most 4 a second
+const TAPE_EVERY_MS = 3600e3, TAPE_GAP_MS = 1500;             // production's /tape keeps about 2.5 h of 1 Hz decision rows with books; hourly pulls leave margin
 
 function pinradarSource({ base, http, emit, now = Date.now, state = {}, onTickers = null, listTickers = null }) {
   base = String(base).replace(/\/+$/, '');
-  const S = Object.assign({ predTs: 0, ledgerSeq: 0, chainId: null, uptimeSec: null, buildId: null, healthAt: null, sigTs: 0, catchupRetryAt: 0, due: {} }, state);
+  const S = Object.assign({ predTs: 0, ledgerSeq: 0, chainId: null, uptimeSec: null, buildId: null, healthAt: null, sigTs: 0, catchupRetryAt: 0, tapeTs: 0, due: {} }, state);
   /* rows already stored (bounded to the overlap window): the 120 s overlap re-reads them, they are not stored twice */
   const seen = new Map();
   const rowKey = x => x.ticker + '|' + x.ts + '|' + x.state + '|' + x.side;
   const fresh = rows => { const out = []; for (const x of rows) { const k = rowKey(x); if (!seen.has(k)) { seen.set(k, x.ts); out.push(x); } }
     const cut = S.predTs - 3 * OVERLAP_MS; for (const [k, ts] of seen) if (ts < cut) seen.delete(k); return out; };
-  const tasks = [['health', 60e3], ['predictions', 30e3], ['signals', 60e3], ['ledger', 60e3], ['calibration', 600e3], ['shadow', 300e3], ['brti', 300e3]]
+  const tasks = [['health', 60e3], ['predictions', 30e3], ['signals', 60e3], ['ledger', 60e3], ['calibration', 600e3], ['shadow', 300e3], ['brti', 300e3], ['tape', TAPE_EVERY_MS]]
     .map(([n, ms]) => [n, Math.max(1000, ms * (SCALE > 0 ? SCALE : 1))]);
   const meta = r => ({ status: r.status, tSent: r.tSent, tRecv: r.tRecv, date: r.date || null, bytes: r.bytes || 0, error: r.error || null });
   const PAGE = 2000;
@@ -123,6 +124,24 @@ function pinradarSource({ base, http, emit, now = Date.now, state = {}, onTicker
     async calibration() { const r = await http.get(base + '/calibration'); const j = r.ok ? parse(r.text) : null; emit({ kind: 'pr.calibration', ...meta(r), tiers: j && j.tiers || null, live: j && j.live || null }); },
     async shadow() { const r = await http.get(base + '/shadow'); emit({ kind: 'pr.shadow', ...meta(r), body: r.ok ? parse(r.text) : null }); },
     async brti() { const r = await http.get(base + '/brti-status'); emit({ kind: 'pr.brti', ...meta(r), body: r.ok ? parse(r.text) : null }); },
+    /* 2026-11-16: production's record/replay tape (GET /tape?since=<last decision ts>&format=ndjson): one 'd' row per second with the
+       inputs each decision saw (order book, BRTI print identity and latency, venue input age, clock skew) and the 1 Hz index samples
+       ('s'). Stored as published. The cursor is the newest decision ts; a first new row more than TAPE_GAP_MS after the cursor means
+       rows were lost before this pull (collector late, or production restarted: its ring is memory only) and is recorded, never
+       filled in. A failed pull leaves the cursor where it was, so the next hour asks again. */
+    async tape() {
+      const since = okInt(S.tapeTs) ? S.tapeTs : 0;
+      const r = await http.get(`${base}/tape?since=${since}&format=ndjson`);
+      const all = r.ok ? ndjson(r.text) : [];
+      let decisions = 0, samples = 0, boots = 0, newest = since, firstTs = null;
+      for (const x of all) {
+        if (x.k === 'd' && okInt(x.ts)) { decisions++; if (x.ts > newest) newest = x.ts; if (firstTs == null || x.ts < firstTs) firstTs = x.ts; }
+        else if (x.k === 's') samples++; else if (x.k === 'boot') boots++;
+      }
+      const gap = since > 0 && firstTs != null && firstTs - since > TAPE_GAP_MS ? { from: since, to: firstTs, ms: firstTs - since } : null;
+      emit({ kind: 'pr.tape', ...meta(r), since, received: all.length, decisions, samples, boots, newestTs: newest, gap, rows: r.ok ? all : [] });
+      if (r.ok) S.tapeTs = newest;
+    },
   };
   async function step(t = now()) {
     for (const [name, every] of tasks) {
